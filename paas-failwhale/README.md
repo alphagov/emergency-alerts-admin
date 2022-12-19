@@ -8,7 +8,7 @@ It is deployed as an individual app and remains dormant until a route is assigne
 
 It should already be deployed, but if not you can deploy it by running
 
-    cf push notify-admin-failwhale
+    cf push eas-admin-failwhale
 
 To enable it you need to run
 

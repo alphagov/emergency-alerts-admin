@@ -11,7 +11,7 @@ CF_API ?= api.cloud.service.gov.uk
 CF_ORG ?= govuk-notify
 CF_SPACE ?= ${DEPLOY_ENV}
 CF_HOME ?= ${HOME}
-CF_APP ?= notify-admin
+CF_APP ?= eas-admin
 CF_MANIFEST_PATH ?= /tmp/manifest.yml
 $(eval export CF_HOME)
 
@@ -137,7 +137,7 @@ upload-static:
 .PHONY: cf-deploy
 cf-deploy: cf-target ## Deploys the app to Cloud Foundry
 	$(if ${CF_SPACE},,$(error Must specify CF_SPACE))
-	@cf app --guid notify-admin || exit 1
+	@cf app --guid eas-admin || exit 1
 	# cancel any existing deploys to ensure we can apply manifest (if a deploy is in progress you'll see ScaleDisabledDuringDeployment)
 	cf cancel-deployment ${CF_APP} || true
 
@@ -150,14 +150,14 @@ cf-deploy: cf-target ## Deploys the app to Cloud Foundry
 
 .PHONY: cf-deploy-prototype
 cf-deploy-prototype: cf-target ## Deploys the first prototype to Cloud Foundry
-	make -s CF_APP=notify-admin-prototype generate-manifest > ${CF_MANIFEST_PATH}
-	cf push notify-admin-prototype --strategy=rolling -f ${CF_MANIFEST_PATH}
+	make -s CF_APP=eas-admin-prototype generate-manifest > ${CF_MANIFEST_PATH}
+	cf push eas-admin-prototype --strategy=rolling -f ${CF_MANIFEST_PATH}
 	rm -f ${CF_MANIFEST_PATH}
 
 .PHONY: cf-deploy-prototype-2
 cf-deploy-prototype-2: cf-target ## Deploys the second prototype to Cloud Foundry
-	make -s CF_APP=notify-admin-prototype-2 generate-manifest > ${CF_MANIFEST_PATH}
-	cf push notify-admin-prototype-2 --strategy=rolling -f ${CF_MANIFEST_PATH}
+	make -s CF_APP=eas-admin-prototype-2 generate-manifest > ${CF_MANIFEST_PATH}
+	cf push eas-admin-prototype-2 --strategy=rolling -f ${CF_MANIFEST_PATH}
 	rm -f ${CF_MANIFEST_PATH}
 
 .PHONY: cf-rollback
@@ -171,16 +171,16 @@ cf-target: check-env-vars
 
 .PHONY: cf-failwhale-deployed
 cf-failwhale-deployed:
-	@cf app notify-admin-failwhale --guid || (echo "notify-admin-failwhale is not deployed on ${CF_SPACE}" && exit 1)
+	@cf app eas-admin-failwhale --guid || (echo "eas-admin-failwhale is not deployed on ${CF_SPACE}" && exit 1)
 
 .PHONY: enable-failwhale
 enable-failwhale: cf-target cf-failwhale-deployed ## Enable the failwhale app and disable admin
-	@cf map-route notify-admin-failwhale ${DNS_NAME} --hostname www
-	@cf unmap-route notify-admin ${DNS_NAME} --hostname www
+	@cf map-route eas-admin-failwhale ${DNS_NAME} --hostname www
+	@cf unmap-route eas-admin ${DNS_NAME} --hostname www
 	@echo "Failwhale is enabled"
 
 .PHONY: disable-failwhale
 disable-failwhale: cf-target cf-failwhale-deployed ## Disable the failwhale app and enable admin
-	@cf map-route notify-admin ${DNS_NAME} --hostname www
-	@cf unmap-route notify-admin-failwhale ${DNS_NAME} --hostname www
+	@cf map-route eas-admin ${DNS_NAME} --hostname www
+	@cf unmap-route eas-admin-failwhale ${DNS_NAME} --hostname www
 	@echo "Failwhale is disabled"

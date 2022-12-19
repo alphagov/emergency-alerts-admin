@@ -1,13 +1,13 @@
 {%- set apps = {
-  'notify-admin': {
+  'eas-admin': {
     'routes': {
-      'preview': ['www.notify.works', 'notify-admin-preview.apps.internal'],
-      'staging': ['www.staging-notify.works', 'notify-admin-staging.apps.internal'],
-      'production': ['www.notifications.service.gov.uk', 'notify-admin-production.apps.internal'],
+      'preview': ['www.notify.works', 'eas-admin-preview.apps.internal'],
+      'staging': ['www.staging-notify.works', 'eas-admin-staging.apps.internal'],
+      'production': ['www.notifications.service.gov.uk', 'eas-admin-production.apps.internal'],
     }
   },
-  'notify-admin-prototype': {},
-  'notify-admin-prototype-2': {}
+  'eas-admin-prototype': {},
+  'eas-admin-prototype-2': {}
 } -%}
 
 {%- set app = apps[CF_APP] -%}

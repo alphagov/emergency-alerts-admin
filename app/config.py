@@ -26,7 +26,7 @@ class Config(object):
     DEBUG = False
     NOTIFY_LOG_PATH = os.getenv("NOTIFY_LOG_PATH")
 
-    ADMIN_CLIENT_USER_NAME = "notify-admin"
+    ADMIN_CLIENT_USER_NAME = "eas-admin"
 
     ANTIVIRUS_API_HOST = os.environ.get("ANTIVIRUS_API_HOST")
     ANTIVIRUS_API_KEY = os.environ.get("ANTIVIRUS_API_KEY")
@@ -45,7 +45,7 @@ class Config(object):
     PERMANENT_SESSION_LIFETIME = 20 * 60 * 60  # 20 hours
     SEND_FILE_MAX_AGE_DEFAULT = 365 * 24 * 60 * 60  # 1 year
     SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_NAME = "notify_admin_session"
+    SESSION_COOKIE_NAME = "eas_admin_session"
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_SAMESITE = "Lax"
     # don't send back the cookie if it hasn't been modified by the request. this means that the expiry time won't be
