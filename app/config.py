@@ -45,7 +45,7 @@ class Config(object):
     PERMANENT_SESSION_LIFETIME = 20 * 60 * 60  # 20 hours
     SEND_FILE_MAX_AGE_DEFAULT = 365 * 24 * 60 * 60  # 1 year
     SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_NAME = "notify_admin_session"
+    SESSION_COOKIE_NAME = "eas_admin_session"
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_SAMESITE = "Lax"
     # don't send back the cookie if it hasn't been modified by the request. this means that the expiry time won't be
