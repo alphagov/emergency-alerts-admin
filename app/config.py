@@ -26,7 +26,7 @@ class Config(object):
     DEBUG = False
     NOTIFY_LOG_PATH = os.getenv("NOTIFY_LOG_PATH")
 
-    ADMIN_CLIENT_USER_NAME = "notify-admin"
+    ADMIN_CLIENT_USER_NAME = "eas-admin"
 
     ANTIVIRUS_API_HOST = os.environ.get("ANTIVIRUS_API_HOST")
     ANTIVIRUS_API_KEY = os.environ.get("ANTIVIRUS_API_KEY")
