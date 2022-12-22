@@ -1,12 +1,12 @@
 import re
 from abc import ABC, abstractmethod
 
-from flask import current_app
 from emergency_alerts_utils.field import Field
 from emergency_alerts_utils.formatters import formatted_list
 from emergency_alerts_utils.recipients import InvalidEmailError, validate_email_address
 from emergency_alerts_utils.sanitise_text import SanitiseSMS
 from emergency_alerts_utils.template import BroadcastMessageTemplate
+from flask import current_app
 from orderedset import OrderedSet
 from wtforms import ValidationError
 from wtforms.validators import StopValidation

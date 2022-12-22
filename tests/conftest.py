@@ -8,9 +8,9 @@ from unittest.mock import Mock, PropertyMock
 from uuid import UUID, uuid4
 
 import pytest
+from emergency_alerts_utils.url_safe_token import generate_token
 from flask import Flask, url_for
 from notifications_python_client.errors import HTTPError
-from emergency_alerts_utils.url_safe_token import generate_token
 
 from app import create_app, webauthn_server
 

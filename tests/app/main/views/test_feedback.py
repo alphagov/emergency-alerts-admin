@@ -2,9 +2,9 @@ from functools import partial
 from unittest.mock import ANY, PropertyMock
 
 import pytest
+from emergency_alerts_utils.clients.zendesk.zendesk_client import NotifySupportTicket
 from flask import url_for
 from freezegun import freeze_time
-from emergency_alerts_utils.clients.zendesk.zendesk_client import NotifySupportTicket
 
 from app.main.views.feedback import in_business_hours
 from app.models.feedback import (

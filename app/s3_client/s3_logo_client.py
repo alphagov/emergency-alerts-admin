@@ -1,8 +1,8 @@
 import uuid
 
 from boto3 import resource
-from flask import current_app
 from emergency_alerts_utils.s3 import s3upload as utils_s3upload
+from flask import current_app
 
 TEMP_TAG = "temp-{user_id}_"
 EMAIL_LOGO_LOCATION_STRUCTURE = "{temp}{unique_id}-{filename}"

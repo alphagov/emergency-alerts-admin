@@ -6,6 +6,12 @@ import os
 from datetime import datetime
 
 from dateutil import parser
+from emergency_alerts_utils import LETTER_MAX_PAGE_COUNT
+from emergency_alerts_utils.letter_timings import (
+    get_letter_timings,
+    letter_can_be_cancelled,
+)
+from emergency_alerts_utils.pdf import pdf_page_count
 from flask import (
     Response,
     flash,
@@ -18,12 +24,6 @@ from flask import (
     url_for,
 )
 from notifications_python_client.errors import APIError, HTTPError
-from emergency_alerts_utils import LETTER_MAX_PAGE_COUNT
-from emergency_alerts_utils.letter_timings import (
-    get_letter_timings,
-    letter_can_be_cancelled,
-)
-from emergency_alerts_utils.pdf import pdf_page_count
 from PyPDF2.errors import PdfReadError
 
 from app import (
