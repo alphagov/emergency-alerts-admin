@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytz
 from dateutil import parser
-from notifications_utils.timezones import utc_string_to_aware_gmt_datetime
+from emergency_alerts_utils.timezones import utc_string_to_aware_gmt_datetime
 
 
 def get_current_financial_year():

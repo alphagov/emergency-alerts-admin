@@ -14,8 +14,8 @@ from flask import (
 )
 from flask_login import current_user
 from notifications_python_client.errors import HTTPError
-from notifications_utils.clients.zendesk.zendesk_client import NotifySupportTicket
-from notifications_utils.timezones import utc_string_to_aware_gmt_datetime
+from emergency_alerts_utils.clients.zendesk.zendesk_client import NotifySupportTicket
+from emergency_alerts_utils.timezones import utc_string_to_aware_gmt_datetime
 
 from app import (
     billing_api_client,

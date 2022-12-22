@@ -1,5 +1,5 @@
 from flask import current_app
-from notifications_utils.template import (
+from emergency_alerts_utils.template import (
     BroadcastPreviewTemplate,
     EmailPreviewTemplate,
     LetterImageTemplate,

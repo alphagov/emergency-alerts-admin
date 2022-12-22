@@ -10,7 +10,7 @@ from flask import (
     url_for,
 )
 from itsdangerous import SignatureExpired
-from notifications_utils.url_safe_token import check_token
+from emergency_alerts_utils.url_safe_token import check_token
 
 from app.main import main
 from app.main.forms import NewPasswordForm

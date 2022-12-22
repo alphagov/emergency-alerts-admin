@@ -1,9 +1,9 @@
 import math
 from abc import ABC, abstractmethod
 
-from notifications_utils.formatters import formatted_list
-from notifications_utils.polygons import Polygons
-from notifications_utils.serialised_model import SerialisedModelCollection
+from emergency_alerts_utils.formatters import formatted_list
+from emergency_alerts_utils.polygons import Polygons
+from emergency_alerts_utils.serialised_model import SerialisedModelCollection
 from rtreelib import Rect
 from werkzeug.utils import cached_property
 

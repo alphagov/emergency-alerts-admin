@@ -16,7 +16,7 @@ from flask import (
 )
 from flask_login import current_user
 from notifications_python_client.errors import HTTPError
-from notifications_utils.template import (
+from emergency_alerts_utils.template import (
     EmailPreviewTemplate,
     LetterPreviewTemplate,
     SMSBodyPreviewTemplate,

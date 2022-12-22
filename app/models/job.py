@@ -1,12 +1,12 @@
 from datetime import timedelta
 
 import pytz
-from notifications_utils.letter_timings import (
+from emergency_alerts_utils.letter_timings import (
     CANCELLABLE_JOB_LETTER_STATUSES,
     get_letter_timings,
     letter_can_be_cancelled,
 )
-from notifications_utils.timezones import utc_string_to_aware_gmt_datetime
+from emergency_alerts_utils.timezones import utc_string_to_aware_gmt_datetime
 from werkzeug.utils import cached_property
 
 from app.models import JSONModel, ModelList, PaginatedModelList

@@ -1,4 +1,4 @@
-from notifications_utils.recipients import RecipientCSV
+from emergency_alerts_utils.recipients import RecipientCSV
 
 from app.models.spreadsheet import Spreadsheet
 from app.utils.templates import get_sample_template

@@ -3,10 +3,10 @@ from datetime import datetime, timedelta
 import pytz
 from dateutil import parser
 from flask import url_for
-from notifications_utils.formatters import unescaped_formatted_list
-from notifications_utils.letter_timings import letter_can_be_cancelled
-from notifications_utils.postal_address import PostalAddress
-from notifications_utils.timezones import (
+from emergency_alerts_utils.formatters import unescaped_formatted_list
+from emergency_alerts_utils.letter_timings import letter_can_be_cancelled
+from emergency_alerts_utils.postal_address import PostalAddress
+from emergency_alerts_utils.timezones import (
     convert_bst_to_utc,
     convert_utc_to_bst,
     utc_string_to_aware_gmt_datetime,

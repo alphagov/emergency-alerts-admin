@@ -5,7 +5,7 @@ import pytest
 from flask import url_for
 from freezegun import freeze_time
 from notifications_python_client.errors import HTTPError
-from notifications_utils.url_safe_token import generate_token
+from emergency_alerts_utils.url_safe_token import generate_token
 
 from app.models.webauthn_credential import WebAuthnCredential, WebAuthnCredentials
 from tests.conftest import (

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from notifications_utils.clients.redis import daily_limit_cache_key
+from emergency_alerts_utils.clients.redis import daily_limit_cache_key
 
 from app.extensions import redis_client
 from app.notify_client import NotifyAdminAPIClient, _attach_current_user, cache
