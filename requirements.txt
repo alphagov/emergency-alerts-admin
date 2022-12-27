@@ -17,14 +17,14 @@ blinker==1.5
     #   -r requirements.in
     #   gds-metrics
 boto3==1.24.56
-    # via notifications-utils
+    # via emergency-alerts-utils
 botocore==1.27.56
     # via
     #   awscli
     #   boto3
     #   s3transfer
 cachetools==5.2.0
-    # via notifications-utils
+    # via emergency-alerts-utils
 certifi==2022.12.7
     # via
     #   pyproj
@@ -62,21 +62,21 @@ flask==2.2.2
     #   flask-redis
     #   flask-wtf
     #   gds-metrics
-    #   notifications-utils
+    #   emergency-alerts-utils
 flask-login==0.6.2
     # via -r requirements.in
 flask-redis==0.4.0
-    # via notifications-utils
+    # via emergency-alerts-utils
 flask-wtf==1.0.1
     # via -r requirements.in
 gds-metrics @ git+https://github.com/alphagov/gds_metrics_python.git@6f1840a57b6fb1ee40b7e84f2f18ec229de8aa72
     # via -r requirements.in
 geojson==2.5.0
-    # via notifications-utils
+    # via emergency-alerts-utils
 govuk-bank-holidays==0.11
     # via
     #   -r requirements.in
-    #   notifications-utils
+    #   emergency-alerts-utils
 govuk-frontend-jinja==2.3.0
     # via -r requirements.in
 greenlet==1.1.2
@@ -94,13 +94,13 @@ itsdangerous==2.1.2
     #   -r requirements.in
     #   flask
     #   flask-wtf
-    #   notifications-utils
+    #   emergency-alerts-utils
 jinja2==3.1.2
     # via
     #   -r requirements.in
     #   flask
     #   govuk-frontend-jinja
-    #   notifications-utils
+    #   emergency-alerts-utils
 jmespath==1.0.1
     # via
     #   boto3
@@ -119,19 +119,19 @@ markupsafe==2.1.1
     #   werkzeug
     #   wtforms
 mistune==0.8.4
-    # via notifications-utils
+    # via emergency-alerts-utils
 notifications-python-client==6.4.1
     # via -r requirements.in
-notifications-utils @ git+https://github.com/alphagov/notifications-utils.git@59.3.0
+emergency-alerts-utils @ git+https://github.com/alphagov/emergency-alerts-utils.git@60.0.0-alpha
     # via -r requirements.in
 openpyxl==3.0.10
     # via pyexcel-xlsx
 orderedset==2.0.3
-    # via notifications-utils
+    # via emergency-alerts-utils
 packaging==21.3
     # via redis
 phonenumbers==8.12.54
-    # via notifications-utils
+    # via emergency-alerts-utils
 pillow==9.3.0
     # via -r requirements.in
 prometheus-client==0.15.0
@@ -164,25 +164,25 @@ pyjwt==2.4.0
 pyparsing==3.0.9
     # via packaging
 pypdf2==2.10.3
-    # via notifications-utils
+    # via emergency-alerts-utils
 pyproj==3.4.0
     # via
     #   -r requirements.in
-    #   notifications-utils
+    #   emergency-alerts-utils
 python-dateutil==2.8.2
     # via
     #   awscli-cwlogs
     #   botocore
 python-json-logger==2.0.4
-    # via notifications-utils
+    # via emergency-alerts-utils
 pytz==2022.6
     # via
     #   -r requirements.in
-    #   notifications-utils
+    #   emergency-alerts-utils
 pyyaml==5.4.1
     # via
     #   awscli
-    #   notifications-utils
+    #   emergency-alerts-utils
 redis==4.3.4
     # via flask-redis
 requests==2.28.1
@@ -190,7 +190,7 @@ requests==2.28.1
     #   awscli-cwlogs
     #   govuk-bank-holidays
     #   notifications-python-client
-    #   notifications-utils
+    #   emergency-alerts-utils
 rsa==4.7.2
     # via awscli
 rtreelib==0.2.0
@@ -200,16 +200,16 @@ s3transfer==0.6.0
     #   awscli
     #   boto3
 shapely==1.8.4
-    # via notifications-utils
+    # via emergency-alerts-utils
 six==1.16.0
     # via
     #   awscli-cwlogs
     #   eventlet
     #   python-dateutil
 smartypants==2.0.1
-    # via notifications-utils
+    # via emergency-alerts-utils
 statsd==3.3.0
-    # via notifications-utils
+    # via emergency-alerts-utils
 texttable==1.6.4
     # via pyexcel
 typing-extensions==4.4.0
