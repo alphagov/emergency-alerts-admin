@@ -1,9 +1,9 @@
 import itertools
 from datetime import datetime, timedelta
 
-from flask import current_app
 from emergency_alerts_utils.polygons import Polygons
 from emergency_alerts_utils.template import BroadcastPreviewTemplate
+from flask import current_app
 from orderedset import OrderedSet
 from werkzeug.utils import cached_property
 

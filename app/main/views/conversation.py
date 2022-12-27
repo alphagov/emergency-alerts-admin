@@ -1,8 +1,8 @@
+from emergency_alerts_utils.recipients import format_phone_number_human_readable
+from emergency_alerts_utils.template import SMSPreviewTemplate
 from flask import jsonify, redirect, render_template, session, url_for
 from flask_login import current_user
 from notifications_python_client.errors import HTTPError
-from emergency_alerts_utils.recipients import format_phone_number_human_readable
-from emergency_alerts_utils.template import SMSPreviewTemplate
 
 from app import current_service, notification_api_client, service_api_client
 from app.main import main

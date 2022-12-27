@@ -1,8 +1,8 @@
 from unittest.mock import ANY, PropertyMock
 
 import pytest
-from flask import url_for
 from emergency_alerts_utils.clients.zendesk.zendesk_client import NotifySupportTicket
+from flask import url_for
 
 from app.models.branding import EmailBranding
 from tests import sample_uuid

@@ -2,10 +2,10 @@ import json
 from datetime import datetime
 
 import pytest
+from emergency_alerts_utils.url_safe_token import generate_token
 from flask import url_for
 from freezegun import freeze_time
 from itsdangerous import SignatureExpired
-from emergency_alerts_utils.url_safe_token import generate_token
 
 from tests.conftest import SERVICE_ONE_ID, url_for_endpoint_with_token
 

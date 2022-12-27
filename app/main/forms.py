@@ -5,12 +5,6 @@ from itertools import chain
 from numbers import Number
 
 import pytz
-from flask import Markup, request
-from flask_login import current_user
-from flask_wtf import FlaskForm as Form
-from flask_wtf.file import FileAllowed
-from flask_wtf.file import FileField as FileField_wtf
-from flask_wtf.file import FileSize
 from emergency_alerts_utils.countries.data import Postage
 from emergency_alerts_utils.formatters import strip_all_whitespace
 from emergency_alerts_utils.insensitive_dict import InsensitiveDict
@@ -20,6 +14,12 @@ from emergency_alerts_utils.recipients import (
     normalise_phone_number,
     validate_phone_number,
 )
+from flask import Markup, request
+from flask_login import current_user
+from flask_wtf import FlaskForm as Form
+from flask_wtf.file import FileAllowed
+from flask_wtf.file import FileField as FileField_wtf
+from flask_wtf.file import FileSize
 from orderedset import OrderedSet
 from werkzeug.utils import cached_property
 from wtforms import (
