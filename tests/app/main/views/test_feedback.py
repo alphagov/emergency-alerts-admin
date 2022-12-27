@@ -4,7 +4,7 @@ from unittest.mock import ANY, PropertyMock
 import pytest
 from flask import url_for
 from freezegun import freeze_time
-from notifications_utils.clients.zendesk.zendesk_client import NotifySupportTicket
+from emergency_alerts_utils.clients.zendesk.zendesk_client import NotifySupportTicket
 
 from app.main.views.feedback import in_business_hours
 from app.models.feedback import (

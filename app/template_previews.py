@@ -3,7 +3,7 @@ from io import BytesIO
 
 import requests
 from flask import current_app, json
-from notifications_utils.pdf import extract_page_from_pdf
+from emergency_alerts_utils.pdf import extract_page_from_pdf
 
 from app import current_service
 

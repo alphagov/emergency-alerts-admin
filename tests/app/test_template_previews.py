@@ -3,7 +3,7 @@ from functools import partial
 from unittest.mock import Mock
 
 import pytest
-from notifications_utils.template import LetterPreviewTemplate
+from emergency_alerts_utils.template import LetterPreviewTemplate
 
 from app import load_service_before_request
 from app.models.branding import LetterBranding

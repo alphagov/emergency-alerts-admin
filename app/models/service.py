@@ -1,5 +1,5 @@
 from flask import abort, current_app
-from notifications_utils.serialised_model import SerialisedModelCollection
+from emergency_alerts_utils.serialised_model import SerialisedModelCollection
 from werkzeug.utils import cached_property
 
 from app.models import JSONModel

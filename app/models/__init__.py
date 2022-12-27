@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from functools import total_ordering
 
 from flask import abort
-from notifications_utils.serialised_model import (
+from emergency_alerts_utils.serialised_model import (
     SerialisedModel,
     SerialisedModelCollection,
 )

@@ -2,7 +2,7 @@ import json
 
 from flask import abort, current_app, flash, redirect, render_template, session, url_for
 from itsdangerous import SignatureExpired
-from notifications_utils.url_safe_token import check_token
+from emergency_alerts_utils.url_safe_token import check_token
 
 from app import user_api_client
 from app.main import main

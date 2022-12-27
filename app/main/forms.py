@@ -11,11 +11,11 @@ from flask_wtf import FlaskForm as Form
 from flask_wtf.file import FileAllowed
 from flask_wtf.file import FileField as FileField_wtf
 from flask_wtf.file import FileSize
-from notifications_utils.countries.data import Postage
-from notifications_utils.formatters import strip_all_whitespace
-from notifications_utils.insensitive_dict import InsensitiveDict
-from notifications_utils.postal_address import PostalAddress
-from notifications_utils.recipients import (
+from emergency_alerts_utils.countries.data import Postage
+from emergency_alerts_utils.formatters import strip_all_whitespace
+from emergency_alerts_utils.insensitive_dict import InsensitiveDict
+from emergency_alerts_utils.postal_address import PostalAddress
+from emergency_alerts_utils.recipients import (
     InvalidPhoneError,
     normalise_phone_number,
     validate_phone_number,

@@ -3,8 +3,8 @@ from functools import partial
 from flask import abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user
 from notifications_python_client.errors import HTTPError
-from notifications_utils import LETTER_MAX_PAGE_COUNT, SMS_CHAR_COUNT_LIMIT
-from notifications_utils.pdf import is_letter_too_long
+from emergency_alerts_utils import LETTER_MAX_PAGE_COUNT, SMS_CHAR_COUNT_LIMIT
+from emergency_alerts_utils.pdf import is_letter_too_long
 
 from app import (
     current_service,

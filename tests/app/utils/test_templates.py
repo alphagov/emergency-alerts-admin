@@ -1,5 +1,5 @@
 import pytest
-from notifications_utils.template import Template
+from emergency_alerts_utils.template import Template
 
 from app.utils.templates import get_sample_template
 
