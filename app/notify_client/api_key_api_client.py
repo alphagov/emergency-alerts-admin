@@ -1,6 +1,6 @@
 from app.notify_client import NotifyAdminAPIClient, _attach_current_user
 
-# must match key types in notifications-api/app/models.py
+# must match key types in emergency-alerts-api/app/models.py
 KEY_TYPE_NORMAL = "normal"
 KEY_TYPE_TEAM = "team"
 KEY_TYPE_TEST = "test"
