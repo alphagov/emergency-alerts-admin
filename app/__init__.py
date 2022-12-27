@@ -3,6 +3,13 @@ import pathlib
 from time import monotonic
 
 import jinja2
+from emergency_alerts_utils import logging, request_helper
+from emergency_alerts_utils.formatters import (
+    formatted_list,
+    get_lines_with_normalised_whitespace,
+)
+from emergency_alerts_utils.recipients import format_phone_number_human_readable
+from emergency_alerts_utils.sanitise_text import SanitiseASCII
 from flask import (
     current_app,
     flash,
@@ -20,13 +27,6 @@ from flask_wtf.csrf import CSRFError
 from gds_metrics import GDSMetrics
 from itsdangerous import BadSignature
 from notifications_python_client.errors import HTTPError
-from notifications_utils import logging, request_helper
-from notifications_utils.formatters import (
-    formatted_list,
-    get_lines_with_normalised_whitespace,
-)
-from notifications_utils.recipients import format_phone_number_human_readable
-from notifications_utils.sanitise_text import SanitiseASCII
 from werkzeug.exceptions import HTTPException as WerkzeugHTTPException
 from werkzeug.exceptions import abort
 from werkzeug.local import LocalProxy

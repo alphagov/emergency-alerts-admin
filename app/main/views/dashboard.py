@@ -3,9 +3,9 @@ from datetime import datetime
 from functools import partial
 from itertools import groupby
 
+from emergency_alerts_utils.recipients import format_phone_number_human_readable
 from flask import Response, abort, jsonify, render_template, request, session, url_for
 from flask_login import current_user
-from notifications_utils.recipients import format_phone_number_human_readable
 from werkzeug.utils import redirect
 
 from app import (

@@ -7,6 +7,11 @@ from functools import partial
 from io import BytesIO
 from zipfile import BadZipFile
 
+from emergency_alerts_utils.insensitive_dict import InsensitiveDict
+from emergency_alerts_utils.pdf import pdf_page_count
+from emergency_alerts_utils.postal_address import PostalAddress
+from emergency_alerts_utils.recipients import RecipientCSV
+from emergency_alerts_utils.sanitise_text import SanitiseASCII
 from flask import (
     abort,
     current_app,
@@ -17,11 +22,6 @@ from flask import (
     send_file,
     url_for,
 )
-from notifications_utils.insensitive_dict import InsensitiveDict
-from notifications_utils.pdf import pdf_page_count
-from notifications_utils.postal_address import PostalAddress
-from notifications_utils.recipients import RecipientCSV
-from notifications_utils.sanitise_text import SanitiseASCII
 from PyPDF2.errors import PdfReadError
 from requests import RequestException
 from xlrd.biffh import XLRDError

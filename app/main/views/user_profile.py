@@ -1,5 +1,6 @@
 import json
 
+from emergency_alerts_utils.url_safe_token import check_token
 from flask import (
     abort,
     current_app,
@@ -12,7 +13,6 @@ from flask import (
 )
 from flask_login import current_user
 from notifications_python_client.errors import HTTPError
-from notifications_utils.url_safe_token import check_token
 
 from app import user_api_client
 from app.main import main

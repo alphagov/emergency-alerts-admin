@@ -1,11 +1,11 @@
-from flask import current_app
-from notifications_utils.template import (
+from emergency_alerts_utils.template import (
     BroadcastPreviewTemplate,
     EmailPreviewTemplate,
     LetterImageTemplate,
     LetterPreviewTemplate,
     SMSPreviewTemplate,
 )
+from flask import current_app
 
 
 def get_sample_template(template_type):

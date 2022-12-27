@@ -1,8 +1,8 @@
+from emergency_alerts_utils.clients.redis import RequestCache
 from flask import abort, has_request_context, request
 from flask_login import current_user
 from notifications_python_client import __version__
 from notifications_python_client.base import BaseAPIClient
-from notifications_utils.clients.redis import RequestCache
 
 from app.extensions import redis_client
 

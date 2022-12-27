@@ -9,13 +9,13 @@ from numbers import Number
 import ago
 import dateutil
 import humanize
+from emergency_alerts_utils.field import Field
+from emergency_alerts_utils.formatters import make_quotes_smart
+from emergency_alerts_utils.formatters import nl2br as utils_nl2br
+from emergency_alerts_utils.recipients import InvalidPhoneError, validate_phone_number
+from emergency_alerts_utils.take import Take
+from emergency_alerts_utils.timezones import utc_string_to_aware_gmt_datetime
 from flask import Markup, url_for
-from notifications_utils.field import Field
-from notifications_utils.formatters import make_quotes_smart
-from notifications_utils.formatters import nl2br as utils_nl2br
-from notifications_utils.recipients import InvalidPhoneError, validate_phone_number
-from notifications_utils.take import Take
-from notifications_utils.timezones import utc_string_to_aware_gmt_datetime
 
 
 def convert_to_boolean(value):

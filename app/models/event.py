@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from notifications_utils.formatters import formatted_list
+from emergency_alerts_utils.formatters import formatted_list
 
 from app.formatters import format_thousands
 from app.models import ModelList

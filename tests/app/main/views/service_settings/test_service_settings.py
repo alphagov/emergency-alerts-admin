@@ -8,10 +8,10 @@ from urllib.parse import parse_qs, urlparse
 from uuid import UUID, uuid4
 
 import pytest
+from emergency_alerts_utils.clients.zendesk.zendesk_client import NotifySupportTicket
 from flask import g, url_for
 from freezegun import freeze_time
 from notifications_python_client.errors import HTTPError
-from notifications_utils.clients.zendesk.zendesk_client import NotifySupportTicket
 
 import app
 from app.main.views.service_settings import _should_set_default_org_branding

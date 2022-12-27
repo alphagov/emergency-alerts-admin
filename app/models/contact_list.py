@@ -1,9 +1,9 @@
 from functools import partial
 from os import path
 
+from emergency_alerts_utils.formatters import strip_all_whitespace
+from emergency_alerts_utils.recipients import RecipientCSV
 from flask import abort, current_app
-from notifications_utils.formatters import strip_all_whitespace
-from notifications_utils.recipients import RecipientCSV
 from werkzeug.utils import cached_property
 
 from app.models import JSONModel, ModelList

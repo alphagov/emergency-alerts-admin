@@ -1,6 +1,6 @@
+from emergency_alerts_utils.template import HTMLEmailTemplate, LetterImageTemplate
 from flask import abort, make_response, redirect, render_template, request, url_for
 from flask_login import current_user
-from notifications_utils.template import HTMLEmailTemplate, LetterImageTemplate
 
 from app import letter_branding_client, status_api_client
 from app.main import main
