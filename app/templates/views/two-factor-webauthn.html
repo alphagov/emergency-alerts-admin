@@ -21,12 +21,19 @@
 
 {% block maincolumn_content %}
 
-  <span class="govuk-error-message banner-dangerous govuk-!-display-none" aria-live="polite" tabindex="-1">
-    <span class="govuk-visually-hidden">Error:</span> There’s a problem with your security key
-    <p class="govuk-body">
-      Check you have the right key and try again. If this does not work, <a class="govuk-link govuk-link--no-visited-state" href="/support">contact us</a>.
-    </p>
-  </span>
+  <div class="govuk-error-summary banner-dangerous govuk-!-display-none" aria-labelledby="error-summary-title" aria-live="polite" tabindex="-1">
+    <span class="govuk-visually-hidden">Error:</span>
+    <h2 class="govuk-error-summary__title">
+      There is a problem
+    </h2>
+    <div class="govuk-error-summary__body">
+      <ul class="govuk-list govuk-error-summary__list">
+        <li>
+          <a class="govuk-link govuk-link--no-visited-state" href="/support">Check you have the right security key and try again. If this does not work, contact us.</a>
+        </li>
+      </ul>
+    </div>
+  </div>
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-one-half">
