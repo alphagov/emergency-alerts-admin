@@ -125,6 +125,12 @@ class Development(Config):
     NOTIFY_RUNTIME_PLATFORM = "local"
 
 
+class Decoupled(Development):
+    API_HOST_NAME = os.environ.get("API_HOST_NAME", "http://api:6011")
+    ANTIVIRUS_API_HOST = "http://admin:6016"
+    REDIS_URL = "redis://admin:6379/0"
+
+
 class Test(Development):
     DEBUG = True
     TESTING = True
@@ -213,6 +219,7 @@ class Sandbox(CloudFoundryConfig):
 
 configs = {
     "development": Development,
+    "decoupled": Decoupled,
     "test": Test,
     "preview": Preview,
     "staging": Staging,
