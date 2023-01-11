@@ -128,7 +128,7 @@ class Development(Config):
 class Decoupled(Development):
     API_HOST_NAME = os.environ.get("API_HOST_NAME", "http://api:6011")
     ANTIVIRUS_API_HOST = "http://admin:6016"
-    REDIS_URL = "redis://admin:6379/0"
+    REDIS_URL = "redis://api:6379/0"
 
 
 class Test(Development):
