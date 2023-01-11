@@ -126,6 +126,7 @@ class Development(Config):
 
 
 class Decoupled(Development):
+    NOTIFY_ENVIRONMENT = "decoupled"
     API_HOST_NAME = "http://api:6011"
     ADMIN_BASE_URL = "http://admin:6012"
     TEMPLATE_PREVIEW_API_HOST = "http://api:6013"
