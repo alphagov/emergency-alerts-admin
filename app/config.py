@@ -125,6 +125,15 @@ class Development(Config):
     NOTIFY_RUNTIME_PLATFORM = "local"
 
 
+class Decoupled(Development):
+    NOTIFY_ENVIRONMENT = "decoupled"
+    API_HOST_NAME = "http://api:6011"
+    ADMIN_BASE_URL = "http://admin:6012"
+    TEMPLATE_PREVIEW_API_HOST = "http://api:6013"
+    ANTIVIRUS_API_HOST = "http://admin:6016"
+    REDIS_URL = "redis://api:6379/0"
+
+
 class Test(Development):
     DEBUG = True
     TESTING = True
@@ -213,6 +222,7 @@ class Sandbox(CloudFoundryConfig):
 
 configs = {
     "development": Development,
+    "decoupled": Decoupled,
     "test": Test,
     "preview": Preview,
     "staging": Staging,
