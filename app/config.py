@@ -127,11 +127,11 @@ class Development(Config):
 
 class Decoupled(Development):
     NOTIFY_ENVIRONMENT = "decoupled"
-    API_HOST_NAME = "http://api:6011"
-    ADMIN_BASE_URL = "http://admin:6012"
-    TEMPLATE_PREVIEW_API_HOST = "http://api:6013"
-    ANTIVIRUS_API_HOST = "http://admin:6016"
-    REDIS_URL = "redis://api:6379/0"
+    API_HOST_NAME = "http://api.ecs.local:6011"
+    ADMIN_BASE_URL = "http://admin.ecs.local:6012"
+    TEMPLATE_PREVIEW_API_HOST = "http://api.ecs.local:6013"
+    ANTIVIRUS_API_HOST = "http://admin.ecs.local:6016"
+    REDIS_URL = "redis://api.ecs.local:6379/0"
 
 
 class Test(Development):
