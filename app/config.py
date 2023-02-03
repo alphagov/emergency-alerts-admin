@@ -134,6 +134,10 @@ class Decoupled(Development):
     REDIS_URL = "redis://api.ecs.local:6379/0"
 
 
+class ServerlessDB(Decoupled):
+    NOTIFY_ENVIRONMENT = "serverlessdb"
+
+
 class Test(Development):
     DEBUG = True
     TESTING = True
@@ -223,6 +227,7 @@ class Sandbox(CloudFoundryConfig):
 configs = {
     "development": Development,
     "decoupled": Decoupled,
+    "serverlessdb": ServerlessDB,
     "test": Test,
     "preview": Preview,
     "staging": Staging,
