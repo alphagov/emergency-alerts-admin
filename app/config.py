@@ -32,7 +32,7 @@ class Config(object):
     ANTIVIRUS_API_KEY = os.environ.get("ANTIVIRUS_API_KEY")
 
     ASSETS_DEBUG = False
-    AWS_REGION = "eu-west-1"
+    AWS_REGION = "eu-west-2"
     DEFAULT_SERVICE_LIMIT = 50
 
     EMAIL_EXPIRY_SECONDS = 3600  # 1 hour
@@ -136,6 +136,8 @@ class Decoupled(Development):
 
 class ServerlessDB(Decoupled):
     NOTIFY_ENVIRONMENT = "serverlessdb"
+    ASSET_DOMAIN = "eas-app-lb-public-1779718474.eu-west-2.elb.amazonaws.com"
+    ASSET_PATH = "https://eas-app-lb-public-1779718474.eu-west-2.elb.amazonaws.com/"
 
 
 class Test(Development):
