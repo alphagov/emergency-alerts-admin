@@ -136,8 +136,8 @@ class Decoupled(Development):
 
 class ServerlessDB(Decoupled):
     NOTIFY_ENVIRONMENT = "serverlessdb"
-    ASSET_DOMAIN = "admin.emergency-alerts.service.gov.uk"
-    ASSET_PATH = "https://admin.emergency-alerts.service.gov.uk/"
+    ASSET_DOMAIN = "admin.development.emergency-alerts.service.gov.uk"
+    ASSET_PATH = "https://admin.development.emergency-alerts.service.gov.uk/"
 
 
 class Test(Development):
