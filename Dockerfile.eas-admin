@@ -1,23 +1,15 @@
 FROM 388086622185.dkr.ecr.eu-west-2.amazonaws.com/emergency-alerts-base:latest
 
 ENV VENV_ADMIN=/venv/eas-admin
-# ENV VENV_UTILS=/venv/eas-utils
-
 ENV ADMIN_DIR=/eas/emergency-alerts-admin
-# ENV UTILS_DIR=/eas/emergency-alerts-utils
 
-# Create root directory and clone repos
+# Create root directory and copy repo
 COPY . $ADMIN_DIR
-# COPY emergency-alerts-utils $UTILS_DIR
 
 # Run emergency-alerts-admin
 RUN $PYTHON_VERSION -m venv $VENV_ADMIN
 RUN . $VENV_ADMIN/bin/activate && pip3 install wheel
 RUN cd $ADMIN_DIR && . $VENV_ADMIN/bin/activate && make bootstrap
-
-# Build emergency-alerts-utils
-# RUN $PYTHON_VERSION -m venv $VENV_UTILS
-# RUN cd $UTILS_DIR && . $VENV_UTILS/bin/activate && make bootstrap
 
 # Create a blank configuration file
 RUN echo "" > $ADMIN_DIR/environment.sh
