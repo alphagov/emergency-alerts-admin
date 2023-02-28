@@ -1209,7 +1209,7 @@ class BaseTemplateForm(StripWhitespaceForm):
     name = GovukTextInputField("Template name", validators=[DataRequired(message="Cannot be empty")])
 
     template_content = TextAreaField(
-        "Message", validators=[DataRequired(message="Cannot be empty"), NoCommasInPlaceHolders()]
+        "Alert message", validators=[DataRequired(message="Cannot be empty"), NoCommasInPlaceHolders()]
     )
     process_type = GovukRadiosField(
         "Use priority queue?",
