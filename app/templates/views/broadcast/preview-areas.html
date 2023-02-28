@@ -6,7 +6,7 @@
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
 
 {% block service_page_title %}
-  Choose where to send this alert
+  Area defined
 {% endblock %}
 
 {% block extra_stylesheets %}
@@ -23,7 +23,7 @@
 
 {% block maincolumn_content %}
 
-  {{ page_header("Choose where to send this alert") }}
+  {{ page_header("Area defined") }}
 
   {% for area in broadcast_message.areas %}
     {% if loop.first %}
