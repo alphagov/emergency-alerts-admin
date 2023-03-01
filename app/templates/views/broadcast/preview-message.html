@@ -23,6 +23,9 @@
   <div class="govuk-!-margin-bottom-3">
     <ul class="area-list">
       {% for area in broadcast_message.areas %}
+        {% if loop.first %}
+          <p class="govuk-!-margin-right-2">Area: </p>
+        {% endif %}
         <li class="area-list-item area-list-item--unremoveable">
           {{ area.name }}
         </li>
