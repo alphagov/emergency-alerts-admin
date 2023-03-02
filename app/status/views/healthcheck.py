@@ -1,11 +1,14 @@
-from flask import current_app, jsonify, request
-from notifications_python_client.errors import HTTPError
-
 from app import status_api_client, version
 from app.status import status
 
+from flask import current_app, jsonify, request
+from notifications_python_client.errors import HTTPError
+from os import environ as env_var
 
-@status.route("/_status", methods=["GET"])
+status_endpoint = "/_" + env_var.get("SERVICE") + "_status"
+
+
+@status.route(status_endpoint, methods=["GET"])
 def show_status():
     if request.args.get("elb", None) or request.args.get("simple", None):
         return jsonify(status="ok"), 200
