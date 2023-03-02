@@ -3,7 +3,6 @@ from app.status import status
 
 from flask import current_app, jsonify, request
 from notifications_python_client.errors import HTTPError
-from os import environ as env_var
 
 
 @status.route("/_admin_status", methods=["GET"])
