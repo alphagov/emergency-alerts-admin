@@ -1,5 +1,6 @@
 FROM 388086622185.dkr.ecr.eu-west-2.amazonaws.com/emergency-alerts-base:latest
 
+ENV SERVICE=admin
 ENV VENV_ADMIN=/venv/eas-admin
 ENV ADMIN_DIR=/eas/emergency-alerts-admin
 
