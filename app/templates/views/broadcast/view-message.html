@@ -178,14 +178,16 @@
 
   {% for area in broadcast_message.areas %}
     {% if loop.first %}
-      <ul class="area-list">
-        <p class="govuk-!-margin-right-2">Area: </p>
-    {% endif %}
-        <li class="area-list-item area-list-item--unremoveable">
-          {{ area.name }}
-        </li>
-    {% if loop.last %}
-      </ul>
+      <div>
+        <p class="govuk-!-margin-right-2 area-list">Area: </p>
+        <ul class="area-list">
+      {% endif %}
+          <li class="area-list-item area-list-item--unremoveable">
+            {{ area.name }}
+          </li>
+      {% if loop.last %}
+        </ul>
+      </div>
     {% endif %}
   {% endfor %}
 
