@@ -25,12 +25,11 @@
 
   {{ page_header("Choose where to send this alert") }}
 
-  {% for area in broadcast_message.areas %}
-    {% if loop.first %}
-      <div>
-        <p class="govuk-!-margin-right-2 area-list">Area: </p>
-        <ul class="area-list">
-    {% endif %}
+  {% if broadcast_message.areas %}
+    <div>
+      <p class="govuk-!-margin-right-2 area-list">Area: </p>
+      <ul class="area-list">
+        {% for area in broadcast_message.areas %}
           <li class="area-list-item">
             {{ area.name }}
             <a class="area-list-item-remove govuk-button" data-module="govuk-button" role="button" href="{{ url_for('.remove_broadcast_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, area_slug=area.id) }}">
@@ -43,16 +42,26 @@
               </svg>
             </a>
           </li>
-    {% if loop.last %}
-        </ul>
-      </div>
-      {{ govukButton({
-        "element": "a",
-        "text": "Add another area",
-        "href": url_for('.choose_broadcast_library', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
-        "classes": "govuk-button--secondary govuk-!-margin-bottom-5"
-      }) }}
-    {% endif %}
+          {% if loop.last %}
+            {{ govukButton({
+              "element": "a",
+              "text": "Add another area",
+              "href": url_for('.choose_broadcast_library', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
+              "classes": "govuk-button--secondary govuk-!-margin-bottom-5"
+            }) }}
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+
+    {{ map(broadcast_message) }}
+    {{ govukButton({
+      "element": "a",
+      "text": "Preview this alert",
+      "href": url_for('.preview_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
+      "classes": "govuk-button"
+    }) }}
+
   {% else %}
     <p class="govuk-body">
       {{ govukButton({
@@ -62,16 +71,6 @@
         "classes": "govuk-button--secondary"
       }) }}
     </p>
-  {% endfor %}
-
-  {% if broadcast_message.areas %}
-    {{ map(broadcast_message) }}
-    {{ govukButton({
-      "element": "a",
-      "text": "Preview this alert",
-      "href": url_for('.preview_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
-      "classes": "govuk-button"
-    }) }}
   {% endif %}
 
 {% endblock %}
