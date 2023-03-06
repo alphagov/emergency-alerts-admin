@@ -43,15 +43,13 @@
             </a>
           </li>
         {% endfor %}
-        <li>
-          {{ govukButton({
-            "element": "a",
-            "text": "Add another area",
-            "href": url_for('.choose_broadcast_library', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
-            "classes": "govuk-button--secondary govuk-!-margin-bottom-5"
-          }) }}
-        </li>
       </ul>
+      {{ govukButton({
+        "element": "a",
+        "text": "Add another area",
+        "href": url_for('.choose_broadcast_library', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
+        "classes": "govuk-button--secondary govuk-!-margin-bottom-5"
+      }) }}
     </div>
 
     {{ map(broadcast_message) }}
