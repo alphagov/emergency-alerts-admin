@@ -60,25 +60,15 @@
 
     & > .file-list-hint-large,
     & > .file-list-status {
-      // fallback for browsers that don't support flexbox - let `text-align: justify` on parent
-      // and making children inline mimic `justify-content: space-between`
-      display: inline-block;
 
       // This simulates a 50% column in a govuk grid on smaller screens
       // govuk grid columns go to 100% width on smaller screens
       width: 100%;
 
-      // This simulates a 50% column in a govuk grid on larger screens
-      // as with govuk grid, this includes a gap between columns to ensure the contents
-      // are separated by a space
-      @include govuk-media-query($from: tablet) {
-        max-width: calc(50% - #{$govuk-gutter-half});
-      }
     }
 
     & > .file-list-status {
       overflow: hidden; // old IE hack to make it vertically line up with the hint
-      margin-bottom: 0; // cancel margin-bottom from .govuk-hint class
     }
 
     & > .file-list-hint-large {
@@ -96,7 +86,6 @@
   &-filename {
     @include govuk-font(19, $weight: bold);
     display: block;
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     padding-bottom: 30px;
@@ -107,13 +96,12 @@
 
   &-filename-large {
     @include govuk-font(24, $weight: bold);
-    display: block;
-    white-space: nowrap;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
     overflow: hidden;
     text-overflow: ellipsis;
-    padding-bottom: 30px;
     padding-top: 10px;
-    margin-bottom: -30px;
     margin-top: -10px;
   }
 
@@ -131,26 +119,27 @@
 
   &-hint {
     @include govuk-font(16);
-    display: block;
     color: $govuk-secondary-text-colour;
+    display: -webkit-box;
     overflow: hidden;
-    white-space: nowrap;
     text-overflow: ellipsis;
-    max-width: 580px;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2; /* number of lines to show */
+    max-width: 60ch;
   }
 
   &-hint-large {
     @include govuk-font(19);
     display: block;
     color: $govuk-secondary-text-colour;
+    display: -webkit-box;
     overflow: hidden;
-    white-space: nowrap;
     text-overflow: ellipsis;
-    max-width: 580px;
-  }
-
-  &-status {
-    text-align: right;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2; /* number of lines to show */
+    max-width: 60ch;
   }
 
 }
