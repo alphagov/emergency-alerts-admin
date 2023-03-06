@@ -1,4 +1,5 @@
 {% from "components/table.html" import list_table, field, right_aligned_field_heading, row_heading %}
+{% from "govuk_frontend_jinja/components/tag/macro.html" import govukTag %}
 
 <div class="ajax-block-container js-mark-focus-on-parent" data-classes-to-persist="js-child-has-focus">
 {% for item in broadcasts|sort|reverse|list %}
@@ -20,7 +21,11 @@
         </p>
       {% elif item.status == 'broadcasting' %}
         <p class="govuk-body live-broadcast file-list-status">
-          Live since {{ item.starts_at|format_datetime_relative }}
+          {{ govukTag ({
+            'text': 'live',
+            'classes': 'govuk-!-margin-right-2 broadcast-tag'
+          }) }}
+          since {{ item.starts_at|format_datetime_relative }}
         </p>
       {% else %}
         <p class="govuk-body govuk-hint file-list-status">
