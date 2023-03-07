@@ -4,6 +4,7 @@
 {% from "components/page-footer.html" import page_footer %}
 {% from "components/textbox.html" import textbox %}
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
+{% from "components/error-summary.html" import errorSummary %}
 
 {% block service_page_title %}
   New alert
@@ -15,6 +16,8 @@
 {% endblock %}
 
 {% block maincolumn_content %}
+
+  {{ errorSummary(form) }}
 
   {{ page_header('New alert')}}
 
