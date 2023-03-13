@@ -4,6 +4,7 @@
 {% from "components/page-footer.html" import page_footer %}
 {% from "components/form.html" import form_wrapper %}
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
+{% from "components/error-summary.html" import errorSummary %}
 
 {% block service_page_title %}
   {{ heading_action }} template
@@ -16,6 +17,8 @@
 {% endblock %}
 
 {% block maincolumn_content %}
+
+  {{ errorSummary(form) }}
 
   {{ page_header('{} template'.format(heading_action)) }}
 
