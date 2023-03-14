@@ -86,6 +86,17 @@ class BroadcastMessage(JSONModel):
         )
 
     @classmethod
+    def update_from_content(cls, *, service_id, broadcast_message_id, content, reference):
+        broadcast_message_api_client.update_broadcast_message(
+            service_id=service_id,
+            broadcast_message_id=broadcast_message_id,
+            data={
+                "reference": reference,
+                "content": content,
+            },
+        )
+
+    @classmethod
     def from_id(cls, broadcast_message_id, *, service_id):
         return cls(
             broadcast_message_api_client.get_broadcast_message(
