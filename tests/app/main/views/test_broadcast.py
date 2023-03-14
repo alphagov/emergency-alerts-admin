@@ -515,10 +515,10 @@ def test_broadcast_dashboard(
     assert len(page.select(".ajax-block-container")) == len(page.select("h1")) == 1
 
     assert [normalize_spaces(row.text) for row in page.select(".ajax-block-container")[0].select(".file-list")] == [
-        "Half an hour ago This is a test Waiting for approval England Scotland",
-        "Hour and a half ago This is a test Waiting for approval England Scotland",
-        "Example template This is a test Live since today at 2:20am England Scotland",
-        "Example template This is a test Live since today at 1:20am England Scotland",
+        "Half an hour ago This is a test Waiting for approval Area: England Scotland",
+        "Hour and a half ago This is a test Waiting for approval Area: England Scotland",
+        "Example template This is a test live since today at 2:20am Area: England Scotland",
+        "Example template This is a test live since today at 1:20am Area: England Scotland",
     ]
 
 
@@ -602,7 +602,8 @@ def test_broadcast_dashboard_json(
     assert json_response.keys() == {"current_broadcasts"}
 
     assert "Waiting for approval" in json_response["current_broadcasts"]
-    assert "Live since today at 2:20am" in json_response["current_broadcasts"]
+    assert "live" in json_response["current_broadcasts"]
+    assert "since today at 2:20am" in json_response["current_broadcasts"]
 
 
 @pytest.mark.parametrize(
@@ -629,8 +630,8 @@ def test_previous_broadcasts_page(
     assert normalize_spaces(page.select_one("main h1").text) == "Past alerts"
     assert len(page.select(".ajax-block-container")) == 1
     assert [normalize_spaces(row.text) for row in page.select(".ajax-block-container")[0].select(".file-list")] == [
-        "Example template This is a test Yesterday at 2:20pm England Scotland",
-        "Example template This is a test Yesterday at 2:20am England Scotland",
+        "Example template This is a test Yesterday at 2:20pm Area: England Scotland",
+        "Example template This is a test Yesterday at 2:20am Area: England Scotland",
     ]
 
 
@@ -658,7 +659,7 @@ def test_rejected_broadcasts_page(
     assert normalize_spaces(page.select_one("main h1").text) == "Rejected alerts"
     assert len(page.select(".ajax-block-container")) == 1
     assert [normalize_spaces(row.text) for row in page.select(".ajax-block-container")[0].select(".file-list")] == [
-        "Example template This is a test Today at 1:20am England Scotland",
+        "Example template This is a test Today at 1:20am Area: England Scotland",
     ]
 
 
@@ -743,7 +744,7 @@ def test_write_new_broadcast_page(
     assert normalize_spaces(page.select_one("label[for=name]").text) == "Reference"
     assert page.select_one("input[type=text]")["name"] == "name"
 
-    assert normalize_spaces(page.select_one("label[for=template_content]").text) == "Message"
+    assert normalize_spaces(page.select_one("label[for=template_content]").text) == "Alert message"
     assert page.select_one("textarea")["name"] == "template_content"
     assert page.select_one("textarea")["data-notify-module"] == "enhanced-textbox"
     assert page.select_one("textarea")["data-highlight-placeholders"] == "false"
@@ -1427,6 +1428,45 @@ def test_choose_broadcast_sub_area_page_for_district_has_back_link(
     )
 
 
+@pytest.mark.parametrize(
+    "expected_back_link_url, expected_back_link_extra_kwargs",
+    [
+        (".write_new_broadcast", {}),
+    ],
+)
+def test_preview_broadcast_areas_has_back_link_with_uuid(
+    mocker,
+    client_request,
+    service_one,
+    active_user_create_broadcasts_permission,
+    expected_back_link_url,
+    expected_back_link_extra_kwargs,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=str(uuid.UUID(int=0)),
+            service_id=SERVICE_ONE_ID,
+            created_by_id=active_user_create_broadcasts_permission["id"],
+            finishes_at=None,
+            status="pending-approval",
+        )
+    )
+    service_one["permissions"] += ["broadcast"]
+    client_request.login(active_user_create_broadcasts_permission)
+    page = client_request.get(
+        "main.preview_broadcast_areas", service_id=SERVICE_ONE_ID, broadcast_message_id=str(uuid.UUID(int=0))
+    )
+    assert normalize_spaces(page.select_one("h1").text) == "Area defined"
+    back_link = page.select_one(".govuk-back-link")
+    assert back_link["href"] == url_for(
+        expected_back_link_url,
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=str(uuid.UUID(int=0)),
+        **expected_back_link_extra_kwargs,
+    )
+
+
 def test_choose_broadcast_sub_area_page_for_county_shows_links_for_districts(
     client_request,
     service_one,
@@ -1756,7 +1796,7 @@ def test_start_broadcasting(
                 "finishes_at": "2020-02-23T23:23:23.000000",
             },
             [
-                "Live since 20 February at 8:20pm Stop sending",
+                "live since 20 February at 8:20pm Stop sending",
                 "Created by Alice and approved by Bob.",
                 "Broadcasting stops tomorrow at 11:23pm.",
             ],
@@ -1769,7 +1809,7 @@ def test_start_broadcasting(
                 "finishes_at": "2020-02-23T23:23:23.000000",
             },
             [
-                "Live since 20 February at 8:20pm Stop sending",
+                "live since 20 February at 8:20pm Stop sending",
                 "Created from an API call and approved by Alice.",
                 "Broadcasting stops tomorrow at 11:23pm.",
             ],
