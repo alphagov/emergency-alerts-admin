@@ -1,4 +1,5 @@
 {% from "components/table.html" import list_table, field, right_aligned_field_heading, row_heading %}
+{% from "govuk_frontend_jinja/components/tag/macro.html" import govukTag %}
 
 <div class="ajax-block-container js-mark-focus-on-parent" data-classes-to-persist="js-child-has-focus">
 {% for item in broadcasts|sort|reverse|list %}
@@ -20,18 +21,25 @@
         </p>
       {% elif item.status == 'broadcasting' %}
         <p class="govuk-body live-broadcast file-list-status">
-          Live since {{ item.starts_at|format_datetime_relative }}
+          {{ govukTag ({
+            'text': 'live',
+            'classes': 'govuk-!-margin-right-2 broadcast-tag'
+          }) }}
+          since {{ item.starts_at|format_datetime_relative }}
         </p>
       {% else %}
         <p class="govuk-body govuk-hint file-list-status">
           {{ item.starts_at|format_date_human|title }} at {{ item.starts_at|format_time }}
         </p>
       {% endif %}
-      <ul class="area-list">
-        {% for area in item.areas %}
-          <li class="area-list-item area-list-item--unremoveable area-list-item--smaller">{{ area.name }}</li>
-        {% endfor %}
-      </ul>
+      <div>
+        <p class="govuk-!-margin-right-2 area-list">Area: </p>
+        <ul class="area-list">
+          {% for area in item.areas %}
+            <li class="area-list-item area-list-item--unremoveable area-list-item--smaller">{{ area.name }}</li>
+          {% endfor %}
+        </ul>
+      </div>
     </div>
   </div>
   {% if loop.last %}
