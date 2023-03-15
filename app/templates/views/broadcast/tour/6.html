@@ -4,22 +4,26 @@
 {% extends "admin_template.html" %}
 
 {% block per_page_title %}
-  Notify has not sent your alert because you’re in training mode.
+  What happens in live mode
 {% endblock %}
 
-{% block main %}
+{% set mainClasses = "govuk-!-padding-top-0 govuk-!-padding-bottom-0" %}
 
-  <div class="govuk-width-container">
-    {{ service_navigation(current_user, current_service) }}
-    <main class="govuk-main-wrapper column-main govuk-!-padding-top-0 govuk-!-padding-bottom-0" id="main-content" role="main">
-      <div class="banner-tour banner-tour-no-fixed-height banner-tour-with-service-name">
+{% block content %}
+
+<div class="navigation-service">
+  {{ service_navigation(current_user, current_service) }}
+      <div class="banner-tour banner-tour-with-service-name">
         <div class="govuk-grid-row">
           <div class="govuk-grid-column-one-half">
-            <h1 class="heading-medium">
-              Notify has not sent your alert because you’re in training mode.
+            <h1 class="heading-large">
+              What happens in live mode
             </h1>
             <p class="govuk-body heading-medium">
-              In a real emergency, every mobile phone in the area
+              Emergency Alerts has not sent your alert because you’re in training mode.
+            </p>
+            <p class="govuk-body heading-medium">
+              In a real emergency, every compatible mobile phone and tablet in the area
               you chose would make a loud alarm noise.
             </p>
             <p class="govuk-body heading-medium">
@@ -28,12 +32,11 @@
               </a>
             </p>
           </div>
-          <div class="govuk-grid-column-one-half">
+          <div class="govuk-grid-column-one-half govuk-!-padding-top-6">
             <img src="{{ asset_url('images/broadcast-tour/3.png') }}" alt="">
           </div>
         </div>
       </div>
-    </main>
   </div>
 
 {% endblock %}
