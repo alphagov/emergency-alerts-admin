@@ -1429,6 +1429,42 @@ def test_choose_broadcast_sub_area_page_for_district_has_back_link(
     )
 
 
+def test_write_new_broadcast_does_update_when_broadcast_exists(
+    mocker,
+    client_request,
+    service_one,
+    active_user_create_broadcasts_permission,
+    mock_update_broadcast_message,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=str(uuid.UUID(int=0)),
+            service_id=SERVICE_ONE_ID,
+            created_by_id=active_user_create_broadcasts_permission["id"],
+            finishes_at=None,
+            status="draft",
+        )
+    )
+    service_one["permissions"] += ["broadcast"]
+    client_request.login(active_user_create_broadcasts_permission)
+    client_request.get(
+        "main.write_new_broadcast", service_id=SERVICE_ONE_ID, broadcast_message_id=str(uuid.UUID(int=0))
+    )
+
+    client_request.post(
+        ".write_new_broadcast",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=str(uuid.UUID(int=0)),
+        _data={
+            "name": "Emergency broadcast",
+            "template_content": "Broadcast content",
+        },
+    )
+
+    assert mock_update_broadcast_message.called
+
+
 @pytest.mark.parametrize(
     "expected_back_link_url, expected_back_link_extra_kwargs",
     [
