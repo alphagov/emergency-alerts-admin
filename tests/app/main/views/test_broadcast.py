@@ -7,18 +7,17 @@ import pytest
 from flask import url_for
 from freezegun import freeze_time
 
-from tests import broadcast_message_json, sample_uuid, user_json
+from tests import NotifyBeautifulSoup, broadcast_message_json, sample_uuid, user_json
 from tests.app.broadcast_areas.custom_polygons import BRISTOL, SKYE
 from tests.conftest import (
     SERVICE_ONE_ID,
+    SERVICE_TWO_ID,
     create_active_user_approve_broadcasts_permissions,
     create_active_user_create_broadcasts_permissions,
     create_active_user_view_permissions,
     create_platform_admin_user,
     normalize_spaces,
 )
-
-from tests import NotifyBeautifulSoup
 
 sample_uuid = sample_uuid()
 
@@ -1429,6 +1428,141 @@ def test_choose_broadcast_sub_area_page_for_district_has_back_link(
         library_slug="wd21-lad21-ctyua21",
         **expected_back_link_extra_kwargs,
     )
+
+
+def test_write_new_broadcast_does_update_when_broadcast_exists(
+    mocker,
+    client_request,
+    service_one,
+    active_user_create_broadcasts_permission,
+    mock_create_broadcast_message,
+    mock_update_broadcast_message,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=str(uuid.UUID(int=0)),
+            service_id=SERVICE_ONE_ID,
+            created_by_id=active_user_create_broadcasts_permission["id"],
+            finishes_at=None,
+            status="draft",
+        ),
+    )
+    service_one["permissions"] += ["broadcast"]
+    client_request.login(active_user_create_broadcasts_permission)
+    client_request.get(
+        "main.write_new_broadcast", service_id=SERVICE_ONE_ID, broadcast_message_id=str(uuid.UUID(int=0))
+    )
+
+    client_request.post(
+        ".write_new_broadcast",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=str(uuid.UUID(int=0)),
+        _data={
+            "name": "Emergency broadcast",
+            "template_content": "Broadcast content",
+        },
+    )
+
+    assert not mock_create_broadcast_message.called
+    assert mock_update_broadcast_message.called
+
+
+@pytest.mark.parametrize(
+    "expected_back_link_url, expected_back_link_extra_kwargs",
+    [
+        (".write_new_broadcast", {}),
+    ],
+)
+def test_preview_broadcast_areas_has_back_link_with_uuid(
+    mocker,
+    client_request,
+    service_one,
+    active_user_create_broadcasts_permission,
+    expected_back_link_url,
+    expected_back_link_extra_kwargs,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=str(uuid.UUID(int=0)),
+            service_id=SERVICE_ONE_ID,
+            created_by_id=active_user_create_broadcasts_permission["id"],
+            finishes_at=None,
+            status="pending-approval",
+        ),
+    )
+    service_one["permissions"] += ["broadcast"]
+    client_request.login(active_user_create_broadcasts_permission)
+    page = client_request.get(
+        "main.preview_broadcast_areas", service_id=SERVICE_ONE_ID, broadcast_message_id=str(uuid.UUID(int=0))
+    )
+    assert normalize_spaces(page.select_one("h1").text) == "Area defined"
+    back_link = page.select_one(".govuk-back-link")
+    assert back_link["href"] == url_for(
+        expected_back_link_url,
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=str(uuid.UUID(int=0)),
+        **expected_back_link_extra_kwargs,
+    )
+
+
+def test_write_new_broadcast_content_from_uuid_is_displayed_before_live(
+    mocker,
+    client_request,
+    service_one,
+    fake_uuid,
+    active_user_create_broadcasts_permission,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            reference="Emergency broadcast",
+            content="Emergency broadcast content",
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+        ),
+    )
+    service_one["permissions"] += ["broadcast"]
+    client_request.login(active_user_create_broadcasts_permission)
+    page = client_request.get("main.write_new_broadcast", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
+
+    assert normalize_spaces(page.select_one("textarea").text) == "Emergency broadcast content"
+
+
+def test_write_new_broadcast_only_displays_from_this_service(
+    mocker,
+    client_request,
+    service_one,
+    service_two,
+    active_user_create_broadcasts_permission,
+):
+    service_one["permissions"] += ["broadcast"]
+    client_request.login(active_user_create_broadcasts_permission)
+    page = client_request.get(
+        "main.write_new_broadcast",
+        service_id=SERVICE_TWO_ID,
+        broadcast_message_id=str(uuid.UUID(int=0)),
+        _expected_status=403,
+    )
+    assert normalize_spaces(page.select_one("h1").text) == "You’re not allowed to see this page"
+
+
+def test_write_new_broadcast_does_not_display_alerts_in_broadcast(
+    mocker,
+    client_request,
+    service_one,
+    mock_get_live_broadcast_message,
+    fake_uuid,
+    active_user_create_broadcasts_permission,
+):
+    service_one["permissions"] += ["broadcast"]
+    client_request.login(active_user_create_broadcasts_permission)
+    page = client_request.get("main.write_new_broadcast", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
+    assert normalize_spaces(page.select_one("input").text) == ""
 
 
 def test_choose_broadcast_sub_area_page_for_county_shows_links_for_districts(
