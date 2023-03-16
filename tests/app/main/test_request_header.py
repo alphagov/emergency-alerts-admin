@@ -21,10 +21,9 @@ def test_route_correct_secret_key(notify_admin, check_proxy_header, header_value
             "CHECK_PROXY_HEADER": check_proxy_header,
         },
     ):
-
         with notify_admin.test_client() as client:
             response = client.get(
-                path="/_status?elb=True",
+                path="/_admin_status?elb=True",
                 headers=[
                     ("X-Custom-forwarder", header_value),
                 ],
