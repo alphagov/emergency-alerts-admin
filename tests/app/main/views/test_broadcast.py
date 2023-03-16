@@ -7,7 +7,7 @@ import pytest
 from flask import url_for
 from freezegun import freeze_time
 
-from tests import broadcast_message_json, sample_uuid, user_json
+from tests import NotifyBeautifulSoup, broadcast_message_json, sample_uuid, user_json
 from tests.app.broadcast_areas.custom_polygons import BRISTOL, SKYE
 from tests.conftest import (
     SERVICE_ONE_ID,
@@ -593,18 +593,19 @@ def test_broadcast_dashboard_json(
     mock_get_broadcast_messages,
 ):
     service_one["permissions"] += ["broadcast"]
+
     response = client_request.get_response(
         ".broadcast_dashboard_updates",
         service_id=SERVICE_ONE_ID,
     )
 
-    json_response = json.loads(response.get_data(as_text=True))
+    response_json = json.loads(response.get_data(as_text=True))
+    response_html = NotifyBeautifulSoup(response_json["current_broadcasts"], "html.parser")
+    broadcasts = normalize_spaces(response_html)
 
-    assert json_response.keys() == {"current_broadcasts"}
-
-    assert "Waiting for approval" in json_response["current_broadcasts"]
-    assert "live" in json_response["current_broadcasts"]
-    assert "since today at 2:20am" in json_response["current_broadcasts"]
+    assert response_json.keys() == {"current_broadcasts"}
+    assert "Waiting for approval" in broadcasts
+    assert "live since today at 2:20am" in broadcasts
 
 
 @pytest.mark.parametrize(
@@ -1445,7 +1446,7 @@ def test_write_new_broadcast_does_update_when_broadcast_exists(
             created_by_id=active_user_create_broadcasts_permission["id"],
             finishes_at=None,
             status="draft",
-        )
+        ),
     )
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
@@ -1489,7 +1490,7 @@ def test_preview_broadcast_areas_has_back_link_with_uuid(
             created_by_id=active_user_create_broadcasts_permission["id"],
             finishes_at=None,
             status="pending-approval",
-        )
+        ),
     )
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
@@ -1523,13 +1524,11 @@ def test_write_new_broadcast_content_from_uuid_is_displayed_before_live(
             created_by_id=fake_uuid,
             service_id=SERVICE_ONE_ID,
             status="draft",
-        )
+        ),
     )
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
-    page = client_request.get(
-        "main.write_new_broadcast", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid
-    )
+    page = client_request.get("main.write_new_broadcast", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
 
     assert normalize_spaces(page.select_one("textarea").text) == "Emergency broadcast content"
 
@@ -1544,7 +1543,9 @@ def test_write_new_broadcast_only_displays_from_this_service(
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.get(
-        "main.write_new_broadcast", service_id=SERVICE_TWO_ID, broadcast_message_id=str(uuid.UUID(int=0)),
+        "main.write_new_broadcast",
+        service_id=SERVICE_TWO_ID,
+        broadcast_message_id=str(uuid.UUID(int=0)),
         _expected_status=403,
     )
     assert normalize_spaces(page.select_one("h1").text) == "You’re not allowed to see this page"
@@ -1560,9 +1561,7 @@ def test_write_new_broadcast_does_not_display_alerts_in_broadcast(
 ):
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
-    page = client_request.get(
-        "main.write_new_broadcast", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid
-    )
+    page = client_request.get("main.write_new_broadcast", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
     assert normalize_spaces(page.select_one("input").text) == ""
 
 
