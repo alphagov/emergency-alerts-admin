@@ -1,0 +1,13 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo "No pre build commands"
+  build:
+    commands:
+      - make bootstrap
+      - make run-flask
+  post_build:
+    commands:
+      - echo "No post build commands"
