@@ -1434,6 +1434,7 @@ def test_write_new_broadcast_does_update_when_broadcast_exists(
     client_request,
     service_one,
     active_user_create_broadcasts_permission,
+    mock_create_broadcast_message,
     mock_update_broadcast_message,
 ):
     mocker.patch(
@@ -1462,6 +1463,7 @@ def test_write_new_broadcast_does_update_when_broadcast_exists(
         },
     )
 
+    assert not mock_create_broadcast_message.called
     assert mock_update_broadcast_message.called
 
 
