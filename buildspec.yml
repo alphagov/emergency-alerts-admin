@@ -6,18 +6,8 @@ phases:
       - echo "No pre build commands"
   build:
     commands:
-      - echo "==================="
-      - ls -la
-      - ls /
-      - find / -name environment.sh
-      - pwd
       - make bootstrap
-      - echo "==================="
-      - ls -la
-      - ls /
-      - find / -name environment.sh
-      - pwd
-      - make run-flask
+      - make test
   post_build:
     commands:
       - echo "No post build commands"
