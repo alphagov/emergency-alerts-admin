@@ -8,7 +8,9 @@ phases:
     commands:
       - make bootstrap
       - ls -la
-      - tree /
+      - ls /
+      - find / -name environment.sh
+      - pwd
       - make run-flask
   post_build:
     commands:
