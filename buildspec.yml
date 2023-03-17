@@ -3,10 +3,12 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - echo "No pre build commands"
+      - apt-get install tree
   build:
     commands:
       - make bootstrap
+      - ls -la
+      - tree /
       - make run-flask
   post_build:
     commands:
