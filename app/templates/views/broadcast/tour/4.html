@@ -3,31 +3,34 @@
 {% extends "admin_template.html" %}
 
 {% block per_page_title %}
-  An alert is not a normal text message.
+  How emergency alerts work
 {% endblock %}
 
 {% set mainClasses = "govuk-!-padding-top-0 govuk-!-padding-bottom-0" %}
 
 {% block content %}
 
-  <div class="banner-tour banner-tour-no-fixed-height govuk-!-margin-top-0">
+  <div class="banner-tour govuk-!-margin-top-0">
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-one-half">
-        <h1 class="heading-medium">
-          An alert is not a normal text message.
+        <h1 class="heading-large">
+          How emergency alerts work
         </h1>
         <p class="govuk-body heading-medium">
-          It’s broadcast directly from a mobile phone mast, so you don’t
-          need to know anyone’s phone number.
+          An alert is not a text message.
         </p>
         <p class="govuk-body heading-medium">
-          <a class="govuk-link govuk-link--inverse" href='{{ url_for(".broadcast_tour", service_id=current_service.id, step_index=5) }}'>
+          It’s broadcast directly from a mobile phone mast, so the government does not need to
+          know your phone number or location to send you an alert.
+        </p>
+        <p class="govuk-body heading-medium">
+          <a class="govuk-link" href='{{ url_for(".broadcast_tour", service_id=current_service.id, step_index=5) }}'>
             Continue
           </a>
         </p>
       </div>
       <div class="govuk-grid-column-one-half">
-        <img src="{{ asset_url('images/broadcast-tour/4.png') }}" alt="">
+        <img src="{{ asset_url('images/broadcast-tour/4.png') }}" alt="" class="govuk-!-padding-left-1">
       </div>
     </div>
   </div>
