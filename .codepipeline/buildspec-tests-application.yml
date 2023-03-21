@@ -6,7 +6,7 @@ phases:
       - echo "" > environment.sh
   build:
     commands:
-      - apt install python3-dev
+      - apt-get install python3-dev
       - make bootstrap
       - make test
   post_build:
