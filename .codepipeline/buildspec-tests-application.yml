@@ -6,6 +6,8 @@ phases:
       - echo "" > environment.sh
   build:
     commands:
+      - sudo apt install build-essential
+      - make bootstrap
       - make test
   post_build:
     commands:
