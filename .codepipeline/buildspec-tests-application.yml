@@ -8,7 +8,8 @@ phases:
     commands:
       - apt-get -y install python3-dev
       - make bootstrap
-      - cd $ADMIN_DIR && . $VENV_ADMIN/bin/activate && make test
+      - printenv
+      - cd $ADMIN_DIR && source $VENV_ADMIN/bin/activate && make test
   post_build:
     commands:
       - echo "No post build commands"
