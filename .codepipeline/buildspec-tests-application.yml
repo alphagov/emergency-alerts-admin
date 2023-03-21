@@ -6,7 +6,7 @@ phases:
       - echo "" > environment.sh
   build:
     commands:
-      - apt install build-essential
+      - apt install python-dev
       - make bootstrap
       - make test
   post_build:
