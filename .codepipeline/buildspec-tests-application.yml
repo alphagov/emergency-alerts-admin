@@ -6,7 +6,6 @@ phases:
       - echo "" > environment.sh
   build:
     commands:
-      - make bootstrap
       - make test
   post_build:
     commands:
