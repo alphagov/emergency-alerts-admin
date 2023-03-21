@@ -6,6 +6,8 @@ phases:
       - echo "" > environment.sh
   build:
     commands:
+      - apt-get update
+      - apt-get -y install python3-dev --fix-missing
       - make bootstrap
       - make run-flask
   post_build:

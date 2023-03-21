@@ -8,7 +8,6 @@ phases:
     commands:
       - apt-get update
       - apt-get -y install python3-dev --fix-missing
-      - printenv
       - make bootstrap
       - cd $ADMIN_DIR && . $VENV_ADMIN/bin/activate && make test
   post_build:
