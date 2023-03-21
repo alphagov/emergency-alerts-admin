@@ -4,7 +4,7 @@ phases:
   pre_build:
     commands:
       - >-
-        echo "
+        cd $ADMIN_DIR && echo "
         export NOTIFY_ENVIRONMENT='development'
         export FLASK_APP=application.py
         export FLASK_DEBUG=1
@@ -15,7 +15,7 @@ phases:
       - apt-get update
       - apt-get -y install python3-dev --fix-missing
       - make bootstrap
-      - make run-flask
+      - cd $ADMIN_DIR && . $VENV_ADMIN/bin/activate && make run-flask
   post_build:
     commands:
       - echo "No post build commands"
