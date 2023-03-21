@@ -7,7 +7,7 @@ import pytest
 from flask import url_for
 from freezegun import freeze_time
 
-from tests import broadcast_message_json, sample_uuid, user_json
+from tests import NotifyBeautifulSoup, broadcast_message_json, sample_uuid, user_json
 from tests.app.broadcast_areas.custom_polygons import BRISTOL, SKYE
 from tests.conftest import (
     SERVICE_ONE_ID,
@@ -593,18 +593,19 @@ def test_broadcast_dashboard_json(
     mock_get_broadcast_messages,
 ):
     service_one["permissions"] += ["broadcast"]
+
     response = client_request.get_response(
         ".broadcast_dashboard_updates",
         service_id=SERVICE_ONE_ID,
     )
 
-    json_response = json.loads(response.get_data(as_text=True))
+    response_json = json.loads(response.get_data(as_text=True))
+    response_html = NotifyBeautifulSoup(response_json["current_broadcasts"], "html.parser")
+    broadcasts = normalize_spaces(response_html)
 
-    assert json_response.keys() == {"current_broadcasts"}
-
-    assert "Waiting for approval" in json_response["current_broadcasts"]
-    assert "live" in json_response["current_broadcasts"]
-    assert "since today at 2:20am" in json_response["current_broadcasts"]
+    assert response_json.keys() == {"current_broadcasts"}
+    assert "Waiting for approval" in broadcasts
+    assert "live since today at 2:20am" in broadcasts
 
 
 @pytest.mark.parametrize(

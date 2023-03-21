@@ -3,21 +3,25 @@
 {% extends "admin_template.html" %}
 
 {% block per_page_title %}
-  The phone will make a loud alarm noise, even if it’s set on silent.
+  Alert tone
 {% endblock %}
 
 {% set mainClasses = "govuk-!-padding-top-0 govuk-!-padding-bottom-0" %}
 
 {% block content %}
 
-  <div class="banner-tour banner-tour-no-fixed-height govuk-!-margin-top-0">
+  <div class="banner-tour govuk-!-margin-top-0">
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-one-half">
-        <h1 class="heading-medium">
-          The phone will make a loud alarm noise, even if it’s set on silent.
+        <h1 class="heading-large">
+          Alert tone
         </h1>
         <p class="govuk-body heading-medium">
-          <a class="govuk-link govuk-link--inverse" href='{{ url_for(".broadcast_tour", service_id=current_service.id, step_index=4) }}'>
+          The phone or tablet will make a loud alarm
+          noise, even if it’s set on silent.
+        </p>
+        <p class="govuk-body heading-medium">
+          <a class="govuk-link" href='{{ url_for(".broadcast_tour", service_id=current_service.id, step_index=4) }}'>
             Continue
           </a>
         </p>
