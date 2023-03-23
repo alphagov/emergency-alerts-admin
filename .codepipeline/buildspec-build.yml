@@ -8,7 +8,8 @@ phases:
       - chmod a+x ~/.docker/cli-plugins/docker-buildx
   pre_build:
     commands:
-      - echo "No pre build commands"
+      - docker buildx create --name builder
+      - docker buildx use builder
   build:
     commands:
       - bash ./scripts/docker-build.sh --ENVIRONMENT development --IMAGE admin --ARGS '--push'
