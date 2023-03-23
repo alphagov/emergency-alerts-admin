@@ -8,8 +8,8 @@ ENV ADMIN_DIR=/eas/emergency-alerts-admin
 COPY . $ADMIN_DIR
 
 # Run emergency-alerts-admin
-RUN $PYTHON_VERSION -m venv $VENV_ADMIN && . $VENV_ADMIN/bin/activate && \
-    pip3 install wheel && cd $ADMIN_DIR && make bootstrap
+RUN $PYTHON_VERSION -m venv $VENV_ADMIN && cd $ADMIN_DIR && . $VENV_ADMIN/bin/activate && \
+    pip3 install wheel && make bootstrap
 
 # Create a blank configuration file
 RUN echo "" > $ADMIN_DIR/environment.sh
