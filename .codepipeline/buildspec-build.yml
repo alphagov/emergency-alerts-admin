@@ -1,12 +1,9 @@
 version: 0.2
 
 phases:
-  install:
-    runtime-versions:
-      docker: 18
   pre_build:
     commands:
-      - echo "No pre build commands"
+      - curl -sSL https://get.docker.com/ | sh
   build:
     commands:
       - bash ./scripts/docker-build.sh --ENVIRONMENT development --IMAGE admin --ARGS '--push'
