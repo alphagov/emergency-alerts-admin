@@ -1,4 +1,5 @@
-FROM 388086622185.dkr.ecr.eu-west-2.amazonaws.com/eas-app-base:latest
+FROM 071839617283.dkr.ecr.eu-west-2.amazonaws.com/eas-app-base:latest
+# FROM 388086622185.dkr.ecr.eu-west-2.amazonaws.com/eas-app-base:latest
 
 ENV SERVICE=admin
 ENV VENV_ADMIN=/venv/eas-admin
