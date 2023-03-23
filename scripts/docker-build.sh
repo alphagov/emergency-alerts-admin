@@ -13,7 +13,8 @@ while [ $# -gt 0 ]; do
 done
 
 if [[ $ENVIRONMENT == "development" ]]; then
-  ECS_ACCOUNT_NUMBER=388086622185
+  # ECS_ACCOUNT_NUMBER=388086622185
+  ECS_ACCOUNT_NUMBER=071839617283
 else
   echo "No environment selected"
   exit 1;

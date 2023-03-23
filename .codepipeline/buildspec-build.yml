@@ -1,21 +1,15 @@
 version: 0.2
 
 phases:
+  install:
+    runtime-versions:
+      docker: 18
   pre_build:
     commands:
-      - >-
-        cd $ADMIN_DIR && echo "
-        export NOTIFY_ENVIRONMENT='development'
-        export FLASK_APP=application.py
-        export FLASK_DEBUG=1
-        export WERKZEUG_DEBUG_PIN=off
-        "> environment.sh
+      - echo "No pre build commands"
   build:
     commands:
-      - apt-get update
-      - apt-get -y install python3-dev --fix-missing
-      - make bootstrap
-      - cd $ADMIN_DIR && . $VENV_ADMIN/bin/activate && make run-flask
+      - bash ./scripts/docker-build.sh --ENVIRONMENT development --IMAGE admin --ARGS '--push'
   post_build:
     commands:
       - echo "No post build commands"
