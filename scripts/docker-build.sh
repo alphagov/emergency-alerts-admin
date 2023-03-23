@@ -27,7 +27,8 @@ function ecr_login(){
 function docker_build(){
   docker buildx build \
     --platform $PLATFORM \
-    -t $ECS_ACCOUNT_NUMBER.dkr.ecr.$REGION.amazonaws.com/eas-app-$IMAGE:latest \
+    -t $ECS_ACCOUNT_NUMBER.dkr.ecr.$REGION.amazonaws.com/eas-app-$IMAGE:$EXECUTION_ID \
+    -t $ECS_ACCOUNT_NUMBER.dkr.ecr.$REGION.amazonaws.com/eas-app-$IMAGE:$CODEBUILD_SOURCE_VERSION \
     -f Dockerfile.eas-$IMAGE \
     $ARGS \
     .
