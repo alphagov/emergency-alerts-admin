@@ -25,4 +25,4 @@ artifacts:
     BuildArtifact:
       files:
         - imagedefinitions.json
-        - '.codepipeline/appspec.yml'
+        - appspec.yml
