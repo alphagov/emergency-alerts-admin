@@ -12,8 +12,6 @@ phases:
       - docker buildx use builder
   build:
     commands:
-      - COMMIT_HASH_ID=$(git rev-parse HEAD)
-      - echo $COMMIT_HASH_ID
       - bash ./scripts/docker-build.sh --ENVIRONMENT development --IMAGE admin --ARGS '--push'
   post_build:
     commands:
