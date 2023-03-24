@@ -12,7 +12,7 @@ phases:
       - docker buildx use builder
   build:
     commands:
-      - echo $EXECUTION_ID
+      - echo git rev-parse HEAD
       - bash ./scripts/docker-build.sh --ENVIRONMENT development --IMAGE admin --ARGS '--push'
   post_build:
     commands:
