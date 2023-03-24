@@ -20,7 +20,7 @@ phases:
 artifacts:
   files:
     - 'imagedefinitions.json'
-    - '.codepipeline/appspec.yml'
+    - 'appspec.yml'
   secondary-artifacts:
     BuildArtifact:
       files:
