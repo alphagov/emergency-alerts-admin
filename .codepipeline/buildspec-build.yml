@@ -20,4 +20,4 @@ phases:
 artifacts:
   files:
     - imagedefinitions.json
-    - appspec.yml
+    - '.codepipeline/appspec.yml'
