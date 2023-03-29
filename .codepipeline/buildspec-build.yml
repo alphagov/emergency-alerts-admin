@@ -26,5 +26,5 @@ artifacts:
     BuildArtifact:
       files:
         - imageDetail.json
-        - '.codepipeline/appspec.yaml'
-        - '.codepipeline/taskdef.json'
+        - appspec.yaml
+        - taskdef.json
