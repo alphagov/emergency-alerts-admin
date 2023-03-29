@@ -26,7 +26,6 @@ PYTHON_EXECUTABLE_PREFIX := $(shell test -d "$${VIRTUALENV_ROOT}" && echo "$${VI
 .PHONY: bootstrap
 bootstrap: generate-version-file ## Set up everything to run the app
 	${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements_for_test.txt
-
 	source $(HOME)/.nvm/nvm.sh && nvm install && npm ci --no-audit
 	. environment.sh; source $(HOME)/.nvm/nvm.sh && npm run build
 
