@@ -20,11 +20,11 @@ phases:
 artifacts:
   files:
     - 'imageDetail.json'
-    - '.codepipeline/appspec.yaml'
+    - '.codepipeline/appspec.yml'
     - '.codepipeline/taskdef.json'
   secondary-artifacts:
     BuildArtifact:
       files:
         - imageDetail.json
-        - appspec.yaml
+        - appspec.yml
         - taskdef.json
