@@ -10,12 +10,13 @@ phases:
     commands:
       - docker buildx create --name builder
       - docker buildx use builder
+      - echo $EXECUTION_ID
   build:
     commands:
-      - bash ./scripts/docker-build.sh --ENVIRONMENT development --IMAGE admin --ARGS '--push'
+      - bash ./scripts/docker-build.sh --ENVIRONMENT $ENVIRONMENT --IMAGE admin --ARGS '--push'
   post_build:
     commands:
-      - printf '[{"name":"$CONTAINER_NAME","imageUri":"%s"}]' $REPOSITORY_URI:latest > imageDetail.json
+      - printf '[{"name":$CONTAINER_NAME,"imageUri":"%s"}]' $REPOSITORY_URI:latest > imageDetail.json
 
 artifacts:
   files:
