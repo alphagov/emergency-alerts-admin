@@ -4,7 +4,7 @@ Resources:
   - TargetService:
       Type: AWS::ECS::Service
       Properties:
-        TaskDefinition: "arn:aws:ecs:eu-west-2:071839617283:task-definition/eas-app-admin:12"
+        TaskDefinition: "arn:aws:ecs:eu-west-2:071839617283:task-definition/eas-app-admin:13"
         LoadBalancerInfo:
           ContainerName: "eas-app-admin"
           ContainerPort: 80

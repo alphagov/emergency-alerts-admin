@@ -1,4 +1,4 @@
 {
-  "image": "$REPOSITORY_URI:latest",
+  "image": "071839617283.dkr.ecr.eu-west-2.amazonaws.com/eas-app-admin:latest",
   "taskDefinitionArn": "arn:aws:ecs:eu-west-2:071839617283:task-definition/eas-app-admin:LATEST"
 }
