@@ -15,16 +15,16 @@ phases:
       - bash ./scripts/docker-build.sh --ENVIRONMENT development --IMAGE admin --ARGS '--push'
   post_build:
     commands:
-      - printf '[{"name":"$CONTAINER_NAME","imageUri":"%s"}]' $REPOSITORY_URI:latest > imagedefinitions.json
+      - printf '[{"name":"$CONTAINER_NAME","imageUri":"%s"}]' $REPOSITORY_URI:latest > imageDetail.json
 
 artifacts:
   files:
-    - 'imagedefinitions.json'
-    - '.codepipeline/appspec.yml'
+    - 'imageDetail.json'
+    - '.codepipeline/appspec.yaml'
     - '.codepipeline/taskdef.json'
   secondary-artifacts:
     BuildArtifact:
       files:
-        - imagedefinitions.json
-        - '.codepipeline/appspec.yml'
+        - imageDetail.json
+        - '.codepipeline/appspec.yaml'
         - '.codepipeline/taskdef.json'
