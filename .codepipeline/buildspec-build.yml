@@ -12,7 +12,7 @@ phases:
       - docker buildx use builder
   build:
     commands:
-      - bash ./scripts/docker-build.sh --ENVIRONMENT $ENVIRONMENT --IMAGE admin --ARGS '--push'
+      - bash ./scripts/docker-build.sh --ENVIRONMENT $ENVIRONMENT --EXECUTION_ID $EXECUTION_ID --COMMIT_ID $COMMIT_ID --IMAGE admin --ARGS '--push'
   post_build:
     commands:
       - printf '[{"name":"%s","imageUri":"%s"}]' $CONTAINER_NAME, $REPOSITORY_URI:latest > imageDetail.json
