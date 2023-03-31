@@ -15,16 +15,14 @@ phases:
       - bash ./scripts/docker-build.sh --ENVIRONMENT $ENVIRONMENT --EXECUTION_ID $EXECUTION_ID --COMMIT_ID $COMMIT_ID --IMAGE admin --ARGS '--push'
   post_build:
     commands:
-      - printf '[{"name":"%s","imageUri":"%s"}]' $CONTAINER_NAME, $REPOSITORY_URI:latest > imageDetail.json
+      - printf '[{"taskDefinitionArn":"%s","imageUri":"%s"}]' $CONTAINER_NAME:19, $REPOSITORY_URI:latest > imageDetail.json
 
 artifacts:
   files:
     - imageDetail.json
     - appspec.yaml
-    - taskdef.json
   secondary-artifacts:
     BuildArtifact:
       files:
         - imageDetail.json
         - appspec.yaml
-        - taskdef.json
