@@ -22,8 +22,10 @@ artifacts:
   files:
     - imageDetail.json
     - appspec.yaml
+    - taskdef.json
   secondary-artifacts:
     BuildArtifact:
       files:
         - imageDetail.json
         - appspec.yaml
+        - taskdef.json
