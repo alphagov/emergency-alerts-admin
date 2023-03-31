@@ -15,7 +15,8 @@ phases:
       - bash ./scripts/docker-build.sh --ENVIRONMENT $ENVIRONMENT --EXECUTION_ID $EXECUTION_ID --COMMIT_ID $COMMIT_ID --IMAGE admin --ARGS '--push'
   post_build:
     commands:
-      - printf '[{"taskDefinitionArn":"%s","imageUri":"%s"}]' $TASK_DEFINITION_ARN:19, $REPOSITORY_URI:latest > imageDetail.json
+      - printf '[{"name":"%s","imageUri":"%s"}]' $CONTAINER_NAME, $REPOSITORY_URI:latest > imageDetail.json
+      - printf '{"image":"%s","taskDefinitionArn":"%s"}' $REPOSITORY_URI:latest, $TASK_DEFINITION_ARN > taskdef.json
 
 artifacts:
   files:
