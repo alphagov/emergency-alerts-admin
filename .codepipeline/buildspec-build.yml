@@ -16,7 +16,7 @@ phases:
   post_build:
     commands:
       - printf '[{"name":"%s","imageUri":"%s"}]' $CONTAINER_NAME, $REPOSITORY_URI:latest > imageDetail.json
-      - printf '{"image":"%s","taskDefinitionArn":"%s"}' $REPOSITORY_URI:latest, $TASK_DEFINITION_ARN > taskdef.json
+      - printf '{"image":"%s","taskDefinitionArn":"%s"}' $REPOSITORY_URI:latest, $TASK_DEFINITION_ARN:19 > taskdef.json
 
 artifacts:
   files:
