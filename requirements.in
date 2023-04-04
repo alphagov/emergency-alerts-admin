@@ -26,11 +26,27 @@ rtreelib==0.2.0
 fido2==1.1.0
 pyproj==3.4.0
 
--e file:../emergency-alerts-utils
-
 itsdangerous==2.1.2
 govuk-frontend-jinja==2.3.0
 
 # gds-metrics requires prometheseus 0.2.0, override that requirement as later versions bring significant performance gains
 prometheus-client==0.15.0
 git+https://github.com/alphagov/gds_metrics_python.git@6f1840a57b6fb1ee40b7e84f2f18ec229de8aa72
+
+# Packages for testing
+black==22.10.0
+isort==5.10.1
+pytest==7.2.0
+pytest-env==0.8.1
+pytest-mock==3.10.0
+pytest-xdist==3.0.2
+beautifulsoup4==4.11.1
+freezegun==1.2.2
+flake8==5.0.4
+flake8-bugbear==22.10.27
+flake8-print==5.0.0
+moto==4.0.9
+requests-mock==1.10.0
+
+# used for creating manifest file locally
+jinja2-cli[yaml]==0.8.2
