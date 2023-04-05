@@ -134,12 +134,6 @@ class Decoupled(Development):
     REDIS_URL = "redis://api.ecs.local:6379/0"
 
 
-class ServerlessDB(Decoupled):
-    NOTIFY_ENVIRONMENT = "serverlessdb"
-    ASSET_DOMAIN = "admin.development.emergency-alerts.service.gov.uk"
-    ASSET_PATH = "https://admin.development.emergency-alerts.service.gov.uk/"
-
-
 class Test(Development):
     DEBUG = True
     TESTING = True
