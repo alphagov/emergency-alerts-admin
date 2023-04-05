@@ -223,7 +223,6 @@ class Sandbox(CloudFoundryConfig):
 configs = {
     "development": Development,
     "decoupled": Decoupled,
-    "serverlessdb": ServerlessDB,
     "test": Test,
     "preview": Preview,
     "staging": Staging,
