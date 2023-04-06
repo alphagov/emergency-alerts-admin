@@ -18,23 +18,23 @@ phases:
   post_build:
     commands:
       - |
-        cat <<'EOF' > appspec.json
+        printf '
         {
           "version":0.0,
           "Resources":[{
             "TargetService":{
               "Type":"AWS::ECS::Service",
               "Properties":{
-                "TaskDefinition":$TASK_DEFINITION_ARN,
+                "TaskDefinition":%s,
                 "LoadBalancerInfo":{
-                  "ContainerName":$CONTAINER_NAME
+                  "ContainerName":%s,
                   "ContainerPort":80
                 }
               }
             }
           }]
         }
-        EOF
+        ' $TASK_DEFINITION_ARN, $CONTAINER_NAME > appspec.json
 
 artifacts:
   files:
