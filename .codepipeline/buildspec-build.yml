@@ -25,9 +25,9 @@ phases:
             "TargetService":{
               "Type":"AWS::ECS::Service",
               "Properties":{
-                "TaskDefinition":%s,
+                "TaskDefinition":"%s",
                 "LoadBalancerInfo":{
-                  "ContainerName":%s,
+                  "ContainerName":"%s",
                   "ContainerPort":80
                 }
               }
