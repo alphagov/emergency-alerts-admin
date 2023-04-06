@@ -44,6 +44,8 @@ artifacts:
   secondary-artifacts:
     BuildArtifact:
       files:
-        - imageDetail.json
         - appspec.json
         - taskdef.json
+    ImageArtifact:
+      files:
+        - imageDetail.json
