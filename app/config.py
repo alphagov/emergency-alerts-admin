@@ -134,11 +134,6 @@ class Decoupled(Development):
     REDIS_URL = "redis://api.ecs.local:6379/0"
 
 
-class ServerlessDB(Decoupled):
-    NOTIFY_ENVIRONMENT = "serverlessdb"
-    ADMIN_BASE_URL = "https://admin.development.emergency-alerts.service.gov.uk"
-
-
 class Test(Development):
     DEBUG = True
     TESTING = True
@@ -228,7 +223,6 @@ class Sandbox(CloudFoundryConfig):
 configs = {
     "development": Development,
     "decoupled": Decoupled,
-    "serverlessdb": ServerlessDB,
     "test": Test,
     "preview": Preview,
     "staging": Staging,
