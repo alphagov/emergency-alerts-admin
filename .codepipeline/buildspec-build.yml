@@ -8,7 +8,7 @@ phases:
       - chmod a+x ~/.docker/cli-plugins/docker-buildx
   pre_build:
     commands:
-      - printf '[{"name":"%s","imageUri":"%s"}]' $CONTAINER_NAME $REPOSITORY_URI:latest > imageDetail.json
+      - printf '{"ImageUri":"%s"}' $REPOSITORY_URI:latest > imageDetail.json
       - printf '{"image":"%s","taskDefinitionArn":"%s"}' $REPOSITORY_URI:latest $TASK_DEFINITION_ARN > taskdef.json
       - docker buildx create --name builder
       - docker buildx use builder
@@ -38,9 +38,9 @@ phases:
 
 artifacts:
   files:
-    - imageDetail.json
-    - appspec.json
-    - taskdef.json
+    - 'imageDetail.json'
+    - 'appspec.json'
+    - 'taskdef.json'
   secondary-artifacts:
     BuildArtifact:
       files:
