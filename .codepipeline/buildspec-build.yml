@@ -8,15 +8,15 @@ phases:
       - chmod a+x ~/.docker/cli-plugins/docker-buildx
   pre_build:
     commands:
+      - printf '[{"name":"%s","imageUri":"%s"}]' $CONTAINER_NAME, $REPOSITORY_URI:latest > imageDetail.json
+      - printf '{"image":"%s","taskDefinitionArn":"%s"}' $REPOSITORY_URI:latest, $TASK_DEFINITION_ARN:19 > taskdef.json
       - docker buildx create --name builder
       - docker buildx use builder
   build:
     commands:
-      - bash ./scripts/docker-build.sh --ENVIRONMENT $ENVIRONMENT --EXECUTION_ID $EXECUTION_ID --COMMIT_ID $COMMIT_ID --IMAGE admin --ARGS '--push'
+      - bash ./scripts/docker-build.sh --EXECUTION_ID $EXECUTION_ID --COMMIT_ID $COMMIT_ID --IMAGE admin --ARGS '--push'
   post_build:
     commands:
-      - printf '[{"name":"%s","imageUri":"%s"}]' $CONTAINER_NAME, $REPOSITORY_URI:latest > imageDetail.json
-      - printf '{"image":"%s","taskDefinitionArn":"%s"}' $REPOSITORY_URI:latest, $TASK_DEFINITION_ARN:19 > taskdef.json
 
 artifacts:
   files:

@@ -31,6 +31,7 @@ function docker_build(){
     -t $ECS_ACCOUNT_NUMBER.dkr.ecr.$REGION.amazonaws.com/eas-app-$IMAGE:pipeline-$EXECUTION_ID \
     -t $ECS_ACCOUNT_NUMBER.dkr.ecr.$REGION.amazonaws.com/eas-app-$IMAGE:commit-$COMMIT_ID \
     -t $ECS_ACCOUNT_NUMBER.dkr.ecr.$REGION.amazonaws.com/eas-app-$IMAGE:latest \
+    --build-arg ECS_ACCOUNT_NUMBER=$ECS_ACCOUNT_NUMBER \
     -f Dockerfile.eas-$IMAGE \
     --no-cache \
     $ARGS \
