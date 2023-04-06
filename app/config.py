@@ -129,6 +129,7 @@ class Decoupled(Development):
     NOTIFY_ENVIRONMENT = "decoupled"
     API_HOST_NAME = "http://api.ecs.local:6011"
     ADMIN_BASE_URL = "http://admin.ecs.local:6012"
+    ADMIN_EXTERNAL_URL = "https://admin.development.emergency-alerts.service.gov.uk/"
     TEMPLATE_PREVIEW_API_HOST = "http://api.ecs.local:6013"
     ANTIVIRUS_API_HOST = "http://admin.ecs.local:6016"
     REDIS_URL = "redis://api.ecs.local:6379/0"
