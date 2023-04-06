@@ -9,7 +9,7 @@ phases:
   pre_build:
     commands:
       - printf '{"ImageUri":"%s"}' $REPOSITORY_URI:latest > imageDetail.json
-      - printf '{"image":"%s","taskDefinitionArn":"%s"}' $REPOSITORY_URI:latest $TASK_DEFINITION_ARN > taskdef.json
+      - aws ecs describe-task-definition --task-definition "$CONTAINER_NAME" --region "eu-west-2" > taskdef.json
       - docker buildx create --name builder
       - docker buildx use builder
   build:
