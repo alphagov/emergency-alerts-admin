@@ -22,10 +22,10 @@ phases:
 
 artifacts:
   files:
-    - 'appspec.json'
+    - 'appspec.yaml'
     - 'taskdef.json'
   secondary-artifacts:
     BuildArtifact:
       files:
-        - appspec.json
+        - appspec.yaml
         - taskdef.json
