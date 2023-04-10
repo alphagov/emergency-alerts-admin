@@ -26,7 +26,7 @@ function ecr_login(){
 }
 
 function docker_build(){
-  if [ -z $EXECUTION_ID ] && [ -z $COMMIT_ID ] then
+  if [ -z $EXECUTION_ID ] && [ -z $COMMIT_ID ]; then
     docker buildx build \
       --platform $PLATFORM \
       -t $ECS_ACCOUNT_NUMBER.dkr.ecr.$REGION.amazonaws.com/eas-app-$IMAGE:latest \
