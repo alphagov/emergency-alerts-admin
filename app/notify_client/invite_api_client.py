@@ -9,7 +9,6 @@ class InviteApiClient(NotifyAdminAPIClient):
     def init_app(self, app):
         super().init_app(app)
 
-        # self.admin_url = app.config["ADMIN_BASE_URL"]
         self.admin_url = app.config["ADMIN_EXTERNAL_URL"]
 
     def create_invite(self, invite_from_id, service_id, email_address, permissions, auth_type, folder_permissions):
