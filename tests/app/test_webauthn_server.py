@@ -7,7 +7,7 @@ from app import webauthn_server
 def app_with_mock_config(mocker):
     app = mocker.Mock()
 
-    app.config = {"ADMIN_BASE_URL": "https://www.notify.works", "NOTIFY_ENVIRONMENT": "development"}
+    app.config = {"ADMIN_EXTERNAL_URL": "https://www.notify.works", "NOTIFY_ENVIRONMENT": "development"}
 
     return app
 

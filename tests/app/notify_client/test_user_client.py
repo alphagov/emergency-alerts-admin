@@ -1,3 +1,4 @@
+import os
 import uuid
 from unittest.mock import Mock, call
 
@@ -91,7 +92,7 @@ def test_client_passes_admin_url_when_sending_email_auth(
         "/user/{}/email-code".format(fake_uuid),
         data={
             "to": "ignored@example.com",
-            "email_auth_link_host": "http://localhost:6012",
+            "email_auth_link_host": f"https://admin.{os.environ.get('ENVIRONMENT')}.emergency-alerts.service.gov.uk",
         },
     )
 
@@ -318,7 +319,7 @@ def test_reset_password(
         "/user/reset-password",
         data={
             "email": "test@example.com",
-            "admin_base_url": "http://localhost:6012",
+            "admin_base_url": f"https://admin.{os.environ.get('ENVIRONMENT')}.emergency-alerts.service.gov.uk",
         },
     )
 
@@ -335,6 +336,6 @@ def test_send_registration_email(
         f"/user/{fake_uuid}/email-verification",
         data={
             "to": "test@example.com",
-            "admin_base_url": "http://localhost:6012",
+            "admin_base_url": f"https://admin.{os.environ.get('ENVIRONMENT')}.emergency-alerts.service.gov.uk",
         },
     )
