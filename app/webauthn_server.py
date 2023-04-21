@@ -5,7 +5,6 @@ from fido2.webauthn import PublicKeyCredentialRpEntity
 
 
 def init_app(app):
-    # base_url = urlparse(app.config["ADMIN_BASE_URL"])
     base_url = urlparse(app.config["ADMIN_EXTERNAL_URL"])
     verify_origin_callback = None
 

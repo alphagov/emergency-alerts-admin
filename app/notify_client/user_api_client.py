@@ -17,7 +17,6 @@ ALLOWED_ATTRIBUTES = {
 class UserApiClient(NotifyAdminAPIClient):
     def init_app(self, app):
         super().init_app(app)
-        # self.admin_url = app.config["ADMIN_BASE_URL"]
         self.admin_url = app.config["ADMIN_EXTERNAL_URL"]
 
     def register_user(self, name, email_address, mobile_number, password, auth_type):
