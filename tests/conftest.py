@@ -2960,6 +2960,7 @@ def webauthn_dev_server(notify_admin, mocker):
     overrides = {
         "NOTIFY_ENVIRONMENT": "development",
         "ADMIN_BASE_URL": "https://webauthn.io",
+        "ADMIN_EXTERNAL_URL": "https://webauthn.io",
     }
 
     with set_config_values(notify_admin, overrides):
