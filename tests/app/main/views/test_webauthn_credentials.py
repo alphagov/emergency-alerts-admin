@@ -1,5 +1,4 @@
 import base64
-import os
 from unittest.mock import ANY, Mock
 
 import pytest
@@ -67,7 +66,6 @@ def test_begin_register_returns_encoded_options(
     )
 
     webauthn_options = cbor.decode(response.data)["publicKey"]
-    print(webauthn_options)
     assert webauthn_options["attestation"] == "direct"
     assert webauthn_options["timeout"] == 30_000
 

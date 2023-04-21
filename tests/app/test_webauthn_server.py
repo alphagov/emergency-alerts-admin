@@ -1,4 +1,5 @@
 import os
+
 import pytest
 
 from app import webauthn_server
@@ -8,7 +9,10 @@ from app import webauthn_server
 def app_with_mock_config(mocker):
     app = mocker.Mock()
 
-    app.config = {"ADMIN_EXTERNAL_URL": f"https://admin.{os.environ.get('ENVIRONMENT')}.emergency-alerts.service.gov.uk", "NOTIFY_ENVIRONMENT": "development"}
+    app.config = {
+        "ADMIN_EXTERNAL_URL": f"https://admin.{os.environ.get('ENVIRONMENT')}.emergency-alerts.service.gov.uk",
+        "NOTIFY_ENVIRONMENT": "development",
+    }
     return app
 
 
@@ -25,4 +29,5 @@ def test_server_relying_party_id(
     mocker,
 ):
     webauthn_server.init_app(app_with_mock_config)
-    assert app_with_mock_config.webauthn_server.rp.id == f"admin.{os.environ.get('ENVIRONMENT')}.emergency-alerts.service.gov.uk"
+    rp_id = "admin.{}.emergency-alerts.service.gov.uk"
+    assert app_with_mock_config.webauthn_server.rp.id == rp_id.format(os.environ.get("ENVIRONMENT"))
