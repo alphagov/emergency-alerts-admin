@@ -81,7 +81,7 @@ def test_begin_register_returns_encoded_options(
 
     relying_party_options = webauthn_options["rp"]
     assert relying_party_options["name"] == "GOV.UK Notify"
-    assert relying_party_options["id"] == f"admin.{os.environ.get('ENVIRONMENT')}.emergency-alerts.service.gov.uk"
+    assert relying_party_options["id"] == "webauthn.io"
 
 
 def test_begin_register_includes_existing_credentials(
