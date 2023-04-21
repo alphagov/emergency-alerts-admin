@@ -1,4 +1,5 @@
 import base64
+import os
 from unittest.mock import ANY, Mock
 
 import pytest
@@ -66,6 +67,7 @@ def test_begin_register_returns_encoded_options(
     )
 
     webauthn_options = cbor.decode(response.data)["publicKey"]
+    print(webauthn_options)
     assert webauthn_options["attestation"] == "direct"
     assert webauthn_options["timeout"] == 30_000
 
@@ -79,7 +81,7 @@ def test_begin_register_returns_encoded_options(
 
     relying_party_options = webauthn_options["rp"]
     assert relying_party_options["name"] == "GOV.UK Notify"
-    assert relying_party_options["id"] == "webauthn.io"
+    assert relying_party_options["id"] == f"admin.{os.environ.get('ENVIRONMENT')}.emergency-alerts.service.gov.uk"
 
 
 def test_begin_register_includes_existing_credentials(
