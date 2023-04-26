@@ -50,11 +50,7 @@ def _create_example_template(service_id):
 @user_is_gov_user
 def add_service():
     default_organisation_type = current_user.default_organisation_type
-    if default_organisation_type == "nhs":
-        form = CreateNhsServiceForm()
-        default_organisation_type = None
-    else:
-        form = CreateServiceForm(organisation_type=default_organisation_type)
+    form = CreateServiceForm(organisation_type=default_organisation_type)
 
     if form.validate_on_submit():
         email_from = email_safe(form.name.data)

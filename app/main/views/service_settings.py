@@ -94,9 +94,7 @@ from app.utils.user import (
 
 PLATFORM_ADMIN_SERVICE_PERMISSIONS = OrderedDict(
     [
-        ("inbound_sms", {"title": "Receive inbound SMS", "requires": "sms", "endpoint": ".service_set_inbound_number"}),
         ("email_auth", {"title": "Email authentication"}),
-        ("international_letters", {"title": "Send international letters", "requires": "letter"}),
     ]
 )
 
