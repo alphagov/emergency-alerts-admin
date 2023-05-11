@@ -1,11 +1,10 @@
-# notifications-admin
+# emergency-alerts-admin
 
-GOV.UK Notify admin application - https://www.notifications.service.gov.uk/
+GOV.UK Emergency Alerts admin application - https://admin.emergency-alerts.service.gov.uk/
 
  - Register and manage users
  - Create and manage services
- - Send batch emails and SMS by uploading a CSV
- - Show history of notifications
+ - Author and approve emergency alerts
 
 ## Setting up
 
@@ -37,11 +36,21 @@ In the root directory of the application, run:
 ```
 echo "
 export NOTIFY_ENVIRONMENT='development'
+export ENVIRONMENT='development'
+export SERVICE='admin'
+
 export FLASK_APP=application.py
-export FLASK_DEBUG=1
+export FLASK_DEBUG=False
 export WERKZEUG_DEBUG_PIN=off
 "> environment.sh
 ```
+
+## Running the Admin and Api services with Postgres
+
+Please refer to the README in the /emergency-alerts-tooling repository, in the /emergency-alerts-tooling/compose folder.
+
+## THE FOLLOWING INSTRUCTIONS ARE DEPRECATED AND SHOULD BE USED FOR HISTORICAL REFERENCE ONLY
+(This section will be removed in the future, as the Emergency Alerts app is fully decoupled from Notify)
 
 ### AWS credentials
 

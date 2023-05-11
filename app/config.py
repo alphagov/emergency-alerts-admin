@@ -10,8 +10,9 @@ if os.environ.get("VCAP_APPLICATION"):
 
 
 class Config(object):
-    ADMIN_CLIENT_SECRET = os.environ.get("ADMIN_CLIENT_SECRET")
-    API_HOST_NAME = os.environ.get("API_HOST_NAME")
+    ADMIN_CLIENT_SECRET = "dev-notify-secret-key"
+    API_HOST_NAME = "http://localhost:6011"
+    ADMIN_EXTERNAL_URL = "http://localhost:6012"
     SECRET_KEY = os.environ.get("SECRET_KEY")
     DANGEROUS_SALT = os.environ.get("DANGEROUS_SALT")
     ZENDESK_API_KEY = os.environ.get("ZENDESK_API_KEY")
@@ -110,10 +111,9 @@ class Development(Config):
     TRANSIENT_UPLOADED_LETTERS = "development-transient-uploaded-letters"
     PRECOMPILED_ORIGINALS_BACKUP_LETTERS = "development-letters-precompiled-originals-backup"
 
-    ADMIN_CLIENT_SECRET = "dev-notify-secret-key"
     DANGEROUS_SALT = "dev-notify-salt"
     SECRET_KEY = "dev-notify-secret-key"
-    API_HOST_NAME = os.environ.get("API_HOST_NAME", "http://localhost:6011")
+    API_HOST_NAME = "http://localhost:6011"
     ANTIVIRUS_API_HOST = "http://localhost:6016"
     ANTIVIRUS_API_KEY = "test-key"
     ANTIVIRUS_ENABLED = os.getenv("ANTIVIRUS_ENABLED") == "1"
