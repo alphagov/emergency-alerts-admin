@@ -20,7 +20,7 @@ from flask_wtf import FlaskForm as Form
 from flask_wtf.file import FileAllowed
 from flask_wtf.file import FileField as FileField_wtf
 from flask_wtf.file import FileSize
-from orderedset import OrderedSet
+from ordered_set import OrderedSet
 from werkzeug.utils import cached_property
 from wtforms import (
     BooleanField,

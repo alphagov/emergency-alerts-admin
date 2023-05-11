@@ -7,7 +7,7 @@ from emergency_alerts_utils.recipients import InvalidEmailError, validate_email_
 from emergency_alerts_utils.sanitise_text import SanitiseSMS
 from emergency_alerts_utils.template import BroadcastMessageTemplate
 from flask import current_app
-from orderedset import OrderedSet
+from ordered_set import OrderedSet
 from wtforms import ValidationError
 from wtforms.validators import StopValidation
 

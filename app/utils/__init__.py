@@ -4,7 +4,7 @@ from itertools import chain
 from emergency_alerts_utils.field import Field
 from flask import abort, g, make_response, request
 from flask_login import current_user
-from orderedset._orderedset import OrderedSet
+from ordered_set import OrderedSet
 from werkzeug.datastructures import MultiDict
 from werkzeug.routing import RequestRedirect
 

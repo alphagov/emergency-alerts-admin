@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from emergency_alerts_utils.polygons import Polygons
 from emergency_alerts_utils.template import BroadcastPreviewTemplate
 from flask import current_app
-from orderedset import OrderedSet
+from ordered_set import OrderedSet
 from werkzeug.utils import cached_property
 
 from app.broadcast_areas.models import (
