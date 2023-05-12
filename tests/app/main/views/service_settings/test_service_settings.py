@@ -113,7 +113,6 @@ def mock_get_service_settings_page_common(
                 "Email branding GOV.UK Change email branding (admin view)",
                 "Letter branding Not set Change letter branding (admin view)",
                 "Custom data retention Email – 7 days Change data retention",
-                "Receive inbound SMS Off Change your settings for Receive inbound SMS",
                 "Email authentication Off Change your settings for Email authentication",
                 "Emergency alerts Off Change your settings for emergency alerts",
             ],

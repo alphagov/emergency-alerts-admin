@@ -58,18 +58,6 @@ def test_service_set_permission_does_not_exist_for_broadcast_permission(
     [
         (
             [],
-            "inbound_sms",
-            "True",
-            ["inbound_sms"],
-        ),
-        (
-            ["inbound_sms"],
-            "inbound_sms",
-            "False",
-            [],
-        ),
-        (
-            [],
             "email_auth",
             "True",
             ["email_auth"],
@@ -77,18 +65,6 @@ def test_service_set_permission_does_not_exist_for_broadcast_permission(
         (
             ["email_auth"],
             "email_auth",
-            "False",
-            [],
-        ),
-        (
-            [],
-            "international_letters",
-            "True",
-            ["international_letters"],
-        ),
-        (
-            ["international_letters"],
-            "international_letters",
             "False",
             [],
         ),
@@ -131,18 +107,6 @@ def test_service_set_permission(
     [
         ({"restricted": True}, ".service_switch_live", {}, "Live Off Change service status"),
         ({"restricted": False}, ".service_switch_live", {}, "Live On Change service status"),
-        (
-            {"permissions": ["sms"]},
-            ".service_set_inbound_number",
-            {},
-            "Receive inbound SMS Off Change your settings for Receive inbound SMS",
-        ),
-        (
-            {"permissions": ["letter"]},
-            ".service_set_permission",
-            {"permission": "international_letters"},
-            "Send international letters Off Change your settings for Send international letters",
-        ),
     ],
 )
 def test_service_setting_toggles_show(
@@ -194,24 +158,6 @@ def test_service_settings_links_for_archived_service(
         len([link for link in links if link.get("href") == url_for(".archive_service", service_id=service_one["id"])])
         == 0
     )
-
-
-@pytest.mark.parametrize(
-    "permissions,permissions_text,visible",
-    [
-        ("sms", "inbound SMS", True),
-        ("inbound_sms", "inbound SMS", False),  # no sms parent permission
-        # also test no permissions set
-        ("", "inbound SMS", False),
-    ],
-)
-def test_service_settings_doesnt_show_option_if_parent_permission_disabled(
-    get_service_settings_page, service_one, permissions, permissions_text, visible
-):
-    service_one["permissions"] = [permissions]
-    page = get_service_settings_page()
-    cells = page.select("td")
-    assert any(cell for cell in cells if permissions_text in cell.text) is visible
 
 
 def test_normal_user_doesnt_see_any_platform_admin_settings(
