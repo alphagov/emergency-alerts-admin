@@ -11,5 +11,9 @@ function run_admin(){
     . $VENV_ADMIN/bin/activate && flask run -p 6012 --host=0.0.0.0
 }
 
-configure_container_role
-run_admin
+if [[ ! -z $DEBUG ]]; then
+    echo "Starting in debug mode.."
+else
+    configure_container_role
+    run_admin
+fi
