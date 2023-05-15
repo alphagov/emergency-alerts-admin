@@ -78,7 +78,7 @@ def test_begin_register_returns_encoded_options(
     assert user_options["id"] == bytes(platform_admin_user["id"], "utf-8")
 
     relying_party_options = webauthn_options["rp"]
-    assert relying_party_options["name"] == "GOV.UK Notify"
+    assert relying_party_options["name"] == "GOV.UK Emergency Alerts"
     assert relying_party_options["id"] == "webauthn.io"
 
 

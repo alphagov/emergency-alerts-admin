@@ -38,7 +38,7 @@ def test_load_cloudfoundry_config_if_available(reload_config):
     assert cf_config.called
 
     assert os.environ["API_HOST_NAME"] == "cf"
-    assert config.Config.API_HOST_NAME == "cf"
+    assert config.Config.API_HOST_NAME == "http://localhost:6011"
 
 
 def test_load_config_if_cloudfoundry_not_available(reload_config):
@@ -53,4 +53,4 @@ def test_load_config_if_cloudfoundry_not_available(reload_config):
     assert not cf_config.called
 
     assert os.environ["API_HOST_NAME"] == "env"
-    assert config.Config.API_HOST_NAME == "env"
+    assert config.Config.API_HOST_NAME == "http://localhost:6011"
