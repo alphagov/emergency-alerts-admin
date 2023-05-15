@@ -1,3 +1,4 @@
+import os
 from urllib.parse import urlparse
 
 from fido2.server import Fido2Server
@@ -5,7 +6,12 @@ from fido2.webauthn import PublicKeyCredentialRpEntity
 
 
 def init_app(app):
-    base_url = urlparse(app.config["ADMIN_EXTERNAL_URL"])
+    admin_url = app.config["ADMIN_EXTERNAL_URL"]
+
+    if os.environ.get("ENVIRONMENT") == "production":
+        admin_url = "https://emergency-alerts.service.gov.uk"
+
+    base_url = urlparse(admin_url)
     verify_origin_callback = None
 
     # stub verification in dev (to avoid need for HTTPS)
@@ -14,8 +20,10 @@ def init_app(app):
 
     relying_party = PublicKeyCredentialRpEntity(
         id=base_url.hostname,
-        name="GOV.UK Notify",
+        name="GOV.UK Emergency Alerts",
     )
+
+    app.logger.info(f"Relying party: {relying_party}")
 
     app.webauthn_server = Fido2Server(
         relying_party,
