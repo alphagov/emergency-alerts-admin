@@ -23,6 +23,8 @@ def init_app(app):
         name="GOV.UK Emergency Alerts",
     )
 
+    app.logger.info(f"Relying party: {relying_party}")
+
     app.webauthn_server = Fido2Server(
         relying_party,
         attestation="direct",
