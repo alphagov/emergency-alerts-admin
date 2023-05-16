@@ -49,6 +49,10 @@ export WERKZEUG_DEBUG_PIN=off
 
 Please refer to the README in the /emergency-alerts-tooling repository, in the /emergency-alerts-tooling/compose folder.
 
+### A note on Webauthn relying party URL
+
+For webauthn to work, the relying party URL must be equal to the domain, or be equal to a registrable sub-domain.  The lower environments, preview and staging, have URLs matching the Route 53 DNS entries. However, production is a special case, so in /emergency-alerts-admin/app/webauthn_server.py, the production URL is defined as a sub-domain to prevent environment names being prefixed to the URL as with the lower environments.
+
 ## THE FOLLOWING INSTRUCTIONS ARE DEPRECATED AND SHOULD BE USED FOR HISTORICAL REFERENCE ONLY
 (This section will be removed in the future, as the Emergency Alerts app is fully decoupled from Notify)
 

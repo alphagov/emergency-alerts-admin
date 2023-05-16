@@ -2,18 +2,16 @@ ARG ECS_ACCOUNT_NUMBER
 FROM ${ECS_ACCOUNT_NUMBER}.dkr.ecr.eu-west-2.amazonaws.com/eas-app-base:latest
 
 ENV SERVICE=admin
-ENV VENV_ADMIN=/venv/eas-admin
-ENV ADMIN_DIR=/eas/emergency-alerts-admin
 
 # Create root directory and copy repo
-COPY . $ADMIN_DIR
+COPY . $DIR_ADMIN
 
 # Run emergency-alerts-admin
-RUN $PYTHON_VERSION -m venv $VENV_ADMIN && cd $ADMIN_DIR && . $VENV_ADMIN/bin/activate && \
+RUN python$PYTHON_VERSION -m venv $VENV_ADMIN && cd $DIR_ADMIN && . $VENV_ADMIN/bin/activate && \
     pip3 install wheel && make bootstrap
 
 # Create a blank configuration file
-RUN echo "" > $ADMIN_DIR/environment.sh
+RUN echo "" > $DIR_ADMIN/environment.sh
 
 COPY scripts/start.sh /
 CMD bash /start.sh
