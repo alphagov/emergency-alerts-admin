@@ -53,7 +53,7 @@ class HeaderNavigation(Navigation):
             "security",
             "terms",
             "trial_mode_new",
-            "using_notify",
+            "using_emergency_alerts",
         },
         "pricing": {
             "pricing",

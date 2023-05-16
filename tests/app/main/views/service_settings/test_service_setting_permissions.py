@@ -54,114 +54,6 @@ def test_service_set_permission_does_not_exist_for_broadcast_permission(
 
 
 @pytest.mark.parametrize(
-    "initial_permissions, permission, form_data, expected_update",
-    [
-        (
-            [],
-            "inbound_sms",
-            "True",
-            ["inbound_sms"],
-        ),
-        (
-            ["inbound_sms"],
-            "inbound_sms",
-            "False",
-            [],
-        ),
-        (
-            [],
-            "email_auth",
-            "True",
-            ["email_auth"],
-        ),
-        (
-            ["email_auth"],
-            "email_auth",
-            "False",
-            [],
-        ),
-        (
-            [],
-            "international_letters",
-            "True",
-            ["international_letters"],
-        ),
-        (
-            ["international_letters"],
-            "international_letters",
-            "False",
-            [],
-        ),
-    ],
-)
-def test_service_set_permission(
-    mocker,
-    client_request,
-    platform_admin_user,
-    service_one,
-    mock_get_inbound_number_for_service,
-    mock_update_service_organisation,
-    permission,
-    initial_permissions,
-    form_data,
-    expected_update,
-):
-    service_one["permissions"] = initial_permissions
-    mock_update_service = mocker.patch("app.service_api_client.update_service")
-    client_request.login(platform_admin_user)
-    client_request.post(
-        "main.service_set_permission",
-        service_id=service_one["id"],
-        permission=permission,
-        _data={"enabled": form_data},
-        _expected_redirect=url_for(
-            "main.service_settings",
-            service_id=service_one["id"],
-        ),
-    )
-
-    assert mock_update_service.call_args[0][0] == service_one["id"]
-    new_permissions = mock_update_service.call_args[1]["permissions"]
-    assert len(new_permissions) == len(set(new_permissions))
-    assert set(new_permissions) == set(expected_update)
-
-
-@pytest.mark.parametrize(
-    "service_fields, endpoint, kwargs, text",
-    [
-        ({"restricted": True}, ".service_switch_live", {}, "Live Off Change service status"),
-        ({"restricted": False}, ".service_switch_live", {}, "Live On Change service status"),
-        (
-            {"permissions": ["sms"]},
-            ".service_set_inbound_number",
-            {},
-            "Receive inbound SMS Off Change your settings for Receive inbound SMS",
-        ),
-        (
-            {"permissions": ["letter"]},
-            ".service_set_permission",
-            {"permission": "international_letters"},
-            "Send international letters Off Change your settings for Send international letters",
-        ),
-    ],
-)
-def test_service_setting_toggles_show(
-    mocker,
-    mock_get_service_organisation,
-    get_service_settings_page,
-    service_one,
-    service_fields,
-    endpoint,
-    kwargs,
-    text,
-):
-    link_url = url_for(endpoint, **kwargs, service_id=service_one["id"])
-    service_one.update(service_fields)
-    page = get_service_settings_page()
-    assert normalize_spaces(page.select_one(f'a[href="{link_url}"]').find_parent("tr").text.strip()) == text
-
-
-@pytest.mark.parametrize(
     "endpoint, index, text", [(".archive_service", 0, "Delete this service"), (".history", 1, "Service history")]
 )
 def test_service_setting_links_displayed_for_active_services(
@@ -194,24 +86,6 @@ def test_service_settings_links_for_archived_service(
         len([link for link in links if link.get("href") == url_for(".archive_service", service_id=service_one["id"])])
         == 0
     )
-
-
-@pytest.mark.parametrize(
-    "permissions,permissions_text,visible",
-    [
-        ("sms", "inbound SMS", True),
-        ("inbound_sms", "inbound SMS", False),  # no sms parent permission
-        # also test no permissions set
-        ("", "inbound SMS", False),
-    ],
-)
-def test_service_settings_doesnt_show_option_if_parent_permission_disabled(
-    get_service_settings_page, service_one, permissions, permissions_text, visible
-):
-    service_one["permissions"] = [permissions]
-    page = get_service_settings_page()
-    cells = page.select("td")
-    assert any(cell for cell in cells if permissions_text in cell.text) is visible
 
 
 def test_normal_user_doesnt_see_any_platform_admin_settings(

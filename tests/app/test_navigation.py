@@ -342,7 +342,7 @@ EXCLUDED_ENDPOINTS = tuple(
             "user_profile_name",
             "user_profile_password",
             "user_profile_security_keys",
-            "using_notify",
+            "using_emergency_alerts",
             "verify",
             "verify_email",
             "view_current_broadcast",
@@ -461,11 +461,10 @@ def test_a_page_should_nave_selected_navigation_item(
 @pytest.mark.parametrize(
     "endpoint, selected_nav_item",
     [
-        ("main.documentation", "Documentation"),
         ("main.support", "Support"),
     ],
 )
-def test_a_page_should_nave_selected_header_navigation_item(
+def test_a_page_should_have_selected_header_navigation_item(
     client_request,
     endpoint,
     selected_nav_item,

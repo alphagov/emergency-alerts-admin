@@ -28,10 +28,6 @@
       {% endif %}
     {% else %}
       <h1 class="heading-large">Sign in</h1>
-      <p class="govuk-body">
-        If you do not have an account, you can
-        <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('.register') }}">create one now</a>.
-      </p>
     {% endif %}
 
     {% call form_wrapper(autocomplete=True) %}

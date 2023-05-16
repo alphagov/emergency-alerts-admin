@@ -2,7 +2,7 @@
 {% from "components/sub-navigation.html" import sub_navigation %}
 
 {% block per_page_title %}
-  Using Notify
+  Using Emergency Alerts
 {% endblock %}
 
 {% block maincolumn_content %}
@@ -13,17 +13,24 @@
   </div>
   <div class="govuk-grid-column-two-thirds">
 
-    <h1 class="heading-large">Using Notify</h1>
+    <h1 class="heading-large">Using Emergency Alerts</h1>
 
-    <p class="govuk-body">The information on this page has moved.</p>
+    <p class="govuk-body">This information is for teams using GOV.UK Emergency Alerts to send alerts.</p>
 
-    <p class="govuk-body">Find out more about:</p>
+    <h2 class="heading-medium">Help and guidance</h2>
     <ul class="govuk-list govuk-list--bullet">
       <li><a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('main.trial_mode_new') }}">trial mode</a></li>
       <li><a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('main.message_status') }}">message status types</a></li>
       <li><a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('main.features_email') }}">email replies</a></li>
       <li><a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('main.features_sms') }}">text message replies</a></li>
       <li><a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('main.features_letters') }}">letters</a></li>
+    </ul>
+    <p class="govuk-body"><a class="govuk-link govuk-link--no-visited-state" href="/">Contact us</a> if you cannot find what you’re looking for.</p>
+
+    <h2 class="heading-medium">More information</h2>
+    <p class="govuk-body">The GOV.UK Service Manual has advice on (content related to sending Emergency Alerts within Service Manual):</p>
+    <ul class="govuk-list govuk-list--bullet">
+      <li><a class="govuk-link govuk-link--no-visited-state" href="/">writing effective alerts</a></li>
     </ul>
 
   </div>

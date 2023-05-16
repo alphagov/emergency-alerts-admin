@@ -2,11 +2,6 @@
 // to prepend the path to where we store images
 
 @function file-url($file) {
-  $url: '';
-  @if $path {
-    $url: url($path + $file);
-  } @else {
-    $url: url($file);
-  }
+  $url: url("/static/images/" + $file);
   @return $url;
 }

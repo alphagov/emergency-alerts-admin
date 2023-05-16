@@ -9,29 +9,16 @@ from app.main.forms import FieldWithNoneOption
 from tests.conftest import SERVICE_ONE_ID, normalize_spaces, sample_uuid
 
 
-def test_non_logged_in_user_can_see_homepage(
+def test_non_logged_in_user_redirects_to_sign_in(
     client_request,
     mock_get_service_and_organisation_counts,
 ):
     client_request.logout()
-    page = client_request.get("main.index", _test_page_title=False)
 
-    assert page.select_one("h1").text.strip() == "Send emails, text messages and letters to your users"
-
-    assert page.select_one("a[role=button][draggable=false]")["href"] == url_for("main.register")
-
-    assert page.select_one("meta[name=description]")["content"].strip() == (
-        "GOV.UK Notify lets you send emails, text messages and letters "
-        "to your users. Try it now if you work in central government, a "
-        "local authority, or the NHS."
+    client_request.get(
+        "main.index",
+        _expected_status=302,
     )
-
-    assert normalize_spaces(page.select_one("#whos-using-notify").text) == (
-        "Who’s using GOV.UK Notify "
-        "There are 111 organisations and 9,999 services using Notify. "
-        "See the list of services and organisations."
-    )
-    assert page.select_one("#whos-using-notify a")["href"] == url_for("main.performance")
 
 
 def test_logged_in_user_redirects_to_choose_account(
@@ -174,8 +161,8 @@ def test_guidance_pages_link_to_service_pages_when_signed_in(
         ("old_roadmap", "roadmap"),
         ("information_risk_management", "security"),
         ("old_terms", "terms"),
-        ("information_security", "using_notify"),
-        ("old_using_notify", "using_notify"),
+        ("information_security", "using_emergency_alerts"),
+        ("old_using_notify", "using_emergency_alerts"),
         ("delivery_and_failure", "message_status"),
         ("callbacks", "documentation"),
         ("who_its_for", "who_can_use_notify"),
@@ -210,7 +197,7 @@ def test_message_status_page_contains_link_to_support(client_request):
 
 
 def test_old_using_notify_page(client_request):
-    client_request.get("main.using_notify", _expected_status=410)
+    client_request.get("main.using_emergency_alerts", _expected_status=410)
 
 
 def test_old_integration_testing_page(
@@ -231,7 +218,7 @@ def test_old_integration_testing_page(
 def test_terms_page_has_correct_content(client_request):
     terms_page = client_request.get("main.terms")
     assert normalize_spaces(terms_page.select("main p")[0].text) == (
-        "These terms apply to your service’s use of GOV.UK Notify. You must be the service manager to accept them."
+        "These terms apply to your use of GOV.UK Emergency Alerts."
     )
 
 
@@ -340,45 +327,4 @@ def test_letter_spec_redirect_with_non_logged_in_user(client_request):
         _expected_redirect=(
             "https://docs.notifications.service.gov.uk" "/documentation/images/notify-pdf-letter-spec-v2.4.pdf"
         ),
-    )
-
-
-def test_font_preload(
-    client_request,
-    mock_get_service_and_organisation_counts,
-):
-    client_request.logout()
-    page = client_request.get("main.index", _test_page_title=False)
-
-    preload_tags = page.select('link[rel=preload][as=font][type="font/woff2"][crossorigin]')
-
-    assert len(preload_tags) == 2, "Run `npm run build` to copy fonts into app/static/fonts/"
-
-    for element in preload_tags:
-        assert element["href"].startswith("https://static.example.com/fonts/")
-        assert element["href"].endswith(".woff2")
-
-
-@pytest.mark.parametrize("current_date, expected_rate", (("2022-05-01", "1.72"),))
-def test_sms_price(
-    client_request,
-    mock_get_service_and_organisation_counts,
-    current_date,
-    expected_rate,
-):
-    client_request.logout()
-
-    with freeze_time(current_date):
-        home_page = client_request.get("main.index", _test_page_title=False)
-        pricing_page = client_request.get("main.pricing")
-
-    assert (
-        normalize_spaces(home_page.select(".product-page-section")[5].select(".govuk-grid-column-one-half")[1].text)
-        == f"Text messages Up to 40,000 free text messages a year, then {expected_rate} pence per message"
-    )
-
-    assert normalize_spaces(pricing_page.select_one("#text-messages + p + p").text) == (
-        f"When a service has used its annual allowance, it costs "
-        f"{expected_rate} pence (plus VAT) for each text message you "
-        f"send."
     )
