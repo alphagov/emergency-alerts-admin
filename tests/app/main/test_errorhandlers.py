@@ -49,7 +49,9 @@ def test_csrf_returns_400(client_request, mocker):
     )
 
     assert page.select_one("h1").string.strip() == "Sorry, there’s a problem with GOV.UK Emergency Alerts"
-    assert page.select_one("title").string.strip() == "Sorry, there’s a problem with the service – GOV.UK Emergency Alerts"
+    assert (
+        page.select_one("title").string.strip() == "Sorry, there’s a problem with the service – GOV.UK Emergency Alerts"
+    )
 
 
 def test_csrf_redirects_to_sign_in_page_if_not_signed_in(client_request, mocker):
@@ -67,4 +69,6 @@ def test_405_returns_something_went_wrong_page(client_request, mocker):
     page = client_request.post_url("/", _expected_status=405)
 
     assert page.select_one("h1").string.strip() == "Sorry, there’s a problem with GOV.UK Emergency Alerts"
-    assert page.select_one("title").string.strip() == "Sorry, there’s a problem with the service – GOV.UK Emergency Alerts"
+    assert (
+        page.select_one("title").string.strip() == "Sorry, there’s a problem with the service – GOV.UK Emergency Alerts"
+    )
