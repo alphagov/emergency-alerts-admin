@@ -34,7 +34,7 @@
 {% endblock %}
 
 {% block pageTitle %}
-   {% block per_page_title %}{% endblock %} – GOV.UK Notify
+   {% block per_page_title %}{% endblock %} – GOV.UK Emergency Alerts
 {% endblock %}
 
 {% block bodyStart %}
@@ -56,13 +56,8 @@
           "active": header_navigation.is_selected('support')
         },
         {
-          "href": url_for('main.documentation'),
-          "text": "Documentation",
-          "active": header_navigation.is_selected('documentation')
-        },
-        {
           "href": url_for('main.user_profile'),
-          "text": current_user.name,
+          "text": "Profile",
           "active": header_navigation.is_selected('user-profile')
         },
         {
@@ -83,13 +78,8 @@
           "active": header_navigation.is_selected('support')
         },
         {
-          "href": url_for('main.documentation'),
-          "text": "Documentation",
-          "active": header_navigation.is_selected('documentation')
-        },
-        {
           "href": url_for('main.user_profile'),
-          "text": current_user.name,
+          "text": "Profile",
           "active": header_navigation.is_selected('user-profile')
         },
         {
@@ -104,21 +94,6 @@
         "href": url_for('main.support'),
         "text": "Support",
         "active": header_navigation.is_selected('support')
-      },
-      {
-        "href": url_for('main.features'),
-        "text": "Features",
-        "active": header_navigation.is_selected('features')
-      },
-      {
-        "href": url_for('main.pricing'),
-        "text": "Pricing",
-        "active": header_navigation.is_selected('pricing')
-      },
-      {
-        "href": url_for('main.documentation'),
-        "text": "Documentation",
-        "active": header_navigation.is_selected('documentation')
       },
       {
         "href": url_for('main.sign_in'),
@@ -138,20 +113,49 @@
 {% endblock %}
 
 {% block footer %}
-  {% set meta_items = [
-    {
-      "href": url_for("main.privacy"),
-      "text": "Privacy"
-    },
-    {
-      "href": url_for("main.cookies"),
-      "text": "Cookies"
-    },
-    {
-      "href": url_for("main.accessibility_statement"),
-      "text": "Accessibility statement"
-    }
-  ] %}
+  {% if current_user.is_authenticated %}
+    {% set meta_items = [
+      {
+        "href": url_for("main.privacy"),
+        "text": "Privacy"
+      },
+      {
+        "href": url_for("main.accessibility_statement"),
+        "text": "Accessibility statement"
+      },
+      {
+        "href": url_for("main.terms"),
+        "text": "Terms of use"
+      },
+      {
+        "href": url_for("main.cookies"),
+        "text": "Cookies"
+      },
+      {
+        "href": url_for('main.security'),
+        "text": "Security"
+      }
+    ] %}
+  {% else %}
+    {% set meta_items = [
+      {
+        "href": url_for("main.privacy"),
+        "text": "Privacy"
+      },
+      {
+        "href": url_for("main.accessibility_statement"),
+        "text": "Accessibility statement"
+      },
+      {
+        "href": url_for("main.terms"),
+        "text": "Terms of use"
+      },
+      {
+        "href": url_for("main.cookies"),
+        "text": "Cookies"
+      },
+    ] %}
+  {% endif %}
 
   {% if current_service and current_service.research_mode %}
     {% set meta_suffix = 'Built by the <a href="https://www.gov.uk/government/organisations/government-digital-service" class="govuk-footer__link">Government Digital Service</a><span id="research-mode" class="research-mode">research mode</span>' %}
@@ -161,108 +165,7 @@
 
   {{ govukFooter({
     "classes": "js-footer",
-    "navigation": [
-      {
-        "title": "Support",
-        "columns": 1,
-        "width": "one-quarter",
-        "items": [
-          {
-            "href": url_for('main.support'),
-            "text": "Contact support"
-          },
-          {
-            "href": "https://status.notifications.service.gov.uk",
-            "text": "System status"
-          },
-          {
-            "href": url_for('main.performance'),
-            "text": "Performance data"
-          },
-          {
-            "href": "https://ukgovernmentdigital.slack.com/messages/C0E1ADVPC",
-            "text": "Chat to us on Slack"
-          }
-        ]
-      },
-      {
-        "title": "About Notify",
-        "columns": 1,
-        "width": "one-quarter",
-        "items": [
-          {
-            "href": url_for("main.features"),
-            "text": "Features"
-          },
-          {
-            "href": url_for("main.roadmap"),
-            "text": "Roadmap"
-          },
-          {
-            "href": url_for("main.who_can_use_notify"),
-            "text": "Who can use Notify",
-          },
-          {
-            "href": url_for("main.security"),
-            "text": "Security"
-          },
-          {
-            "href": url_for("main.terms"),
-            "text": "Terms of use"
-          },
-          {
-            "href": "https://gds.blog.gov.uk/category/gov-uk-notify/",
-            "text": "Blog"
-          }
-        ]
-      },
-      {
-        "title": "Pricing and payment",
-        "columns": 1,
-        "width": "one-quarter",
-        "items": [
-          {
-            "href": url_for("main.pricing"),
-            "text": "Pricing"
-          },
-          {
-            "href": url_for("main.how_to_pay"),
-            "text": "How to pay"
-          },
-          {
-            "href": url_for("main.billing_details"),
-            "text": "Billing details"
-          }
-        ]
-      },
-      {
-        "title": "Using Notify",
-        "columns": 1,
-        "width": "one-quarter",
-        "items": [
-          {
-            "href": url_for("main.get_started"),
-            "text": "Get started"
-          },
-          {
-            "href": url_for("main.trial_mode_new"),
-            "text": "Trial mode"
-          },
-          {
-            "href": url_for("main.message_status"),
-            "text": "Delivery status"
-          },
-          {
-            "href": url_for("main.guidance_index"),
-            "text": "Guidance"
-          },
-          {
-            "href": url_for("main.documentation"),
-            "text": "API documentation"
-          }
-        ]
-      }
-    ],
+    "navigation": navigation,
     "meta": {
       "items": meta_items,
       "html": meta_suffix

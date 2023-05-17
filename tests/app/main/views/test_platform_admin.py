@@ -507,20 +507,6 @@ def test_get_tech_failure_status_box_data_removes_percentage_data():
     assert "percentage" not in tech_failure_data
 
 
-def test_platform_admin_splash_doesnt_talk_to_api(
-    client_request,
-    platform_admin_user,
-):
-
-    client_request.login(platform_admin_user)
-
-    page = client_request.get("main.platform_admin_splash_page")
-
-    assert page.select_one("main .govuk-body a")["href"] == url_for(
-        "main.platform_admin",
-    )
-
-
 def test_platform_admin_with_start_and_end_dates_provided(
     mocker,
     client_request,

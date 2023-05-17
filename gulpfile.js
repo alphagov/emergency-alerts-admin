@@ -31,11 +31,6 @@ const paths = {
   npm: 'node_modules/',
   govuk_frontend: 'node_modules/govuk-frontend/'
 };
-// Rewrite /static prefix for URLs in CSS files
-let staticPathMatcher = new RegExp('^\/static\/');
-if (process.env.NOTIFY_ENVIRONMENT == 'development') { // pass through if on development
-  staticPathMatcher = url => url;
-}
 
 // 3. TASKS
 // - - - - - - - - - - - - - - -
@@ -157,9 +152,6 @@ const sass = () => {
         paths.govuk_frontend,
         paths.npm
       ]
-    }))
-    .pipe(plugins.cssUrlAdjuster({
-      replace: [staticPathMatcher, '/']
     }))
     // cssUrlAdjuster outputs uncompressed CSS so we need to perform the compression here
     .pipe(plugins.cleanCSS({ compatibility: '*' }))

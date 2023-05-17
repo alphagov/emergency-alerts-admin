@@ -4,7 +4,7 @@ def test_owasp_useful_headers_set(
     mock_get_service_and_organisation_counts,
 ):
     client_request.logout()
-    response = client_request.get_response(".index")
+    response = client_request.get_response("main.sign_in")
 
     assert response.headers["X-Frame-Options"] == "deny"
     assert response.headers["X-Content-Type-Options"] == "nosniff"
@@ -36,7 +36,7 @@ def test_headers_non_ascii_characters_are_replaced(
         values={"LOGO_CDN_DOMAIN": "static-logos€æ.test.com"},
     )
 
-    response = client_request.get_response(".index")
+    response = client_request.get_response("main.sign_in")
 
     assert response.headers["Content-Security-Policy"] == (
         "default-src 'self' static.example.com 'unsafe-inline';"

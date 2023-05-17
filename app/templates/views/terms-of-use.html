@@ -1,4 +1,4 @@
-{% extends "content_template.html" %}
+{% extends "withoutnav_template.html" %}
 
 {% from "components/banner.html" import banner_wrapper %}
 
@@ -9,40 +9,40 @@
   Terms of use
 {% endblock %}
 
-{% block content_column_content %}
+{% block maincolumn_content %}
 
-  <h1 class="heading-large">Terms of use</h1>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="heading-large">Terms of use</h1>
 
-  <p class="govuk-body">
-    These terms apply to your service’s use of GOV.UK&nbsp;Notify. You must be the service manager to accept them.
-  </p>
+      <p class="govuk-body">
+        These terms apply to your use of GOV.UK Emergency Alerts.
+      </p>
 
-  <h2 class="heading-medium" id="when-using-notify">When using Notify</h2>
-  <p class="govuk-body">You must:</p>
-  <ul class="govuk-list govuk-list--bullet">
-    <li>complete your organisation’s information assurance process (you do not need to include Notify or our delivery partners, we’ve already done that)</li>
-    <li>tell us immediately if you have any security breaches</li>
-    <li>keep your API keys secure</li>
-    <li>get the right levels of consent (to send messages and to use data)</li>
-    <li>not send unsolicited messages, only ones related to a transaction or something the user has subscribed to be updated about (<a class="govuk-link govuk-link--no-visited-state" href="https://www.gov.uk/service-manual/design/sending-emails-and-text-messages">check the Service Manual</a> if you’re not sure)</li>
-    <li>
-      send messages that meet the GOV.UK Service Manual standards for <a class="govuk-link govuk-link--no-visited-state" href="https://www.gov.uk/service-manual/design/sending-emails-and-text-messages">writing text messages and emails</a></li>
-    <li>check that the data you add to Notify is accurate and complies with data protection legislation</li>
-  </ul>
-  <p class="govuk-body">If you do not keep to these terms, we might have to stop sending your messages.</p>
+      <h2 class="heading-medium" id="when-using-emergency-alerts">When using Emergency Alerts</h2>
+      <p class="govuk-body">You must:</p>
+      <ul class="govuk-list govuk-list--bullet">
+        <li>complete your organisation’s information assurance process (you do not need to include the Emergency Alerts team or our delivery partners, we’ve already done that)</li>
+        <li>tell us immediately if you have any security breaches</li>
+        <li>keep your API keys secure</li>
+        <li>get and maintain the right levels of consent (for access to the system to author and manage alerts)</li>
+        <li>not author, manage or attempt to send unauthorised Emergency Alerts</li>
+        <li>only send alerts that meet the Emergency Alert protocol</li>
+        <li>check that the data you add to the Emergency Alerts system is accurate and complies with data protection legislation</li>
+      </ul>
+      <p class="govuk-body">If you do not keep to these terms, we might stop sending your alerts.</p>
 
-  <p class="govuk-body">Notify will:</p>
-  <ul class="govuk-list govuk-list--bullet">
-    <li>send all the messages you pass to us, as long as they meet our guidelines</li>
-    <li>
-      show how Notify is performing (through our <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('main.performance') }}">performance</a> and <a class="govuk-link govuk-link--no-visited-state" href="https://status.notifications.service.gov.uk/">status</a> pages)
-    </li>
-    <li>keep your data <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('.security') }}">secure</a></li>
-    <li>give you one month’s notice by email if we change our terms of use or delivery providers</li>
-  </ul>
+      <p class="govuk-body">Emergency Alerts will:</p>
+      <ul class="govuk-list govuk-list--bullet">
+        <li>send alerts, as long as they meet our guidelines</li>
+        <li>keep your data <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('.security') }}">secure</a></li>
+        <li>give you one month’s notice by email if we change our terms of use</li>
+      </ul>
 
-  <h2 class="heading-medium" id="leaving-notify">Leaving Notify</h2>
-  <p class="govuk-body">You can <a class="govuk-link govuk-link--no-visited-state" href="{{url_for('.support')}}">contact us</a> at any time to close your account.</p>
-  <p class="govuk-body">Check our privacy notice to find out <a class="govuk-link govuk-link--no-visited-state" href="{{url_for('.privacy')}}#how-long-we-keep-your-data">how long we keep your personal data</a>.</p>
+      <h2 class="heading-medium" id="leaving-notify">Leaving Emergency Alerts</h2>
+      <p class="govuk-body">You can <a class="govuk-link govuk-link--no-visited-state" href="{{url_for('.support')}}">contact us</a> at any time to close your account.</p>
+      <p class="govuk-body">Check our privacy notice to find out <a class="govuk-link govuk-link--no-visited-state" href="{{url_for('.privacy')}}#how-long-we-keep-your-data">how long we keep your personal data</a>.</p>
+    </div>
+  </div>
 
 {% endblock %}

@@ -51,7 +51,7 @@ describe("Cookie message", () => {
             <button type="button" class="govuk-button notify-cookie-banner__button notify-cookie-banner__button-reject" type="button" data-accept-cookies="false" aria-describedby="notify-cookie-banner__heading">
               No<span class="govuk-visually-hidden">, Notify cannot store analytics cookies on your device</span>
             </button>
-            <a class="govuk-link notify-cookie-banner__link" href="/cookies">How Notify uses cookies</a>
+            <a class="govuk-link notify-cookie-banner__link" href="/cookies">How Emergency Alerts uses cookies</a>
           </div>
         </div>
 

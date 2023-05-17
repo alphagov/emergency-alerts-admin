@@ -41,7 +41,7 @@ def test_get_support_index_page_when_signed_out(
     assert page.select_one("form")["method"] == "post"
     assert "action" not in page.select_one("form")
     assert normalize_spaces(page.select_one("form label[for=who-0]").text) == (
-        "I work in the public sector and need to send emails, text messages or letters"
+        "I work in the public sector and need support with the Emergency Alerts service"
     )
     assert page.select_one("form input#who-0")["value"] == "public-sector"
     assert normalize_spaces(page.select_one("form label[for=who-1]").text) == (
@@ -83,7 +83,7 @@ def test_get_support_as_someone_in_the_public_sector(
         _data={"who": "public-sector"},
         _follow_redirects=True,
     )
-    assert normalize_spaces(page.select("h1")) == "Contact GOV.UK Notify support"
+    assert normalize_spaces(page.select("h1")) == "Contact GOV.UK Emergency Alerts support"
     assert page.select_one("form textarea[name=feedback]")
     assert page.select_one("form input[name=name]")
     assert page.select_one("form input[name=email_address]")
@@ -99,8 +99,8 @@ def test_get_support_as_member_of_public(
         _data={"who": "public"},
         _follow_redirects=True,
     )
-    assert normalize_spaces(page.select("h1")) == "The GOV.UK Notify service is for people who work in the government"
-    assert len(page.select("h2 a")) == 3
+    assert normalize_spaces(page.select("h1")) == "The GOV.UK Emergency Alerts service is for people who work in the government"
+    assert len(page.select("h2 a")) == 2
     assert not page.select("form")
     assert not page.select("input")
     assert not page.select("form button")
@@ -399,7 +399,7 @@ def test_redirects_to_triage(
     "ticket_type, expected_h1",
     (
         (PROBLEM_TICKET_TYPE, "Report a problem"),
-        (GENERAL_TICKET_TYPE, "Contact GOV.UK Notify support"),
+        (GENERAL_TICKET_TYPE, "Contact GOV.UK Emergency Alerts support"),
     ),
 )
 def test_options_on_triage_page(
@@ -498,8 +498,8 @@ def test_triage_redirects_to_correct_url(
 @pytest.mark.parametrize(
     "extra_args, expected_back_link",
     [
-        ({"severe": "yes"}, partial(url_for, "main.triage", ticket_type=PROBLEM_TICKET_TYPE)),
-        ({"severe": "no"}, partial(url_for, "main.triage", ticket_type=PROBLEM_TICKET_TYPE)),
+        ({"severe": "yes"}, partial(url_for, "main.support")),
+        ({"severe": "no"}, partial(url_for, "main.support")),
         ({"severe": "foo"}, partial(url_for, "main.support")),  # hacking the URL
         ({}, partial(url_for, "main.support")),
     ],

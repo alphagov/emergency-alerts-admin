@@ -6,7 +6,7 @@ def test_BeautifulSoup_methods_are_overridden(
     mock_get_service_and_organisation_counts,
 ):
     client_request.logout()
-    page = client_request.get("main.index", _test_page_title=False)
+    page = client_request.get("main.sign_in", _test_page_title=False)
 
     with pytest.raises(AttributeError) as exception:
         page.find("h1")

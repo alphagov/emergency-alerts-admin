@@ -1609,38 +1609,6 @@ def test_org_breadcrumbs_do_not_show_if_user_is_not_an_org_member(
     assert not page.select(".navigation-organisation-link")
 
 
-def test_org_breadcrumbs_show_if_user_is_a_member_of_the_services_org(
-    mocker,
-    mock_get_template_statistics,
-    mock_get_service_templates_when_no_templates_exist,
-    mock_has_no_jobs,
-    mock_get_annual_usage_for_service,
-    mock_get_free_sms_fragment_limit,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
-    active_user_with_permissions,
-    client_request,
-):
-    # active_user_with_permissions (used by the client_request) is an org member
-
-    service_one_json = service_json(
-        SERVICE_ONE_ID, users=[active_user_with_permissions["id"]], restricted=False, organisation_id=ORGANISATION_ID
-    )
-
-    mocker.patch("app.service_api_client.get_service", return_value={"data": service_one_json})
-    mocker.patch(
-        "app.organisations_client.get_organisation",
-        return_value=organisation_json(
-            id_=ORGANISATION_ID,
-        ),
-    )
-
-    page = client_request.get("main.service_dashboard", service_id=SERVICE_ONE_ID)
-    assert page.select_one(".navigation-organisation-link")["href"] == url_for(
-        "main.organisation_dashboard",
-        org_id=ORGANISATION_ID,
-    )
-
-
 def test_org_breadcrumbs_do_not_show_if_user_is_a_member_of_the_services_org_but_service_is_in_trial_mode(
     mocker,
     mock_get_template_statistics,
@@ -1664,36 +1632,6 @@ def test_org_breadcrumbs_do_not_show_if_user_is_a_member_of_the_services_org_but
     page = client_request.get("main.service_dashboard", service_id=SERVICE_ONE_ID)
 
     assert not page.select(".navigation-breadcrumb")
-
-
-def test_org_breadcrumbs_show_if_user_is_platform_admin(
-    mocker,
-    mock_get_template_statistics,
-    mock_get_service_templates_when_no_templates_exist,
-    mock_has_no_jobs,
-    mock_get_annual_usage_for_service,
-    mock_get_free_sms_fragment_limit,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
-    platform_admin_user,
-    client_request,
-):
-    service_one_json = service_json(SERVICE_ONE_ID, users=[platform_admin_user["id"]], organisation_id=ORGANISATION_ID)
-
-    mocker.patch("app.service_api_client.get_service", return_value={"data": service_one_json})
-    mocker.patch(
-        "app.organisations_client.get_organisation",
-        return_value=organisation_json(
-            id_=ORGANISATION_ID,
-        ),
-    )
-
-    client_request.login(platform_admin_user, service_one_json)
-    page = client_request.get("main.service_dashboard", service_id=SERVICE_ONE_ID)
-
-    assert page.select_one(".navigation-organisation-link")["href"] == url_for(
-        "main.organisation_dashboard",
-        org_id=ORGANISATION_ID,
-    )
 
 
 def test_breadcrumb_shows_if_service_is_suspended(
