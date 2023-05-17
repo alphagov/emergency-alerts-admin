@@ -2,10 +2,9 @@ from emergency_alerts_utils.template import HTMLEmailTemplate, LetterImageTempla
 from flask import abort, make_response, redirect, render_template, request, url_for
 from flask_login import current_user
 
-from app import letter_branding_client, status_api_client
+from app import letter_branding_client
 from app.main import main
 from app.main.forms import FieldWithNoneOption
-from app.main.views.pricing import CURRENT_SMS_RATE
 from app.main.views.sub_navigation_dictionaries import features_nav, using_notify_nav
 from app.models.branding import EmailBranding
 from app.utils import hide_from_search_engines

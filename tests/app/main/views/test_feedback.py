@@ -99,7 +99,10 @@ def test_get_support_as_member_of_public(
         _data={"who": "public"},
         _follow_redirects=True,
     )
-    assert normalize_spaces(page.select("h1")) == "The GOV.UK Emergency Alerts service is for people who work in the government"
+    assert (
+        normalize_spaces(page.select("h1"))
+        == "The GOV.UK Emergency Alerts service is for people who work in the government"
+    )
     assert len(page.select("h2 a")) == 2
     assert not page.select("form")
     assert not page.select("input")

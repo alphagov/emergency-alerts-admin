@@ -39,13 +39,7 @@ def support():
             if form.who.data == "public":
                 return redirect(url_for(".support_public"))
             else:
-                return redirect(
-                    url_for(
-                        ".feedback",
-                        ticket_type=GENERAL_TICKET_TYPE,
-                        severe="no"
-                    )
-                )
+                return redirect(url_for(".feedback", ticket_type=GENERAL_TICKET_TYPE, severe="no"))
 
     return render_template("views/support/index.html", form=form)
 
