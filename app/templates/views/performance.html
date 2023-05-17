@@ -116,7 +116,7 @@
   </div>
 
   <h2 class="govuk-heading-m" id='organisations-using-emergency-alerts'>
-    Organisations using Notify
+    Organisations using Emergency Alerts
   </h2>
   <div class="govuk-grid-row bottom-gutter">
     <div class="govuk-grid-column-one-half">
@@ -128,13 +128,13 @@
       <span class="govuk-visually-hidden">and</span>
       <div class="product-page-big-number">{{ count_of_live_services_and_organisations.services|format_thousands }}</div>
       services
-      <span class="govuk-visually-hidden">using Notify.</span>
+      <span class="govuk-visually-hidden">using Emergency Alerts.</span>
     </div>
   </div>
   <div class="dashboard-table">
     {% call(item, row_number) list_table(
       organisations_using_notify,
-      caption='Organisations using Notify',
+      caption='Organisations using Emergency Alerts',
       caption_visible=False,
       field_headings=[
         'Organisation', 'Number of live services'
