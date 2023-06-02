@@ -1,14 +1,13 @@
 name: update-tags
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
 
 jobs:
   update-tags:
-    runs-on: ubuntu
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout The Repository
         uses: actions/checkout@v3
