@@ -1,0 +1,26 @@
+name: update-tags
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-tags:
+    runs-on: ubuntu
+    steps:
+      - name: Checkout The Repository
+        uses: actions/checkout@v3
+
+      - name: Retag Environments
+        run: |
+          git tag -f admin_preview_latest
+          git tag -f admin_staging_latest
+          git tag -f admin_production_latest
+          git push --tags --force
+
+      - name: Notify On Failure
+        if: failure()
+        run: |
+          echo "I have failed"
