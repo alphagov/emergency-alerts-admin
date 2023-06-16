@@ -24,24 +24,27 @@
       <ul class="govuk-list govuk-list--bullet">
         <li>complete your organisation’s information assurance process (you do not need to include the Emergency Alerts team or our delivery partners, we’ve already done that)</li>
         <li>tell us immediately if you have any security breaches</li>
-        <li>keep your API keys secure</li>
-        <li>get and maintain the right levels of consent (for access to the system to author and manage alerts)</li>
-        <li>not author, manage or attempt to send unauthorised Emergency Alerts</li>
-        <li>only send alerts that meet the Emergency Alert protocol</li>
+        <li>keep your API keys secure, if you have them</li>
+        <li>ensure you are given and maintain the right levels of consent for access to the system to author and manage alerts</li>
         <li>check that the data you add to the Emergency Alerts system is accurate and complies with data protection legislation</li>
+        <li>not author, manage or attempt to send unauthorised emergency alerts</li>
+        <li>only send alerts that meet the thresholds set out in the Emergency Alert protocol</li>
       </ul>
-      <p class="govuk-body">If you do not keep to these terms, we might stop sending your alerts.</p>
 
       <p class="govuk-body">Emergency Alerts will:</p>
       <ul class="govuk-list govuk-list--bullet">
         <li>send alerts, as long as they meet our guidelines</li>
-        <li>keep your data <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('.security') }}">secure</a></li>
+        <li>keep your <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('.security') }}">data secure</a></li>
         <li>give you one month’s notice by email if we change our terms of use</li>
       </ul>
 
-      <h2 class="heading-medium" id="leaving-notify">Leaving Emergency Alerts</h2>
-      <p class="govuk-body">You can <a class="govuk-link govuk-link--no-visited-state" href="{{url_for('.support')}}">contact us</a> at any time to close your account.</p>
-      <p class="govuk-body">Check our privacy notice to find out <a class="govuk-link govuk-link--no-visited-state" href="{{url_for('.privacy')}}#how-long-we-keep-your-data">how long we keep your personal data</a>.</p>
+      <h2 class="heading-medium" id="unauthorised-release-of-alerts"-notify">Unauthorised release of alerts</h2>
+      <p class="govuk-body">Sending unauthorised emergency alerts is a criminal offence and you could be prosecuted and sent to prison.</p>
+      <p class="govuk-body"><a class="govuk-link govuk-link--no-visited-state" href="mailto:emergencyalerts@cabinetoffice.gov.uk">Contact the Crisis Management team within the COBR unit</a> to get the latest version of the Emergency Alert protocol, which sets out guidelines for sending alerts.</p>
+
+      <h2 class="heading-medium" id="leaving-emergency-alerts">Leaving Emergency Alerts</h2>
+      <p class="govuk-body">You can <a class="govuk-link govuk-link--no-visited-state" href="{{url_for('.support')}}">contact the Emergency Alerts team</a> at any time to remove your access.</p>
+      <p class="govuk-body">Read our privacy notice to find out <a class="govuk-link govuk-link--no-visited-state" href="{{url_for('.privacy')}}#how-long-we-keep-your-data">how long we keep your personal data</a>.</p>
     </div>
   </div>
 
