@@ -14,7 +14,7 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     <h1 class="heading-large">Security</h1>
-    <p class="govuk-body">GOV.UK Emergency Alerts is built for the needs of government services. It has processes in place to:</p>
+    <p class="govuk-body">GOV.UK Emergency Alerts has processes in place to:</p>
     <ul class="govuk-list govuk-list--bullet">
       <li>protect user data</li>
       <li>keep systems secure</li>
@@ -22,14 +22,14 @@
     </ul>
 
     <h2 class="heading-medium" id="data">Data</h2>
-    <p class="govuk-body">On Emergency Alerts, data is encrypted when:</p>
+    <p class="govuk-body">On GOV.UK Emergency Alerts, data is encrypted when:</p>
     <ul class="govuk-list govuk-list--bullet">
       <li>it passes through the service</li>
       <li>it’s stored on the service</li>
     </ul>
-    <p class="govuk-body">The Cabinet Office acts as data processor for Emergency Alerts. Your organisation is the data controller.</p>
+    <p class="govuk-body">The Cabinet Office acts as the data processor for GOV.UK Emergency Alerts. Your organisation is the data controller.</p>
     <h3 class="heading-small">Data Protection Act</h3>
-    <p class="govuk-body">Emergency Alerts complies with data protection law. To make sure it stays compliant, there are regular legal reviews of the service’s:</p>
+    <p class="govuk-body">GOV.UK Emergency Alerts complies with data protection law. To make sure it stays compliant, there are regular legal reviews of the service’s:</p>
     <ul class="govuk-list govuk-list--bullet">
       <li>privacy policy</li>
       <li>terms of use</li>
@@ -37,45 +37,53 @@
     </ul>
 
     <h2 class="heading-medium" id="technical-security">Technical security</h2>
-    <p class="govuk-body">Other technical security controls on Emergency Alerts include:</p>
+    <p class="govuk-body">Other technical security controls on GOV.UK Emergency Alerts include:</p>
     <ul class="govuk-list govuk-list--bullet">
       <li>compliance with National Cyber Security Centre (NCSC) Cloud Security Principles</li>
       <li>protective monitoring to record activity, and raise alerts about any suspicious activity</li>
-      <li>using JSON Web Tokens, to avoid sending API keys when your service talks to Emergency Alerts</li>
     </ul>
 
+    <h2 class="heading-medium" id="sensitive-information">Sensitive information</h2>
+    <p class="govuk-body">You should not store sensitive or personal information on GOV.UK Emergency Alerts, including when you’re working with templates or in training mode.</p>
+
     <h2 class="heading-medium" id="user-permissions-signing-in">User permissions and signing in</h2>
-    <p class="govuk-body">You can set different user permissions in Emergency Alerts. This lets you control who in your team has access to certain parts of the service.</p>
+    <p class="govuk-body">You can set different user permissions in GOV.UK Emergency Alerts. This lets you control who in your team has access to certain parts of the service.</p>
     <h3 class="heading-small">Two-factor authentication</h3>
-    <p class="govuk-body">To sign in to Emergency Alerts, you’ll need to enter:</p>
+    <p class="govuk-body">Enter your email address and password to sign in to GOV.UK Emergency Alerts.</p>
+    <p class="govuk-body">You’ll also need either:</p>
     <ul class="govuk-list govuk-list--bullet">
-      <li>your email address and password</li>
-      <li>a text message code that Emergency Alerts sends to your phone</li>
+      <li>a text message code that GOV.UK Emergency Alerts sends to your phone</li>
+      <li>a YubiKey connected to your account</li>
     </ul>
-    <p class="govuk-body">If signing in with a text message is a problem for your team, <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('main.support') }}">contact us</a> to find out about using an email link instead.</p>
+    <p class="govuk-body">If your team cannot sign in with a text message, <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('main.support') }}">contact the GOV.UK Alerts team</a> to find out about using an email link instead.</p>
 
     <h2 class="heading-medium" id="information-risk-management">Information risk management</h2>
     <p class="govuk-body">Our approach to information risk management follows NCSC guidance. It assesses:</p>
     <ul class="govuk-list govuk-list--bullet">
-      <li>how Emergency Alerts is built</li>
-      <li>the infrastructure Emergency Alerts is built upon</li>
-      <li>support for the Emergency Alerts service</li>
+      <li>how GOV.UK Emergency Alerts is built</li>
+      <li>the infrastructure GOV.UK Emergency Alerts is built upon</li>
+      <li>support for the GOV.UK Emergency Alerts service</li>
     </ul>
-    <p class="govuk-body">This approach also applies to the Notify service that the Emergency Alerts service uses to send emails and SMS messages for account set-up and two-factor authentication.</p>
+    <p class="govuk-body">This approach also applies to Notify and its service providers when sending two-factor authentication text messages.</p>
 
-    <h2 class="heading-medium" id="how-we-manage-risk">How we manage risks on Emergency Alerts</h2>
-    <p class="govuk-body">Things we do to manage risks on Emergency Alerts include:</p>
+    <h2 class="heading-medium" id="how-we-manage-risk">How we manage risks on GOV.UK Emergency Alerts</h2>
+    <p class="govuk-body">The things we do to manage risks on GOV.UK Emergency Alerts include:</p>
     <ul class="govuk-list govuk-list--bullet">
-      <li>formal risk assessments based on <a class="govuk-link govuk-link--no-visited-state" href="http://www.iso.org/iso/catalogue_detail?csnumber=56742">ISO 27005:2011</a> and National Cyber Security Centre guidance</li>
-      <li><a class="govuk-link govuk-link--no-visited-state" href="https://www.ncsc.gov.uk/information/check-penetration-testing">CHECK</a>-based testing, both annually and when any major changes are made to Emergency Alerts</li>
+      <li>formal risk assessments based on <a class="govuk-link govuk-link--no-visited-state" href="http://www.iso.org/iso/catalogue_detail?csnumber=56742">ISO 27005:2011</a> and NCSC guidance</li>
+      <li><a class="govuk-link govuk-link--no-visited-state" href="https://www.ncsc.gov.uk/information/check-penetration-testing">CHECK</a>-based testing, both annually and when any major changes are made to GOV.UK Emergency Alerts</li>
       <li>residual risk statement preparation and active management of the risk treatment plan</li>
       <li>regular updates to the Privacy Impact Assessment</li>
       <li>security impact assessments</li>
     </ul>
 
     <h2 class="heading-medium" id="cabinet-office-approval">Cabinet Office approval</h2>
-    <p class="govuk-body">Emergency Alerts has been assessed and approved by the Cabinet Office Senior Information Risk Officer (SIRO). The SIRO checks this approval once a year.</p>
-    <p class="govuk-body">Emergency Alerts also has approval from the Office of the Government’s SIRO to host data within the EEA.</p>
+    <p class="govuk-body">GOV.UK Emergency Alerts has been assessed and approved by the Cabinet Office Senior Information Risk Officer (SIRO). The SIRO checks this approval once a year.</p>
+
+    <h2 class="heading-medium" id="classifications-and-security-vetting">Classifications and security vetting</h2>
+    <p class="govuk-body">You can use GOV.UK Emergency Alerts to send alerts at ‘OFFICIAL’ classification.</p>
+    <p class="govuk-body">The GOV.UK Emergency Alerts platform should not store any information graded at ‘OFFICIAL-SENSITIVE’ or higher. All information should be cleared for release to the public under the <a class="govuk-link govuk-link--no-visited-state" href="https://www.gov.uk/government/publications/government-security-classifications">Government Security Classifications</a> policy.</p>
+    <p class="govuk-body">GOV.UK Emergency Alerts does not process data classified as ‘SECRET’ or ‘TOP SECRET’.</p>
+    <p class="govuk-body">The GOV.UK Emergency Alerts team has Security Check (SC) level clearance from <a class="govuk-link govuk-link--no-visited-state" href="https://www.gov.uk/government/organisations/united-kingdom-security-vetting">United Kingdom Security Vetting</a> (UKSV).</p>
   </div>
 </div>
 
