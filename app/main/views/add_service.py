@@ -71,7 +71,7 @@ def add_service():
                 new_service = Service.from_id(service_id)
                 new_service.force_permission("email_auth", on=True)
 
-            return redirect(url_for("main.service_dashboard", service_id=service_id))
+            return redirect(url_for("main.service_set_broadcast_channel", service_id=service_id))
 
         example_sms_template = _create_example_template(service_id)
 

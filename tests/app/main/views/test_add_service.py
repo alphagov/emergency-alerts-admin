@@ -235,7 +235,7 @@ def test_should_add_service_and_redirect_to_dashboard_when_existing_service(
         },
         _expected_status=302,
         _expected_redirect=url_for(
-            "main.service_dashboard",
+            "main.service_set_broadcast_channel",
             service_id=101,
         ),
     )
@@ -345,7 +345,7 @@ def test_email_auth_user_creates_service_with_email_auth_permission(
         },
         _expected_status=302,
         _expected_redirect=url_for(
-            "main.service_dashboard",
+            "main.service_set_broadcast_channel",
             service_id=101,
         ),
     )
