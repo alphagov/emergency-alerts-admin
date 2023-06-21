@@ -45,6 +45,7 @@ from wtforms import (
 )
 from wtforms.validators import (
     URL,
+    UUID,
     DataRequired,
     InputRequired,
     Length,
@@ -2541,4 +2542,25 @@ class GovernmentIdentityColour(StripWhitespaceForm):
     colour = GovukRadiosField(
         "Colour for stripe",
         thing="a colour for the stripe",
+    )
+
+
+class FindByUuidForm(StripWhitespaceForm):
+    search = GovukSearchField(
+        "Find anything by UUID",
+        validators=[UUID("Enter a valid UUID")],
+    )
+
+
+class PlatformAdminSearch(StripWhitespaceForm):
+    search = GovukSearchField(
+        "Search",
+        param_extensions={
+            "hint": {
+                "text": (
+                    "Search for users, services, and organisations by name or partial name."
+                )
+            }
+        },
+        validators=[DataRequired()],
     )

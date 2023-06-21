@@ -13,10 +13,9 @@
       <div class="govuk-grid-column-one-quarter">
         <nav class="navigation" aria-label="Platform admin">
           {% for link_text, url in [
-            ('Trial mode services', url_for('main.trial_services')),
+            ('Search', url_for('main.platform_admin_search')),
             ('Organisations', url_for('main.organisations')),
-            ('Find services by name', url_for('main.find_services_by_name')),
-            ('Find users by email', url_for('main.find_users_by_email')),
+            ('Trial mode services', url_for('main.trial_services')),
             ('Clear cache', url_for('main.clear_cache')),
             ('API integration', url_for('.api_keys', service_id=current_service.id))
           ] %}
