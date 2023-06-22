@@ -29,6 +29,7 @@ from app.main.forms import (
     PlatformAdminSearch,
     RequiredDateFilterForm,
 )
+from app.notify_client.platform_admin_api_client import admin_api_client
 from app.statistics_utils import (
     get_formatted_percentage,
     get_formatted_percentage_two_dp,
