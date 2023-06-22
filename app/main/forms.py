@@ -2555,12 +2555,6 @@ class FindByUuidForm(StripWhitespaceForm):
 class PlatformAdminSearch(StripWhitespaceForm):
     search = GovukSearchField(
         "Search",
-        param_extensions={
-            "hint": {
-                "text": (
-                    "Search for users, services, and organisations by name or partial name."
-                )
-            }
-        },
+        param_extensions={"hint": {"text": ("Search for users, services, and organisations by name or partial name.")}},
         validators=[DataRequired()],
     )

@@ -1,4 +1,3 @@
-
 # Most relevant tests for this are run in test_platform_admin.py
 def test_find_services_by_name_validates_against_empty_search_submission(client_request, platform_admin_user, mocker):
     client_request.login(platform_admin_user)
