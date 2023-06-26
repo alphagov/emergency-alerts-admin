@@ -10,57 +10,7 @@ from tests.conftest import normalize_spaces
 
 def test_find_users_by_email_page_loads_correctly(client_request, platform_admin_user):
     client_request.login(platform_admin_user)
-    document = client_request.get("main.find_users_by_email")
-
-    assert document.select_one("h1").text.strip() == "Find users by email"
-    assert len(document.select("input[type=search]")) > 0
-
-
-def test_find_users_by_email_displays_users_found(client_request, platform_admin_user, mocker):
-    client_request.login(platform_admin_user)
-    user = user_json()
-    mocker.patch(
-        "app.user_api_client.find_users_by_full_or_partial_email",
-        return_value={"data": [user]},
-        autospec=True,
-    )
-    document = client_request.post(
-        "main.find_users_by_email", _data={"search": "twilight.sparkle"}, _expected_status=200
-    )
-
-    links = document.select("a.browse-list-link")
-    assert len(links) == 1
-    link = links[0]
-
-    assert normalize_spaces(link.text) == "test@gov.uk"
-    assert normalize_spaces(document.select_one("p.browse-list-hint").text) == "Test User"
-
-    assert link["href"] == url_for("main.user_information", user_id=user["id"])
-
-
-def test_find_users_by_email_displays_multiple_users(client_request, platform_admin_user, mocker):
-    client_request.login(platform_admin_user)
-    mocker.patch(
-        "app.user_api_client.find_users_by_full_or_partial_email",
-        return_value={"data": [user_json(name="Apple Jack"), user_json(name="Apple Bloom")]},
-        autospec=True,
-    )
-    document = client_request.post("main.find_users_by_email", _data={"search": "apple"}, _expected_status=200)
-
-    assert [element.text.strip() for element in document.select("p.browse-list-hint")] == [
-        "Apple Jack",
-        "Apple Bloom",
-    ]
-
-
-def test_find_users_by_email_displays_message_if_no_users_found(client_request, platform_admin_user, mocker):
-    client_request.login(platform_admin_user)
-    mocker.patch("app.user_api_client.find_users_by_full_or_partial_email", return_value={"data": []}, autospec=True)
-    document = client_request.post(
-        "main.find_users_by_email", _data={"search": "twilight.sparkle"}, _expected_status=200
-    )
-
-    assert document.select_one("p.browse-list-hint").text.strip() == "No users found."
+    client_request.get("main.find_users_by_email", _expected_status=302)
 
 
 def test_find_users_by_email_validates_against_empty_search_submission(client_request, platform_admin_user, mocker):
