@@ -67,7 +67,10 @@ def test_view_organisation_shows_the_correct_organisation(client_request, mocker
     )
 
     assert normalize_spaces(page.select_one("h1").text) == "Usage"
-    assert normalize_spaces(page.select_one(".govuk-hint").text) == "Test 1 has no live services on GOV.UK Emergency Alerts"
+    assert (
+        normalize_spaces(page.select_one(".govuk-hint").text)
+        == "Test 1 has no live services on GOV.UK Emergency Alerts"
+    )
     assert not page.select("a[download]")
 
 
