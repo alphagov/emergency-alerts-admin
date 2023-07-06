@@ -10,8 +10,8 @@ import urllib.parse
 
 import requests
 
-# Group: 3rd Line--Notify Support
-NOTIFY_GROUP_ID = 360000036529
+# Group: 3rd Line--Emergency Alerts Support
+NOTIFY_GROUP_ID = 21842358
 
 # Organization: GDS
 NOTIFY_ORG_ID = 21891972

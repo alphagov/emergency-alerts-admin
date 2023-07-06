@@ -154,7 +154,7 @@ def test_passed_non_logged_in_user_details_through_flow(client_request, mocker, 
 
     mock_create_ticket.assert_called_once_with(
         ANY,
-        subject="Notify feedback",
+        subject="Emergency Alerts feedback",
         message="blah\n",
         ticket_type=zendesk_ticket_type,
         p1=False,
@@ -206,7 +206,7 @@ def test_passes_user_details_through_flow(
     )
     mock_create_ticket.assert_called_once_with(
         ANY,
-        subject="Notify feedback",
+        subject="Emergency Alerts feedback",
         message=ANY,
         ticket_type=zendesk_ticket_type,
         p1=False,
