@@ -110,7 +110,7 @@ def feedback(ticket_type):
         )
 
         ticket = NotifySupportTicket(
-            subject="Notify feedback",
+            subject="Emergency Alerts feedback",
             message=feedback_msg,
             ticket_type=get_zendesk_ticket_type(ticket_type),
             p1=out_of_hours_emergency,
@@ -215,8 +215,8 @@ def needs_escalation(ticket_type, severe):
 
 def get_zendesk_ticket_type(ticket_type):
     # Zendesk has 4 ticket types - "problem", "incident", "task" and "question".
-    # We don't want to use a Zendesk "problem" ticket type when someone reports a
-    # Notify problem because they are designed to group multiple incident tickets together,
+    # We don't want to use a Zendesk "problem" ticket type when someone reports an
+    # Emergency Alerts problem because they are designed to group multiple incident tickets together,
     # allowing them to be solved as a group.
     if ticket_type == PROBLEM_TICKET_TYPE:
         return NotifySupportTicket.TYPE_INCIDENT
