@@ -3,6 +3,8 @@ version: 0.2
 phases:
   pre_build:
     commands:
+      - echo Checking out to admin_${ENVIRONMENT}_latest tag...
+      - git checkout tags/admin_${ENVIRONMENT}_latest
       - echo "" > environment.sh
   build:
     commands:
