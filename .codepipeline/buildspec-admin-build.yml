@@ -10,7 +10,7 @@ phases:
         --password-stdin $ACCOUNT_NUMBER.dkr.ecr.$AWS_REGION.amazonaws.com
   build:
     commands:
-      - COMMIT_ID=(echo $COMMIT_ID | cut -c 1-7)
+      - COMMIT_ID=$(echo $COMMIT_ID | cut -c 1-7)
       - echo Build started on `date`
       - echo Building Docker image...
       - docker build -t $REPOSITORY_URI:latest -t pipeline-execution-id:$EXECUTION_ID -t commit-id:$COMMIT_ID
