@@ -2,10 +2,9 @@ from emergency_alerts_utils.template import HTMLEmailTemplate, LetterImageTempla
 from flask import abort, make_response, redirect, render_template, request, url_for
 from flask_login import current_user
 
-from app import letter_branding_client, status_api_client
+from app import letter_branding_client
 from app.main import main
 from app.main.forms import FieldWithNoneOption
-from app.main.views.pricing import CURRENT_SMS_RATE
 from app.main.views.sub_navigation_dictionaries import features_nav, using_notify_nav
 from app.models.branding import EmailBranding
 from app.utils import hide_from_search_engines
@@ -17,11 +16,7 @@ def index():
     if current_user and current_user.is_authenticated:
         return redirect(url_for("main.choose_account"))
 
-    return render_template(
-        "views/signedout.html",
-        sms_rate=CURRENT_SMS_RATE,
-        counts=status_api_client.get_count_of_live_services_and_organisations(),
-    )
+    return redirect(url_for("main.sign_in"))
 
 
 @main.route("/error/<int:status_code>")
@@ -183,12 +178,12 @@ def terms():
     )
 
 
-@main.route("/features/using-notify")
-def using_notify():
-    return render_template("views/using-notify.html", navigation_links=features_nav()), 410
+@main.route("/features/using-emergency-alerts")
+def using_emergency_alerts():
+    return render_template("views/using-emergency-alerts.html", navigation_links=features_nav()), 410
 
 
-@main.route("/using-notify/delivery-status")
+@main.route("/using-emergency-alerts/delivery-status")
 def message_status():
     return render_template(
         "views/message-status.html",
@@ -201,7 +196,7 @@ def get_started_old():
     return redirect(url_for(".get_started"), 301)
 
 
-@main.route("/using-notify/get-started")
+@main.route("/using-emergency-alerts/get-started")
 def get_started():
     return render_template(
         "views/get-started.html",
@@ -209,12 +204,12 @@ def get_started():
     )
 
 
-@main.route("/using-notify/who-its-for")
+@main.route("/using-emergency-alerts/who-its-for")
 def who_its_for():
     return redirect(url_for(".who_can_use_notify"), 301)
 
 
-@main.route("/using-notify/who-can-use-notify")
+@main.route("/using-emergency-alerts/who-can-use-notify")
 def who_can_use_notify():
     return render_template(
         "views/guidance/who-can-use-notify.html",
@@ -228,7 +223,7 @@ def trial_mode():
     return redirect(url_for(".trial_mode_new"), 301)
 
 
-@main.route("/using-notify/trial-mode")
+@main.route("/using-emergency-alerts/trial-mode")
 def trial_mode_new():
     return render_template(
         "views/trial-mode.html",
@@ -236,7 +231,7 @@ def trial_mode_new():
     )
 
 
-@main.route("/using-notify/guidance")
+@main.route("/using-emergency-alerts/guidance")
 def guidance_index():
     return render_template(
         "views/guidance/index.html",
@@ -244,7 +239,7 @@ def guidance_index():
     )
 
 
-@main.route("/using-notify/guidance/branding-and-customisation")
+@main.route("/using-emergency-alerts/guidance/branding-and-customisation")
 def branding_and_customisation():
     return render_template(
         "views/guidance/branding-and-customisation.html",
@@ -252,7 +247,7 @@ def branding_and_customisation():
     )
 
 
-@main.route("/using-notify/guidance/create-and-send-messages")
+@main.route("/using-emergency-alerts/guidance/create-and-send-messages")
 def create_and_send_messages():
     return render_template(
         "views/guidance/create-and-send-messages.html",
@@ -260,7 +255,7 @@ def create_and_send_messages():
     )
 
 
-@main.route("/using-notify/guidance/edit-and-format-messages")
+@main.route("/using-emergency-alerts/guidance/edit-and-format-messages")
 def edit_and_format_messages():
     return render_template(
         "views/guidance/edit-and-format-messages.html",
@@ -268,7 +263,7 @@ def edit_and_format_messages():
     )
 
 
-@main.route("/using-notify/guidance/send-files-by-email")
+@main.route("/using-emergency-alerts/guidance/send-files-by-email")
 def send_files_by_email():
     return render_template(
         "views/guidance/send-files-by-email.html",
@@ -276,7 +271,7 @@ def send_files_by_email():
     )
 
 
-@main.route("/using-notify/guidance/upload-a-letter")
+@main.route("/using-emergency-alerts/guidance/upload-a-letter")
 def upload_a_letter():
     return render_template(
         "views/guidance/upload-a-letter.html",
@@ -284,7 +279,7 @@ def upload_a_letter():
     )
 
 
-@main.route("/using-notify/guidance/letter-specification")
+@main.route("/using-emergency-alerts/guidance/letter-specification")
 def letter_specification():
     return render_template(
         "views/guidance/letter-specification.html",
@@ -298,15 +293,15 @@ def letter_specification():
 @main.route("/roadmap", endpoint="old_roadmap")
 @main.route("/terms", endpoint="old_terms")
 @main.route("/information-security", endpoint="information_security")
-@main.route("/using_notify", endpoint="old_using_notify")
+@main.route("/using_emergency_alerts", endpoint="old_using_notify")
 @main.route("/information-risk-management", endpoint="information_risk_management")
 @main.route("/integration_testing", endpoint="old_integration_testing")
 def old_page_redirects():
     redirects = {
         "main.old_roadmap": "main.roadmap",
         "main.old_terms": "main.terms",
-        "main.information_security": "main.using_notify",
-        "main.old_using_notify": "main.using_notify",
+        "main.information_security": "main.using_emergency_alerts",
+        "main.old_using_notify": "main.using_emergency_alerts",
         "main.information_risk_management": "main.security",
         "main.old_integration_testing": "main.integration_testing",
     }

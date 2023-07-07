@@ -202,10 +202,11 @@ EXCLUDED_ENDPOINTS = tuple(
             "organisations",
             "performance",
             "platform_admin",
+            "platform_admin_search",
+            "platform_admin_create_email_branding",
             "platform_admin_list_complaints",
             "platform_admin_reports",
             "platform_admin_returned_letters",
-            "platform_admin_splash_page",
             "platform_admin_create_email_branding",
             "platform_admin_update_email_branding",
             "preview_broadcast_areas",
@@ -215,6 +216,7 @@ EXCLUDED_ENDPOINTS = tuple(
             "public_agreement",
             "public_download_agreement",
             "received_text_messages_callback",
+            "redirect_old_search_pages",
             "redact_template",
             "register",
             "register_from_invite",
@@ -342,7 +344,7 @@ EXCLUDED_ENDPOINTS = tuple(
             "user_profile_name",
             "user_profile_password",
             "user_profile_security_keys",
-            "using_notify",
+            "using_emergency_alerts",
             "verify",
             "verify_email",
             "view_current_broadcast",
@@ -461,11 +463,10 @@ def test_a_page_should_nave_selected_navigation_item(
 @pytest.mark.parametrize(
     "endpoint, selected_nav_item",
     [
-        ("main.documentation", "Documentation"),
         ("main.support", "Support"),
     ],
 )
-def test_a_page_should_nave_selected_header_navigation_item(
+def test_a_page_should_have_selected_header_navigation_item(
     client_request,
     endpoint,
     selected_nav_item,

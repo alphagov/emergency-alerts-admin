@@ -49,7 +49,7 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
     ),
     [
         (
-            "Templates – service one – GOV.UK Notify",
+            "Templates – service one – GOV.UK Emergency Alerts",
             "Templates",
             [],
             {},
@@ -109,7 +109,7 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
             None,
         ),
         (
-            "Templates – service one – GOV.UK Notify",
+            "Templates – service one – GOV.UK Emergency Alerts",
             "Templates",
             [],
             {"template_type": "all"},
@@ -169,7 +169,7 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
             None,
         ),
         (
-            "Templates – service one – GOV.UK Notify",
+            "Templates – service one – GOV.UK Emergency Alerts",
             "Templates",
             [],
             {"template_type": "sms"},
@@ -206,7 +206,7 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
             None,
         ),
         (
-            "folder_one – Templates – service one – GOV.UK Notify",
+            "folder_one – Templates – service one – GOV.UK Emergency Alerts",
             "Templates folder_one",
             [{"template_type": "all"}],
             {"template_folder_id": PARENT_FOLDER_ID},
@@ -236,7 +236,7 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
             None,
         ),
         (
-            "folder_one – Templates – service one – GOV.UK Notify",
+            "folder_one – Templates – service one – GOV.UK Emergency Alerts",
             "Templates folder_one",
             [{"template_type": "sms"}],
             {"template_type": "sms", "template_folder_id": PARENT_FOLDER_ID},
@@ -261,7 +261,7 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
             None,
         ),
         (
-            "folder_one – Templates – service one – GOV.UK Notify",
+            "folder_one – Templates – service one – GOV.UK Emergency Alerts",
             "Templates folder_one",
             [{"template_type": "email"}],
             {"template_type": "email", "template_folder_id": PARENT_FOLDER_ID},
@@ -272,7 +272,7 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
             "There are no email templates in this folder",
         ),
         (
-            "folder_one_one – folder_one – Templates – service one – GOV.UK Notify",
+            "folder_one_one – folder_one – Templates – service one – GOV.UK Emergency Alerts",
             "Templates folder_one folder_one_one",
             [
                 {"template_type": "all"},
@@ -301,7 +301,7 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
             None,
         ),
         (
-            "folder_one_one_one – folder_one_one – folder_one – Templates – service one – GOV.UK Notify",
+            "folder_one_one_one – folder_one_one – folder_one – Templates – service one – GOV.UK Emergency Alerts",
             "Templates folder_one folder_one_one folder_one_one_one",
             [
                 {"template_type": "all"},
@@ -322,7 +322,7 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
             None,
         ),
         (
-            "folder_one_one_one – folder_one_one – folder_one – Templates – service one – GOV.UK Notify",
+            "folder_one_one_one – folder_one_one – folder_one – Templates – service one – GOV.UK Emergency Alerts",
             "Templates folder_one folder_one_one folder_one_one_one",
             [
                 {"template_type": "email"},
@@ -340,7 +340,7 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
             "There are no email templates in this folder",
         ),
         (
-            "folder_two – Templates – service one – GOV.UK Notify",
+            "folder_two – Templates – service one – GOV.UK Emergency Alerts",
             "Templates folder_two",
             [{"template_type": "all"}],
             {"template_folder_id": FOLDER_TWO_ID},
@@ -351,7 +351,7 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
             "This folder is empty",
         ),
         (
-            "folder_two – Templates – service one – GOV.UK Notify",
+            "folder_two – Templates – service one – GOV.UK Emergency Alerts",
             "Templates folder_two",
             [{"template_type": "sms"}],
             {"template_folder_id": FOLDER_TWO_ID, "template_type": "sms"},
@@ -362,7 +362,7 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
             "This folder is empty",
         ),
         (
-            "folder_two – Templates – service one – GOV.UK Notify",
+            "folder_two – Templates – service one – GOV.UK Emergency Alerts",
             "Templates folder_two",
             [{"template_type": "all"}],
             {"template_folder_id": FOLDER_TWO_ID, "template_type": "all"},
@@ -586,7 +586,10 @@ def test_get_manage_folder_page(
         template_folder_id=folder_id,
         _test_page_title=False,
     )
-    assert normalize_spaces(page.select_one("title").text) == "folder_two – Templates – service one – GOV.UK Notify"
+    assert (
+        normalize_spaces(page.select_one("title").text)
+        == "folder_two – Templates – service one – GOV.UK Emergency Alerts"
+    )
     assert page.select_one("input[name=name]")["value"] == "folder_two"
     delete_link = page.select_one("a.govuk-link--destructive")
     assert normalize_spaces(delete_link.text) == "Delete this folder"
@@ -620,7 +623,10 @@ def test_get_manage_folder_viewing_permissions_for_users(
         template_folder_id=folder_id,
         _test_page_title=False,
     )
-    assert normalize_spaces(page.select_one("title").text) == "folder_two – Templates – service one – GOV.UK Notify"
+    assert (
+        normalize_spaces(page.select_one("title").text)
+        == "folder_two – Templates – service one – GOV.UK Emergency Alerts"
+    )
     form_labels = page.select("legend.govuk-fieldset__legend")
     assert normalize_spaces(form_labels[0].text) == "Team members who can see this folder"
     checkboxes = page.select("input[name=users_with_permission]")
@@ -670,7 +676,10 @@ def test_get_manage_folder_viewing_permissions_for_users_not_visible_when_no_man
         template_folder_id=folder_id,
         _test_page_title=False,
     )
-    assert normalize_spaces(page.select_one("title").text) == "folder_two – Templates – service one – GOV.UK Notify"
+    assert (
+        normalize_spaces(page.select_one("title").text)
+        == "folder_two – Templates – service one – GOV.UK Emergency Alerts"
+    )
     form_labels = page.select("legend[class=form-label]")
     assert len(form_labels) == 0
     checkboxes = page.select("input[name=users_with_permission]")
@@ -701,7 +710,10 @@ def test_get_manage_folder_viewing_permissions_for_users_not_visible_for_service
         template_folder_id=folder_id,
         _test_page_title=False,
     )
-    assert normalize_spaces(page.select_one("title").text) == "folder_two – Templates – service one – GOV.UK Notify"
+    assert (
+        normalize_spaces(page.select_one("title").text)
+        == "folder_two – Templates – service one – GOV.UK Emergency Alerts"
+    )
     form_labels = page.select("legend[class=form-label]")
     assert len(form_labels) == 0
 

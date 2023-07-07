@@ -45,6 +45,7 @@ from wtforms import (
 )
 from wtforms.validators import (
     URL,
+    UUID,
     DataRequired,
     InputRequired,
     Length,
@@ -1424,7 +1425,7 @@ class SupportRedirect(StripWhitespaceForm):
     who = GovukRadiosField(
         "What do you need help with?",
         choices=[
-            ("public-sector", "I work in the public sector and need to send emails, text messages or letters"),
+            ("public-sector", "I work in the public sector and need support with the Emergency Alerts service"),
             ("public", "I’m a member of the public with a question for the government"),
         ],
     )
@@ -2541,4 +2542,19 @@ class GovernmentIdentityColour(StripWhitespaceForm):
     colour = GovukRadiosField(
         "Colour for stripe",
         thing="a colour for the stripe",
+    )
+
+
+class FindByUuidForm(StripWhitespaceForm):
+    search = GovukSearchField(
+        "Find anything by UUID",
+        validators=[UUID("Enter a valid UUID")],
+    )
+
+
+class PlatformAdminSearch(StripWhitespaceForm):
+    search = GovukSearchField(
+        "Search",
+        param_extensions={"hint": {"text": ("Search for users, services, and organisations by name or partial name.")}},
+        validators=[DataRequired()],
     )

@@ -17,10 +17,8 @@ def test_render_sign_in_template_for_new_user(client_request):
     assert normalize_spaces(page.select("label")[1].text) == "Password"
     assert page.select_one("#password").get("value") is None
     assert page.select_one("#password")["autocomplete"] == "current-password"
-    assert page.select("main a")[0].text == "create one now"
-    assert page.select("main a")[0]["href"] == url_for("main.register")
-    assert page.select("main a")[1].text == "Forgotten your password?"
-    assert page.select("main a")[1]["href"] == url_for("main.forgot_password")
+    assert page.select("main a")[0].text == "Forgotten your password?"
+    assert page.select("main a")[0]["href"] == url_for("main.forgot_password")
     assert "Sign in again" not in normalize_spaces(page.text)
 
 
@@ -37,7 +35,7 @@ def test_render_sign_in_template_with_next_link_for_password_reset(client_reques
 def test_sign_in_explains_session_timeout(client_request):
     client_request.logout()
     page = client_request.get("main.sign_in", next="/foo")
-    assert "We signed you out because you have not used Notify for a while." in page.text
+    assert "We signed you out because you have not used Emergency Alerts for a while." in page.text
 
 
 def test_sign_in_explains_other_browser(client_request, api_user_active, mocker):
@@ -49,7 +47,7 @@ def test_sign_in_explains_other_browser(client_request, api_user_active, mocker)
 
     page = client_request.get("main.sign_in", next="/foo")
 
-    assert "We signed you out because you logged in to Notify on another device" in page.text
+    assert "We signed you out because you logged in to Emergency Alerts on another device" in page.text
 
 
 def test_doesnt_redirect_to_sign_in_if_no_session_info(

@@ -571,3 +571,5 @@ def init_jinja(application):
             jinja2.PrefixLoader({"govuk_frontend_jinja": jinja2.PackageLoader("govuk_frontend_jinja")}),
         ]
     )
+
+    application.jinja_env.add_extension("jinja2.ext.do")

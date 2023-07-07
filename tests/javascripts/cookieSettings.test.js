@@ -42,7 +42,7 @@ describe("Cookie settings", () => {
       <p class="summary">
           Cookies are small files saved on your phone, tablet or computer when you visit a website.
       </p>
-      <p>We use cookies to make GOV.UK Notify work and collect information about how you use our service.</p>
+      <p>We use cookies to make the GOV.UK Emergency Alerts work and to collect information about how you use our service.</p>
       <div class="cookie-settings__no-js">
         <h2 class="govuk-heading-s govuk-!-margin-top-6">Do you want to accept analytics cookies?</h2>
         <p>We use Javascript to set most of our cookies. Unfortunately Javascript is not running on your browser, so you cannot change your settings. You can try:</p>

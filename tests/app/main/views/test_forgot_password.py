@@ -28,7 +28,10 @@ def test_should_redirect_to_password_reset_sent_for_valid_email(
         _data={"email_address": sample_user["email_address"]},
         _expected_status=200,
     )
-    assert "Click the link in the email to reset your password." in page.text
+    assert (
+        "If your record is in the database then you will receive an email for resetting your forgotten password."
+        in page.text
+    )
     app.user_api_client.send_reset_password_url.assert_called_once_with(sample_user["email_address"], next_string=None)
 
 
@@ -64,7 +67,10 @@ def test_should_redirect_to_password_reset_sent_for_missing_email(
         _data={"email_address": api_user_active["email_address"]},
         _expected_status=200,
     )
-    assert "Click the link in the email to reset your password." in page.text
+    assert (
+        "If your record is in the database then you will receive an email for resetting your forgotten password."
+        in page.text
+    )
     app.user_api_client.send_reset_password_url.assert_called_once_with(
         api_user_active["email_address"], next_string=None
     )

@@ -39,12 +39,7 @@ def support():
             if form.who.data == "public":
                 return redirect(url_for(".support_public"))
             else:
-                return redirect(
-                    url_for(
-                        ".feedback",
-                        ticket_type=GENERAL_TICKET_TYPE,
-                    )
-                )
+                return redirect(url_for(".feedback", ticket_type=GENERAL_TICKET_TYPE, severe="no"))
 
     return render_template("views/support/index.html", form=form)
 
@@ -67,7 +62,7 @@ def triage(ticket_type=PROBLEM_TICKET_TYPE):
         form=form,
         page_title={
             PROBLEM_TICKET_TYPE: "Report a problem",
-            GENERAL_TICKET_TYPE: "Contact GOV.UK Notify support",
+            GENERAL_TICKET_TYPE: "Contact GOV.UK Emergency Alerts support",
         }.get(ticket_type),
     )
 
@@ -115,7 +110,7 @@ def feedback(ticket_type):
         )
 
         ticket = NotifySupportTicket(
-            subject="Notify feedback",
+            subject="Emergency Alerts feedback",
             message=feedback_msg,
             ticket_type=get_zendesk_ticket_type(ticket_type),
             p1=out_of_hours_emergency,
@@ -138,10 +133,10 @@ def feedback(ticket_type):
     return render_template(
         "views/support/form.html",
         form=form,
-        back_link=(url_for(".support") if severe is None else url_for(".triage", ticket_type=ticket_type)),
+        back_link=(url_for(".support")),
         show_status_page_banner=(ticket_type == PROBLEM_TICKET_TYPE),
         page_title={
-            GENERAL_TICKET_TYPE: "Contact GOV.UK Notify support",
+            GENERAL_TICKET_TYPE: "Contact GOV.UK Emergency Alerts support",
             PROBLEM_TICKET_TYPE: "Report a problem",
             QUESTION_TICKET_TYPE: "Ask a question or give feedback",
         }.get(ticket_type),
@@ -220,8 +215,8 @@ def needs_escalation(ticket_type, severe):
 
 def get_zendesk_ticket_type(ticket_type):
     # Zendesk has 4 ticket types - "problem", "incident", "task" and "question".
-    # We don't want to use a Zendesk "problem" ticket type when someone reports a
-    # Notify problem because they are designed to group multiple incident tickets together,
+    # We don't want to use a Zendesk "problem" ticket type when someone reports an
+    # Emergency Alerts problem because they are designed to group multiple incident tickets together,
     # allowing them to be solved as a group.
     if ticket_type == PROBLEM_TICKET_TYPE:
         return NotifySupportTicket.TYPE_INCIDENT
