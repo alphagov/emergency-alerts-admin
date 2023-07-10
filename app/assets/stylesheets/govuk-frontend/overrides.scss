@@ -13,6 +13,19 @@ $notify-secondary-button-hover-colour: govuk-shade(govuk-colour("light-grey"), 1
   }
 }
 
+.govuk-header {
+
+  &__logo {
+    width: auto;
+  }
+
+  &__content {
+    width: auto;
+    float: right;
+  }
+
+}
+
 // Make column headings smaller to prevent wrapping
 .govuk-footer__heading {
   @include govuk-font($size: 19, $weight: bold);
