@@ -1,6 +1,13 @@
 import json
 import os
 
+header_colors = {
+    "development": "#81878b",
+    "preview": "#F499BE",
+    "staging": "#6F72AF",
+    "production": "#1d70b8"
+}
+
 if os.environ.get("VCAP_APPLICATION"):
     # on cloudfoundry, config is a json blob in VCAP_APPLICATION - unpack it, and populate
     # standard environment variables from it
@@ -129,6 +136,7 @@ class Decoupled(Development):
     NOTIFY_ENVIRONMENT = "decoupled"
     API_HOST_NAME = "http://api.ecs.local:6011"
     ADMIN_BASE_URL = "http://admin.ecs.local:6012"
+    HEADER_COLOUR = header_colors.get(os.environ.get('ENVIRONMENT'), "#81878b")
     SUBDOMAIN = f"{os.environ.get('ENVIRONMENT')}." if os.environ.get("ENVIRONMENT") != "production" else ""
     ADMIN_EXTERNAL_URL = f"https://admin.{SUBDOMAIN}emergency-alerts.service.gov.uk"
     TEMPLATE_PREVIEW_API_HOST = "http://api.ecs.local:6013"
