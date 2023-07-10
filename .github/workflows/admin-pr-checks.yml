@@ -1,0 +1,17 @@
+name: admin-pr-checks
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  run-test-script:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+
+      - name: Run test script
+        run: |
+          bash scripts/docker-test.sh
