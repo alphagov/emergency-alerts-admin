@@ -11,7 +11,15 @@ jobs:
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
 
       - name: Run test script
         run: |
-          bash scripts/docker-test.sh
+          export NOTIFY_ENVIRONMENT='development'
+          export ENVIRONMENT='development'
+          export FLASK_APP=application.py
+          export FLASK_DEBUG=False
+          export WERKZEUG_DEBUG_PIN=off
+          make bootstrap
