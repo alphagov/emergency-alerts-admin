@@ -227,7 +227,7 @@ def test_should_show_live_search_if_more_than_7_users(
     assert page.select_one("div[data-notify-module=live-search]")["data-targets"] == ".user-list-item"
     assert len(page.select(".user-list-item")) == number_of_users
 
-    textbox = page.select_one("[data-notify-module=autofocus] .govuk-input")
+    textbox = page.select_one(".govuk-input")
     assert "value" not in textbox
     assert textbox["name"] == "search"
     # data-notify-module=autofocus is set on a containing element so it
