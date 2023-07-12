@@ -22,4 +22,6 @@ jobs:
           export FLASK_APP=application.py
           export FLASK_DEBUG=False
           export WERKZEUG_DEBUG_PIN=off
+          set -eu
           make bootstrap
+          make test
