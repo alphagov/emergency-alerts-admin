@@ -6,22 +6,21 @@ on:
       - main
 
 jobs:
-  run-test-script:
+  run-pr-checks:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+
+      - name: Set up python
+        uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
-      - name: Run test script
+      - name: Bootstrap Python app and run tests
         run: |
-          export NOTIFY_ENVIRONMENT='development'
           export ENVIRONMENT='development'
           export FLASK_APP=application.py
-          export FLASK_DEBUG=False
-          export WERKZEUG_DEBUG_PIN=off
           set -eu
           make bootstrap
           make test
