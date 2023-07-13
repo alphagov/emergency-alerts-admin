@@ -278,7 +278,6 @@ def view_template_version_preview(service_id, template_id, version, filetype):
 
 
 def _add_template_by_type(template_type, template_folder_id):
-
     if template_type == "copy-existing":
         return redirect(
             url_for(
@@ -321,9 +320,7 @@ def choose_template_to_copy(
     from_service=None,
     from_folder=None,
 ):
-
     if from_service:
-
         current_user.belongs_to_service_or_403(from_service)
         service = Service(service_api_client.get_service(from_service)["data"])
 
@@ -390,7 +387,6 @@ def copy_template(service_id, template_id):
 
 
 def _get_template_copy_name(template, existing_templates):
-
     template_names = [existing["name"] for existing in existing_templates]
 
     for index in reversed(range(1, 10)):
@@ -412,7 +408,6 @@ def _get_template_copy_name(template, existing_templates):
 )
 @user_has_permissions("manage_templates")
 def action_blocked(service_id, notification_type, return_to, template_id=None):
-
     back_link = {
         "add_new_template": partial(url_for, ".choose_template", service_id=current_service.id),
         "templates": partial(url_for, ".choose_template", service_id=current_service.id),
@@ -474,7 +469,6 @@ def delete_template_folder(service_id, template_folder_id):
         )
 
     if request.method == "POST":
-
         try:
             template_folder_api_client.delete_template_folder(current_service.id, template_folder_id)
 
@@ -510,7 +504,6 @@ def delete_template_folder(service_id, template_folder_id):
 )
 @user_has_permissions("manage_templates")
 def add_service_template(service_id, template_type, template_folder_id=None):
-
     if template_type not in current_service.available_template_types:
         return redirect(
             url_for(
@@ -667,7 +660,6 @@ def count_content_length(service_id, template_type):
 
 
 def _get_content_count_error_and_message_for_template(template):
-
     if template.template_type == "sms":
         if template.is_message_too_long():
             return True, (
@@ -770,7 +762,6 @@ def confirm_redact_template(service_id, template_id):
 @main.route("/services/<uuid:service_id>/templates/<uuid:template_id>/redact", methods=["POST"])
 @user_has_permissions("manage_templates")
 def redact_template(service_id, template_id):
-
     service_api_client.redact_service_template(service_id, template_id)
 
     flash("Personalised content will be hidden for messages sent with this template", "default_with_tick")

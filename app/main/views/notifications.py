@@ -185,7 +185,6 @@ def view_notification(service_id, notification_id):
 @main.route("/services/<uuid:service_id>/notification/<uuid:notification_id>/cancel", methods=["GET", "POST"])
 @user_has_permissions("view_activity", "send_messages")
 def cancel_letter(service_id, notification_id):
-
     if request.method == "POST":
         try:
             notification_api_client.update_notification_to_cancelled(current_service.id, notification_id)
@@ -256,7 +255,6 @@ def get_single_notification_partials(notification):
 
 
 def get_all_personalisation_from_notification(notification):
-
     if notification["template"].get("redact_personalisation"):
         notification["personalisation"] = {}
 

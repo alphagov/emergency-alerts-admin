@@ -420,7 +420,6 @@ def test_doesnt_lose_message_if_post_across_closing(
     client_request,
     mocker,
 ):
-
     mocker.patch("app.models.user.User.live_services", return_value=True)
     mocker.patch("app.main.views.feedback.in_business_hours", return_value=False)
 
@@ -578,7 +577,6 @@ def test_should_be_shown_the_bat_email(
     expected_status_code_when_logged_in,
     expected_redirect_when_logged_in,
 ):
-
     mocker.patch("app.main.views.feedback.in_business_hours", return_value=is_in_business_hours)
 
     feedback_page = url_for("main.feedback", ticket_type=PROBLEM_TICKET_TYPE, severe=severe)
@@ -636,7 +634,6 @@ def test_should_be_shown_the_bat_email_for_general_questions(
     expected_status_code_when_logged_in,
     expected_redirect_when_logged_in,
 ):
-
     mocker.patch("app.main.views.feedback.in_business_hours", return_value=False)
 
     feedback_page = url_for("main.feedback", ticket_type=GENERAL_TICKET_TYPE, severe=severe)

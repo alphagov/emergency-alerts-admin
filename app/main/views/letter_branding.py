@@ -62,7 +62,6 @@ def update_letter_branding(branding_id, logo=None):
 
         try:
             if db_filename == letter_branding.filename:
-
                 letter_branding_client.update_letter_branding(
                     branding_id=branding_id,
                     filename=db_filename,

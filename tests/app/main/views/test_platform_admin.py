@@ -432,7 +432,6 @@ def test_should_show_complaints_with_next_previous(
     service_one,
     fake_uuid,
 ):
-
     api_response = {
         "complaints": [
             {
@@ -472,7 +471,6 @@ def test_platform_admin_list_complaints_returns_404_with_invalid_page(
     platform_admin_user,
     mocker,
 ):
-
     mocker.patch("app.complaint_api_client.get_all_complaints", return_value={"complaints": [], "links": {}})
 
     client_request.login(platform_admin_user)
@@ -649,7 +647,6 @@ def test_platform_admin_submit_returned_letters(
     client_request,
     platform_admin_user,
 ):
-
     redis = mocker.patch("app.main.views.platform_admin.redis_client")
     mock_client = mocker.patch("app.letter_jobs_client.submit_returned_letters")
 
@@ -674,7 +671,6 @@ def test_platform_admin_submit_empty_returned_letters(
     client_request,
     platform_admin_user,
 ):
-
     mock_client = mocker.patch("app.letter_jobs_client.submit_returned_letters")
 
     client_request.login(platform_admin_user)
@@ -806,7 +802,6 @@ def test_get_live_services_report(
     platform_admin_user,
     mocker,
 ):
-
     mocker.patch(
         "app.service_api_client.get_live_services_data",
         return_value={
