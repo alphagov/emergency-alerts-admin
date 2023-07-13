@@ -21,10 +21,6 @@ $(() => $('.error-message, .govuk-error-message').eq(0).parent('label').next('in
 
 $(() => $('.banner-dangerous').eq(0).trigger('focus'));
 
-$(() => $('.govuk-header__container').on('click', function() {
-  $(this).css('border-color', '#1d70b8');
-}));
-
 // Applies our expanded focus style to the siblings of links when that link is wrapped in a heading.
 //
 // This will be possible in CSS in the future, using the :has pseudo-class. When :has is available
