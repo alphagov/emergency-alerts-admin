@@ -67,7 +67,6 @@ def format_time_24h(date):
 
 
 def get_human_day(time, date_prefix=""):
-
     #  Add 1 minute to transform 00:00 into ‘midnight today’ instead of ‘midnight tomorrow’
     date = (utc_string_to_aware_gmt_datetime(time) - timedelta(minutes=1)).date()
     now = datetime.utcnow()
@@ -370,7 +369,6 @@ def normalize_spaces(name):
 
 
 def guess_name_from_email_address(email_address):
-
     possible_name = re.split(r"[\@\+]", email_address)[0]
 
     if "." not in possible_name or starts_with_initial(possible_name):

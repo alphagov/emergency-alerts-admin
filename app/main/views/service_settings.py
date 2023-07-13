@@ -116,7 +116,6 @@ def service_name_change(service_id):
     form = RenameServiceForm(name=current_service.name)
 
     if form.validate_on_submit():
-
         try:
             current_service.update(
                 name=form.name.data,
@@ -148,7 +147,6 @@ def service_name_change(service_id):
 @main.route("/services/<uuid:service_id>/service-settings/request-to-go-live/estimate-usage", methods=["GET", "POST"])
 @user_has_permissions("manage_service")
 def estimate_usage(service_id):
-
     form = EstimateUsageForm(
         volume_email=current_service.volume_email,
         volume_sms=current_service.volume_sms,
@@ -232,7 +230,6 @@ def service_switch_live(service_id):
 @main.route("/services/<uuid:service_id>/service-settings/switch-count-as-live", methods=["GET", "POST"])
 @user_is_platform_admin
 def service_switch_count_as_live(service_id):
-
     form = ServiceOnOffSettingForm(
         name="Count in list of live services",
         enabled=current_service.count_as_live,
@@ -648,7 +645,6 @@ def service_set_inbound_number(service_id):
 @main.route("/services/<uuid:service_id>/service-settings/sms-prefix", methods=["GET", "POST"])
 @user_has_permissions("manage_service")
 def service_set_sms_prefix(service_id):
-
     form = SMSPrefixForm(enabled=current_service.prefix_sms)
 
     form.enabled.label.text = "Start all text messages with ‘{}:’".format(current_service.name)
@@ -722,7 +718,6 @@ def service_set_letters(service_id):
 @main.route("/services/<uuid:service_id>/service-settings/set-<channel>", methods=["GET", "POST"])
 @user_has_permissions("manage_service")
 def service_set_channel(service_id, channel):
-
     if channel not in {"email", "sms", "letter"}:
         abort(404)
 
@@ -924,7 +919,6 @@ def service_delete_sms_sender(service_id, sms_sender_id):
 @main.route("/services/<uuid:service_id>/service-settings/set-free-sms-allowance", methods=["GET", "POST"])
 @user_is_platform_admin
 def set_free_sms_allowance(service_id):
-
     form = AdminServiceSMSAllowanceForm(free_sms_allowance=current_service.free_sms_fragment_limit)
 
     if form.validate_on_submit():
@@ -941,7 +935,6 @@ def set_free_sms_allowance(service_id):
 @main.route("/services/<uuid:service_id>/service-settings/set-message-limit", methods=["GET", "POST"])
 @user_is_platform_admin
 def set_message_limit(service_id):
-
     form = AdminServiceMessageLimitForm(message_limit=current_service.message_limit)
 
     if form.validate_on_submit():
@@ -958,7 +951,6 @@ def set_message_limit(service_id):
 @main.route("/services/<uuid:service_id>/service-settings/set-rate-limit", methods=["GET", "POST"])
 @user_is_platform_admin
 def set_rate_limit(service_id):
-
     form = AdminServiceRateLimitForm(rate_limit=current_service.rate_limit)
 
     if form.validate_on_submit():
@@ -1114,7 +1106,6 @@ def service_preview_branding(service_id, notification_type):
 @main.route("/services/<uuid:service_id>/service-settings/link-service-to-organisation", methods=["GET", "POST"])
 @user_is_platform_admin
 def link_service_to_organisation(service_id):
-
     all_organisations = organisations_client.get_organisations()
 
     form = AdminSetOrganisationForm(
@@ -1166,7 +1157,6 @@ def email_branding_request(service_id):
             url_for(".email_branding_choose_banner_type", service_id=current_service.id, back_link=".service_settings")
         )
     if form.validate_on_submit():
-
         branding_choice = form.options.data
 
         if branding_choice == EmailBranding.NHS_ID:
@@ -1354,7 +1344,6 @@ def email_branding_choose_logo(service_id):
 
     if form.validate_on_submit():
         if form.branding_options.data == "org":
-
             if branding_choice == "govuk_and_org":
                 return redirect(
                     url_for(
@@ -1724,7 +1713,6 @@ def edit_service_notes(service_id):
     form = AdminNotesForm(notes=current_service.notes)
 
     if form.validate_on_submit():
-
         if form.notes.data == current_service.notes:
             return redirect(url_for(".service_settings", service_id=service_id))
 

@@ -147,7 +147,7 @@ def send_messages(service_id, template_id):
             )
         except (UnicodeDecodeError, BadZipFile, XLRDError):
             flash("Could not read {}. Try using a different file format.".format(form.file.data.filename))
-        except (XLDateError):
+        except XLDateError:
             flash(
                 (
                     "{} contains numbers or dates that Notify cannot understand. "
@@ -518,7 +518,6 @@ def send_one_off_step(service_id, template_id, step_index):
 @no_cookie.route("/services/<uuid:service_id>/send/<uuid:template_id>/test.<filetype>", methods=["GET"])
 @user_has_permissions("send_messages")
 def send_test_preview(service_id, template_id, filetype):
-
     if filetype not in ("pdf", "png"):
         abort(404)
 
@@ -577,7 +576,6 @@ def send_from_contact_list(service_id, template_id, contact_list_id):
 
 
 def _check_messages(service_id, template_id, upload_id, preview_row, letters_as_pdf=False):
-
     try:
         # The happy path is that the job doesn’t already exist, so the
         # API will return a 404 and the client will raise HTTPError.
@@ -700,7 +698,6 @@ def _check_messages(service_id, template_id, upload_id, preview_row, letters_as_
 )
 @user_has_permissions("send_messages", restrict_admin_usage=True)
 def check_messages(service_id, template_id, upload_id, row_index=2):
-
     data = _check_messages(service_id, template_id, upload_id, row_index)
     data["allowed_file_extensions"] = Spreadsheet.ALLOWED_FILE_EXTENSIONS
 
@@ -780,7 +777,6 @@ def check_notification_preview(service_id, template_id, filetype):
 @main.route("/services/<uuid:service_id>/start-job/<uuid:upload_id>", methods=["POST"])
 @user_has_permissions("send_messages", restrict_admin_usage=True)
 def start_job(service_id, upload_id):
-
     job_api_client.create_job(
         upload_id,
         service_id,
@@ -801,7 +797,6 @@ def start_job(service_id, upload_id):
 
 
 def fields_to_fill_in(template, prefill_current_user=False):
-
     if "letter" == template.template_type:
         return letter_address_columns + list(template.placeholders)
 

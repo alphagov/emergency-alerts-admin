@@ -11,7 +11,6 @@ from app.utils.user import user_is_gov_user, user_is_logged_in
 
 
 def _create_service(service_name, organisation_type, email_from, form):
-
     try:
         service_id = service_api_client.create_service(
             service_name=service_name,
@@ -65,7 +64,6 @@ def add_service():
         if error:
             return _render_add_service_page(form, default_organisation_type)
         if len(service_api_client.get_active_services({"user_id": session["user_id"]}).get("data", [])) > 1:
-
             # if user has email auth, it makes sense that people they invite to their new service can have it too
             if current_user.email_auth:
                 new_service = Service.from_id(service_id)

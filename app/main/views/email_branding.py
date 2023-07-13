@@ -136,7 +136,6 @@ def create_email_branding_government_identity_logo():
 @main.route("/email-branding/create-government-identity/colour", methods=["GET", "POST"])
 @user_is_platform_admin
 def create_email_branding_government_identity_colour():
-
     filename = request.args.get("filename")
     if filename not in GOVERNMENT_IDENTITY_SYSTEM_CRESTS_OR_INSIGNIA:
         abort(400)

@@ -12,7 +12,6 @@ from app.utils import hide_from_search_engines
 
 @main.route("/")
 def index():
-
     if current_user and current_user.is_authenticated:
         return redirect(url_for("main.choose_account"))
 

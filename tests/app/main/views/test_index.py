@@ -223,7 +223,6 @@ def test_terms_page_has_correct_content(client_request):
 
 
 def test_css_is_served_from_correct_path(client_request):
-
     page = client_request.get("main.documentation")  # easy static page
 
     for index, link in enumerate(page.select("link[rel=stylesheet]")):
@@ -236,7 +235,6 @@ def test_css_is_served_from_correct_path(client_request):
 
 
 def test_resources_that_use_asset_path_variable_have_correct_path(client_request):
-
     page = client_request.get("main.documentation")  # easy static page
 
     favicon = page.select_one('link[type="image/x-icon"]')

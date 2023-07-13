@@ -18,7 +18,6 @@ def test_last_review_date():
 
     # if statement has changed, test the review date was part of those changes
     if statement_diff.returncode == 1:
-
         if "Could not access 'origin/main'" in statement_diff.stderr.decode("utf-8"):
             pytest.skip(
                 "The build context inside container is not cloned from github, so "
