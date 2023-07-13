@@ -1,4 +1,4 @@
-name: pr-checks
+name: on-pr-into-main
 
 on:
   pull_request:
