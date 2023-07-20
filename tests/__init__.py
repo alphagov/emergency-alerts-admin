@@ -29,6 +29,7 @@ class TestClient(FlaskClient):
             session["user_id"] = model_user.id
         if mocker:
             mocker.patch("app.user_api_client.get_user", return_value=user)
+            mocker.patch("app.feature_toggle_api_client.get_feature_toggle", return_value={})
         if mocker and service:
             with self.session_transaction() as session:
                 session["service_id"] = service["id"]

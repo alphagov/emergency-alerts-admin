@@ -251,7 +251,7 @@ def init_app(application):
 
     @application.context_processor
     def inject_global_template_variables():
-        service_is_not_live_flag = feature_toggle_api_client.find_feature_toggle_by_name("service_is_not_live")
+        service_is_not_live_flag = feature_toggle_api_client.get_feature_toggle("service_is_not_live")
         flag_enabled = service_is_not_live_flag.get("is_enabled", False)
         return {
             "asset_path": application.config["ASSET_PATH"],
