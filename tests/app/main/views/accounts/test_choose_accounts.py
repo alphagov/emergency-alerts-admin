@@ -297,8 +297,6 @@ def test_should_not_show_back_to_service_if_user_doesnt_belong_to_service(
 ):
     mock_get_service.return_value = service_two
     expected_page_text = (
-        # Page has no ‘back to’ link
-        "You’re not allowed to see this page "
         "To check your permissions, speak to a member of your team who can manage settings, team and usage."
     )
     page = client_request.get(
@@ -309,9 +307,7 @@ def test_should_not_show_back_to_service_if_user_doesnt_belong_to_service(
         _test_page_title=False,
     )
 
-    assert normalize_spaces(page.select_one("header + .govuk-width-container").text).startswith(
-        normalize_spaces(expected_page_text)
-    )
+    assert normalize_spaces(page.select("p")[2].text).startswith(normalize_spaces(expected_page_text))
 
 
 def test_should_show_back_to_service_if_user_belongs_to_service(
@@ -322,7 +318,7 @@ def test_should_show_back_to_service_if_user_belongs_to_service(
     service_one,
 ):
     mock_get_service.return_value = service_one
-    expected_page_text = "Test Service   Switch service " "Dashboard Templates Uploads Team members"
+    expected_page_text = "Test Service Switch service"
 
     page = client_request.get(
         "main.view_template",
@@ -331,6 +327,6 @@ def test_should_show_back_to_service_if_user_belongs_to_service(
         _test_page_title=False,
     )
 
-    assert normalize_spaces(page.select_one("header + .govuk-width-container").text).startswith(
+    assert normalize_spaces(page.select_one(".navigation-service").text).startswith(
         normalize_spaces(expected_page_text)
     )
