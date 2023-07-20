@@ -95,6 +95,7 @@ from app.notify_client.complaint_api_client import complaint_api_client
 from app.notify_client.contact_list_api_client import contact_list_api_client
 from app.notify_client.email_branding_client import email_branding_client
 from app.notify_client.events_api_client import events_api_client
+from app.notify_client.feature_toggle_api_client import feature_toggle_api_client
 from app.notify_client.inbound_number_client import inbound_number_client
 from app.notify_client.invite_api_client import invite_api_client
 from app.notify_client.job_api_client import job_api_client
@@ -170,6 +171,7 @@ def create_app(application):
         complaint_api_client,
         email_branding_client,
         events_api_client,
+        feature_toggle_api_client,
         inbound_number_client,
         invite_api_client,
         job_api_client,
@@ -249,8 +251,11 @@ def init_app(application):
 
     @application.context_processor
     def inject_global_template_variables():
+        service_is_not_live_flag = feature_toggle_api_client.find_feature_toggle_by_name("service_is_not_live")
+        flag_enabled = service_is_not_live_flag.get("is_enabled", False)
         return {
             "asset_path": application.config["ASSET_PATH"],
+            "live_service_notice": service_is_not_live_flag["display_html"] if flag_enabled else None,
             "header_colour": application.config["HEADER_COLOUR"],
             "asset_url": asset_fingerprinter.get_url,
             "font_paths": font_paths,

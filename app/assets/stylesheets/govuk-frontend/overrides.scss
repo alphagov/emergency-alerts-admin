@@ -26,6 +26,11 @@ $notify-secondary-button-hover-colour: govuk-shade(govuk-colour("light-grey"), 1
 
 }
 
+.govuk-notification-banner {
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
 // Make column headings smaller to prevent wrapping
 .govuk-footer__heading {
   @include govuk-font($size: 19, $weight: bold);
