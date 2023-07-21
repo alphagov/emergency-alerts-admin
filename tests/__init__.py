@@ -28,8 +28,8 @@ class TestClient(FlaskClient):
             session["current_session_id"] = model_user.current_session_id
             session["user_id"] = model_user.id
         if mocker:
-            mocker.patch("app.user_api_client.get_user", return_value=user)
             mocker.patch("app.feature_toggle_api_client.get_feature_toggle", return_value={})
+            mocker.patch("app.user_api_client.get_user", return_value=user)
         if mocker and service:
             with self.session_transaction() as session:
                 session["service_id"] = service["id"]
@@ -605,6 +605,7 @@ def validate_route_permission(
 ):
     usr["permissions"][str(service["id"])] = permissions
     usr["services"] = [service["id"]]
+    mocker.patch("app.feature_toggle_api_client.get_feature_toggle", return_value={})
     mocker.patch("app.user_api_client.check_verify_code", return_value=(True, ""))
     mocker.patch("app.service_api_client.get_services", return_value={"data": []})
     mocker.patch("app.service_api_client.update_service", return_value=service)
@@ -635,6 +636,7 @@ def validate_route_permission(
 
 def validate_route_permission_with_client(mocker, client, method, response_code, route, permissions, usr, service):
     usr["permissions"][str(service["id"])] = permissions
+    mocker.patch("app.feature_toggle_api_client.get_feature_toggle", return_value={})
     mocker.patch("app.user_api_client.check_verify_code", return_value=(True, ""))
     mocker.patch("app.service_api_client.get_services", return_value={"data": []})
     mocker.patch("app.service_api_client.update_service", return_value=service)

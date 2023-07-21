@@ -2710,6 +2710,8 @@ def os_environ():
 
 @pytest.fixture  # noqa (C901 too complex)
 def client_request(_logged_in_client, mocker, service_one):  # noqa (C901 too complex)
+    mocker.patch("app.feature_toggle_api_client.get_feature_toggle", return_value={})
+
     def block_method(object, method_name, preferred_method_name):
         def blocked_method(*args, **kwargs):
             raise AttributeError(

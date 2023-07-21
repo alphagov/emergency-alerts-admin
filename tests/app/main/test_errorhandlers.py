@@ -1,5 +1,5 @@
 import pytest
-from flask import Response, url_for
+from flask import Response, g, url_for
 from flask_wtf.csrf import CSRFError
 from notifications_python_client.errors import HTTPError
 
@@ -16,6 +16,7 @@ def test_bad_url_returns_page_not_found(client_request):
 def test_load_service_before_request_handles_404(client_request, mocker):
     exc = HTTPError(Response(status=404), "Not found")
     get_service = mocker.patch("app.service_api_client.get_service", side_effect=exc)
+    g.service_status_text = ""
 
     client_request.get(
         "main.service_dashboard", service_id="00000000-0000-0000-0000-000000000000", _expected_status=404
