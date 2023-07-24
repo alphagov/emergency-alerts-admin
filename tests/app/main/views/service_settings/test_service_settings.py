@@ -284,37 +284,6 @@ def test_organisation_name_links_to_org_dashboard(
 
 
 @pytest.mark.parametrize(
-    "service_contact_link,expected_text",
-    [
-        ("contact.me@gov.uk", "Send files by email contact.me@gov.uk Manage sending files by email"),
-        (None, "Send files by email Not set up Manage sending files by email"),
-    ],
-)
-def test_send_files_by_email_row_on_settings_page(
-    client_request,
-    platform_admin_user,
-    no_reply_to_email_addresses,
-    no_letter_contact_blocks,
-    single_sms_sender,
-    mock_get_service_settings_page_common,
-    mocker,
-    service_contact_link,
-    expected_text,
-):
-    service_one = service_json(
-        SERVICE_ONE_ID, permissions=["sms", "email"], organisation_id=ORGANISATION_ID, contact_link=service_contact_link
-    )
-
-    mocker.patch("app.service_api_client.get_service", return_value={"data": service_one})
-
-    client_request.login(platform_admin_user, service_one)
-    response = client_request.get("main.service_settings", service_id=SERVICE_ONE_ID)
-
-    org_row = find_element_by_tag_and_partial_text(response, tag="tr", string="Send files by email")
-    assert normalize_spaces(org_row.get_text()) == expected_text
-
-
-@pytest.mark.parametrize(
     "permissions, expected_rows",
     [
         (

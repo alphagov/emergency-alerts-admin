@@ -12,7 +12,9 @@ from tests.conftest import set_config_values
         (False, "key_1", 200),
     ],
 )
-def test_route_correct_secret_key(notify_admin, check_proxy_header, header_value, expected_code):
+def test_route_correct_secret_key(notify_admin, mocker, check_proxy_header, header_value, expected_code):
+    mocker.patch("app.feature_toggle_api_client.get_feature_toggle", return_value={})
+
     with set_config_values(
         notify_admin,
         {

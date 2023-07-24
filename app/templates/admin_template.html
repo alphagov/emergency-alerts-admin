@@ -1,5 +1,6 @@
 {% extends "govuk_frontend_jinja/template.html"%}
 {% from "components/banner.html" import banner %}
+{%- from "govuk_frontend_jinja/components/notification-banner/macro.html" import govukNotificationBanner -%}
 {% from "components/cookie-banner.html" import cookie_banner %}
 
 {% block headIcons %}
@@ -110,6 +111,14 @@
     "navigationClasses": "govuk-header__navigation--end",
     "assetsPath": asset_path + "images"
   }) }}
+  {% if live_service_notice %}
+    <div class="govuk-width-container">
+      {{ govukNotificationBanner({
+        'titleText': "IMPORTANT",
+        'html': live_service_notice
+      }) }}
+    </div>
+  {% endif %}
 {% endblock %}
 
 {% block footer %}

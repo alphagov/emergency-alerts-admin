@@ -95,6 +95,7 @@ from app.notify_client.complaint_api_client import complaint_api_client
 from app.notify_client.contact_list_api_client import contact_list_api_client
 from app.notify_client.email_branding_client import email_branding_client
 from app.notify_client.events_api_client import events_api_client
+from app.notify_client.feature_toggle_api_client import feature_toggle_api_client
 from app.notify_client.inbound_number_client import inbound_number_client
 from app.notify_client.invite_api_client import invite_api_client
 from app.notify_client.job_api_client import job_api_client
@@ -130,6 +131,8 @@ current_service = LocalProxy(lambda: g.current_service)
 
 # The current organisation attached to the request stack.
 current_organisation = LocalProxy(lambda: g.current_organisation)
+
+current_service_status = LocalProxy(lambda: g.service_status_text)
 
 navigation = {
     "casework_navigation": CaseworkNavigation(),
@@ -170,6 +173,7 @@ def create_app(application):
         complaint_api_client,
         email_branding_client,
         events_api_client,
+        feature_toggle_api_client,
         inbound_number_client,
         invite_api_client,
         job_api_client,
@@ -219,6 +223,7 @@ def init_app(application):
 
     application.before_request(load_service_before_request)
     application.before_request(load_organisation_before_request)
+    application.before_request(load_service_status_before_request)
     application.before_request(request_helper.check_proxy_header_before_request)
 
     font_paths = [
@@ -251,6 +256,7 @@ def init_app(application):
     def inject_global_template_variables():
         return {
             "asset_path": application.config["ASSET_PATH"],
+            "live_service_notice": current_service_status,
             "header_colour": application.config["HEADER_COLOUR"],
             "asset_url": asset_fingerprinter.get_url,
             "font_paths": font_paths,
@@ -321,6 +327,17 @@ def load_organisation_before_request():
                     abort(404)
                 else:
                     raise
+
+
+def load_service_status_before_request():
+    g.service_status_text = None
+
+    if "/static/" in request.url:
+        return
+
+    service_is_not_live_flag = feature_toggle_api_client.get_feature_toggle("service_is_not_live")
+    flag_enabled = service_is_not_live_flag.get("is_enabled", False)
+    g.service_status_text = service_is_not_live_flag["display_html"] if flag_enabled else None
 
 
 def save_service_or_org_after_request(response):
