@@ -4,7 +4,7 @@
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
 {% from "components/table.html" import edit_field, mapping_table, row, field %}
 {% from "components/webauthn-api-check.html" import webauthn_api_check %}
-{% from "govuk_frontend_jinja/components/error-summary/macro.html" import govukErrorSummary %}
+{% from "govuk_frontend_jinja/components/error-message/macro.html" import govukErrorMessage %}
 
 {% set page_title = 'Security keys' %}
 {% set credentials = current_user.webauthn_credentials %}
@@ -18,7 +18,7 @@
 {% endblock %}
 
 {% block backLink %}
-  {{ govukBackLink({ "href": url_for('main.user_profile') }) }}
+  {{ govukBackLink({ "href": url_for('.user_profile') }) }}
 {% endblock %}
 
 {% block maincolumn_content %}
@@ -37,20 +37,24 @@
 
 {% set errorSummaries %}
 
-  {{ govukErrorSummary({
+  {% set keyProblemDescription %}
+    <p class="govuk-body">Your browser does not support security keys. Try signing in to Emergency Alerts using a different browser.</p>
+  {% endset %}
+
+  {{ govukErrorMessage({
     "classes": "webauthn__api-missing",
     "titleText": "There’s a problem",
-    "errorList": [{"text": "Your browser does not support security keys. Try signing in to Emergency Alerts using a different browser."}]
+    "descriptionHtml": keyProblemDescription
   }) }}
 
   {% set keyProblemDescription %}
     <p class="govuk-body">JavaScript is not available for this page. Security keys need JavaScript to work.</p>
   {% endset %}
 
-  {{ govukErrorSummary({
+  {{ govukErrorMessage({
     "classes": "webauthn__no-js",
     "titleText": "There’s a problem",
-    "errorList": [{"text": "JavaScript is not available for this page. Security keys need JavaScript to work."}]
+    "descriptionHtml": keyProblemDescription
   }) }}
 
   {% set keyProblemDescription %}
@@ -58,11 +62,11 @@
      <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('main.support') }}">contact us</a>.
   {% endset %}
 
-  {{ govukErrorSummary({
+  {{ govukErrorMessage({
     "classes": "govuk-!-display-none",
     "attributes": { "aria-live": "polite", "tabindex":"-1" },
     "titleText": "There’s a problem with your security keys",
-    "errorList": [{"html": keyProblemDescription}]
+    "descriptionHtml": keyProblemDescription
   }) }}
 {% endset %}
 
@@ -103,7 +107,7 @@
         {{ page_header(page_title) }}
         <p class="govuk-body">
           Security keys are an alternative way of signing in to Emergency Alerts,
-          instead of getting a code in a text message
+          instead of getting a code in a text message.
         </p>
         <p class="govuk-body">
           You can buy any key that’s compatible with the WebAuthn
