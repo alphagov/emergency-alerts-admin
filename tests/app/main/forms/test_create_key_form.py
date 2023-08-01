@@ -38,7 +38,6 @@ def test_return_validation_error_when_key_name_exists(
     "key_type, expected_error", [("", "Select the type of key"), ("invalid", "Select the type of key")]
 )
 def test_return_validation_error_when_key_type_not_chosen(client_request, key_type, expected_error):
-
     form = CreateKeyForm([], formdata=MultiDict([("key_name", "Some key"), ("key_type", key_type)]))
     form.key_type.choices = [("a", "a"), ("b", "b")]
     form.validate()

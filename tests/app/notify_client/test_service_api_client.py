@@ -148,7 +148,6 @@ def test_client_returns_count_of_service_templates(
     extra_args,
     expected_count,
 ):
-
     mocker.patch("app.service_api_client.get_service_templates", return_value={"data": template_data})
 
     assert service_api_client.count_service_templates(SERVICE_ONE_ID, **extra_args) == expected_count
@@ -333,7 +332,6 @@ def test_returns_value_from_cache(
     expected_api_calls,
     expected_cache_set_calls,
 ):
-
     mock_redis_get = mocker.patch(
         "app.extensions.RedisClient.get",
         return_value=cache_value,

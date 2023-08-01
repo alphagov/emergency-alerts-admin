@@ -1,5 +1,5 @@
 {% extends "withoutnav_template.html" %}
-{% from "govuk_frontend_jinja/components/summary-list/macro.html" import govukSummaryList %}
+{% from "govuk_frontend_jinja/components/table/macro.html" import govukTable %}
 
 {% block per_page_title %}
   Your profile
@@ -11,154 +11,121 @@
 
   {% if can_see_edit %}
     {% set email_address_row =
-      {
-        "key": {
-          "classes": "notify-summary-list__key notify-summary-list__key--one-quarter",
+      [
+        {
           "text": "Email address"
         },
-        "value": {
+        {
           "text": current_user.email_address
         },
-        "actions": {
-          "items": [{
-            "href": url_for('.user_profile_email'),
-            "text": "Change",
-            "visuallyHiddenText": "email address",
-            "classes": "govuk-link--no-visited-state"
-          }]
+        {
+          "html": change_link('.user_profile_email', 'email address')
         }
-      }
+      ]
     %}
   {% else %}
     {% set email_address_row =
-      {
-        "classes": "govuk-summary-list__row--no-actions",
-        "key": {
-          "classes": "notify-summary-list__key notify-summary-list__key--one-quarter",
+      [
+        {
           "text": "Email address"
         },
-        "value": {
+        {
           "text": current_user.email_address
-        },
-      }
+        }
+      ]
     %}
   {% endif %}
 
   {% set rows = [
-    {
-      "key": {
-        "classes": "notify-summary-list__key notify-summary-list__key--one-quarter",
+    [
+      {
         "text": "Name"
       },
-      "value": {
+      {
         "text": current_user.name
       },
-      "actions": {
-        "items": [
-          {
-            "href": url_for('.user_profile_name'),
-            "text": "Change",
-            "visuallyHiddenText": "name",
-            "classes": "govuk-link--no-visited-state"
-          }
-        ]
+      {
+        "html": change_link('.user_profile_name', 'name')
       }
-    },
+    ],
     email_address_row,
-    {
-      "key": {
-        "classes": "notify-summary-list__key notify-summary-list__key--one-quarter",
+    [
+      {
         "text": "Mobile number"
       },
-      "value": {
+      {
         "text": current_user.mobile_number or "Not set",
-        "classes": "" if current_user.mobile_number else "table-field-status-default"
       },
-      "actions": {
-        "items": [
-        {
-          "href": url_for('.user_profile_mobile_number'),
-          "text": "Change",
-          "visuallyHiddenText": "mobile number",
-          "classes": "govuk-link--no-visited-state"
-        }
-
-        ]
+      {
+        "html": change_link('.user_profile_mobile_number', 'mobile number')
       }
-    },
-    {
-      "key": {
-        "classes": "notify-summary-list__key notify-summary-list__key--one-quarter",
+    ],
+    [
+      {
         "text": "Password"
       },
-      "value": {
-        "text": ('Last changed ' + current_user.password_changed_at|format_delta)
+      {
+        "text": 'Last changed ' + current_user.password_changed_at|format_delta
       },
-      "actions": {
-        "items": [
-          {
-            "href": url_for('.user_profile_password'),
-            "text": "Change",
-            "visuallyHiddenText": "password",
-            "classes": "govuk-link--no-visited-state"
-          }
-        ]
+      {
+        "html": change_link('.user_profile_password', 'password')
       }
-    }
+    ]
   ]%}
 
  {% if current_user.can_use_webauthn %}
   {% set _ = rows.append(
-    {
-      "key": {
-        "classes": "notify-summary-list__key notify-summary-list__key--one-quarter",
+    [
+      {
         "text": "Security keys"
       },
-      "value": {
+      {
         "text": ('{} registered'.format(current_user.webauthn_credentials|length)) if current_user.webauthn_credentials else "None registered",
-        "classes": "" if current_user.webauthn_credentials else "table-field-status-default"
       },
-      "actions": {
-        "items": [
-          {
-            "href": url_for('.user_profile_security_keys'),
-            "text": "Change",
-            "visuallyHiddenText": "security keys",
-            "classes": "govuk-link--no-visited-state"
-          }
-        ]
+      {
+        "html": change_link('.user_profile_security_keys', 'security keys')
       }
-    }
+    ]
   ) %}
  {% endif %}
 
  {% if current_user.platform_admin or session.get('disable_platform_admin_view') %}
   {% set _ = rows.append(
-    {
-      "key": {
-        "classes": "notify-summary-list__key notify-summary-list__key--one-quarter",
+    [
+      {
         "text": "Use platform admin view"
       },
-      "value": {
+      {
         "text": (not session.get('disable_platform_admin_view'))|format_yes_no
       },
-      "actions": {
-        "items": [
-          {
-            "href": url_for('.user_profile_disable_platform_admin_view'),
-            "text": "Change",
-            "visuallyHiddenText": "whether to use platform admin view",
-            "classes": "govuk-link--no-visited-state"
-          }
-        ]
+      {
+        "html": change_link('.user_profile_disable_platform_admin_view', 'whether to use platform admin view')
       }
-    },
+    ]
   ) %}
 {% endif %}
 
-{{ govukSummaryList({
-  "classes": "notify-summary-list",
+{{ govukTable({
+  "firstCellIsHeader": true,
+  "head": [
+    {
+      "text": "Personal details"
+    },
+    {
+      "text": "Detail values"
+    },
+    {
+      "text": "Change details"
+    }
+  ],
   "rows": rows
 }) }}
 
 {% endblock %}
+
+{% macro change_link(url, visually_hidden_text) %}
+  <a href="{{ url_for(url) }}" class="govuk-link--no-visited-state">
+    Change
+    <span class="govuk-visually-hidden"> {{ visually_hidden_text }}</span>
+  </a>
+{% endmacro %}

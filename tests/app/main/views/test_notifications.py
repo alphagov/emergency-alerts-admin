@@ -53,7 +53,6 @@ def test_notification_status_page_shows_details(
     notification_status,
     expected_status,
 ):
-
     mocker.patch("app.user_api_client.get_user", return_value=user)
 
     notification = create_notification(notification_status=notification_status, key_type=key_type)
@@ -115,7 +114,6 @@ def test_notification_status_page_respects_redaction(
     template_redaction_setting,
     expected_content,
 ):
-
     _mock_get_notification = mocker.patch(
         "app.notification_api_client.get_notification",
         return_value=create_notification(redact_personalisation=template_redaction_setting),
@@ -196,7 +194,6 @@ def test_notification_page_doesnt_link_to_template_in_tour(
     time_of_viewing_page,
     expected_message,
 ):
-
     with freeze_time("2012-01-01 01:01"):
         notification = create_notification()
         mocker.patch("app.notification_api_client.get_notification", return_value=notification)
@@ -219,7 +216,6 @@ def test_notification_page_shows_page_for_letter_notification(
     mocker,
     fake_uuid,
 ):
-
     count_of_pages = 3
 
     notification = create_notification(notification_status="created", template_type="letter", postage="second")
@@ -321,7 +317,6 @@ def test_notification_page_shows_page_for_letter_sent_with_test_key(
     expected_p2,
     expected_postage,
 ):
-
     if is_precompiled_letter:
         mocker.patch(
             "app.main.views.notifications.get_letter_file_data",
@@ -714,7 +709,6 @@ def test_notification_page_has_link_to_send_another_for_sms(
     template_type,
     link_expected,
 ):
-
     service_one["permissions"] = service_permissions
     notification = create_notification(template_type=template_type)
     mocker.patch("app.notification_api_client.get_notification", return_value=notification)
@@ -788,7 +782,6 @@ def test_notification_page_has_link_to_download_letter(
 def test_notification_page_has_expected_template_link_for_letter(
     client_request, mocker, fake_uuid, service_one, is_precompiled_letter, has_template_link
 ):
-
     if is_precompiled_letter:
         mocker.patch(
             "app.main.views.notifications.get_letter_file_data",

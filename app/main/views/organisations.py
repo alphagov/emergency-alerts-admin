@@ -292,7 +292,6 @@ def edit_organisation_name(org_id):
     form = RenameOrganisationForm(name=current_organisation.name)
 
     if form.validate_on_submit():
-
         try:
             current_organisation.update(name=form.name.data)
         except HTTPError as http_error:
@@ -313,7 +312,6 @@ def edit_organisation_name(org_id):
 @main.route("/organisations/<uuid:org_id>/settings/edit-type", methods=["GET", "POST"])
 @user_is_platform_admin
 def edit_organisation_type(org_id):
-
     form = OrganisationOrganisationTypeForm(organisation_type=current_organisation.organisation_type)
 
     if form.validate_on_submit():
@@ -332,7 +330,6 @@ def edit_organisation_type(org_id):
 @main.route("/organisations/<uuid:org_id>/settings/edit-crown-status", methods=["GET", "POST"])
 @user_is_platform_admin
 def edit_organisation_crown_status(org_id):
-
     form = OrganisationCrownStatusForm(
         crown_status={
             True: "crown",
@@ -360,7 +357,6 @@ def edit_organisation_crown_status(org_id):
 @main.route("/organisations/<uuid:org_id>/settings/edit-agreement", methods=["GET", "POST"])
 @user_is_platform_admin
 def edit_organisation_agreement(org_id):
-
     form = OrganisationAgreementSignedForm(
         agreement_signed={
             True: "yes",
@@ -733,7 +729,6 @@ def add_organisation_letter_branding_options(org_id):
 @main.route("/organisations/<uuid:org_id>/settings/edit-organisation-domains", methods=["GET", "POST"])
 @user_is_platform_admin
 def edit_organisation_domains(org_id):
-
     form = AdminOrganisationDomainsForm()
 
     if form.validate_on_submit():
@@ -766,7 +761,6 @@ def edit_organisation_domains(org_id):
 @main.route("/organisations/<uuid:org_id>/settings/edit-go-live-notes", methods=["GET", "POST"])
 @user_is_platform_admin
 def edit_organisation_go_live_notes(org_id):
-
     form = AdminOrganisationGoLiveNotesForm()
 
     if form.validate_on_submit():
@@ -788,7 +782,6 @@ def edit_organisation_notes(org_id):
     form = AdminNotesForm(notes=current_organisation.notes)
 
     if form.validate_on_submit():
-
         if form.notes.data == current_organisation.notes:
             return redirect(url_for(".organisation_settings", org_id=org_id))
 

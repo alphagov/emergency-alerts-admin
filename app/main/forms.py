@@ -156,7 +156,6 @@ class RadioField(WTFormsRadioField):
 
 
 def email_address(label="Email address", gov_user=True, required=True):
-
     validators = [
         ValidEmail(),
     ]
@@ -301,7 +300,6 @@ class SMSCode(GovukTextInputField):
 
 
 class ForgivingIntegerField(GovukTextInputField):
-
     #  Actual value is 2147483647 but this is a scary looking arbitrary number
     POSTGRES_MAX_INT = 2000000000
 
@@ -311,9 +309,7 @@ class ForgivingIntegerField(GovukTextInputField):
         super().__init__(label, **kwargs)
 
     def process_formdata(self, valuelist):
-
         if valuelist:
-
             value = valuelist[0].replace(",", "").replace(" ", "")
 
             try:
@@ -327,7 +323,6 @@ class ForgivingIntegerField(GovukTextInputField):
         return super().process_formdata([value])
 
     def pre_validate(self, form):
-
         if self.data:
             error = None
             try:
@@ -348,7 +343,6 @@ class ForgivingIntegerField(GovukTextInputField):
         return super().pre_validate(form)
 
     def __call__(self, **kwargs):
-
         if self.get_form().is_submitted() and not self.get_form().validate():
             return super().__call__(value=(self.raw_data or [None])[0], **kwargs)
 
@@ -383,7 +377,6 @@ class HexColourCodeField(GovukTextInputField, RequiredValidatorsMixin):
 
 
 class FieldWithNoneOption:
-
     # This is a special value that is specific to our forms. This is
     # more expicit than casting `None` to a string `'None'` which can
     # have unexpected edge cases
@@ -408,7 +401,6 @@ class RadioFieldWithNoneOption(FieldWithNoneOption, RadioField):
 
 class NestedFieldMixin:
     def children(self):
-
         # start map with root option as a single child entry
         child_map = {None: [option for option in self if option.data == self.NONE_OPTION_VALUE]}
 
@@ -955,7 +947,6 @@ class TwoFactorForm(StripWhitespaceForm):
     sms_code = SMSCode("Text message code")
 
     def validate(self):
-
         if not self.sms_code.validate(self):
             return False
 
@@ -1243,7 +1234,6 @@ class LetterAddressForm(StripWhitespaceForm):
     address = PostalAddressField("Address", validators=[DataRequired(message="Cannot be empty")])
 
     def validate_address(self, field):
-
         address = PostalAddress(
             field.data,
             allow_international_letters=self.allow_international_letters,
@@ -1536,7 +1526,6 @@ class ServiceContactDetailsForm(StripWhitespaceForm):
     phone_number = GovukTextInputField("Phone number")
 
     def validate(self):
-
         if self.contact_details_type.data == "url":
             self.url.validators = [DataRequired(), URL(message="Must be a valid URL")]
 
@@ -2210,7 +2199,6 @@ class TemplateAndFoldersSelectionForm(Form):
         *args,
         **kwargs,
     ):
-
         super().__init__(*args, **kwargs)
 
         self.available_template_types = available_template_types
@@ -2389,7 +2377,6 @@ class ServiceBroadcastAccountTypeForm(StripWhitespaceForm):
 class AcceptAgreementForm(StripWhitespaceForm):
     @classmethod
     def from_organisation(cls, org):
-
         if org.agreement_signed_on_behalf_of_name and org.agreement_signed_on_behalf_of_email_address:
             who = "someone-else"
         elif org.agreement_signed_version:  # only set if user has submitted form previously
@@ -2513,7 +2500,6 @@ def markup_for_coloured_stripe(colour):
 
 
 class GovernmentIdentityCoatOfArmsOrInsignia(StripWhitespaceForm):
-
     coat_of_arms_or_insignia = GovukRadiosField(
         "Coat of arms or insignia",
         choices=[

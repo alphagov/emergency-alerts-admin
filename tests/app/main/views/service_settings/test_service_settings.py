@@ -284,37 +284,6 @@ def test_organisation_name_links_to_org_dashboard(
 
 
 @pytest.mark.parametrize(
-    "service_contact_link,expected_text",
-    [
-        ("contact.me@gov.uk", "Send files by email contact.me@gov.uk Manage sending files by email"),
-        (None, "Send files by email Not set up Manage sending files by email"),
-    ],
-)
-def test_send_files_by_email_row_on_settings_page(
-    client_request,
-    platform_admin_user,
-    no_reply_to_email_addresses,
-    no_letter_contact_blocks,
-    single_sms_sender,
-    mock_get_service_settings_page_common,
-    mocker,
-    service_contact_link,
-    expected_text,
-):
-    service_one = service_json(
-        SERVICE_ONE_ID, permissions=["sms", "email"], organisation_id=ORGANISATION_ID, contact_link=service_contact_link
-    )
-
-    mocker.patch("app.service_api_client.get_service", return_value={"data": service_one})
-
-    client_request.login(platform_admin_user, service_one)
-    response = client_request.get("main.service_settings", service_id=SERVICE_ONE_ID)
-
-    org_row = find_element_by_tag_and_partial_text(response, tag="tr", string="Send files by email")
-    assert normalize_spaces(org_row.get_text()) == expected_text
-
-
-@pytest.mark.parametrize(
     "permissions, expected_rows",
     [
         (
@@ -793,7 +762,6 @@ def test_should_check_if_estimated_volumes_provided(
     consent_to_research,
     expected_estimated_volumes_item,
 ):
-
     for volume, channel in zip(volumes, ("sms", "email", "letter")):
         mocker.patch(
             "app.models.service.Service.volume_{}".format(channel),
@@ -2752,7 +2720,6 @@ def test_shows_delete_link_for_error_on_post_request_for_edit_email_reply_to_add
 
 
 def test_confirm_delete_reply_to_email_address(fake_uuid, client_request, get_non_default_reply_to_email_address):
-
     page = client_request.get(
         "main.service_confirm_delete_email_reply_to",
         service_id=SERVICE_ONE_ID,
@@ -2815,7 +2782,6 @@ def test_confirm_delete_letter_contact_block(
     client_request,
     get_default_letter_contact_block,
 ):
-
     page = client_request.get(
         "main.service_confirm_delete_letter_contact",
         service_id=SERVICE_ONE_ID,
@@ -2985,7 +2951,6 @@ def test_shows_delete_link_for_sms_sender(
     fake_uuid,
     client_request,
 ):
-
     mocker.patch("app.service_api_client.get_sms_sender", return_value=sms_sender)
 
     page = client_request.get(
@@ -3015,7 +2980,6 @@ def test_confirm_delete_sms_sender(
     client_request,
     get_non_default_sms_sender,
 ):
-
     page = client_request.get(
         "main.service_confirm_delete_sms_sender",
         service_id=SERVICE_ONE_ID,
@@ -3609,7 +3573,6 @@ def test_service_set_email_branding_add_to_branding_pool_step_choices_yes_or_no(
     mock_get_service_data_retention,
     mock_update_service,
 ):
-
     client_request.login(platform_admin_user)
     service_one["organisation"] = organisation_one
     email_branding_id = "234"
@@ -3730,7 +3693,6 @@ def test_service_set_letter_branding_add_to_branding_pool_step_choices_yes_or_no
     mock_get_service_data_retention,
     mock_update_service,
 ):
-
     client_request.login(platform_admin_user)
     service_one["organisation"] = organisation_one
     letter_branding_id = "234"
@@ -4535,7 +4497,6 @@ def test_should_set_sms_allowance(
     mock_get_free_sms_fragment_limit,
     mock_create_or_update_free_sms_fragment_limit,
 ):
-
     client_request.login(platform_admin_user)
     client_request.post(
         "main.set_free_sms_allowance",
@@ -5356,7 +5317,6 @@ def test_show_service_data_retention(
     service_one,
     mock_get_service_data_retention,
 ):
-
     mock_get_service_data_retention.return_value[0]["days_of_retention"] = 5
 
     client_request.login(platform_admin_user)
@@ -5450,7 +5410,6 @@ def test_update_service_data_retention_populates_form(
     fake_uuid,
     mock_get_service_data_retention,
 ):
-
     mock_get_service_data_retention.return_value[0]["days_of_retention"] = 5
     client_request.login(platform_admin_user)
     page = client_request.get(

@@ -33,7 +33,6 @@ class Event(ABC):
 
 
 class ServiceCreationEvent(Event):
-
     relevant = True
 
     def __str__(self):
@@ -124,7 +123,6 @@ class ServiceEvent(Event):
 
 
 class APIKeyEvent(Event):
-
     relevant = True
 
     def __str__(self):
@@ -135,13 +133,11 @@ class APIKeyEvent(Event):
 
 
 class APIKeyEvents(ModelList):
-
     model = APIKeyEvent
     client_method = service_api_client.get_service_api_key_history
 
 
 class ServiceEvents(ModelList):
-
     client_method = service_api_client.get_service_service_history
 
     @property

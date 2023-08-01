@@ -23,7 +23,6 @@ bank_holidays = BankHolidays(use_cached_holidays=True)
 @main.route("/support", methods=["GET", "POST"])
 @hide_from_search_engines
 def support():
-
     if current_user.is_authenticated:
         form = SupportType()
         if form.validate_on_submit():
@@ -146,7 +145,6 @@ def feedback(ticket_type):
 @main.route("/support/escalate", methods=["GET", "POST"])
 @hide_from_search_engines
 def bat_phone():
-
     if current_user.is_authenticated:
         return redirect(url_for("main.feedback", ticket_type=PROBLEM_TICKET_TYPE))
 
@@ -165,7 +163,6 @@ def thanks():
 
 
 def in_business_hours():
-
     now = datetime.utcnow().replace(tzinfo=pytz.utc)
 
     if is_weekend(now) or is_bank_holiday(now):

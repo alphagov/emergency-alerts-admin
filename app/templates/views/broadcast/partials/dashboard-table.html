@@ -8,7 +8,7 @@
       <h2>
         <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for(view_broadcast_endpoint, service_id=current_service.id, broadcast_message_id=item.id) }}">{{ item.template.name }}</a>
       </h2>
-      <span class="file-list-hint-large govuk-!-margin-bottom-2">
+      <span class="file-list-hint-large govuk-!-margin-bottom-2" tabindex="0">
         {{ item.content }}
       </span>
       {% if item.status == 'pending-approval' %}

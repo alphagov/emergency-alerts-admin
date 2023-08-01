@@ -35,7 +35,6 @@ def service_download_agreement(service_id):
 @main.route("/services/<uuid:service_id>/agreement/accept", methods=["GET", "POST"])
 @user_has_permissions("manage_service")
 def service_accept_agreement(service_id):
-
     if not current_service.organisation:
         abort(404)
 
@@ -58,7 +57,6 @@ def service_accept_agreement(service_id):
 @main.route("/services/<uuid:service_id>/agreement/confirm", methods=["GET", "POST"])
 @user_has_permissions("manage_service")
 def service_confirm_agreement(service_id):
-
     if not current_service.organisation or current_service.organisation.agreement_signed_version is None:
         abort(403)
 
@@ -76,7 +74,6 @@ def service_confirm_agreement(service_id):
 @main.route("/agreement/<variant>", endpoint="public_agreement")
 @main.route("/agreement/<variant>.pdf", endpoint="public_download_agreement")
 def public_agreement(variant):
-
     if variant not in {"crown", "non-crown"}:
         abort(404)
 
