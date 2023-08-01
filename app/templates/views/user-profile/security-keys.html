@@ -2,9 +2,9 @@
 {% from "components/page-header.html" import page_header %}
 {% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
-{% from "components/table.html" import edit_field, mapping_table, row, field, row_heading %}
+{% from "components/table.html" import edit_field, mapping_table, row, field %}
 {% from "components/webauthn-api-check.html" import webauthn_api_check %}
-{% from "govuk_frontend_jinja/components/error-message/macro.html" import govukErrorMessage %}
+{% from "govuk_frontend_jinja/components/error-summary/macro.html" import govukErrorSummary %}
 
 {% set page_title = 'Security keys' %}
 {% set credentials = current_user.webauthn_credentials %}
@@ -18,7 +18,7 @@
 {% endblock %}
 
 {% block backLink %}
-  {{ govukBackLink({ "href": url_for('.user_profile') }) }}
+  {{ govukBackLink({ "href": url_for('main.user_profile') }) }}
 {% endblock %}
 
 {% block maincolumn_content %}
@@ -33,39 +33,44 @@
       "data-csrf-token": csrf_token(),
     }
   }) }}
-
-  {{ govukErrorMessage({
-    "classes": "webauthn__api-missing",
-    "text": "Your browser does not support security keys. Try signing in to Notify using a different browser."
-  }) }}
-
-  {{ govukErrorMessage({
-    "classes": "webauthn__no-js",
-    "text": "JavaScript is not available for this page. Security keys need JavaScript to work."
-  }) }}
 {% endset %}
 
-  {% set html %}
-    There’s a problem with your security key
-    <p class="govuk-body">
-      Check you have the right key and try again.
-      If this does not work,
-      <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('main.support') }}">contact us</a>.
-    </p>
-  {% endset %}
-  {{ govukErrorMessage({
-    "classes": "banner-dangerous govuk-!-display-none",
-    "html": html,
-    "attributes": {
-      "aria-live": "polite",
-      "tabindex": '-1'
-    }
+{% set errorSummaries %}
+
+  {{ govukErrorSummary({
+    "classes": "webauthn__api-missing",
+    "titleText": "There’s a problem",
+    "errorList": [{"text": "Your browser does not support security keys. Try signing in to Emergency Alerts using a different browser."}]
   }) }}
+
+  {% set keyProblemDescription %}
+    <p class="govuk-body">JavaScript is not available for this page. Security keys need JavaScript to work.</p>
+  {% endset %}
+
+  {{ govukErrorSummary({
+    "classes": "webauthn__no-js",
+    "titleText": "There’s a problem",
+    "errorList": [{"text": "JavaScript is not available for this page. Security keys need JavaScript to work."}]
+  }) }}
+
+  {% set keyProblemDescription %}
+    Check you have the right key and try again. If this does not work,
+     <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('main.support') }}">contact us</a>.
+  {% endset %}
+
+  {{ govukErrorSummary({
+    "classes": "govuk-!-display-none",
+    "attributes": { "aria-live": "polite", "tabindex":"-1" },
+    "titleText": "There’s a problem with your security keys",
+    "errorList": [{"html": keyProblemDescription}]
+  }) }}
+{% endset %}
 
   <div class="govuk-grid-row">
 
     {% if credentials %}
       <div class="govuk-grid-column-five-sixths">
+        {{ errorSummaries }}
         {{ page_header(page_title) }}
         <div class="body-copy-table">
           {% call mapping_table(
@@ -86,7 +91,7 @@
                     {% endif %}
                   </div>
                 {% endcall %}
-                {{ edit_field('Manage', url_for('.user_profile_manage_security_key', key_id=credential.id)) }}
+                {{ edit_field('Manage', url_for('main.user_profile_manage_security_key', key_id=credential.id)) }}
               {% endcall %}
             {% endfor %}
           {% endcall %}
@@ -97,7 +102,7 @@
       <div class="govuk-grid-column-one-half">
         {{ page_header(page_title) }}
         <p class="govuk-body">
-          Security keys are an alternative way of signing in to Notify,
+          Security keys are an alternative way of signing in to Emergency Alerts,
           instead of getting a code in a text message
         </p>
         <p class="govuk-body">
@@ -109,7 +114,6 @@
       <div class="govuk-grid-column-one-quarter">
         <img src="{{ asset_url('images/security-key.svg') }}" alt="" class="webauthn-illustration" width="149" height="150">
       </div>
-      {% endif %}
-    </div>
+    {% endif %}
   </div>
 {% endblock %}
