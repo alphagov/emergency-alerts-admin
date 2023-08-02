@@ -170,7 +170,8 @@ def test_complete_register_clears_session(
         assert session["_flashes"] == [
             (
                 "default_with_tick",
-                "Registration complete. Next time you sign in to Notify you’ll be asked to use your security key.",
+                "Registration complete. Next time you sign in to Emergency Alerts "
+                "you’ll be asked to use your security key.",
             )
         ]
 
