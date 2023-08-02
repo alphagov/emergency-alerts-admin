@@ -33,6 +33,8 @@ def test_client_creates_invite(
 
     invite_api_client.create_invite("12345", "67890", "test@example.com", {"send_messages"}, "sms_auth", [fake_uuid])
 
+    subdomain = f"{os.environ.get('ENVIRONMENT')}." if os.environ.get("ENVIRONMENT") != "production" else ""
+
     mock_post.assert_called_once_with(
         url="/service/{}/invite".format("67890"),
         data={
@@ -42,7 +44,7 @@ def test_client_creates_invite(
             "service": "67890",
             "created_by": ANY,
             "permissions": "send_emails,send_letters,send_texts",
-            "invite_link_host": f"https://admin.{os.environ.get('ENVIRONMENT')}.emergency-alerts.service.gov.uk",
+            "invite_link_host": f"https://admin.{subdomain}emergency-alerts.service.gov.uk",
             "folder_permissions": [fake_uuid],
         },
     )

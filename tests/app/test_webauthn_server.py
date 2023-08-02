@@ -9,8 +9,10 @@ from app import webauthn_server
 def app_with_mock_config(mocker):
     app = mocker.Mock()
 
+    subdomain = f"{os.environ.get('ENVIRONMENT')}." if os.environ.get("ENVIRONMENT") != "production" else ""
+
     app.config = {
-        "ADMIN_EXTERNAL_URL": f"https://admin.{os.environ.get('ENVIRONMENT')}.emergency-alerts.service.gov.uk",
+        "ADMIN_EXTERNAL_URL": f"https://admin.{subdomain}emergency-alerts.service.gov.uk",
         "NOTIFY_ENVIRONMENT": "development",
     }
     return app
