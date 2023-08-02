@@ -28,5 +28,6 @@ def test_server_relying_party_id(
     mocker,
 ):
     webauthn_server.init_app(app_with_mock_config)
-    rp_id = "admin.{}.emergency-alerts.service.gov.uk"
-    assert app_with_mock_config.webauthn_server.rp.id == rp_id.format(os.environ.get("ENVIRONMENT")).lower()
+    rp_id = "admin.{}emergency-alerts.service.gov.uk"
+    subdomain = f"{os.environ.get('ENVIRONMENT')}." if os.environ.get("ENVIRONMENT") != "production" else ""
+    assert app_with_mock_config.webauthn_server.rp.id == rp_id.format(subdomain).lower()
