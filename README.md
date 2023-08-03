@@ -29,6 +29,16 @@ have that version, it should tell you how to install it.
 nvm use
 ```
 
+### Pre-commit
+
+- If `pre-commit` and `tflint` are not already installed on your machine, run
+`brew install pre-commit` and 
+`brew install tflint`
+
+- In this repository’s folder, run
+`pre-commit install` and 
+`pre-commit install-hooks`
+
 ### `environment.sh`
 
 In the root directory of the application, run:
