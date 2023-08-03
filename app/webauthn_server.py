@@ -1,4 +1,3 @@
-import os
 from urllib.parse import urlparse
 
 from fido2.server import Fido2Server
