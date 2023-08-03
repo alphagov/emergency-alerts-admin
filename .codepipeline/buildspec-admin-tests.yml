@@ -9,7 +9,7 @@ phases:
   build:
     commands:
       - make bootstrap
-      - cd $DIR_ADMIN && . $VENV_ADMIN/bin/activate && make test
+      - make test
   post_build:
     commands:
       - echo "No post build commands"
