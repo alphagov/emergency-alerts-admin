@@ -31,9 +31,8 @@ nvm use
 
 ### Pre-commit
 
-- If `pre-commit` and `tflint` are not already installed on your machine, run
-`brew install pre-commit` and 
-`brew install tflint`
+- If `pre-commit` is not already installed on your machine, run
+`brew install pre-commit`
 
 - In this repository’s folder, run
 `pre-commit install` and 
