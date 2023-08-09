@@ -1214,6 +1214,15 @@ class BaseTemplateForm(StripWhitespaceForm):
     )
 
 
+class ChooseDurationForm(StripWhitespaceForm):
+    content = GovukRadiosField(
+        "Choose alert duration",
+        choices=[("30-mins", "30 minutes"), ("3-hours", "3 hours"), ("6-hours", "6 hours"), ("22-hours", "22 hours")],
+        validators=[DataRequired(message="Select an alert duration to continue")],
+        param_extensions={"fieldset": {"legend": {"classes": "govuk-visually-hidden"}}},
+    )
+
+
 class SMSTemplateForm(BaseTemplateForm):
     def validate_template_content(self, field):
         OnlySMSCharacters(template_type="sms")(None, field)
