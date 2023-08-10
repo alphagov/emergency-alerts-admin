@@ -29,6 +29,7 @@
         </li>
       {% endfor %}
     </ul>
+    <p class="govuk-!-margin-right-2">Duration: {{ broadcast_message.duration|format_seconds_duration_as_time }}</p>
   </div>
 
   {% call form_wrapper() %}
