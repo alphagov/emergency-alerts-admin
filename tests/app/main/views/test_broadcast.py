@@ -2655,15 +2655,13 @@ def test_user_without_approve_permission_cant_approve_broadcast_they_created(
 
 
 @pytest.mark.parametrize(
-    "channel, expected_finishes_at",
+    "channel, duration, expected_finishes_at",
     (
-        # 4 hours later
-        ("operator", "2020-02-23T02:22:22"),
-        ("test", "2020-02-23T02:22:22"),
-        # 22 hours 30 minutes later
-        ("severe", "2020-02-23T20:52:22"),
-        ("government", "2020-02-23T20:52:22"),
-        (None, "2020-02-23T20:52:22"),  # Training mode
+        ("operator", 1800, "2020-02-22T22:52:22"),  # 30 mins later
+        ("test", 10800, "2020-02-23T01:22:22"),  # 3 hours later
+        ("severe", 21600, "2020-02-23T04:22:22"),  # 6 hours later
+        ("government", 79200, "2020-02-23T20:22:22"),  # 22 hours later
+        (None, 0, "2020-02-22T22:22:22"),  # Training mode
     ),
 )
 @pytest.mark.parametrize(
@@ -2752,6 +2750,7 @@ def test_confirm_approve_broadcast(
     trial_mode,
     expected_redirect,
     channel,
+    duration,
     expected_finishes_at,
 ):
     mocker.patch(
@@ -2761,7 +2760,8 @@ def test_confirm_approve_broadcast(
             service_id=SERVICE_ONE_ID,
             template_id=fake_uuid,
             created_by_id=fake_uuid,
-            finishes_at="2020-02-23T23:23:23.000000",
+            duration=duration,
+            finishes_at="2020-02-22T22:52:22.000000",
             status=initial_status,
         ),
     )
