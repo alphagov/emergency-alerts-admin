@@ -1217,7 +1217,7 @@ class BaseTemplateForm(StripWhitespaceForm):
 class ChooseDurationForm(StripWhitespaceForm):
     content = GovukRadiosField(
         "Choose alert duration",
-        choices=[("30-mins", "30 minutes"), ("3-hours", "3 hours"), ("6-hours", "6 hours"), ("22-hours", "22 hours")],
+        choices=[("PT30M", "30 minutes"), ("PT3H", "3 hours"), ("PT6H", "6 hours"), ("PT22H", "22 hours")],
         validators=[DataRequired(message="Select an alert duration to continue")],
         param_extensions={"fieldset": {"legend": {"classes": "govuk-visually-hidden"}}},
     )

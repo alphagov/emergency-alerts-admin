@@ -212,6 +212,11 @@ def choose_broadcast_duration(service_id, broadcast_message_id):
     )
 
     if form.validate_on_submit():
+        BroadcastMessage.update_duration(
+            service_id=current_service.id,
+            broadcast_message_id=broadcast_message_id,
+            duration=form.content.data,
+        )
         return redirect(
             url_for(
                 ".preview_broadcast_message", service_id=current_service.id, broadcast_message_id=broadcast_message.id
@@ -412,7 +417,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
         broadcast_message.request_approval()
         return redirect(
             url_for(
-                ".choose_broadcast_duration",
+                ".view_current_broadcast",
                 service_id=current_service.id,
                 broadcast_message_id=broadcast_message.id,
             )
