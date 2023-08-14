@@ -111,6 +111,7 @@ def test_format_datetime_relative(time, human_readable_datetime):
         ("86401", "1 day, 1 second"),
         ("5212", "1 hour, 26 minutes, 52 seconds"),
         ("3605", "1 hour, 5 seconds"),
+        (None, "0 seconds"),
     ],
 )
 def test_format_seconds_duration_as_time(seconds, formatted_time):

@@ -67,7 +67,7 @@ def format_time_24h(date):
 
 
 def format_seconds_duration_as_time(seconds):
-    seconds = int(seconds)
+    seconds = int(seconds or 0)
     days = seconds // (24 * 3600)
     seconds %= 24 * 3600
     hours = seconds // 3600
