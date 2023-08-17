@@ -32,6 +32,7 @@ class BroadcastMessage(JSONModel):
         "service_id",
         "created_by",
         "personalisation",
+        "duration",
         "starts_at",
         "finishes_at",
         "created_at",
@@ -92,6 +93,16 @@ class BroadcastMessage(JSONModel):
             data={
                 "reference": reference,
                 "content": content,
+            },
+        )
+
+    @classmethod
+    def update_duration(cls, *, service_id, broadcast_message_id, duration):
+        broadcast_message_api_client.update_broadcast_message(
+            service_id=service_id,
+            broadcast_message_id=broadcast_message_id,
+            data={
+                "duration": duration,
             },
         )
 
@@ -298,10 +309,7 @@ class BroadcastMessage(JSONModel):
         self._set_status_to("pending-approval")
 
     def approve_broadcast(self, channel):
-        if channel in {"test", "operator"}:
-            ttl = timedelta(hours=4, minutes=0)
-        else:
-            ttl = timedelta(hours=22, minutes=30)
+        ttl = timedelta(seconds=self.duration)
 
         self._update(
             starts_at=datetime.utcnow().isoformat(),

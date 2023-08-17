@@ -61,6 +61,7 @@ from app.formatters import (
     format_notification_status_as_url,
     format_notification_type,
     format_number_in_pounds_as_currency,
+    format_seconds_duration_as_time,
     format_thousands,
     format_time,
     format_yes_no,
@@ -530,6 +531,7 @@ def add_template_filters(application):
     for fn in [
         format_auth_type,
         format_billions,
+        format_seconds_duration_as_time,
         format_datetime,
         format_datetime_24h,
         format_datetime_normal,

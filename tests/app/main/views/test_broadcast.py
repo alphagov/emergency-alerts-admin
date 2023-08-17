@@ -86,6 +86,12 @@ sample_uuid = sample_uuid()
             405,
         ),
         (
+            ".choose_broadcast_duration",
+            {"broadcast_message_id": sample_uuid},
+            403,
+            403,
+        ),
+        (
             ".preview_broadcast_message",
             {"broadcast_message_id": sample_uuid},
             403,
@@ -1827,6 +1833,62 @@ def test_remove_broadcast_area_page(
     )
 
 
+def test_choose_broadcast_duration_page(
+    client_request,
+    service_one,
+    active_user_create_broadcasts_permission,
+    mock_get_draft_broadcast_message,
+    fake_uuid,
+):
+    service_one["permissions"] += ["broadcast"]
+    client_request.login(active_user_create_broadcasts_permission)
+    page = client_request.get(
+        ".choose_broadcast_duration",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+    )
+
+    assert normalize_spaces(page.select_one("h1").text) == "Choose alert duration"
+
+    form = page.select_one("form")
+    assert form["method"] == "post"
+    assert "action" not in form
+
+    assert [
+        (
+            choice.select_one("input")["name"],
+            choice.select_one("input")["value"],
+            normalize_spaces(choice.select_one("label").text),
+        )
+        for choice in form.select(".govuk-radios__item")
+    ] == [
+        ("content", "PT30M", "30 minutes"),
+        ("content", "PT3H", "3 hours"),
+        ("content", "PT6H", "6 hours"),
+        ("content", "PT22H", "22 hours"),
+    ]
+
+
+def test_choose_broadcast_duration(
+    client_request,
+    service_one,
+    mock_get_draft_broadcast_message,
+    mock_update_broadcast_message,
+    fake_uuid,
+    active_user_create_broadcasts_permission,
+):
+    service_one["permissions"] += ["broadcast"]
+
+    client_request.login(active_user_create_broadcasts_permission)
+    client_request.post(
+        ".choose_broadcast_duration",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        _data={"duration": "PT30M"},
+        _expected_status=200,
+    )
+
+
 def test_preview_broadcast_message_page(
     client_request,
     service_one,
@@ -1846,6 +1908,8 @@ def test_preview_broadcast_message_page(
         "England",
         "Scotland",
     ]
+
+    assert page.select_one("p.duration-preview").text == "Duration: 0 seconds"
 
     assert normalize_spaces(page.select_one("h2.broadcast-message-heading").text) == "Emergency alert"
 
@@ -2655,15 +2719,13 @@ def test_user_without_approve_permission_cant_approve_broadcast_they_created(
 
 
 @pytest.mark.parametrize(
-    "channel, expected_finishes_at",
+    "channel, duration, expected_finishes_at",
     (
-        # 4 hours later
-        ("operator", "2020-02-23T02:22:22"),
-        ("test", "2020-02-23T02:22:22"),
-        # 22 hours 30 minutes later
-        ("severe", "2020-02-23T20:52:22"),
-        ("government", "2020-02-23T20:52:22"),
-        (None, "2020-02-23T20:52:22"),  # Training mode
+        ("operator", 1800, "2020-02-22T22:52:22"),  # 30 mins later
+        ("test", 10800, "2020-02-23T01:22:22"),  # 3 hours later
+        ("severe", 21600, "2020-02-23T04:22:22"),  # 6 hours later
+        ("government", 79200, "2020-02-23T20:22:22"),  # 22 hours later
+        (None, 0, "2020-02-22T22:22:22"),  # Training mode
     ),
 )
 @pytest.mark.parametrize(
@@ -2752,6 +2814,7 @@ def test_confirm_approve_broadcast(
     trial_mode,
     expected_redirect,
     channel,
+    duration,
     expected_finishes_at,
 ):
     mocker.patch(
@@ -2761,7 +2824,8 @@ def test_confirm_approve_broadcast(
             service_id=SERVICE_ONE_ID,
             template_id=fake_uuid,
             created_by_id=fake_uuid,
-            finishes_at="2020-02-23T23:23:23.000000",
+            duration=duration,
+            finishes_at="2020-02-22T22:52:22.000000",
             status=initial_status,
         ),
     )
