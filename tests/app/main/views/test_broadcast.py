@@ -2725,7 +2725,7 @@ def test_user_without_approve_permission_cant_approve_broadcast_they_created(
         ("test", 10800, "2020-02-23T01:22:22"),  # 3 hours later
         ("severe", 21600, "2020-02-23T04:22:22"),  # 6 hours later
         ("government", 79200, "2020-02-23T20:22:22"),  # 22 hours later
-        (None, 0, "2020-02-22T22:22:22"),  # Training mode
+        (None, 0, "2020-02-23T20:52:22"),  # Training mode
     ),
 )
 @pytest.mark.parametrize(
@@ -2825,7 +2825,7 @@ def test_confirm_approve_broadcast(
             template_id=fake_uuid,
             created_by_id=fake_uuid,
             duration=duration,
-            finishes_at="2020-02-22T22:52:22.000000",
+            finishes_at="2020-02-23T20:52:22.000000",
             status=initial_status,
         ),
     )
