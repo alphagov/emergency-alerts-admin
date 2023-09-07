@@ -6,7 +6,6 @@ from app.main.forms import (
     BroadcastAreaForm,
     BroadcastAreaFormWithSelectAll,
     BroadcastTemplateForm,
-    ChooseDurationForm,
     ConfirmBroadcastForm,
     NewBroadcastForm,
     SearchByNameForm,
@@ -196,34 +195,34 @@ def broadcast(service_id, template_id):
     )
 
 
-@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/duration", methods=["GET", "POST"])
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-@service_has_permission("broadcast")
-def choose_broadcast_duration(service_id, broadcast_message_id):
-    form = ChooseDurationForm()
+# @main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/duration", methods=["GET", "POST"])
+# @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+# @service_has_permission("broadcast")
+# def choose_broadcast_duration(service_id, broadcast_message_id):
+#     form = ChooseDurationForm()
 
-    broadcast_message = BroadcastMessage.from_id(
-        broadcast_message_id,
-        service_id=current_service.id,
-    )
+#     broadcast_message = BroadcastMessage.from_id(
+#         broadcast_message_id,
+#         service_id=current_service.id,
+#     )
 
-    back_link = url_for(
-        ".preview_broadcast_areas", service_id=current_service.id, broadcast_message_id=broadcast_message_id
-    )
+#     back_link = url_for(
+#         ".preview_broadcast_areas", service_id=current_service.id, broadcast_message_id=broadcast_message_id
+#     )
 
-    if form.validate_on_submit():
-        BroadcastMessage.update_duration(
-            service_id=current_service.id,
-            broadcast_message_id=broadcast_message_id,
-            duration=form.content.data,
-        )
-        return redirect(
-            url_for(
-                ".preview_broadcast_message", service_id=current_service.id, broadcast_message_id=broadcast_message.id
-            )
-        )
+#     if form.validate_on_submit():
+#         BroadcastMessage.update_duration(
+#             service_id=current_service.id,
+#             broadcast_message_id=broadcast_message_id,
+#             duration=form.content.data,
+#         )
+#         return redirect(
+#             url_for(
+#                 ".preview_broadcast_message", service_id=current_service.id, broadcast_message_id=broadcast_message.id
+#             )
+#         )
 
-    return render_template("views/broadcast/duration.html", form=form, back_link=back_link)
+#     return render_template("views/broadcast/duration.html", form=form, back_link=back_link)
 
 
 @main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/areas")
