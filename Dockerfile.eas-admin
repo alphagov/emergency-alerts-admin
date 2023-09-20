@@ -8,7 +8,7 @@ COPY . $DIR_ADMIN
 
 # Run emergency-alerts-admin
 RUN python$PYTHON_VERSION -m venv $VENV_ADMIN && cd $DIR_ADMIN && . $VENV_ADMIN/bin/activate && \
-    pip3 install wheel && make bootstrap
+    pip3 install wheel && make bootstrap-local
 
 # Create a blank configuration file
 RUN echo "" > $DIR_ADMIN/environment.sh
