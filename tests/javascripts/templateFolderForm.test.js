@@ -127,7 +127,7 @@ function setFixtures (hierarchy, newTemplateDataModules = "") {
   };
 
   document.body.innerHTML = `
-    <form method="post" data-notify-module="template-folder-form">
+    <form method="post" data-emergency-alerts-module="template-folder-form">
       ${helpers.templatesAndFoldersCheckboxes(hierarchy)}
       ${controlsHTML(newTemplateDataModules)}
     </form>`;
@@ -213,7 +213,7 @@ describe('TemplateFolderForm', () => {
 
     setFixtures(hierarchy);
 
-    templateFolderForm = document.querySelector('form[data-notify-module=template-folder-form]');
+    templateFolderForm = document.querySelector('form[data-emergency-alerts-module=template-folder-form]');
 
   });
 
@@ -256,7 +256,7 @@ describe('TemplateFolderForm', () => {
     beforeEach(() => {
 
       // start module
-      window.GOVUK.notifyModules.start();
+      window.GOVUK.emergencyAlertsModules.start();
 
       formControls = templateFolderForm.querySelector('#sticky_template_forms');
       visibleCounter = getVisibleCounter();
@@ -276,7 +276,7 @@ describe('TemplateFolderForm', () => {
     });
 
     // Single Channel Broadcasting uses the 'New template' button as a link to another page, not an expanding
-    // element, as is the case with Notify. This test ensures that the 'aria-expanded' attribute does not
+    // element, as is the case with Emergency Alerts. This test ensures that the 'aria-expanded' attribute does not
     // appear in the case of Single Channel Broadcasting, removing screen-reader ambiguity.
     test("the 'New folder' button should not have an aria-expanded attribute", () => {
       setFixtures(hierarchy, "data-channel='sms' data-service='123'")
@@ -331,10 +331,10 @@ describe('TemplateFolderForm', () => {
   describe("Click 'New template' for single channel service", () => {
     test("should redirect to new template page", () => {
       setFixtures(hierarchy, "data-channel='sms' data-service='123'")
-      templateFolderForm = document.querySelector('form[data-notify-module=template-folder-form]');
+      templateFolderForm = document.querySelector('form[data-emergency-alerts-module=template-folder-form]');
 
       // start module
-      window.GOVUK.notifyModules.start();
+      window.GOVUK.emergencyAlertsModules.start();
 
       formControls = templateFolderForm.querySelector('#sticky_template_forms');
 
@@ -364,7 +364,7 @@ describe('TemplateFolderForm', () => {
     beforeEach(() => {
 
       // start module
-      window.GOVUK.notifyModules.start();
+      window.GOVUK.emergencyAlertsModules.start();
 
       formControls = templateFolderForm.querySelector('#sticky_template_forms');
 
@@ -488,7 +488,7 @@ describe('TemplateFolderForm', () => {
     beforeEach(() => {
 
       // start module
-      window.GOVUK.notifyModules.start();
+      window.GOVUK.emergencyAlertsModules.start();
 
       formControls = templateFolderForm.querySelector('#sticky_template_forms');
 
@@ -595,7 +595,7 @@ describe('TemplateFolderForm', () => {
     beforeEach(() => {
 
       // start module
-      window.GOVUK.notifyModules.start();
+      window.GOVUK.emergencyAlertsModules.start();
 
       templateFolderCheckboxes = getTemplateFolderCheckboxes();
 
@@ -921,7 +921,7 @@ describe('TemplateFolderForm', () => {
     beforeEach(() => {
 
       // start module
-      window.GOVUK.notifyModules.start();
+      window.GOVUK.emergencyAlertsModules.start();
 
       templateFolderCheckboxes = getTemplateFolderCheckboxes();
       visibleCounterText = getVisibleCounter().textContent.trim();

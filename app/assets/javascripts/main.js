@@ -1,7 +1,7 @@
 window.GOVUK.Frontend.initAll();
 
 var consentData = window.GOVUK.getConsentCookie();
-window.GOVUK.NotifyModules.CookieBanner.clearOldCookies(consentData);
+window.GOVUK.EmergencyAlertsModules.CookieBanner.clearOldCookies(consentData);
 
 if (window.GOVUK.hasConsentFor('analytics', consentData)) {
   window.GOVUK.initAnalytics();
@@ -15,7 +15,7 @@ $(() => GOVUK.stickAtBottomWhenScrolling.init());
 var showHideContent = new GOVUK.ShowHideContent();
 showHideContent.init();
 
-$(() => GOVUK.notifyModules.start());
+$(() => GOVUK.emergencyAlertsModules.start());
 
 $(() => $('.error-message, .govuk-error-message').eq(0).parent('label').next('input').trigger('focus'));
 

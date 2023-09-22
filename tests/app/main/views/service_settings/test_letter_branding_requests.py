@@ -1,7 +1,9 @@
 from unittest.mock import ANY, PropertyMock
 
 import pytest
-from emergency_alerts_utils.clients.zendesk.zendesk_client import NotifySupportTicket
+from emergency_alerts_utils.clients.zendesk.zendesk_client import (
+    EmergencyAlertsSupportTicket,
+)
 from flask import url_for
 
 from app.models.branding import LetterBranding
@@ -189,7 +191,7 @@ def test_letter_branding_request_submit_choose_something_else(
         return_value=organisation_json(name=org_name),
     )
 
-    mock_create_ticket = mocker.spy(NotifySupportTicket, "__init__")
+    mock_create_ticket = mocker.spy(EmergencyAlertsSupportTicket, "__init__")
     mock_send_ticket_to_zendesk = mocker.patch(
         "app.main.views.service_settings.zendesk_client.send_ticket_to_zendesk",
         autospec=True,
@@ -304,7 +306,7 @@ def test_letter_branding_submit_when_something_else_is_only_option(
     mocker,
     mock_get_letter_branding_by_id,
 ):
-    mock_create_ticket = mocker.spy(NotifySupportTicket, "__init__")
+    mock_create_ticket = mocker.spy(EmergencyAlertsSupportTicket, "__init__")
     mocker.patch(
         "app.main.views.service_settings.zendesk_client.send_ticket_to_zendesk",
         autospec=True,

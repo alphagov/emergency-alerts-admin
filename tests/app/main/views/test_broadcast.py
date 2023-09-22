@@ -7,7 +7,12 @@ import pytest
 from flask import url_for
 from freezegun import freeze_time
 
-from tests import NotifyBeautifulSoup, broadcast_message_json, sample_uuid, user_json
+from tests import (
+    EmergencyAlertsBeautifulSoup,
+    broadcast_message_json,
+    sample_uuid,
+    user_json,
+)
 from tests.app.broadcast_areas.custom_polygons import BRISTOL, SKYE
 from tests.conftest import (
     SERVICE_ONE_ID,
@@ -606,7 +611,7 @@ def test_broadcast_dashboard_json(
     )
 
     response_json = json.loads(response.get_data(as_text=True))
-    response_html = NotifyBeautifulSoup(response_json["current_broadcasts"], "html.parser")
+    response_html = EmergencyAlertsBeautifulSoup(response_json["current_broadcasts"], "html.parser")
     broadcasts = normalize_spaces(response_html)
 
     assert response_json.keys() == {"current_broadcasts"}
@@ -754,22 +759,22 @@ def test_write_new_broadcast_page(
 
     assert normalize_spaces(page.select_one("label[for=template_content]").text) == "Alert message"
     assert page.select_one("textarea")["name"] == "template_content"
-    assert page.select_one("textarea")["data-notify-module"] == "enhanced-textbox"
+    assert page.select_one("textarea")["data-emergency-alerts-module"] == "enhanced-textbox"
     assert page.select_one("textarea")["data-highlight-placeholders"] == "false"
 
-    assert (page.select_one("[data-notify-module=update-status]")["data-updates-url"]) == url_for(
+    assert (page.select_one("[data-emergency-alerts-module=update-status]")["data-updates-url"]) == url_for(
         ".count_content_length",
         service_id=SERVICE_ONE_ID,
         template_type="broadcast",
     )
 
     assert (
-        (page.select_one("[data-notify-module=update-status]")["data-target"])
+        (page.select_one("[data-emergency-alerts-module=update-status]")["data-target"])
         == (page.select_one("textarea")["id"])
         == "template_content"
     )
 
-    assert (page.select_one("[data-notify-module=update-status]")["aria-live"]) == "polite"
+    assert (page.select_one("[data-emergency-alerts-module=update-status]")["aria-live"]) == "polite"
 
 
 def test_write_new_broadcast_posts(
@@ -1293,7 +1298,7 @@ def test_choose_broadcast_area_page_for_area_with_sub_areas(
         library_slug="wd21-lad21-ctyua21",
     )
     assert normalize_spaces(page.select_one("h1").text) == "Choose a local authority"
-    live_search = page.select_one("[data-notify-module=live-search]")
+    live_search = page.select_one("[data-emergency-alerts-module=live-search]")
     assert live_search["data-targets"] == ".file-list-item"
     assert live_search.select_one("input")["type"] == "search"
     partial_url_for = partial(
@@ -1363,7 +1368,7 @@ def test_choose_broadcast_sub_area_page_for_district_shows_checkboxes_for_wards(
         area_slug="lad21-S12000033",
     )
     assert normalize_spaces(page.select_one("h1").text) == "Choose an area of Aberdeen City"
-    live_search = page.select_one("[data-notify-module=live-search]")
+    live_search = page.select_one("[data-emergency-alerts-module=live-search]")
     assert live_search["data-targets"] == "#sub-areas .govuk-checkboxes__item"
     assert live_search.select_one("input")["type"] == "search"
     all_choices = [
@@ -1589,7 +1594,7 @@ def test_choose_broadcast_sub_area_page_for_county_shows_links_for_districts(
         area_slug="ctyua21-E10000016",  # Kent
     )
     assert normalize_spaces(page.select_one("h1").text) == "Choose an area of Kent"
-    live_search = page.select_one("[data-notify-module=live-search]")
+    live_search = page.select_one("[data-emergency-alerts-module=live-search]")
     assert live_search["data-targets"] == ".file-list-item"
     assert live_search.select_one("input")["type"] == "search"
     all_choices_checkbox = [

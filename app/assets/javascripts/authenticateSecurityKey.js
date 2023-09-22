@@ -1,7 +1,7 @@
 (function (window) {
   "use strict";
 
-  window.GOVUK.NotifyModules.AuthenticateSecurityKey = function () {
+  window.GOVUK.EmergencyAlertsModules.AuthenticateSecurityKey = function () {
     this.start = function (component) {
       $(component)
         .on('click', function (event) {

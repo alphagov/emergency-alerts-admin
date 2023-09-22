@@ -5,17 +5,17 @@
 @import 'govuk/core/typography';
 @import 'govuk/components/button/_button';
 
-.notify-cookie-banner__wrapper {
+.emergency-alerts-cookie-banner__wrapper {
   @include govuk-responsive-padding(4, "top");
   @include govuk-responsive-padding(5, "bottom");
 }
 
 // component should only be shown if JS is available, by the cookieMessage JS, so hide by default
-.notify-cookie-banner {
+.emergency-alerts-cookie-banner {
   display: none;
 }
 
-.notify-cookie-banner__buttons {
+.emergency-alerts-cookie-banner__buttons {
   display: flex;
   flex-wrap: wrap;
 
@@ -24,12 +24,12 @@
   }
 }
 
-.notify-cookie-banner__button,
-.notify-cookie-banner__link {
+.emergency-alerts-cookie-banner__button,
+.emergency-alerts-cookie-banner__link {
   vertical-align: baseline;
 }
 
-.notify-cookie-banner__button {
+.emergency-alerts-cookie-banner__button {
   display: inline-block;
   flex: 1 0;
   padding-left: govuk-spacing(9);
@@ -44,11 +44,11 @@
   }
 }
 
-.notify-cookie-banner__button-accept {
+.emergency-alerts-cookie-banner__button-accept {
   margin-right: govuk-spacing(4);
 }
 
-.notify-cookie-banner__link {
+.emergency-alerts-cookie-banner__link {
   @include govuk-font(19);
   line-height: 1;
   display: block;
@@ -62,7 +62,7 @@
   }
 }
 
-.notify-cookie-banner__confirmation {
+.emergency-alerts-cookie-banner__confirmation {
   display: none;
   position: relative;
   padding: govuk-spacing(4) 0;
@@ -78,8 +78,8 @@
   }
 }
 
-.notify-cookie-banner__confirmation-message,
-.notify-cookie-banner__hide-button {
+.emergency-alerts-cookie-banner__confirmation-message,
+.emergency-alerts-cookie-banner__hide-button {
   display: block;
 
   @include govuk-media-query($from: desktop) {
@@ -87,7 +87,7 @@
   }
 }
 
-.notify-cookie-banner__confirmation-message {
+.emergency-alerts-cookie-banner__confirmation-message {
   margin-right: govuk-spacing(4);
 
   @include govuk-media-query($from: desktop) {
@@ -95,7 +95,7 @@
   }
 }
 
-.notify-cookie-banner__hide-button {
+.emergency-alerts-cookie-banner__hide-button {
   @include govuk-font($size: 19);
   color: $govuk-link-colour;
   outline: 0;
@@ -117,6 +117,6 @@
 // Additions
 
 // Override margin-bottom, inherited from using .govuk-body class
-.notify-cookie-banner__confirmation-message {
+.emergency-alerts-cookie-banner__confirmation-message {
   margin-bottom: 0;
 }

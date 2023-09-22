@@ -12,18 +12,18 @@ from tests.conftest import set_config_values
         (False, "key_1", 200),
     ],
 )
-def test_route_correct_secret_key(notify_admin, mocker, check_proxy_header, header_value, expected_code):
+def test_route_correct_secret_key(emergency_alerts_admin, mocker, check_proxy_header, header_value, expected_code):
     mocker.patch("app.feature_toggle_api_client.get_feature_toggle", return_value={})
 
     with set_config_values(
-        notify_admin,
+        emergency_alerts_admin,
         {
             "ROUTE_SECRET_KEY_1": "key_1",
             "ROUTE_SECRET_KEY_2": "",
             "CHECK_PROXY_HEADER": check_proxy_header,
         },
     ):
-        with notify_admin.test_client() as client:
+        with emergency_alerts_admin.test_client() as client:
             response = client.get(
                 path="/_admin_status?elb=True",
                 headers=[

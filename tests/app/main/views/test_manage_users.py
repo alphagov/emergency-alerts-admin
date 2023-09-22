@@ -224,15 +224,15 @@ def test_should_show_live_search_if_more_than_7_users(
 
     page = client_request.get("main.manage_users", service_id=SERVICE_ONE_ID)
 
-    assert page.select_one("div[data-notify-module=live-search]")["data-targets"] == ".user-list-item"
+    assert page.select_one("div[data-emergency-alerts-module=live-search]")["data-targets"] == ".user-list-item"
     assert len(page.select(".user-list-item")) == number_of_users
 
     textbox = page.select_one(".govuk-input")
     assert "value" not in textbox
     assert textbox["name"] == "search"
-    # data-notify-module=autofocus is set on a containing element so it
+    # data-emergency-alerts-module=autofocus is set on a containing element so it
     # shouldn’t also be set on the textbox itself
-    assert "data-notify-module" not in textbox
+    assert "data-emergency-alerts-module" not in textbox
     assert not page.select_one("[data-force-focus]")
     assert textbox["class"] == [
         "govuk-input",
@@ -1034,7 +1034,7 @@ def test_should_show_page_if_prefilled_user_is_already_invited(
     active_user_with_permission_to_other_service,
     mock_get_invites_for_service,
 ):
-    active_user_with_permission_to_other_service["email_address"] = "user_1@testnotify.gov.uk"
+    active_user_with_permission_to_other_service["email_address"] = "user_1@testemergencyalerts.gov.uk"
     client_request.login(active_user_with_permissions)
     mocker.patch(
         "app.models.user.user_api_client.get_user",
@@ -1586,7 +1586,7 @@ def test_manage_user_page_shows_how_many_folders_user_can_view(
 
     page = client_request.get("main.manage_users", service_id=service_one["id"])
 
-    user_div = page.select_one("h2[title='notify@digital.cabinet-office.gov.uk']").parent
+    user_div = page.select_one("h2[title='emergency-alerts@digital.cabinet-office.gov.uk']").parent
     assert user_div.select_one(".tick-cross-list-hint:last-child").text.strip() == expected_message
 
 
@@ -1603,7 +1603,7 @@ def test_manage_user_page_doesnt_show_folder_hint_if_service_has_no_folders(
 
     page = client_request.get("main.manage_users", service_id=service_one["id"])
 
-    user_div = page.select_one("h2[title='notify@digital.cabinet-office.gov.uk']").parent
+    user_div = page.select_one("h2[title='emergency-alerts@digital.cabinet-office.gov.uk']").parent
     assert user_div.find(".tick-cross-list-hint:last-child") is None
 
 
@@ -1622,7 +1622,7 @@ def test_manage_user_page_doesnt_show_folder_hint_if_service_cant_edit_folder_pe
 
     page = client_request.get("main.manage_users", service_id=service_one["id"])
 
-    user_div = page.select_one("h2[title='notify@digital.cabinet-office.gov.uk']").parent
+    user_div = page.select_one("h2[title='emergency-alerts@digital.cabinet-office.gov.uk']").parent
     assert user_div.find(".tick-cross-list-hint:last-child") is None
 
 

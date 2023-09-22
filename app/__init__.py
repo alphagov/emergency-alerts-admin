@@ -34,6 +34,44 @@ from werkzeug.local import LocalProxy
 from app import proxy_fix, webauthn_server
 from app.asset_fingerprinter import asset_fingerprinter
 from app.config import configs
+from app.emergency_alerts_client import InviteTokenError
+from app.emergency_alerts_client.api_key_api_client import api_key_api_client
+from app.emergency_alerts_client.billing_api_client import billing_api_client
+from app.emergency_alerts_client.broadcast_message_api_client import (
+    broadcast_message_api_client,
+)
+from app.emergency_alerts_client.complaint_api_client import complaint_api_client
+from app.emergency_alerts_client.contact_list_api_client import contact_list_api_client
+from app.emergency_alerts_client.email_branding_client import email_branding_client
+from app.emergency_alerts_client.events_api_client import events_api_client
+from app.emergency_alerts_client.feature_toggle_api_client import (
+    feature_toggle_api_client,
+)
+from app.emergency_alerts_client.inbound_number_client import inbound_number_client
+from app.emergency_alerts_client.invite_api_client import invite_api_client
+from app.emergency_alerts_client.job_api_client import job_api_client
+from app.emergency_alerts_client.letter_branding_client import letter_branding_client
+from app.emergency_alerts_client.letter_jobs_client import letter_jobs_client
+from app.emergency_alerts_client.notification_api_client import notification_api_client
+from app.emergency_alerts_client.org_invite_api_client import org_invite_api_client
+from app.emergency_alerts_client.organisations_api_client import organisations_client
+from app.emergency_alerts_client.performance_dashboard_api_client import (
+    performance_dashboard_api_client,
+)
+from app.emergency_alerts_client.platform_stats_api_client import (
+    platform_stats_api_client,
+)
+from app.emergency_alerts_client.provider_client import provider_client
+from app.emergency_alerts_client.service_api_client import service_api_client
+from app.emergency_alerts_client.status_api_client import status_api_client
+from app.emergency_alerts_client.template_folder_api_client import (
+    template_folder_api_client,
+)
+from app.emergency_alerts_client.template_statistics_api_client import (
+    template_statistics_client,
+)
+from app.emergency_alerts_client.upload_api_client import upload_api_client
+from app.emergency_alerts_client.user_api_client import user_api_client
 from app.extensions import antivirus_client, redis_client, zendesk_client
 from app.formatters import (
     convert_to_boolean,
@@ -88,34 +126,6 @@ from app.navigation import (
     MainNavigation,
     OrgNavigation,
 )
-from app.notify_client import InviteTokenError
-from app.notify_client.api_key_api_client import api_key_api_client
-from app.notify_client.billing_api_client import billing_api_client
-from app.notify_client.broadcast_message_api_client import broadcast_message_api_client
-from app.notify_client.complaint_api_client import complaint_api_client
-from app.notify_client.contact_list_api_client import contact_list_api_client
-from app.notify_client.email_branding_client import email_branding_client
-from app.notify_client.events_api_client import events_api_client
-from app.notify_client.feature_toggle_api_client import feature_toggle_api_client
-from app.notify_client.inbound_number_client import inbound_number_client
-from app.notify_client.invite_api_client import invite_api_client
-from app.notify_client.job_api_client import job_api_client
-from app.notify_client.letter_branding_client import letter_branding_client
-from app.notify_client.letter_jobs_client import letter_jobs_client
-from app.notify_client.notification_api_client import notification_api_client
-from app.notify_client.org_invite_api_client import org_invite_api_client
-from app.notify_client.organisations_api_client import organisations_client
-from app.notify_client.performance_dashboard_api_client import (
-    performance_dashboard_api_client,
-)
-from app.notify_client.platform_stats_api_client import platform_stats_api_client
-from app.notify_client.provider_client import provider_client
-from app.notify_client.service_api_client import service_api_client
-from app.notify_client.status_api_client import status_api_client
-from app.notify_client.template_folder_api_client import template_folder_api_client
-from app.notify_client.template_statistics_api_client import template_statistics_client
-from app.notify_client.upload_api_client import upload_api_client
-from app.notify_client.user_api_client import user_api_client
 from app.url_converters import (
     LetterFileExtensionConverter,
     SimpleDateTypeConverter,
@@ -144,9 +154,9 @@ navigation = {
 
 
 def create_app(application):
-    notify_environment = os.environ["NOTIFY_ENVIRONMENT"]
+    emergency_alerts_environment = os.environ["NOTIFY_ENVIRONMENT"]
 
-    application.config.from_object(configs[notify_environment])
+    application.config.from_object(configs[emergency_alerts_environment])
     asset_fingerprinter._asset_root = application.config["ASSET_PATH"]
 
     init_app(application)

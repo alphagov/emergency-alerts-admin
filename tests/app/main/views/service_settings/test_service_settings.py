@@ -8,7 +8,9 @@ from urllib.parse import parse_qs, urlparse
 from uuid import UUID, uuid4
 
 import pytest
-from emergency_alerts_utils.clients.zendesk.zendesk_client import NotifySupportTicket
+from emergency_alerts_utils.clients.zendesk.zendesk_client import (
+    EmergencyAlertsSupportTicket,
+)
 from flask import g, url_for
 from freezegun import freeze_time
 from notifications_python_client.errors import HTTPError
@@ -1532,7 +1534,7 @@ def test_should_redirect_after_request_to_go_live(
             new_callable=PropertyMock,
             return_value=volume,
         )
-    mock_create_ticket = mocker.spy(NotifySupportTicket, "__init__")
+    mock_create_ticket = mocker.spy(EmergencyAlertsSupportTicket, "__init__")
     mock_send_ticket_to_zendesk = mocker.patch(
         "app.main.views.service_settings.zendesk_client.send_ticket_to_zendesk",
         autospec=True,
@@ -1606,7 +1608,7 @@ def test_request_to_go_live_displays_go_live_notes_in_zendesk_ticket(
             request_to_go_live_notes=go_live_note,
         ),
     )
-    mock_create_ticket = mocker.spy(NotifySupportTicket, "__init__")
+    mock_create_ticket = mocker.spy(EmergencyAlertsSupportTicket, "__init__")
     mock_send_ticket_to_zendesk = mocker.patch(
         "app.main.views.service_settings.zendesk_client.send_ticket_to_zendesk",
         autospec=True,
@@ -1682,7 +1684,7 @@ def test_request_to_go_live_displays_mou_signatories(
         "app.main.views.service_settings.zendesk_client.send_ticket_to_zendesk",
         autospec=True,
     )
-    mock_create_ticket = mocker.spy(NotifySupportTicket, "__init__")
+    mock_create_ticket = mocker.spy(EmergencyAlertsSupportTicket, "__init__")
     client_request.post("main.request_to_go_live", service_id=SERVICE_ONE_ID, _follow_redirects=True)
 
     assert (
@@ -1901,7 +1903,7 @@ def test_ready_to_go_live(
 )
 def test_route_permissions(
     mocker,
-    notify_admin,
+    emergency_alerts_admin,
     client_request,
     api_user_active,
     service_one,
@@ -1915,7 +1917,7 @@ def test_route_permissions(
 ):
     validate_route_permission(
         mocker,
-        notify_admin,
+        emergency_alerts_admin,
         "GET",
         200,
         url_for(route, service_id=service_one["id"]),
@@ -1939,7 +1941,7 @@ def test_route_permissions(
 )
 def test_route_invalid_permissions(
     mocker,
-    notify_admin,
+    emergency_alerts_admin,
     client_request,
     api_user_active,
     service_one,
@@ -1949,7 +1951,7 @@ def test_route_invalid_permissions(
 ):
     validate_route_permission(
         mocker,
-        notify_admin,
+        emergency_alerts_admin,
         "GET",
         403,
         url_for(route, service_id=service_one["id"]),
@@ -1970,7 +1972,7 @@ def test_route_invalid_permissions(
 )
 def test_route_for_platform_admin(
     mocker,
-    notify_admin,
+    emergency_alerts_admin,
     client_request,
     platform_admin_user,
     service_one,
@@ -1984,7 +1986,7 @@ def test_route_for_platform_admin(
 ):
     validate_route_permission(
         mocker,
-        notify_admin,
+        emergency_alerts_admin,
         "GET",
         200,
         url_for(route, service_id=service_one["id"]),
@@ -4102,7 +4104,7 @@ def test_POST_email_branding_upload_logo_success(mocker, client_request, service
             ),
             (
                 lambda: {"logo": (open("tests/test_img_files/truncated.png", "rb"), "logo.png")},
-                "Notify cannot read this file",
+                "Emergency Alerts cannot read this file",
             ),
         )
     ),
@@ -4614,7 +4616,7 @@ def test_unknown_channel_404s(
     [
         (
             "letter",
-            "It costs between 41 pence and £1.28 to send a letter using Notify.",
+            "It costs between 41 pence and £1.28 to send a letter using Emergency Alerts.",
             "Send letters",
             ["email", "sms"],
             "False",
@@ -4623,7 +4625,7 @@ def test_unknown_channel_404s(
         ),
         (
             "letter",
-            "It costs between 41 pence and £1.28 to send a letter using Notify.",
+            "It costs between 41 pence and £1.28 to send a letter using Emergency Alerts.",
             "Send letters",
             ["email", "sms", "letter"],
             "True",
@@ -4641,7 +4643,7 @@ def test_unknown_channel_404s(
         ),
         (
             "email",
-            "It’s free to send emails through GOV.UK Notify.",
+            "It’s free to send emails through GOV.UK Emergency Alerts.",
             "Send emails",
             [],
             "False",
@@ -4650,7 +4652,7 @@ def test_unknown_channel_404s(
         ),
         (
             "email",
-            "It’s free to send emails through GOV.UK Notify.",
+            "It’s free to send emails through GOV.UK Emergency Alerts.",
             "Send emails",
             ["email", "sms", "letter"],
             "True",
@@ -4823,8 +4825,8 @@ def test_archive_service_after_confirm(
     service_one["restricted"] = is_trial_service
     mock_api = mocker.patch("app.service_api_client.post")
     mock_event = mocker.patch("app.main.views.service_settings.create_archive_service_event")
-    redis_delete_mock = mocker.patch("app.notify_client.service_api_client.redis_client.delete")
-    mocker.patch("app.notify_client.service_api_client.redis_client.delete_by_pattern")
+    redis_delete_mock = mocker.patch("app.emergency_alerts_client.service_api_client.redis_client.delete")
+    mocker.patch("app.emergency_alerts_client.service_api_client.redis_client.delete_by_pattern")
 
     client_request.login(user)
     page = client_request.post(

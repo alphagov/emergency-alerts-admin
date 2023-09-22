@@ -2,7 +2,7 @@
 
   "use strict";
 
-  var Modules = global.GOVUK.NotifyModules;
+  var Modules = global.GOVUK.EmergencyAlertsModules;
   var Hogan = global.Hogan;
 
   // Object holding all the states for the component's HTML

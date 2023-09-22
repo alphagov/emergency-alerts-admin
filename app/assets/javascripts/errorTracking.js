@@ -1,7 +1,7 @@
 (function(window) {
   "use strict";
 
-  window.GOVUK.NotifyModules.TrackError = function() {
+  window.GOVUK.EmergencyAlertsModules.TrackError = function() {
 
     this.start = function(component) {
 

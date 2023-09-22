@@ -15,14 +15,14 @@ def performance():
         start_date=(datetime.utcnow() - timedelta(days=7)).date(),
         end_date=datetime.utcnow().date(),
     )
-    stats["organisations_using_notify"] = sorted(
+    stats["organisations_using_emergency_alerts"] = sorted(
         [
             {
                 "organisation_name": organisation_name or "No organisation",
                 "count_of_live_services": len(list(group)),
             }
             for organisation_name, group in groupby(
-                stats["services_using_notify"],
+                stats["services_using_emergency_alerts"],
                 itemgetter("organisation_name"),
             )
         ],

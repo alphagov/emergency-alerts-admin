@@ -15,7 +15,7 @@ from notifications_python_client.errors import HTTPError
 from app import create_app, webauthn_server
 
 from . import (
-    NotifyBeautifulSoup,
+    EmergencyAlertsBeautifulSoup,
     TestClient,
     api_key_json,
     assert_url_expected,
@@ -41,7 +41,7 @@ class ElementNotFound(Exception):
 
 
 @pytest.fixture(scope="session")
-def notify_admin_without_context():
+def emergency_alerts_admin_without_context():
     """
     You probably won't need to use this fixture, unless you need to use the flask.appcontext_pushed hook. Possibly if
     you're patching something on `g`. https://flask.palletsprojects.com/en/1.1.x/testing/#faking-resources-and-context
@@ -54,9 +54,9 @@ def notify_admin_without_context():
 
 
 @pytest.fixture
-def notify_admin(notify_admin_without_context):
-    with notify_admin_without_context.app_context():
-        yield notify_admin_without_context
+def emergency_alerts_admin(emergency_alerts_admin_without_context):
+    with emergency_alerts_admin_without_context.app_context():
+        yield emergency_alerts_admin_without_context
 
 
 @pytest.fixture(scope="function")
@@ -2003,7 +2003,7 @@ def mock_get_users_by_service(mocker):
                 id=sample_uuid(),
                 logged_in_at=None,
                 mobile_number="+447700900986",
-                email_address="notify@digital.cabinet-office.gov.uk",
+                email_address="emergency-alerts@digital.cabinet-office.gov.uk",
             )
         ]
 
@@ -2081,7 +2081,7 @@ def mock_get_invites_for_service(mocker, service_one, sample_invite):
         data = []
         for i in range(0, 5):
             invite = copy.copy(sample_invite)
-            invite["email_address"] = "user_{}@testnotify.gov.uk".format(i)
+            invite["email_address"] = "user_{}@testemergencyalerts.gov.uk".format(i)
             data.append(invite)
         return data
 
@@ -2678,11 +2678,11 @@ def mock_send_notification(mocker, fake_uuid):
 
 
 @pytest.fixture(scope="function")
-def _client(notify_admin):
+def _client(emergency_alerts_admin):
     """
     Do not use this fixture directly – use `client_request` instead
     """
-    with notify_admin.test_request_context(), notify_admin.test_client() as client:
+    with emergency_alerts_admin.test_request_context(), emergency_alerts_admin.test_client() as client:
         yield client
 
 
@@ -2779,7 +2779,7 @@ def client_request(_logged_in_client, mocker, service_one):  # noqa (C901 too co
             if _expected_redirect:
                 assert resp.location == _expected_redirect
 
-            page = NotifyBeautifulSoup(resp.data.decode("utf-8"), "html.parser")
+            page = EmergencyAlertsBeautifulSoup(resp.data.decode("utf-8"), "html.parser")
 
             if _test_page_title:
                 # Page should have one H1
@@ -2846,7 +2846,7 @@ def client_request(_logged_in_client, mocker, service_one):  # noqa (C901 too co
             if _expected_redirect:
                 assert_url_expected(resp.location, _expected_redirect)
 
-            return NotifyBeautifulSoup(resp.data.decode("utf-8"), "html.parser")
+            return EmergencyAlertsBeautifulSoup(resp.data.decode("utf-8"), "html.parser")
 
         @staticmethod
         def get_response(endpoint, _expected_status=200, _optional_args="", **endpoint_kwargs):
@@ -2957,26 +2957,26 @@ def set_config_values(app, dict):
 
 
 @pytest.fixture
-def webauthn_dev_server(notify_admin, mocker):
+def webauthn_dev_server(emergency_alerts_admin, mocker):
     overrides = {
         "NOTIFY_ENVIRONMENT": "development",
         "ADMIN_BASE_URL": "https://webauthn.io",
         "ADMIN_EXTERNAL_URL": "https://webauthn.io",
     }
 
-    with set_config_values(notify_admin, overrides):
-        webauthn_server.init_app(notify_admin)
+    with set_config_values(emergency_alerts_admin, overrides):
+        webauthn_server.init_app(emergency_alerts_admin)
         yield
 
-    webauthn_server.init_app(notify_admin)
+    webauthn_server.init_app(emergency_alerts_admin)
 
 
 @pytest.fixture(scope="function")
-def valid_token(notify_admin, fake_uuid):
+def valid_token(emergency_alerts_admin, fake_uuid):
     return generate_token(
         json.dumps({"user_id": fake_uuid, "secret_code": "my secret"}),
-        notify_admin.config["SECRET_KEY"],
-        notify_admin.config["DANGEROUS_SALT"],
+        emergency_alerts_admin.config["SECRET_KEY"],
+        emergency_alerts_admin.config["DANGEROUS_SALT"],
     )
 
 
@@ -3078,7 +3078,7 @@ def mock_get_organisations(mocker):
     )
 
     return mocker.patch(
-        "app.notify_client.organisations_api_client.organisations_client.get_organisations",
+        "app.emergency_alerts_client.organisations_api_client.organisations_client.get_organisations",
         side_effect=_get_organisations,
     )
 
@@ -3223,7 +3223,7 @@ def mock_get_invites_for_organisation(mocker, sample_org_invite):
         data = []
         for i in range(0, 5):
             invite = copy.copy(sample_org_invite)
-            invite["email_address"] = "user_{}@testnotify.gov.uk".format(i)
+            invite["email_address"] = "user_{}@testemergencyalerts.gov.uk".format(i)
             data.append(invite)
         return data
 

@@ -18,7 +18,7 @@ describe('AddBrandingOptionsForm', () => {
   beforeEach(() => {
 
     const htmlFragment = `
-      <form method="post" autocomplete="off" data-notify-module="add-branding-options-form" novalidate="">
+      <form method="post" autocomplete="off" data-emergency-alerts-module="add-branding-options-form" novalidate="">
         <div class="brand-pool">
           <div class="govuk-form-group">
             <fieldset class="govuk-fieldset" id="branding_field">
@@ -61,7 +61,7 @@ describe('AddBrandingOptionsForm', () => {
 
     document.body.innerHTML = htmlFragment;
 
-    addBrandingOptionsForm = document.querySelector('form[data-notify-module=add-branding-options-form]');
+    addBrandingOptionsForm = document.querySelector('form[data-emergency-alerts-module=add-branding-options-form]');
 
   });
 
@@ -88,7 +88,7 @@ describe('AddBrandingOptionsForm', () => {
     beforeEach(() => {
 
       // start module
-      window.GOVUK.notifyModules.start();
+      window.GOVUK.emergencyAlertsModules.start();
 
       formControls = addBrandingOptionsForm.querySelector('.js-stick-at-bottom-when-scrolling');
       visibleCounter = getVisibleCounter();
@@ -141,7 +141,7 @@ describe('AddBrandingOptionsForm', () => {
       beforeEach(() => {
 
         // start module
-        window.GOVUK.notifyModules.start();
+        window.GOVUK.emergencyAlertsModules.start();
 
         BrandingOptionsCheckboxes = getBrandingOptionsCheckboxes();
 

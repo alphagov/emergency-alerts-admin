@@ -24,7 +24,7 @@ def event_dict(**extra):
 
 
 def test_on_user_logged_in_calls_events_api(client_request, api_user_active, mock_events):
-    on_user_logged_in("_notify_admin", User(api_user_active))
+    on_user_logged_in("_emergency_alerts_admin", User(api_user_active))
 
     mock_events.assert_called_with("sucessful_login", event_dict(user_id=str(api_user_active["id"])))
 

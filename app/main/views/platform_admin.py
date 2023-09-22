@@ -19,6 +19,7 @@ from app import (
     service_api_client,
     user_api_client,
 )
+from app.emergency_alerts_client.platform_admin_api_client import admin_api_client
 from app.extensions import redis_client
 from app.main import main
 from app.main.forms import (
@@ -29,7 +30,6 @@ from app.main.forms import (
     PlatformAdminSearch,
     RequiredDateFilterForm,
 )
-from app.notify_client.platform_admin_api_client import admin_api_client
 from app.statistics_utils import (
     get_formatted_percentage,
     get_formatted_percentage_two_dp,
@@ -64,7 +64,7 @@ def platform_admin_search():
         users, services, redirect_to_something_url = [
             user_api_client.find_users_by_full_or_partial_email(search_form.search.data)["data"],
             service_api_client.find_services_by_name(search_form.search.data)["data"],
-            get_url_for_notify_record(search_form.search.data),
+            get_url_for_emergency_alerts_record(search_form.search.data),
         ]
 
         if redirect_to_something_url:
@@ -542,7 +542,9 @@ def platform_admin_returned_letters():
     form = AdminReturnedLettersForm()
 
     if form.validate_on_submit():
-        references = [re.sub("NOTIFY00[0-9]", "", r.strip()) for r in form.references.data.split("\n") if r.strip()]
+        references = [
+            re.sub("EMERGENCYALERTS00[0-9]", "", r.strip()) for r in form.references.data.split("\n") if r.strip()
+        ]
 
         try:
             letter_jobs_client.submit_returned_letters(references)
@@ -649,7 +651,7 @@ def clear_cache():
     return render_template("views/platform-admin/clear-cache.html", form=form)
 
 
-def get_url_for_notify_record(uuid_):
+def get_url_for_emergency_alerts_record(uuid_):
     @dataclasses.dataclass
     class _EndpointSpec:
         endpoint: str

@@ -400,28 +400,28 @@ def test_send_messages_sanitises_and_truncates_file_name_for_metadata(
         (
             XLDateError,
             (
-                "example.xlsx contains numbers or dates that Notify cannot understand. "
+                "example.xlsx contains numbers or dates that Emergency Alerts cannot understand. "
                 "Try formatting all columns as ‘text’ or export your file as CSV."
             ),
         ),
         (
             XLDateNegative,
             (
-                "example.xlsx contains numbers or dates that Notify cannot understand. "
+                "example.xlsx contains numbers or dates that Emergency Alerts cannot understand. "
                 "Try formatting all columns as ‘text’ or export your file as CSV."
             ),
         ),
         (
             XLDateAmbiguous,
             (
-                "example.xlsx contains numbers or dates that Notify cannot understand. "
+                "example.xlsx contains numbers or dates that Emergency Alerts cannot understand. "
                 "Try formatting all columns as ‘text’ or export your file as CSV."
             ),
         ),
         (
             XLDateTooLarge,
             (
-                "example.xlsx contains numbers or dates that Notify cannot understand. "
+                "example.xlsx contains numbers or dates that Emergency Alerts cannot understand. "
                 "Try formatting all columns as ‘text’ or export your file as CSV."
             ),
         ),
@@ -869,7 +869,7 @@ def test_upload_csv_invalid_extension(
         _follow_redirects=True,
     )
 
-    assert "invalid.txt is not a spreadsheet that Notify can read" in page.text
+    assert "invalid.txt is not a spreadsheet that Emergency Alerts can read" in page.text
 
 
 def test_upload_csv_size_too_big(
@@ -2181,12 +2181,12 @@ def test_send_one_off_letter_address_shows_form(
 
     form = page.select_one("form")
 
-    assert form["data-notify-module"] == "autofocus"
+    assert form["data-emergency-alerts-module"] == "autofocus"
     assert form["data-force-focus"] == "True"
 
     assert form.select_one("label").text.strip() == "Address"
     assert form.select_one("textarea")["name"] == "address"
-    assert form.select_one("textarea")["data-notify-module"] == "enhanced-textbox"
+    assert form.select_one("textarea")["data-emergency-alerts-module"] == "enhanced-textbox"
     assert form.select_one("textarea")["data-highlight-placeholders"] == "false"
     assert form.select_one("textarea")["rows"] == "4"
 
@@ -2746,7 +2746,7 @@ def test_dont_show_preview_letter_templates_for_bad_filetype(
 )
 def test_route_permissions(
     mocker,
-    notify_admin,
+    emergency_alerts_admin,
     client_request,
     api_user_active,
     service_one,
@@ -2762,7 +2762,7 @@ def test_route_permissions(
 ):
     validate_route_permission(
         mocker,
-        notify_admin,
+        emergency_alerts_admin,
         "GET",
         response_code,
         url_for(route, service_id=service_one["id"], template_id=fake_uuid),
@@ -2777,7 +2777,7 @@ def test_route_permissions(
 )
 def test_route_permissions_send_check_notifications(
     mocker,
-    notify_admin,
+    emergency_alerts_admin,
     client_request,
     api_user_active,
     service_one,
@@ -2813,7 +2813,7 @@ def test_route_permissions_send_check_notifications(
 )
 def test_route_permissions_sending(
     mocker,
-    notify_admin,
+    emergency_alerts_admin,
     client_request,
     api_user_active,
     service_one,
@@ -2828,7 +2828,7 @@ def test_route_permissions_sending(
 ):
     validate_route_permission(
         mocker,
-        notify_admin,
+        emergency_alerts_admin,
         "GET",
         expected_status,
         url_for(route, service_id=service_one["id"], template_type="sms", template_id=fake_uuid),
@@ -3556,7 +3556,7 @@ def test_check_messages_shows_over_max_row_error(
     )
 
     assert " ".join(page.select_one("div.banner-dangerous").text.split()) == (
-        "Your file has too many rows Notify can process up to 11,111 rows at once. Your file has 99,999 rows."
+        "Your file has too many rows Emergency Alerts can process up to 11,111 rows at once. Your file has 99,999 rows."
     )
 
 
@@ -3911,12 +3911,12 @@ def test_reply_to_is_previewed_if_chosen(
         "app.main.views.send.s3download",
         return_value="""
         email_address,date,thing
-        notify@digital.cabinet-office.gov.uk,foo,bar
+        emergency-alerts@digital.cabinet-office.gov.uk,foo,bar
     """,
     )
 
     with client_request.session_transaction() as session:
-        session["recipient"] = "notify@digital.cabinet-office.gov.uk"
+        session["recipient"] = "emergency-alerts@digital.cabinet-office.gov.uk"
         session["placeholders"] = {}
         session["file_uploads"] = {fake_uuid: {"template_id": fake_uuid}}
         session["sender_id"] = reply_to_address

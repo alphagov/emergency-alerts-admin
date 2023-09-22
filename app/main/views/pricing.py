@@ -38,7 +38,7 @@ def billing_details():
     if current_user.is_authenticated:
         return render_template(
             "views/pricing/billing-details.html",
-            billing_details=current_app.config["NOTIFY_BILLING_DETAILS"],
+            billing_details=current_app.config["EMERGENCY_ALERTS_BILLING_DETAILS"],
             navigation_links=pricing_nav(),
         )
     return render_template(

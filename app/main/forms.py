@@ -364,7 +364,7 @@ class HexColourCodeField(GovukTextInputField, RequiredValidatorsMixin):
             "text": "#",
         },
         "classes": "govuk-input--width-6",
-        "attributes": {"data-notify-module": "colour-preview"},
+        "attributes": {"data-emergency-alerts-module": "colour-preview"},
     }
 
     def _value(self):
@@ -659,7 +659,7 @@ class GovukCollapsibleCheckboxesField(GovukCheckboxesField):
         # wrap the checkboxes HTML in the HTML needed by the collapsible JS
         result = Markup(
             f'<div class="selection-wrapper"'
-            f'     data-notify-module="collapsible-checkboxes"'
+            f'     data-emergency-alerts-module="collapsible-checkboxes"'
             f'     data-field-label="{self.field_label}">'
             f"  {checkboxes_string}"
             f"</div>"
@@ -1386,7 +1386,7 @@ class ChooseTimeForm(StripWhitespaceForm):
         self.scheduled_for.categories = get_next_days_until(get_furthest_possible_scheduled_time())
 
     scheduled_for = GovukRadiosField(
-        "When should Notify send these messages?",
+        "When should Emergency Alerts send these messages?",
         default="",
     )
 
@@ -1777,7 +1777,7 @@ class EmailBrandingLogoUpload(StripWhitespaceForm):
         except WrongImageFormat:
             raise ValidationError(f"Logo must be a {self.EXPECTED_LOGO_FORMAT.upper()} file")
         except CorruptImage:
-            raise ValidationError("Notify cannot read this file")
+            raise ValidationError("Emergency Alerts cannot read this file")
 
         min_height_px = current_app.config["EMAIL_BRANDING_MIN_LOGO_HEIGHT_PX"]
         max_width_px = current_app.config["EMAIL_BRANDING_MAX_LOGO_WIDTH_PX"]

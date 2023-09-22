@@ -1,7 +1,7 @@
 (function(window) {
   "use strict";
 
-  window.GOVUK.NotifyModules.UpdateStatus = function() {
+  window.GOVUK.EmergencyAlertsModules.UpdateStatus = function() {
 
     const getRenderer = $component => response => $component.html(
       response.html

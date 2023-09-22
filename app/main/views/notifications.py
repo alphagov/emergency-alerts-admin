@@ -32,8 +32,8 @@ from app import (
     job_api_client,
     notification_api_client,
 )
+from app.emergency_alerts_client.api_key_api_client import KEY_TYPE_TEST
 from app.main import main
-from app.notify_client.api_key_api_client import KEY_TYPE_TEST
 from app.template_previews import get_page_count_for_letter
 from app.utils import (
     DELIVERED_STATUSES,

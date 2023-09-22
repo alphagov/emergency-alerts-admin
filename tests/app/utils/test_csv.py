@@ -95,7 +95,7 @@ def _get_notifications_csv_mock(
     ],
 )
 def test_generate_notifications_csv_without_job(
-    notify_admin,
+    emergency_alerts_admin,
     mocker,
     created_by_name,
     expected_content,
@@ -139,7 +139,7 @@ def test_generate_notifications_csv_without_job(
     ],
 )
 def test_generate_notifications_csv_returns_correct_csv_file(
-    notify_admin,
+    emergency_alerts_admin,
     mocker,
     _get_notifications_csv_mock,
     original_file_contents,
@@ -157,7 +157,7 @@ def test_generate_notifications_csv_returns_correct_csv_file(
 
 
 def test_generate_notifications_csv_only_calls_once_if_no_next_link(
-    notify_admin,
+    emergency_alerts_admin,
     _get_notifications_csv_mock,
 ):
     list(generate_notifications_csv(service_id="1234"))
@@ -167,7 +167,7 @@ def test_generate_notifications_csv_only_calls_once_if_no_next_link(
 
 @pytest.mark.parametrize("job_id", ["some", None])
 def test_generate_notifications_csv_calls_twice_if_next_link(
-    notify_admin,
+    emergency_alerts_admin,
     mocker,
     job_id,
 ):

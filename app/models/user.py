@@ -6,6 +6,10 @@ from flask_login import AnonymousUserMixin, UserMixin, login_user, logout_user
 from notifications_python_client.errors import HTTPError
 from werkzeug.utils import cached_property
 
+from app.emergency_alerts_client import InviteTokenError
+from app.emergency_alerts_client.invite_api_client import invite_api_client
+from app.emergency_alerts_client.org_invite_api_client import org_invite_api_client
+from app.emergency_alerts_client.user_api_client import user_api_client
 from app.event_handlers import (
     create_add_user_to_service_event,
     create_set_user_permissions_event,
@@ -13,10 +17,6 @@ from app.event_handlers import (
 from app.models import JSONModel, ModelList
 from app.models.organisation import Organisation, Organisations
 from app.models.webauthn_credential import WebAuthnCredentials
-from app.notify_client import InviteTokenError
-from app.notify_client.invite_api_client import invite_api_client
-from app.notify_client.org_invite_api_client import org_invite_api_client
-from app.notify_client.user_api_client import user_api_client
 from app.utils.user import is_gov_user
 from app.utils.user_permissions import (
     all_ui_permissions,

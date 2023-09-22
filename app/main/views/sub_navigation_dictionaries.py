@@ -23,8 +23,8 @@ def features_nav():
             "link": "main.roadmap",
         },
         {
-            "name": "Who can use Notify",
-            "link": "main.who_can_use_notify",
+            "name": "Who can use Emergency Alerts",
+            "link": "main.who_can_use_emergency_alerts",
         },
         {
             "name": "Security",
@@ -54,7 +54,7 @@ def pricing_nav():
     ]
 
 
-def using_notify_nav():
+def using_emergency_alerts_nav():
     return [
         {
             "name": "Get started",

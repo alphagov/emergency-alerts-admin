@@ -235,7 +235,7 @@ def test_upload_csv_file_shows_error_banner_for_too_many_rows(
 
     assert normalize_spaces(page.select_one(".banner-dangerous").text) == (
         "Your file has too many rows "
-        "Notify can store files up to 100,000 rows in size. "
+        "Emergency Alerts can store files up to 100,000 rows in size. "
         "Your file has 100,001 rows."
     )
     assert len(page.select("tbody tr")) == 50
@@ -253,7 +253,7 @@ def test_upload_csv_shows_error_with_invalid_extension(
     )
 
     assert normalize_spaces(page.select_one(".banner-dangerous").text) == (
-        "invalid.txt is not a spreadsheet that Notify can read"
+        "invalid.txt is not a spreadsheet that Emergency Alerts can read"
     )
 
 

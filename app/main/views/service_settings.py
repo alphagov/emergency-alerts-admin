@@ -2,7 +2,9 @@ import uuid
 from collections import OrderedDict
 from datetime import datetime
 
-from emergency_alerts_utils.clients.zendesk.zendesk_client import NotifySupportTicket
+from emergency_alerts_utils.clients.zendesk.zendesk_client import (
+    EmergencyAlertsSupportTicket,
+)
 from emergency_alerts_utils.timezones import utc_string_to_aware_gmt_datetime
 from flask import (
     abort,
@@ -192,10 +194,10 @@ def request_to_go_live(service_id):
 def submit_request_to_go_live(service_id):
     ticket_message = render_template("support-tickets/go-live-request.txt") + "\n"
 
-    ticket = NotifySupportTicket(
+    ticket = EmergencyAlertsSupportTicket(
         subject=f"Request to go live - {current_service.name}",
         message=ticket_message,
-        ticket_type=NotifySupportTicket.TYPE_QUESTION,
+        ticket_type=EmergencyAlertsSupportTicket.TYPE_QUESTION,
         user_name=current_user.name,
         user_email=current_user.email_address,
         requester_sees_message_content=False,
@@ -497,7 +499,9 @@ def service_verify_reply_to_address_updates(service_id, notification_id):
 def get_service_verify_reply_to_address_partials(service_id, notification_id):
     form = ServiceReplyToEmailForm()
     first_email_address = current_service.count_email_reply_to_addresses == 0
-    notification = notification_api_client.get_notification(current_app.config["NOTIFY_SERVICE_ID"], notification_id)
+    notification = notification_api_client.get_notification(
+        current_app.config["EMERGENCY_ALERTS_SERVICE_ID"], notification_id
+    )
     replace = request.args.get("replace", False)
     replace = False if replace == "False" else replace
     existing_is_default = False
@@ -1135,10 +1139,10 @@ def create_email_branding_zendesk_ticket(form_option_selected, detail=None):
         branding_requested=dict(form.options.choices)[form_option_selected],
         detail=detail,
     )
-    ticket = NotifySupportTicket(
+    ticket = EmergencyAlertsSupportTicket(
         subject=f"Email branding request - {current_service.name}",
         message=ticket_message,
-        ticket_type=NotifySupportTicket.TYPE_QUESTION,
+        ticket_type=EmergencyAlertsSupportTicket.TYPE_QUESTION,
         user_name=current_user.name,
         user_email=current_user.email_address,
         org_id=current_service.organisation_id,
@@ -1312,10 +1316,10 @@ def email_branding_enter_government_identity_logo_text(service_id):
             logo_text=form.logo_text.data,
             branding_choice=branding_choice,
         )
-        ticket = NotifySupportTicket(
+        ticket = EmergencyAlertsSupportTicket(
             subject=f"Email branding request - {current_service.name}",
             message=ticket_message,
-            ticket_type=NotifySupportTicket.TYPE_TASK,
+            ticket_type=EmergencyAlertsSupportTicket.TYPE_TASK,
             user_name=current_user.name,
             user_email=current_user.email_address,
             org_id=current_service.organisation_id,
@@ -1625,10 +1629,10 @@ def letter_branding_request(service_id):
             branding_requested=dict(form.options.choices)[form.options.data],
             detail=form.something_else.data,
         )
-        ticket = NotifySupportTicket(
+        ticket = EmergencyAlertsSupportTicket(
             subject=f"Letter branding request - {current_service.name}",
             message=ticket_message,
-            ticket_type=NotifySupportTicket.TYPE_QUESTION,
+            ticket_type=EmergencyAlertsSupportTicket.TYPE_QUESTION,
             user_name=current_user.name,
             user_email=current_user.email_address,
             org_id=current_service.organisation_id,

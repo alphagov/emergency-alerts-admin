@@ -67,7 +67,7 @@ def _get_example_performance_data():
             {"date": "2021-02-26", "percentage_under_10_seconds": 100.0},
             {"date": "2021-02-27", "percentage_under_10_seconds": 98.60},
         ],
-        "services_using_notify": [
+        "services_using_emergency_alerts": [
             {
                 "organisation_id": uuid.uuid4(),
                 "organisation_name": "Department of Examples and Patterns",

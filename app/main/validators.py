@@ -34,7 +34,7 @@ class CsvFileValidator:
 
     def __call__(self, form, field):
         if not Spreadsheet.can_handle(field.data.filename):
-            raise ValidationError("{} is not a spreadsheet that Notify can read".format(field.data.filename))
+            raise ValidationError("{} is not a spreadsheet that Emergency Alerts can read".format(field.data.filename))
 
 
 class ValidGovEmail:
@@ -46,9 +46,9 @@ class ValidGovEmail:
 
         message = """
             Enter a public sector email address or
-            <a class="govuk-link govuk-link--no-visited-state" href="{}">find out who can use Notify</a>
+            <a class="govuk-link govuk-link--no-visited-state" href="{}">find out who can use Emergency Alerts</a>
         """.format(
-            url_for("main.who_can_use_notify")
+            url_for("main.who_can_use_emergency_alerts")
         )
         if not is_gov_user(field.data.lower()):
             raise ValidationError(message)

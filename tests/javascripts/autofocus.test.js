@@ -16,7 +16,7 @@ describe('Autofocus', () => {
 
   beforeEach(() => {
 
-    document.title = 'Find services by name - GOV.UK Notify';
+    document.title = 'Find services by name - GOV.UK Emergency Alerts';
 
     // set up DOM
     document.body.innerHTML =
@@ -24,7 +24,7 @@ describe('Autofocus', () => {
         <label class="form-label" for="search">
           ${labelText}
         </label>
-        <input autocomplete="off" class="form-control form-control-1-1" id="search" name="search" type="search" value="" data-notify-module="autofocus">
+        <input autocomplete="off" class="form-control form-control-1-1" id="search" name="search" type="search" value="" data-emergency-alerts-module="autofocus">
       </div>`;
 
     focusHandler = jest.fn();
@@ -44,7 +44,7 @@ describe('Autofocus', () => {
   test('is focused when modules start', () => {
 
     // start module
-    window.GOVUK.notifyModules.start();
+    window.GOVUK.emergencyAlertsModules.start();
 
     expect(focusHandler).toHaveBeenCalled();
 
@@ -52,11 +52,11 @@ describe('Autofocus', () => {
 
   test('is focused when attribute is set on outer element', () => {
 
-    document.getElementById('search').removeAttribute('data-notify-module');
-    document.getElementById('wrapper').setAttribute('data-notify-module', 'autofocus');
+    document.getElementById('search').removeAttribute('data-emergency-alerts-module');
+    document.getElementById('wrapper').setAttribute('data-emergency-alerts-module', 'autofocus');
 
     // start module
-    window.GOVUK.notifyModules.start();
+    window.GOVUK.emergencyAlertsModules.start();
 
     expect(focusHandler).toHaveBeenCalled();
 
@@ -68,7 +68,7 @@ describe('Autofocus', () => {
     $.prototype.scrollTop = jest.fn(() => 25);
 
     // start module
-    window.GOVUK.notifyModules.start();
+    window.GOVUK.emergencyAlertsModules.start();
 
     expect(focusHandler).not.toHaveBeenCalled();
 
@@ -83,7 +83,7 @@ describe('Autofocus', () => {
     document.querySelector('#search').setAttribute('data-force-focus', true);
 
     // start module
-    window.GOVUK.notifyModules.start();
+    window.GOVUK.emergencyAlertsModules.start();
 
     expect(focusHandler).toHaveBeenCalled();
 

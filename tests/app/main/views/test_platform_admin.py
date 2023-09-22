@@ -653,7 +653,7 @@ def test_platform_admin_submit_returned_letters(
     client_request.login(platform_admin_user)
     client_request.post(
         "main.platform_admin_returned_letters",
-        _data={"references": " NOTIFY000REF1 \n NOTIFY002REF2 "},
+        _data={"references": " EMERGENCYALERTS000REF1 \n EMERGENCYALERTS002REF2 "},
         _expected_redirect=url_for(
             "main.platform_admin_returned_letters",
         ),
@@ -926,7 +926,7 @@ def test_get_billing_report_calls_api_and_download_data(client_request, platform
                 "purchase_order_number": "PO1234",
                 "contact_names": "Anne, Marie, Josh",
                 "contact_email_addresses": "billing@example.com, accounts@example.com",
-                "billing_reference": "Notify2020",
+                "billing_reference": "EmergencyAlerts2020",
             }
         ],
     )
@@ -958,7 +958,7 @@ def test_get_billing_report_calls_api_and_download_data(client_request, platform
         + '"6 second class letters at 45p'
         + "\n"
         + '2 first class letters at 35p",'
-        + 'PO1234,"Anne, Marie, Josh","billing@example.com, accounts@example.com",Notify2020'
+        + 'PO1234,"Anne, Marie, Josh","billing@example.com, accounts@example.com",EmergencyAlerts2020'
         + "\r\n"
     )
 
@@ -1149,7 +1149,7 @@ class TestPlatformAdminSearch:
             "app.main.views.platform_admin.service_api_client.find_services_by_name",
             return_value={"data": []},
         )
-        mocker.patch("app.main.views.platform_admin.get_url_for_notify_record", return_value=None)
+        mocker.patch("app.main.views.platform_admin.get_url_for_emergency_alerts_record", return_value=None)
         client_request.login(platform_admin_user)
 
         response = client_request.post(".platform_admin_search", _data={"search": "caseworker"}, _expected_status=200)
@@ -1169,7 +1169,7 @@ class TestPlatformAdminSearch:
             "app.main.views.platform_admin.service_api_client.find_services_by_name",
             return_value={"data": [service_one, service_two]},
         )
-        mocker.patch("app.main.views.platform_admin.get_url_for_notify_record", return_value=None)
+        mocker.patch("app.main.views.platform_admin.get_url_for_emergency_alerts_record", return_value=None)
         client_request.login(platform_admin_user)
 
         response = client_request.post(".platform_admin_search", _data={"search": "service"}, _expected_status=200)
@@ -1193,7 +1193,7 @@ class TestPlatformAdminSearch:
             "app.main.views.platform_admin.service_api_client.find_services_by_name",
             return_value={"data": [service_one, service_two]},
         )
-        mocker.patch("app.main.views.platform_admin.get_url_for_notify_record", return_value=None)
+        mocker.patch("app.main.views.platform_admin.get_url_for_emergency_alerts_record", return_value=None)
         client_request.login(platform_admin_user)
 
         response = client_request.post(".platform_admin_search", _data={"search": "service"}, _expected_status=200)

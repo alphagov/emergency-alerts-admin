@@ -67,7 +67,7 @@ class GovukFrontendWidgetMixin(ABC):
         if self.errors:
             return {
                 "attributes": {
-                    "data-notify-module": "track-error",
+                    "data-emergency-alerts-module": "track-error",
                     "data-error-type": self.errors[0],
                     "data-error-label": self.name,
                 },

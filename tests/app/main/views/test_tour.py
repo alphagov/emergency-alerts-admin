@@ -92,7 +92,7 @@ def test_should_404_if_no_mobile_number_for_tour_start(
 
 def test_should_403_if_user_does_not_have_send_permissions_for_tour_start(
     mocker,
-    notify_admin,
+    emergency_alerts_admin,
     client_request,
     api_user_active,
     mock_get_service_template_with_multiple_placeholders,
@@ -101,7 +101,7 @@ def test_should_403_if_user_does_not_have_send_permissions_for_tour_start(
 ):
     validate_route_permission(
         mocker,
-        notify_admin,
+        emergency_alerts_admin,
         "GET",
         403,
         url_for(
@@ -151,16 +151,16 @@ def test_should_show_empty_text_box(
 
     page = client_request.get("main.tour_step", service_id=SERVICE_ONE_ID, template_id=fake_uuid, step_index=1)
 
-    textbox = page.select_one("[data-notify-module=autofocus][data-force-focus=True] .govuk-input")
+    textbox = page.select_one("[data-emergency-alerts-module=autofocus][data-force-focus=True] .govuk-input")
     assert "value" not in textbox
     assert textbox["name"] == "placeholder_value"
     assert textbox["class"] == [
         "govuk-input",
         "govuk-!-width-full",
     ]
-    # data-notify-module=autofocus is set on a containing element so it
+    # data-emergency-alerts-module=autofocus is set on a containing element so it
     # shouldn’t also be set on the textbox itself
-    assert "data-notify-module" not in textbox
+    assert "data-emergency-alerts-module" not in textbox
     assert normalize_spaces(page.select_one("label[for=placeholder_value]").text) == "one"
 
 
@@ -208,7 +208,7 @@ def test_should_404_for_get_tour_step_0(
 @pytest.mark.parametrize("method", ["GET", "POST"])
 def test_should_403_if_user_does_not_have_send_permissions_for_tour_step(
     mocker,
-    notify_admin,
+    emergency_alerts_admin,
     client_request,
     api_user_active,
     mock_get_service_template_with_multiple_placeholders,
@@ -218,7 +218,7 @@ def test_should_403_if_user_does_not_have_send_permissions_for_tour_step(
 ):
     validate_route_permission(
         mocker,
-        notify_admin,
+        emergency_alerts_admin,
         method,
         403,
         url_for("main.tour_step", service_id=SERVICE_ONE_ID, template_id=fake_uuid, step_index=1),

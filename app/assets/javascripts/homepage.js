@@ -1,7 +1,7 @@
 (function(window) {
   "use strict";
 
-  window.GOVUK.NotifyModules.Homepage = function() {
+  window.GOVUK.EmergencyAlertsModules.Homepage = function() {
 
     this.start = function(component) {
 

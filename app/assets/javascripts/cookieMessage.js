@@ -1,5 +1,5 @@
 window.GOVUK = window.GOVUK || {};
-window.GOVUK.NotifyModules = window.GOVUK.NotifyModules || {};
+window.GOVUK.EmergencyAlertsModules = window.GOVUK.EmergencyAlertsModules || {};
 
 (function (Modules) {
   function CookieBanner () { }
@@ -29,8 +29,8 @@ window.GOVUK.NotifyModules = window.GOVUK.NotifyModules || {};
     this.$module.showConfirmationMessage = this.showConfirmationMessage.bind(this);
     this.$module.setCookieConsent = this.setCookieConsent.bind(this);
 
-    this.$module.cookieBanner = document.querySelector('.notify-cookie-banner');
-    this.$module.cookieBannerConfirmationMessage = this.$module.querySelector('.notify-cookie-banner__confirmation');
+    this.$module.cookieBanner = document.querySelector('.emergency-alerts-cookie-banner');
+    this.$module.cookieBannerConfirmationMessage = this.$module.querySelector('.emergency-alerts-cookie-banner__confirmation');
 
     this.setupCookieMessage();
   };
@@ -87,8 +87,8 @@ window.GOVUK.NotifyModules = window.GOVUK.NotifyModules || {};
   CookieBanner.prototype.showConfirmationMessage = function (analyticsConsent) {
     var messagePrefix = analyticsConsent ? 'You’ve accepted analytics cookies.' : 'You told us not to use analytics cookies.';
 
-    this.$cookieBannerMainContent = document.querySelector('.notify-cookie-banner__wrapper');
-    this.$cookieBannerConfirmationMessage = document.querySelector('.notify-cookie-banner__confirmation-message');
+    this.$cookieBannerMainContent = document.querySelector('.emergency-alerts-cookie-banner__wrapper');
+    this.$cookieBannerConfirmationMessage = document.querySelector('.emergency-alerts-cookie-banner__confirmation-message');
 
     this.$cookieBannerConfirmationMessage.insertAdjacentText('afterbegin', messagePrefix);
     this.$cookieBannerMainContent.style.display = 'none';
@@ -100,5 +100,4 @@ window.GOVUK.NotifyModules = window.GOVUK.NotifyModules || {};
   };
 
   Modules.CookieBanner = CookieBanner;
-})(window.GOVUK.NotifyModules);
-
+})(window.GOVUK.EmergencyAlertsModules);

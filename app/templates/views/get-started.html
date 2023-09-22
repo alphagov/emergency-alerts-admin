@@ -8,7 +8,7 @@
 {% endblock %}
 
 {# Used by the content_template.html layout, prefixes the "navigation" accessible name #}
-{% set navigation_label_prefix = 'Using Notify' %}
+{% set navigation_label_prefix = 'Using Emergency Alerts' %}
 
 {% block content_column_content %}
 
@@ -16,19 +16,19 @@
 
 <ol class="get-started-list govuk-list">
   <li class="get-started-list__item">
-    <h2 class="get-started-list__heading">Check if GOV.UK Notify is right for you</h2>
+    <h2 class="get-started-list__heading">Check if GOV.UK Emergency Alerts is right for you</h2>
     <p class="govuk-body">Read about our <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('main.features') }}">features</a>, <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('.pricing') }}">pricing</a> and <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('main.roadmap') }}">roadmap</a>.</p>
     <p class="govuk-body">
-      Check <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('.who_can_use_notify') }}">whether your organisation can use Notify</a>.
+      Check <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('.who_can_use_emergency_alerts') }}">whether your organisation can use Emergency Alerts</a>.
     </p>
   </li>
 
   <li class="get-started-list__item">
     <h2 class="get-started-list__heading">Create an account</h2>
     {% if not current_user.is_authenticated %}
-      <p class="govuk-body"><a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('.register') }}">Create an account</a> for free and add your first Notify service. When you add a new service it will start in <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('main.trial_mode_new') }}">trial mode</a>.</p>
+      <p class="govuk-body"><a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('.register') }}">Create an account</a> for free and add your first Emergency Alerts service. When you add a new service it will start in <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('main.trial_mode_new') }}">trial mode</a>.</p>
     {% else %}
-      <p class="govuk-body">Create an account for free and add your first Notify service. When you add a new service, it will start in <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('main.trial_mode_new') }}">trial mode</a>.</p>
+      <p class="govuk-body">Create an account for free and add your first Emergency Alerts service. When you add a new service, it will start in <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('main.trial_mode_new') }}">trial mode</a>.</p>
     {% endif %}
   </li>
 
@@ -50,7 +50,7 @@
 
   <li class="get-started-list__item">
     <h2 class="get-started-list__heading">Set up an API integration (optional)</h2>
-    <p class="govuk-body">You can use the Notify API to send messages automatically.</p>
+    <p class="govuk-body">You can use the Emergency Alerts API to send messages automatically.</p>
     <p class="govuk-body">Our <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('main.documentation') }}">documentation</a> explains how to integrate the API with a web application or back office system.</p>
   </li>
 

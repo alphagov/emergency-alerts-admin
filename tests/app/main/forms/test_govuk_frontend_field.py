@@ -84,7 +84,7 @@ def test_govuk_frontend_widget_mixin_constructs_errors(client_request):
         "attributes": {
             "data-error-label": "field",
             "data-error-type": "some error message",
-            "data-notify-module": "track-error",
+            "data-emergency-alerts-module": "track-error",
         },
         "html": "some error message",
     }

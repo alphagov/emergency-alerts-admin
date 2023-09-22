@@ -1,7 +1,7 @@
 {
-  "name": "notifications-admin",
+  "name": "emergency-alerts-admin",
   "version": "0.0.1",
-  "description": "Admin front end for GOV.UK Notify",
+  "description": "Admin front end for GOV.UK Emergency Alerts",
   "engines": {
     "node": ">=10.15.3"
   },
@@ -14,11 +14,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/alphagov/notifications-admin.git"
+    "url": "git+https://github.com/alphagov/emergency-alerts-admin.git"
   },
   "author": "Government Digital Service",
   "license": "MIT",
-  "homepage": "https://github.com/alphagov/notifications-admin#readme",
+  "homepage": "https://github.com/alphagov/emergency-alerts-admin#readme",
   "dependencies": {
     "cbor-js": "0.1.0",
     "govuk-frontend": "4.2.0",

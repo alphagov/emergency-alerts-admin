@@ -45,7 +45,7 @@ class TestClient(FlaskClient):
         self.get(url_for("main.sign_out"))
 
 
-class NotifyBeautifulSoup(BeautifulSoup):
+class EmergencyAlertsBeautifulSoup(BeautifulSoup):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.override_method("find", "select_one")
@@ -382,7 +382,7 @@ def inbound_sms_json():
         "data": [
             {
                 "user_number": phone_number,
-                "notify_number": "07900000002",
+                "emergency_alerts_number": "07900000002",
                 "content": f"message-{index + 1}",
                 "created_at": (datetime.utcnow() - timedelta(minutes=60 * hours_ago, seconds=index)).isoformat(),
                 "id": sample_uuid(),
@@ -601,7 +601,7 @@ def single_notification_json(
 
 
 def validate_route_permission(
-    mocker, notify_admin, method, response_code, route, permissions, usr, service, session=None
+    mocker, emergency_alerts_admin, method, response_code, route, permissions, usr, service, session=None
 ):
     usr["permissions"][str(service["id"])] = permissions
     usr["services"] = [service["id"]]
@@ -615,8 +615,8 @@ def validate_route_permission(
     mocker.patch("app.service_api_client.get_service", return_value={"data": service})
     mocker.patch("app.models.user.Users.client_method", return_value=[usr])
     mocker.patch("app.job_api_client.has_jobs", return_value=False)
-    with notify_admin.test_request_context():
-        with notify_admin.test_client() as client:
+    with emergency_alerts_admin.test_request_context():
+        with emergency_alerts_admin.test_client() as client:
             client.login(usr)
             if session:
                 with client.session_transaction() as session_:

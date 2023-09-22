@@ -95,7 +95,7 @@ def test_from_database_object_makes_request(
 @pytest.mark.parametrize(
     "page_number, expected_url",
     [
-        ("1", "http://localhost:9999/precompiled-preview.png?hide_notify=true"),
+        ("1", "http://localhost:9999/precompiled-preview.png?hide_emergency_alerts=true"),
         ("2", "http://localhost:9999/precompiled-preview.png"),
     ],
 )

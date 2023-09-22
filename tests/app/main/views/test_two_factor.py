@@ -280,7 +280,7 @@ def test_two_factor_webauthn_should_have_auth_signin_button(
 
     page = client_request.get("main.two_factor_webauthn")
 
-    button = page.select_one("button[data-notify-module=authenticate-security-key]")
+    button = page.select_one("button[data-emergency-alerts-module=authenticate-security-key]")
 
     assert button.text.strip() == "Check security key"
 
@@ -381,11 +381,11 @@ def test_valid_two_factor_email_link_logs_in_user(
     ],
 )
 def test_two_factor_email_link_has_expired(
-    notify_admin, valid_token, client_request, mock_send_verify_code, fake_uuid, redirect_url
+    emergency_alerts_admin, valid_token, client_request, mock_send_verify_code, fake_uuid, redirect_url
 ):
     client_request.logout()
 
-    with set_config(notify_admin, "EMAIL_2FA_EXPIRY_SECONDS", -1):
+    with set_config(emergency_alerts_admin, "EMAIL_2FA_EXPIRY_SECONDS", -1):
         page = client_request.post_url(
             url_for_endpoint_with_token("main.two_factor_email", token=valid_token, next=redirect_url),
             _follow_redirects=True,

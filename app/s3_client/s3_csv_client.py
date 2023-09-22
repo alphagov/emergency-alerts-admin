@@ -6,7 +6,7 @@ from flask import current_app
 
 from app.s3_client.s3_logo_client import get_s3_object
 
-FILE_LOCATION_STRUCTURE = "service-{}-notify/{}.csv"
+FILE_LOCATION_STRUCTURE = "service-{}-emergency-alerts/{}.csv"
 
 
 def get_csv_location(service_id, upload_id, bucket=None):

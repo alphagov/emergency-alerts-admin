@@ -3,10 +3,10 @@ from fido2.webauthn import AuthenticatorData, CollectedClientData
 from flask import abort, current_app, flash, redirect, request, session, url_for
 from flask_login import current_user
 
+from app.emergency_alerts_client.user_api_client import user_api_client
 from app.main import main
 from app.models.user import User
 from app.models.webauthn_credential import RegistrationError, WebAuthnCredential
-from app.notify_client.user_api_client import user_api_client
 from app.utils.login import email_needs_revalidating, log_in_user, redirect_to_sign_in
 from app.utils.user import user_is_logged_in
 

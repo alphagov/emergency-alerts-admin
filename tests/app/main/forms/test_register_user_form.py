@@ -3,7 +3,7 @@ import pytest
 from app.main.forms import RegisterUserForm
 
 
-@pytest.mark.parametrize("password", ["govuknotify", "11111111", "kittykat", "blackbox"])
+@pytest.mark.parametrize("password", ["govukemergencyalerts", "11111111", "kittykat", "blackbox"])
 def test_should_raise_validation_error_for_password(
     client_request,
     mock_get_user_by_email,
