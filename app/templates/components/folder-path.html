@@ -1,3 +1,5 @@
+{% from "govuk_frontend_jinja/components/breadcrumbs/macro.html" import govukBreadcrumbs %}
+
 {% macro folder_path(
   folders,
   service_id,
@@ -6,28 +8,15 @@
   link_current_item=False,
   root_element='h1'
 ) %}
-  <{{ root_element }} class="heading-medium folder-heading"{% if root_element == 'h1' %} id="page-header"{% endif %}>
+    {% set breadcrumbs = [] %}
     {% for folder in folders %}
-      {% if loop.last and not link_current_item %}
-        {% if folder.template_type or not folder.id %}
-          <span class="folder-heading-template">{{ folder.name }}</span>
-        {% else %}
-          <span class="folder-heading-folder">{{ folder.name }}</span>
-        {% endif %}
-      {% else %}
-        {% if folder.id %}
-          {% if current_user.has_template_folder_permission(folder) %}
-            <a href="{{ url_for('.choose_template', service_id=service_id, template_type=template_type, template_folder_id=folder.id) }}" class="govuk-link govuk-link--no-visited-state folder-heading-folder {% if loop.index < (loop.length - 1) %}folder-heading-folder-truncated{% endif %}" title="{{ folder.name }}">{{ folder.name }}</a>
-          {% else %}
-            <span class="folder-heading-folder">{{ folder.name }}</span>
-          {% endif %}
-        {% else %}
-          <a href="{{ url_for('.choose_template', service_id=service_id, template_type=template_type) }}" title="Templates" class="govuk-link govuk-link--no-visited-state {% if loop.length > 2 %}folder-heading-folder-root-truncated{% endif %}">Templates</a>
-        {% endif %}
-        {% if not loop.last %}{{ folder_path_separator() }}{% endif %}
-      {% endif %}
+      {% set breadcrumb_href = url_for('.choose_template', service_id=service_id, template_type=template_type, template_folder_id=folder.id) %}
+      {% set breadcrumb_item = {'text': folder.name, 'href': breadcrumb_href} %}
+      {% set _ = breadcrumbs.append(breadcrumb_item) %}
     {% endfor %}
-  </{{ root_element }}>
+    {{ govukBreadcrumbs({
+      "items": breadcrumbs
+    }) }}
 {% endmacro %}
 
 
