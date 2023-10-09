@@ -1153,6 +1153,7 @@ class NewBroadcastForm(StripWhitespaceForm):
             ("template", "Use a template"),
         ],
         param_extensions={"fieldset": {"legend": {"classes": "govuk-visually-hidden"}}},
+        validators=[DataRequired(message="Please select a radio button to continue")],
     )
 
     @property
