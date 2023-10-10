@@ -6,7 +6,8 @@
   template_type,
   current_user,
   link_current_item=False,
-  is_template=False
+  is_template=False,
+  add_header=True
 ) %}
     {% set breadcrumbs = [] %}
     {% for folder in folders %}
@@ -23,17 +24,19 @@
       "items": breadcrumbs
     }) }}
 
-    {% for folder in folders %}
-      {% if loop.last %}
-        <h1 class="heading-large" id="page-header">
-          {% if is_template %}
-            {{ folder.name }}
-          {% else %}
-            Templates
-          {% endif %}
-        </h1>
-      {% endif %}
-    {% endfor %}
+    {% if add_header %}
+      {% for folder in folders %}
+        {% if loop.last %}
+          <h1 class="heading-large" id="page-header">
+            {% if is_template %}
+              Template
+            {% else %}
+              Templates
+            {% endif %}
+          </h1>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
 {% endmacro %}
 
 

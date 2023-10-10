@@ -15,13 +15,11 @@
   {% endif %}
 {% endblock %}
 
-{{ folder_path(
-  folders=template_folder_path,
-  service_id=current_service.id,
-  template_type='all',
-  current_user=current_user,
-  link_current_item=True
-) }}
+{% block backLink %}
+  {{ govukBackLink({
+    "href": back_link
+  }) }}
+{% endblock %}
 
 {% block maincolumn_content %}
 
