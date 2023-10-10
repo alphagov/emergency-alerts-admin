@@ -4,17 +4,24 @@
 {% from "components/page-footer.html" import page_footer %}
 {% from "components/form.html" import form_wrapper %}
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
+{% from "components/folder-path.html" import folder_path %}
 {% from "components/error-summary.html" import errorSummary %}
 
 {% block service_page_title %}
-  {{ heading_action }} template
+  {% if heading_action %}
+    {{ heading_action }} template
+  {% else %}
+    Template
+  {% endif %}
 {% endblock %}
 
-{% block backLink %}
-  {{ govukBackLink({
-    "href": back_link
-  }) }}
-{% endblock %}
+{{ folder_path(
+  folders=template_folder_path,
+  service_id=current_service.id,
+  template_type='all',
+  current_user=current_user,
+  link_current_item=True
+) }}
 
 {% block maincolumn_content %}
 

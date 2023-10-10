@@ -620,11 +620,14 @@ def edit_service_template(service_id, template_id):
             )
         )
     else:
+        print(template)
+        print(current_service.get_template_folder_path(template["folder"]))
         return render_template(
             "views/edit-{}-template.html".format(template["template_type"]),
             form=form,
             template=template,
             back_link=url_for("main.view_template", service_id=current_service.id, template_id=template["id"]),
+            template_folder_path=current_service.get_template_folder_path(template["folder"]),
         )
 
 
