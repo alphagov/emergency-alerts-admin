@@ -25,13 +25,13 @@ PYTHON_EXECUTABLE_PREFIX := $(shell test -d "$${VIRTUALENV_ROOT}" && echo "$${VI
 
 .PHONY: bootstrap
 bootstrap: generate-version-file ## Set up everything to run the app
-	${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements_for_ci.txt
+	${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements_local_utils.txt
 	source $(HOME)/.nvm/nvm.sh && nvm install && npm ci --no-audit
 	source $(HOME)/.nvm/nvm.sh && npm run build
 
-.PHONY: bootstrap-dev
-bootstrap-dev: generate-version-file
-	${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements_for_dev.txt
+.PHONY: bootstrap-for-tests
+bootstrap-for-tests: generate-version-file ## Set up everything to run the app
+	${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements_github_utils.txt
 	source $(HOME)/.nvm/nvm.sh && nvm install && npm ci --no-audit
 	source $(HOME)/.nvm/nvm.sh && npm run build
 
