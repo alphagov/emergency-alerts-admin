@@ -1233,9 +1233,9 @@ class SMSTemplateForm(BaseTemplateForm):
 
 
 class BroadcastTemplateForm(SMSTemplateForm):
-    name = GovukTextInputField("Reference", validators=[DataRequired(message="Reference cannot be empty")])
+    name = GovukTextInputField("Reference", validators=[DataRequired(message="Enter a reference")])
     template_content = TextAreaField(
-        "Alert message", validators=[DataRequired(message="Alert message cannot be empty"), NoCommasInPlaceHolders()]
+        "Alert message", validators=[DataRequired(message="Enter an alert message"), NoCommasInPlaceHolders()]
     )
 
     def validate_template_content(self, field):
