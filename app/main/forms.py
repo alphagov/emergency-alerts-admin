@@ -1152,7 +1152,11 @@ class NewBroadcastForm(StripWhitespaceForm):
             ("freeform", "Write your own message"),
             ("template", "Use a template"),
         ],
-        param_extensions={"fieldset": {"legend": {"classes": "govuk-visually-hidden"}}},
+        param_extensions={
+            "fieldset": {"legend": {"classes": "govuk-visually-hidden"}},
+            "hint": {"text": "Select one option"},
+        },
+        validators=[DataRequired(message="Select if you want to write your own message or use a template")],
     )
 
     @property

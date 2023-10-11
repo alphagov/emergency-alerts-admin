@@ -1,6 +1,7 @@
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
 {% from "components/page-footer.html" import page_footer %}
 {% from "components/form.html" import form_wrapper %}
+{% from "components/error-summary.html" import errorSummary %}
 
 {% extends "withnav_template.html" %}
 
@@ -13,6 +14,8 @@
 {% endblock %}
 
 {% block maincolumn_content %}
+
+  {{ errorSummary(form) }}
 
   {% call form_wrapper(class="govuk-!-margin-top-3") %}
     {{ form.content(
