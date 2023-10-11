@@ -1153,6 +1153,7 @@ class NewBroadcastForm(StripWhitespaceForm):
             ("template", "Use a template"),
         ],
         param_extensions={"fieldset": {"legend": {"classes": "govuk-visually-hidden"}}},
+        validators=[DataRequired(message="Please select a radio button to continue")],
     )
 
     @property
@@ -1198,10 +1199,10 @@ class ConfirmBroadcastForm(StripWhitespaceForm):
 
 
 class BaseTemplateForm(StripWhitespaceForm):
-    name = GovukTextInputField("Template name", validators=[DataRequired(message="Cannot be empty")])
+    name = GovukTextInputField("Template name", validators=[DataRequired(message="Template name cannot be empty")])
 
     template_content = TextAreaField(
-        "Alert message", validators=[DataRequired(message="Cannot be empty"), NoCommasInPlaceHolders()]
+        "Alert message", validators=[DataRequired(message="Alert message cannot be empty"), NoCommasInPlaceHolders()]
     )
     process_type = GovukRadiosField(
         "Use priority queue?",
@@ -1229,6 +1230,11 @@ class SMSTemplateForm(BaseTemplateForm):
 
 
 class BroadcastTemplateForm(SMSTemplateForm):
+    name = GovukTextInputField("Reference", validators=[DataRequired(message="Reference cannot be empty")])
+    template_content = TextAreaField(
+        "Alert message", validators=[DataRequired(message="Alert message cannot be empty"), NoCommasInPlaceHolders()]
+    )
+
     def validate_template_content(self, field):
         OnlySMSCharacters(template_type="broadcast")(None, field)
         NoPlaceholders()(None, field)
