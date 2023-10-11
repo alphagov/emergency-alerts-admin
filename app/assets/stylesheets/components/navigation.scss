@@ -73,25 +73,24 @@
     border-bottom: 1px solid $govuk-border-colour;
     margin: 0 0 10px;
     position: relative;
+    display: flex;
+    flex-wrap: wrap;
 
     &-name {
 
-      padding: $padding-top 0 $padding-bottom 0;
-      max-width: 50%;
+      padding: $padding-top govuk-spacing(2) $padding-bottom 0;
+      flex-grow: 1;
 
     }
 
     &-switch {
 
       text-align: right;
-      position: absolute;
       top: 0;
       right: 0;
-      padding: $padding-top 0 $padding-bottom govuk-spacing(3);
-
-      &:focus {
-        padding: $padding-top 0px $padding-bottom + 1px govuk-spacing(3) + 10;
-      }
+      padding: $padding-top 0 $padding-bottom 0;
+      min-width: 0;
+      flex-shrink: 2;
 
     }
 
