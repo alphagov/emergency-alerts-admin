@@ -50,7 +50,7 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
     [
         (
             "Templates – service one – GOV.UK Emergency Alerts",
-            "Templates",
+            ["Templates"],
             [],
             {},
             ["Email", "Text message", "Letter"],
@@ -110,7 +110,7 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
         ),
         (
             "Templates – service one – GOV.UK Emergency Alerts",
-            "Templates",
+            ["Templates"],
             [],
             {"template_type": "all"},
             ["Email", "Text message", "Letter"],
@@ -170,7 +170,7 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
         ),
         (
             "Templates – service one – GOV.UK Emergency Alerts",
-            "Templates",
+            ["Templates"],
             [],
             {"template_type": "sms"},
             ["All", "Email", "Letter"],
@@ -207,7 +207,7 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
         ),
         (
             "folder_one – Templates – service one – GOV.UK Emergency Alerts",
-            "Templates folder_one",
+            ["Templates", "folder_one"],
             [{"template_type": "all"}],
             {"template_folder_id": PARENT_FOLDER_ID},
             ["Email", "Text message", "Letter"],
@@ -237,7 +237,7 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
         ),
         (
             "folder_one – Templates – service one – GOV.UK Emergency Alerts",
-            "Templates folder_one",
+            ["Templates", "folder_one"],
             [{"template_type": "sms"}],
             {"template_type": "sms", "template_folder_id": PARENT_FOLDER_ID},
             ["All", "Email", "Letter"],
@@ -262,7 +262,7 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
         ),
         (
             "folder_one – Templates – service one – GOV.UK Emergency Alerts",
-            "Templates folder_one",
+            ["Templates", "folder_one"],
             [{"template_type": "email"}],
             {"template_type": "email", "template_folder_id": PARENT_FOLDER_ID},
             ["All", "Text message", "Letter"],
@@ -273,7 +273,7 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
         ),
         (
             "folder_one_one – folder_one – Templates – service one – GOV.UK Emergency Alerts",
-            "Templates folder_one folder_one_one",
+            ["Templates", "folder_one", "folder_one_one"],
             [
                 {"template_type": "all"},
                 {"template_type": "all", "template_folder_id": PARENT_FOLDER_ID},
@@ -302,7 +302,7 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
         ),
         (
             "folder_one_one_one – folder_one_one – folder_one – Templates – service one – GOV.UK Emergency Alerts",
-            "Templates folder_one folder_one_one folder_one_one_one",
+            ["Templates", "folder_one", "folder_one_one", "folder_one_one_one"],
             [
                 {"template_type": "all"},
                 {"template_type": "all", "template_folder_id": PARENT_FOLDER_ID},
@@ -323,7 +323,7 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
         ),
         (
             "folder_one_one_one – folder_one_one – folder_one – Templates – service one – GOV.UK Emergency Alerts",
-            "Templates folder_one folder_one_one folder_one_one_one",
+            ["Templates", "folder_one", "folder_one_one", "folder_one_one_one"],
             [
                 {"template_type": "email"},
                 {"template_type": "email", "template_folder_id": PARENT_FOLDER_ID},
@@ -341,7 +341,7 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
         ),
         (
             "folder_two – Templates – service one – GOV.UK Emergency Alerts",
-            "Templates folder_two",
+            ["Templates", "folder_two"],
             [{"template_type": "all"}],
             {"template_folder_id": FOLDER_TWO_ID},
             ["Email", "Text message", "Letter"],
@@ -352,7 +352,7 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
         ),
         (
             "folder_two – Templates – service one – GOV.UK Emergency Alerts",
-            "Templates folder_two",
+            ["Templates", "folder_two"],
             [{"template_type": "sms"}],
             {"template_folder_id": FOLDER_TWO_ID, "template_type": "sms"},
             ["All", "Email", "Letter"],
@@ -363,7 +363,7 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
         ),
         (
             "folder_two – Templates – service one – GOV.UK Emergency Alerts",
-            "Templates folder_two",
+            ["Templates", "folder_two"],
             [{"template_type": "all"}],
             {"template_folder_id": FOLDER_TWO_ID, "template_type": "all"},
             ["Email", "Text message", "Letter"],
@@ -418,12 +418,12 @@ def test_should_show_templates_folder_page(
 
     page = client_request.get("main.choose_template", service_id=SERVICE_ONE_ID, _test_page_title=False, **extra_args)
 
+    assert [item.text.strip() for item in page.select(".govuk-breadcrumbs__list-item")] == expected_page_title
     assert normalize_spaces(page.select_one("title").text) == expected_title_tag
-    assert normalize_spaces(page.select_one("h1").text) == expected_page_title
 
-    assert len(page.select("h1 a")) == len(expected_parent_link_args)
+    assert len(page.select(".govuk-breadcrumbs__list-item a")) == len(expected_parent_link_args)
 
-    for index, parent_link in enumerate(page.select("h1 a")):
+    for index, parent_link in enumerate(page.select(".govuk-breadcrumbs__list-item a")):
         assert parent_link["href"] == url_for(
             "main.choose_template", service_id=SERVICE_ONE_ID, **expected_parent_link_args[index]
         )

@@ -4,10 +4,15 @@
 {% from "components/page-footer.html" import page_footer %}
 {% from "components/form.html" import form_wrapper %}
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
+{% from "components/folder-path.html" import folder_path %}
 {% from "components/error-summary.html" import errorSummary %}
 
 {% block service_page_title %}
-  {{ heading_action }} template
+  {% if heading_action %}
+    {{ heading_action }} template
+  {% else %}
+    Template
+  {% endif %}
 {% endblock %}
 
 {% block backLink %}
@@ -20,7 +25,11 @@
 
   {{ errorSummary(form) }}
 
-  {{ page_header('{} template'.format(heading_action)) }}
+  {% if heading_action %}
+    {{ page_header('{} template'.format(heading_action)) }}
+  {% else %}
+    {{ page_header('Template') }}
+  {% endif %}
 
   {% call form_wrapper() %}
     <div class="govuk-grid-row">

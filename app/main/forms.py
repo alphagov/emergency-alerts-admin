@@ -1152,8 +1152,11 @@ class NewBroadcastForm(StripWhitespaceForm):
             ("freeform", "Write your own message"),
             ("template", "Use a template"),
         ],
-        param_extensions={"fieldset": {"legend": {"classes": "govuk-visually-hidden"}}},
-        validators=[DataRequired(message="Please select a radio button to continue")],
+        param_extensions={
+            "fieldset": {"legend": {"classes": "govuk-visually-hidden"}},
+            "hint": {"text": "Select one option"},
+        },
+        validators=[DataRequired(message="Select if you want to write your own message or use a template")],
     )
 
     @property
@@ -1230,9 +1233,9 @@ class SMSTemplateForm(BaseTemplateForm):
 
 
 class BroadcastTemplateForm(SMSTemplateForm):
-    name = GovukTextInputField("Reference", validators=[DataRequired(message="Reference cannot be empty")])
+    name = GovukTextInputField("Reference", validators=[DataRequired(message="Enter a reference")])
     template_content = TextAreaField(
-        "Alert message", validators=[DataRequired(message="Alert message cannot be empty"), NoCommasInPlaceHolders()]
+        "Alert message", validators=[DataRequired(message="Enter an alert message"), NoCommasInPlaceHolders()]
     )
 
     def validate_template_content(self, field):
