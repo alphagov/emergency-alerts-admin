@@ -1503,7 +1503,7 @@ def test_preview_broadcast_areas_has_back_link_with_uuid(
     page = client_request.get(
         "main.preview_broadcast_areas", service_id=SERVICE_ONE_ID, broadcast_message_id=str(uuid.UUID(int=0))
     )
-    assert normalize_spaces(page.select_one("h1").text) == "Area defined"
+    assert normalize_spaces(page.select_one("h1").text) == "Confirm the area for the alert"
     back_link = page.select_one(".govuk-back-link")
     assert back_link["href"] == url_for(
         expected_back_link_url,
