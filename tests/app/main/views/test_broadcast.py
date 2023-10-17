@@ -683,7 +683,7 @@ def test_new_broadcast_page(
         service_id=SERVICE_ONE_ID,
     )
 
-    assert normalize_spaces(page.select_one("h1").text) == "New alert"
+    assert normalize_spaces(page.select_one("h1").text) == "Create new alert"
 
     form = page.select_one("form")
     assert form["method"] == "post"

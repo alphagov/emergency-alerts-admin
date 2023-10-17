@@ -1147,7 +1147,7 @@ class ConfirmPasswordForm(StripWhitespaceForm):
 
 class NewBroadcastForm(StripWhitespaceForm):
     content = GovukRadiosField(
-        "New alert",
+        "Create new alert",
         choices=[
             ("freeform", "Write your own message"),
             ("template", "Use a template"),
