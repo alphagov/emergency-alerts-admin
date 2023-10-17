@@ -585,7 +585,7 @@ def test_broadcast_dashboard_has_new_alert_button_if_user_has_permission_to_crea
         service_id=SERVICE_ONE_ID,
     )
     button = page.select_one(".js-stick-at-bottom-when-scrolling a.govuk-button.govuk-button--secondary")
-    assert normalize_spaces(button.text) == "New alert"
+    assert normalize_spaces(button.text) == "Create new alert"
     assert button["href"] == url_for(
         "main.new_broadcast",
         service_id=SERVICE_ONE_ID,
