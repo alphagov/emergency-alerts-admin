@@ -640,6 +640,7 @@ class GovukCheckboxesField(GovukFrontendWidgetMixin, SelectMultipleField):
             "asList": self.render_as_list,
             "errorMessage": self.get_error_message(),
             "items": items,
+            "hint": {"text": "Select all that apply."},
         }
 
         return params
@@ -1723,10 +1724,7 @@ class AddEmailBrandingOptionsForm(StripWhitespaceForm):
     branding_field = GovukCheckboxesField(
         "Branding options",
         validators=[DataRequired(message="Select at least 1 email branding option")],
-        param_extensions={
-            "fieldset": {"legend": {"classes": "govuk-visually-hidden"}},
-            "hint": {"text": "All team members can see sent messages."},
-        },
+        param_extensions={"fieldset": {"legend": {"classes": "govuk-visually-hidden"}}},
     )
 
 
@@ -1734,10 +1732,7 @@ class AddLetterBrandingOptionsForm(StripWhitespaceForm):
     branding_field = GovukCheckboxesField(
         "Branding options",
         validators=[DataRequired(message="Select at least 1 letter branding option")],
-        param_extensions={
-            "fieldset": {"legend": {"classes": "govuk-visually-hidden"}},
-            "hint": {"text": "All team members can see sent messages."},
-        },
+        param_extensions={"fieldset": {"legend": {"classes": "govuk-visually-hidden"}}},
     )
 
 
@@ -2286,10 +2281,7 @@ class TemplateAndFoldersSelectionForm(Form):
         "Choose templates or folders",
         validators=[required_for_ops("move-to-new-folder", "move-to-existing-folder")],
         choices=[],  # added to keep order of arguments, added properly in __init__
-        param_extensions={
-            "fieldset": {"legend": {"classes": "govuk-visually-hidden"}},
-            "hint": {"text": "All team members can see sent messages."},
-        },
+        param_extensions={"fieldset": {"legend": {"classes": "govuk-visually-hidden"}}},
     )
     # if no default set, it is set to None, which process_data transforms to '__NONE__'
     # this means '__NONE__' (self.ALL_TEMPLATES option) is selected when no form data has been submitted
