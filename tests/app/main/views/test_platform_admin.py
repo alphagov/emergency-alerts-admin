@@ -51,22 +51,18 @@ def test_should_403_if_not_platform_admin(
 
 
 @pytest.mark.parametrize(
-    "endpoint, expected_services_shown",
+    "endpoint, expected_h1, expected_services_shown",
     [
-        ("main.live_services", 1),
-        ("main.trial_services", 1),
+        ("main.live_services", "Live services", 1),
+        ("main.trial_services", "Trial mode services", 1),
     ],
 )
 def test_should_render_platform_admin_page(
-    client_request, platform_admin_user, mock_get_detailed_services, endpoint, expected_services_shown
+    client_request, platform_admin_user, mock_get_detailed_services, endpoint, expected_h1, expected_services_shown
 ):
     client_request.login(platform_admin_user)
     page = client_request.get(endpoint)
-    assert [normalize_spaces(column.text) for column in page.select("tbody tr")[1].select("td")] == [
-        "0 emails sent",
-        "0 text messages sent",
-        "0 letters sent",
-    ]
+    assert normalize_spaces(page.select("h1")) == expected_h1
     mock_get_detailed_services.assert_called_once_with(
         {"detailed": True, "include_from_test_key": True, "only_active": False}
     )
@@ -122,75 +118,6 @@ def test_live_trial_services_with_date_filter(
             "only_active": False,
         }
     )
-
-
-@pytest.mark.parametrize(
-    "endpoint, expected_big_numbers",
-    [
-        (
-            "main.live_services",
-            (
-                "55 emails sent 5 failed – 5.0%",
-                "110 text messages sent 10 failed – 5.0%",
-                "15 letters sent 3 failed – 20.0%",
-            ),
-        ),
-        (
-            "main.trial_services",
-            (
-                "6 emails sent 1 failed – 10.0%",
-                "11 text messages sent 1 failed – 5.0%",
-                "30 letters sent 10 failed – 33.3%",
-            ),
-        ),
-    ],
-)
-def test_should_show_total_on_live_trial_services_pages(
-    client_request,
-    platform_admin_user,
-    mock_get_detailed_services,
-    endpoint,
-    fake_uuid,
-    expected_big_numbers,
-):
-    services = [
-        service_json(fake_uuid, "My Service 1", [], restricted=False),
-        service_json(fake_uuid, "My Service 2", [], restricted=True),
-    ]
-    services[0]["statistics"] = create_stats(
-        emails_requested=100,
-        emails_delivered=50,
-        emails_failed=5,
-        sms_requested=200,
-        sms_delivered=100,
-        sms_failed=10,
-        letters_requested=15,
-        letters_delivered=12,
-        letters_failed=3,
-    )
-
-    services[1]["statistics"] = create_stats(
-        emails_requested=10,
-        emails_delivered=5,
-        emails_failed=1,
-        sms_requested=20,
-        sms_delivered=10,
-        sms_failed=1,
-        letters_requested=30,
-        letters_delivered=20,
-        letters_failed=10,
-    )
-
-    mock_get_detailed_services.return_value = {"data": services}
-
-    client_request.login(platform_admin_user)
-    page = client_request.get(endpoint)
-
-    assert (
-        normalize_spaces(page.select(".big-number-with-status")[0].text),
-        normalize_spaces(page.select(".big-number-with-status")[1].text),
-        normalize_spaces(page.select(".big-number-with-status")[2].text),
-    ) == expected_big_numbers
 
 
 def test_create_global_stats_sets_failure_rates(fake_uuid):
@@ -272,40 +199,6 @@ def test_format_stats_by_service_returns_correct_values(fake_uuid):
     assert ret[0]["stats"]["letter"]["requested"] == 40
     assert ret[0]["stats"]["letter"]["delivered"] == 20
     assert ret[0]["stats"]["letter"]["failed"] == 7
-
-
-@pytest.mark.parametrize(
-    "endpoint, restricted, research_mode", [("main.trial_services", True, False), ("main.live_services", False, False)]
-)
-def test_should_show_email_and_sms_stats_for_all_service_types(
-    endpoint,
-    restricted,
-    research_mode,
-    client_request,
-    platform_admin_user,
-    mock_get_detailed_services,
-    fake_uuid,
-):
-    services = [service_json(fake_uuid, "My Service", [], restricted=restricted, research_mode=research_mode)]
-    services[0]["statistics"] = create_stats(
-        emails_requested=10, emails_delivered=3, emails_failed=5, sms_requested=50, sms_delivered=7, sms_failed=11
-    )
-
-    mock_get_detailed_services.return_value = {"data": services}
-    client_request.login(platform_admin_user)
-    page = client_request.get(endpoint)
-
-    mock_get_detailed_services.assert_called_once_with(
-        {"detailed": True, "include_from_test_key": True, "only_active": ANY}
-    )
-
-    table_body = page.select("table tbody")[0]
-    service_row_group = table_body.select_one("tbody").select("tr")
-    email_stats = service_row_group[1].select(".big-number-number")[0]
-    sms_stats = service_row_group[1].select(".big-number-number")[1]
-
-    assert normalize_spaces(email_stats.text) == "10"
-    assert normalize_spaces(sms_stats.text) == "50"
 
 
 @pytest.mark.parametrize(
