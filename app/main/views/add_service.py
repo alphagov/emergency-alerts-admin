@@ -1,4 +1,4 @@
-from flask import current_app, redirect, render_template, session, url_for
+from flask import abort, current_app, redirect, render_template, session, url_for
 from flask_login import current_user
 from notifications_python_client.errors import HTTPError
 
@@ -51,33 +51,36 @@ def add_service():
     default_organisation_type = current_user.default_organisation_type
     form = CreateServiceForm(organisation_type=default_organisation_type)
 
-    if form.validate_on_submit():
-        email_from = email_safe(form.name.data)
-        service_name = form.name.data
+    if current_user.platform_admin:
+        if form.validate_on_submit():
+            email_from = email_safe(form.name.data)
+            service_name = form.name.data
 
-        service_id, error = _create_service(
-            service_name,
-            default_organisation_type or form.organisation_type.data,
-            email_from,
-            form,
-        )
-        if error:
+            service_id, error = _create_service(
+                service_name,
+                default_organisation_type or form.organisation_type.data,
+                email_from,
+                form,
+            )
+            if error:
+                return _render_add_service_page(form, default_organisation_type)
+            if len(service_api_client.get_active_services({"user_id": session["user_id"]}).get("data", [])) > 1:
+                # if user has email auth, it makes sense that people they invite to their new service can have it too
+                if current_user.email_auth:
+                    new_service = Service.from_id(service_id)
+                    new_service.force_permission("email_auth", on=True)
+
+                return redirect(url_for("main.service_set_broadcast_channel", service_id=service_id))
+
+            example_sms_template = _create_example_template(service_id)
+
+            return redirect(
+                url_for("main.begin_tour", service_id=service_id, template_id=example_sms_template["data"]["id"])
+            )
+        else:
             return _render_add_service_page(form, default_organisation_type)
-        if len(service_api_client.get_active_services({"user_id": session["user_id"]}).get("data", [])) > 1:
-            # if user has email auth, it makes sense that people they invite to their new service can have it too
-            if current_user.email_auth:
-                new_service = Service.from_id(service_id)
-                new_service.force_permission("email_auth", on=True)
-
-            return redirect(url_for("main.service_set_broadcast_channel", service_id=service_id))
-
-        example_sms_template = _create_example_template(service_id)
-
-        return redirect(
-            url_for("main.begin_tour", service_id=service_id, template_id=example_sms_template["data"]["id"])
-        )
     else:
-        return _render_add_service_page(form, default_organisation_type)
+        abort(403)
 
 
 def _render_add_service_page(form, default_organisation_type):

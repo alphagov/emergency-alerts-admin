@@ -6,7 +6,7 @@ from notifications_python_client.errors import HTTPError
 
 from app.utils.user import is_gov_user
 from tests import organisation_json
-from tests.conftest import SERVICE_ONE_ID, normalize_spaces
+from tests.conftest import normalize_spaces
 
 
 def test_non_gov_user_cannot_see_add_service_button(
@@ -31,6 +31,7 @@ def test_non_gov_user_cannot_see_add_service_button(
 )
 def test_get_should_render_add_service_template(
     client_request,
+    platform_admin_user_no_service_permissions,
     mocker,
     org_json,
 ):
@@ -38,6 +39,7 @@ def test_get_should_render_add_service_template(
         "app.organisations_client.get_organisation_by_domain",
         return_value=org_json,
     )
+    client_request.login(platform_admin_user_no_service_permissions)
     page = client_request.get("main.add_service")
     assert page.select_one("h1").text.strip() == "About your service"
     assert page.select_one("input[name=name]").get("value") is None
@@ -65,12 +67,14 @@ def test_get_should_render_add_service_template(
 
 def test_get_should_not_render_radios_if_org_type_known(
     client_request,
+    platform_admin_user_no_service_permissions,
     mocker,
 ):
     mocker.patch(
         "app.organisations_client.get_organisation_by_domain",
         return_value=organisation_json(organisation_type="central"),
     )
+    client_request.login(platform_admin_user_no_service_permissions)
     page = client_request.get("main.add_service")
     assert page.select_one("h1").text.strip() == "About your service"
     assert page.select_one("input[name=name]").get("value") is None
@@ -79,12 +83,14 @@ def test_get_should_not_render_radios_if_org_type_known(
 
 def test_show_different_page_if_user_org_type_is_local(
     client_request,
+    platform_admin_user_no_service_permissions,
     mocker,
 ):
     mocker.patch(
         "app.organisations_client.get_organisation_by_domain",
         return_value=organisation_json(organisation_type="local"),
     )
+    client_request.login(platform_admin_user_no_service_permissions)
     page = client_request.get("main.add_service")
     assert page.select_one("h1").text.strip() == "About your service"
     assert page.select_one("input[name=name]").get("value") is None
@@ -94,14 +100,6 @@ def test_show_different_page_if_user_org_type_is_local(
     )
 
 
-@pytest.mark.parametrize(
-    "email_address",
-    (
-        # User’s email address doesn’t matter when the organisation is known
-        "test@example.gov.uk",
-        "test@example.nhs.uk",
-    ),
-)
 @pytest.mark.parametrize(
     "inherited, posted, persisted, sms_limit",
     (
@@ -133,13 +131,12 @@ def test_should_add_service_and_redirect_to_tour_when_no_services(
     api_user_active,
     mock_get_all_email_branding,
     inherited,
-    email_address,
+    platform_admin_user_no_service_permissions,
     posted,
     persisted,
     sms_limit,
 ):
-    api_user_active["email_address"] = email_address
-    client_request.login(api_user_active)
+    client_request.login(platform_admin_user_no_service_permissions)
     mocker.patch(
         "app.organisations_client.get_organisation_by_domain",
         return_value=organisation_json(organisation_type=inherited),
@@ -179,6 +176,7 @@ def test_should_add_service_and_redirect_to_tour_when_no_services(
 def test_add_service_has_to_choose_org_type(
     mocker,
     client_request,
+    platform_admin_user_no_service_permissions,
     mock_create_service,
     mock_create_service_template,
     mock_get_services_with_no_services,
@@ -189,6 +187,7 @@ def test_add_service_has_to_choose_org_type(
         "app.organisations_client.get_organisation_by_domain",
         return_value=None,
     )
+    client_request.login(platform_admin_user_no_service_permissions)
     page = client_request.post(
         "main.add_service",
         _data={
@@ -218,6 +217,7 @@ def test_should_add_service_and_redirect_to_dashboard_when_existing_service(
     notify_admin,
     mocker,
     client_request,
+    platform_admin_user_no_service_permissions,
     mock_create_service,
     mock_create_service_template,
     mock_get_services,
@@ -227,6 +227,7 @@ def test_should_add_service_and_redirect_to_dashboard_when_existing_service(
     free_allowance,
     mock_get_all_email_branding,
 ):
+    client_request.login(platform_admin_user_no_service_permissions)
     client_request.post(
         "main.add_service",
         _data={
@@ -263,10 +264,12 @@ def test_should_add_service_and_redirect_to_dashboard_when_existing_service(
 )
 def test_add_service_fails_if_service_name_fails_validation(
     client_request,
+    platform_admin_user_no_service_permissions,
     mock_get_organisation_by_domain,
     name,
     error_message,
 ):
+    client_request.login(platform_admin_user_no_service_permissions)
     page = client_request.post(
         "main.add_service",
         _data={"name": name},
@@ -278,6 +281,7 @@ def test_add_service_fails_if_service_name_fails_validation(
 @freeze_time("2021-01-01")
 def test_should_return_form_errors_with_duplicate_service_name_regardless_of_case(
     client_request,
+    platform_admin_user_no_service_permissions,
     mock_get_organisation_by_domain,
     mocker,
 ):
@@ -289,6 +293,7 @@ def test_should_return_form_errors_with_duplicate_service_name_regardless_of_cas
 
     mocker.patch("app.service_api_client.create_service", side_effect=_create)
 
+    client_request.login(platform_admin_user_no_service_permissions)
     page = client_request.post(
         "main.add_service",
         _data={
@@ -327,30 +332,23 @@ def test_non_government_user_cannot_create_service(
     )
 
 
-def test_email_auth_user_creates_service_with_email_auth_permission(
+def test_non_admin_user_cannot_create_service(
     api_user_active_email_auth,
     client_request,
     mock_get_no_organisation_by_domain,
-    mock_create_service,
     mock_get_services,
     mock_create_service_template,
-    mock_update_service,
 ):
+    def expect_unauthorised_create_service():
+        client_request.post(
+            "main.add_service",
+            _data={
+                "name": "service name",
+                "organisation_type": "central",
+            },
+            _expected_status=403,
+        )
+
+    expect_unauthorised_create_service()
     client_request.login(api_user_active_email_auth, service=None)
-    client_request.post(
-        "main.add_service",
-        _data={
-            "name": "service name",
-            "organisation_type": "central",
-        },
-        _expected_status=302,
-        _expected_redirect=url_for(
-            "main.service_set_broadcast_channel",
-            service_id=101,
-        ),
-    )
-    assert mock_create_service.called
-    # confusingly not the same as the id of `101` returned by mock_create_service that we see
-    # in the redirect, because Service.from_id is mocked to return `service_one`
-    assert mock_update_service.call_args[0][0] == SERVICE_ONE_ID
-    assert "email_auth" in mock_update_service.call_args[1]["permissions"]
+    expect_unauthorised_create_service()
