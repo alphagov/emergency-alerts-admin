@@ -4,7 +4,7 @@ from functools import wraps
 from flask import abort, current_app
 from flask_login import current_user, login_required
 
-from app.notify_client.organisations_api_client import organisations_client
+from app.emergency_alerts_client.organisations_api_client import organisations_client
 
 user_is_logged_in = login_required
 

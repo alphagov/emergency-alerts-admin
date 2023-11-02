@@ -130,10 +130,10 @@ def test_should_return_200_when_email_is_not_gov_uk(
         _expected_status=200,
     )
 
-    assert "Enter a public sector email address or find out who can use Notify" in normalize_spaces(
+    assert "Enter a public sector email address or find out who can use Emergency Alerts" in normalize_spaces(
         page.select_one(".govuk-error-message").text
     )
-    assert page.select_one(".govuk-error-message a")["href"] == url_for("main.who_can_use_notify")
+    assert page.select_one(".govuk-error-message a")["href"] == url_for("main.who_can_use_emergency_alerts")
 
 
 @pytest.mark.parametrize(

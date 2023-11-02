@@ -329,4 +329,4 @@
     `).get(0);
   };
 
-})(window.GOVUK.NotifyModules);
+})(window.GOVUK.EmergencyAlertsModules);

@@ -22,7 +22,7 @@ VIS_PARENT_FOLDER_ID = "bbbb222b-2b22-2b22-222b-b222b22b2222"
 def test_get_user_phone_number_when_only_inbound_exists(mocker):
     mock_get_inbound_sms = mocker.patch(
         "app.main.views.conversation.service_api_client.get_inbound_sms_by_id",
-        return_value={"user_number": "4407900900123", "notify_number": "07900000002"},
+        return_value={"user_number": "4407900900123", "emergency_alerts_number": "07900000002"},
     )
     mock_get_notification = mocker.patch(
         "app.main.views.conversation.notification_api_client.get_notification",
@@ -213,7 +213,7 @@ def test_view_conversation_with_empty_inbound(
             "data": [
                 {
                     "user_number": "07900000001",
-                    "notify_number": "07900000002",
+                    "emergency_alerts_number": "07900000002",
                     "content": "",
                     "created_at": datetime.utcnow().isoformat(),
                     "id": fake_uuid,
@@ -378,7 +378,7 @@ def test_conversation_reply_redirects_with_phone_number_from_notification(
 def test_get_user_phone_number_when_not_a_standard_phone_number(mocker):
     mocker.patch(
         "app.main.views.conversation.service_api_client.get_inbound_sms_by_id",
-        return_value={"user_number": "ALPHANUM3R1C", "notify_number": "07900000002"},
+        return_value={"user_number": "ALPHANUM3R1C", "emergency_alerts_number": "07900000002"},
     )
     mocker.patch(
         "app.main.views.conversation.notification_api_client.get_notification",

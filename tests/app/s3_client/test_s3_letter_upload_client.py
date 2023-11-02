@@ -16,7 +16,7 @@ from app.s3_client.s3_letter_upload_client import (
 )
 
 
-def test_backup_original_letter_to_s3(mocker, notify_admin):
+def test_backup_original_letter_to_s3(mocker, emergency_alerts_admin):
     s3_mock = mocker.patch("app.s3_client.s3_letter_upload_client.utils_s3upload")
     upload_id = uuid.uuid4()
 

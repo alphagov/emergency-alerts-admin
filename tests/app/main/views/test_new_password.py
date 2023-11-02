@@ -13,7 +13,7 @@ from tests.conftest import SERVICE_ONE_ID, url_for_endpoint_with_token
 @freeze_time("2021-01-01 11:11:11")
 def test_should_render_new_password_template(
     mocker,
-    notify_admin,
+    emergency_alerts_admin,
     client_request,
     mock_send_verify_code,
     mock_get_user_by_email_request_password_reset,
@@ -26,7 +26,9 @@ def test_should_render_new_password_template(
         return_value=user,
     )
     data = json.dumps({"email": user["email_address"], "created_at": str(datetime.utcnow())})
-    token = generate_token(data, notify_admin.config["SECRET_KEY"], notify_admin.config["DANGEROUS_SALT"])
+    token = generate_token(
+        data, emergency_alerts_admin.config["SECRET_KEY"], emergency_alerts_admin.config["DANGEROUS_SALT"]
+    )
 
     page = client_request.get_url(url_for_endpoint_with_token(".new_password", token=token))
     assert "You can now create a new password for your account." in page.text
@@ -35,13 +37,15 @@ def test_should_render_new_password_template(
 
 
 def test_should_return_404_when_email_address_does_not_exist(
-    notify_admin,
+    emergency_alerts_admin,
     client_request,
     mock_get_user_by_email_not_found,
 ):
     client_request.logout()
     data = json.dumps({"email": "no_user@d.gov.uk", "created_at": str(datetime.utcnow())})
-    token = generate_token(data, notify_admin.config["SECRET_KEY"], notify_admin.config["DANGEROUS_SALT"])
+    token = generate_token(
+        data, emergency_alerts_admin.config["SECRET_KEY"], emergency_alerts_admin.config["DANGEROUS_SALT"]
+    )
     client_request.get_url(
         url_for_endpoint_with_token(".new_password", token=token),
         _expected_status=404,
@@ -56,7 +60,7 @@ def test_should_return_404_when_email_address_does_not_exist(
     ],
 )
 def test_should_redirect_to_two_factor_when_password_reset_is_successful(
-    notify_admin,
+    emergency_alerts_admin,
     client_request,
     mock_get_user_by_email_request_password_reset,
     mock_login,
@@ -67,7 +71,9 @@ def test_should_redirect_to_two_factor_when_password_reset_is_successful(
     client_request.logout()
     user = mock_get_user_by_email_request_password_reset.return_value
     data = json.dumps({"email": user["email_address"], "created_at": str(datetime.utcnow())})
-    token = generate_token(data, notify_admin.config["SECRET_KEY"], notify_admin.config["DANGEROUS_SALT"])
+    token = generate_token(
+        data, emergency_alerts_admin.config["SECRET_KEY"], emergency_alerts_admin.config["DANGEROUS_SALT"]
+    )
     client_request.post_url(
         url_for_endpoint_with_token(".new_password", token=token, next=redirect_url),
         _data={"new_password": "a-new_password"},
@@ -84,7 +90,7 @@ def test_should_redirect_to_two_factor_when_password_reset_is_successful(
     ],
 )
 def test_should_redirect_to_two_factor_webauthn_when_password_reset_is_successful(
-    notify_admin,
+    emergency_alerts_admin,
     client_request,
     mock_get_user_by_email_request_password_reset,
     mock_send_verify_code,
@@ -95,7 +101,9 @@ def test_should_redirect_to_two_factor_webauthn_when_password_reset_is_successfu
     user = mock_get_user_by_email_request_password_reset.return_value
     user["auth_type"] = "webauthn_auth"
     data = json.dumps({"email": user["email_address"], "created_at": str(datetime.utcnow())})
-    token = generate_token(data, notify_admin.config["SECRET_KEY"], notify_admin.config["DANGEROUS_SALT"])
+    token = generate_token(
+        data, emergency_alerts_admin.config["SECRET_KEY"], emergency_alerts_admin.config["DANGEROUS_SALT"]
+    )
     client_request.post_url(
         url_for_endpoint_with_token(".new_password", token=token, next=redirect_url),
         _data={"new_password": "a-new_password"},
@@ -108,7 +116,7 @@ def test_should_redirect_to_two_factor_webauthn_when_password_reset_is_successfu
 
 
 def test_should_redirect_index_if_user_has_already_changed_password(
-    notify_admin,
+    emergency_alerts_admin,
     client_request,
     mock_get_user_by_email_user_changed_password,
     mock_login,
@@ -118,7 +126,9 @@ def test_should_redirect_index_if_user_has_already_changed_password(
     client_request.logout()
     user = mock_get_user_by_email_user_changed_password.return_value
     data = json.dumps({"email": user["email_address"], "created_at": str(datetime.utcnow())})
-    token = generate_token(data, notify_admin.config["SECRET_KEY"], notify_admin.config["DANGEROUS_SALT"])
+    token = generate_token(
+        data, emergency_alerts_admin.config["SECRET_KEY"], emergency_alerts_admin.config["DANGEROUS_SALT"]
+    )
     client_request.post_url(
         url_for_endpoint_with_token(".new_password", token=token),
         _data={"new_password": "a-new_password"},
@@ -128,11 +138,13 @@ def test_should_redirect_index_if_user_has_already_changed_password(
 
 
 def test_should_redirect_to_forgot_password_with_flash_message_when_token_is_expired(
-    notify_admin, client_request, mock_login, mocker
+    emergency_alerts_admin, client_request, mock_login, mocker
 ):
     client_request.logout()
     mocker.patch("app.main.views.new_password.check_token", side_effect=SignatureExpired("expired"))
-    token = generate_token("foo@bar.com", notify_admin.config["SECRET_KEY"], notify_admin.config["DANGEROUS_SALT"])
+    token = generate_token(
+        "foo@bar.com", emergency_alerts_admin.config["SECRET_KEY"], emergency_alerts_admin.config["DANGEROUS_SALT"]
+    )
 
     client_request.get_url(
         url_for_endpoint_with_token(".new_password", token=token),
@@ -142,7 +154,7 @@ def test_should_redirect_to_forgot_password_with_flash_message_when_token_is_exp
 
 def test_should_sign_in_when_password_reset_is_successful_for_email_auth(
     mocker,
-    notify_admin,
+    emergency_alerts_admin,
     client_request,
     api_user_active,
     mock_get_user_by_email_request_password_reset,
@@ -156,7 +168,9 @@ def test_should_sign_in_when_password_reset_is_successful_for_email_auth(
     mock_get_user = mocker.patch("app.user_api_client.get_user", return_value=api_user_active)
     user["auth_type"] = "email_auth"
     data = json.dumps({"email": user["email_address"], "created_at": str(datetime.utcnow())})
-    token = generate_token(data, notify_admin.config["SECRET_KEY"], notify_admin.config["DANGEROUS_SALT"])
+    token = generate_token(
+        data, emergency_alerts_admin.config["SECRET_KEY"], emergency_alerts_admin.config["DANGEROUS_SALT"]
+    )
 
     client_request.post_url(
         url_for_endpoint_with_token(".new_password", token=token),

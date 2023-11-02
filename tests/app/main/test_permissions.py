@@ -78,7 +78,7 @@ def test_services_pages_that_org_users_are_allowed_to_see(
     )
 
     mock_get_service = mocker.patch(
-        "app.notify_client.service_api_client.service_api_client.get_service", return_value={"data": service}
+        "app.emergency_alerts_client.service_api_client.service_api_client.get_service", return_value={"data": service}
     )
     client_request.login(
         api_user_active,

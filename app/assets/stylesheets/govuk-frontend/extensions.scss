@@ -61,7 +61,7 @@ $govuk-destructive-link-active-colour: $govuk-text-colour;
 
 // GOVUK Frontend's grid-column classes are built from the $govuk-grid-widths map
 // that means we can extend the map to get extra classes
-$notify-grid-widths: (
+$emergency-alerts-grid-widths: (
   one-eighth: 12.5%,
   one-sixth: 16.6666%,
   five-eighths: 62.5%,
@@ -69,7 +69,7 @@ $notify-grid-widths: (
   seven-eighths: 87.5%
 );
 
-$govuk-grid-widths: map.merge($govuk-grid-widths, $notify-grid-widths);
+$govuk-grid-widths: map.merge($govuk-grid-widths, $emergency-alerts-grid-widths);
 
 .govuk-input--width-6 {
   max-width: 14ex;
@@ -105,8 +105,8 @@ $govuk-grid-widths: map.merge($govuk-grid-widths, $notify-grid-widths);
 }
 
 // Extensions to the GOVUK Frontend summary-list component, to apply to all
-// summary-lists on Notify
-.notify-summary-list {
+// summary-lists on Emergency Alerts
+.emergency-alerts-summary-list {
 
   border-top: 1px solid $govuk-border-colour;
   padding-top: govuk-spacing(3);
@@ -117,7 +117,7 @@ $govuk-grid-widths: map.merge($govuk-grid-widths, $notify-grid-widths);
 
 }
 
-.notify-summary-list__key {
+.emergency-alerts-summary-list__key {
 
   @include govuk-media-query($from: tablet) {
     font-weight: normal;
@@ -128,7 +128,7 @@ $govuk-grid-widths: map.merge($govuk-grid-widths, $notify-grid-widths);
 
 }
 
-.notify-summary-list__key--one-quarter {
+.emergency-alerts-summary-list__key--one-quarter {
 
   @include govuk-media-query($from: tablet) {
     width: 25%;
@@ -136,7 +136,7 @@ $govuk-grid-widths: map.merge($govuk-grid-widths, $notify-grid-widths);
 
 }
 
-.notify-hint--paragraph {
+.emergency-alerts-hint--paragraph {
   color: $govuk-text-colour;
   padding-top: govuk-spacing(3);
   margin-bottom: govuk-spacing(6);

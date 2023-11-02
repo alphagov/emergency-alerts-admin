@@ -14,7 +14,7 @@ from tests.conftest import SERVICE_ONE_ID
         ("finished", 10, False),
     ],
 )
-def test_still_processing(notify_admin, job_status, num_notifications_created, expected_still_processing):
+def test_still_processing(emergency_alerts_admin, job_status, num_notifications_created, expected_still_processing):
     json = job_json(
         service_id=SERVICE_ONE_ID,
         created_by=user_json(),

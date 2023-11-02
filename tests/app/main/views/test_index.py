@@ -97,7 +97,7 @@ def test_hiding_pages_from_search_engines(
         "edit_and_format_messages",
         "send_files_by_email",
         "upload_a_letter",
-        "who_can_use_notify",
+        "who_can_use_emergency_alerts",
         "billing_details",
     ],
 )
@@ -162,10 +162,10 @@ def test_guidance_pages_link_to_service_pages_when_signed_in(
         ("information_risk_management", "security"),
         ("old_terms", "terms"),
         ("information_security", "using_emergency_alerts"),
-        ("old_using_notify", "using_emergency_alerts"),
+        ("old_using_emergency_alerts", "using_emergency_alerts"),
         ("delivery_and_failure", "message_status"),
         ("callbacks", "documentation"),
-        ("who_its_for", "who_can_use_notify"),
+        ("who_its_for", "who_can_use_emergency_alerts"),
     ],
 )
 def test_old_static_pages_redirect(client_request, view, expected_view):
@@ -196,7 +196,7 @@ def test_message_status_page_contains_link_to_support(client_request):
     assert temp_fail_details_cell.select_one("a")["href"] == url_for("main.support")
 
 
-def test_old_using_notify_page(client_request):
+def test_old_using_emergency_alerts_page(client_request):
     client_request.get("main.using_emergency_alerts", _expected_status=410)
 
 

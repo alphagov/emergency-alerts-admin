@@ -4,11 +4,11 @@ from flask import current_app
 from flask_login import current_user
 
 from app import asset_fingerprinter
+from app.emergency_alerts_client.email_branding_client import email_branding_client
+from app.emergency_alerts_client.letter_branding_client import letter_branding_client
+from app.emergency_alerts_client.organisations_api_client import organisations_client
 from app.formatters import email_safe
 from app.models import JSONModel, ModelList
-from app.notify_client.email_branding_client import email_branding_client
-from app.notify_client.letter_branding_client import letter_branding_client
-from app.notify_client.organisations_api_client import organisations_client
 
 
 class Branding(JSONModel):

@@ -159,7 +159,7 @@ def upload_letter(service_id):
             current_app.logger.info("Invalid PDF uploaded for service_id: {}".format(service_id))
             return invalid_upload_error(
                 "There’s a problem with your file",
-                "Notify cannot read this PDF.<br>Save a new copy of your file and try again.",
+                "Emergency Alerts cannot read this PDF.<br>Save a new copy of your file and try again.",
             )
 
         upload_id = uuid.uuid4()
@@ -398,7 +398,7 @@ def upload_contact_list(service_id):
         except XLDateError:
             flash(
                 (
-                    "{} contains numbers or dates that Notify cannot understand. "
+                    "{} contains numbers or dates that Emergency Alerts cannot understand. "
                     "Try formatting all columns as ‘text’ or export your file as CSV."
                 ).format(form.file.data.filename)
             )

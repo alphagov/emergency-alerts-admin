@@ -1,7 +1,7 @@
 // Overrides for certain GOV.UK Frontend styles to make its components match this application's design
 
-$notify-secondary-button-colour: govuk-shade(govuk-colour("light-grey"), 7%);
-$notify-secondary-button-hover-colour: govuk-shade(govuk-colour("light-grey"), 18%);
+$emergency-alerts-secondary-button-colour: govuk-shade(govuk-colour("light-grey"), 7%);
+$emergency-alerts-secondary-button-hover-colour: govuk-shade(govuk-colour("light-grey"), 18%);
 
 // Additional padding-bottom override, following the GOV.UK Frontend spacing scale:
 // https://design-system.service.gov.uk/styles/spacing/#the-responsive-spacing-scale
@@ -47,10 +47,10 @@ $notify-secondary-button-hover-colour: govuk-shade(govuk-colour("light-grey"), 1
 }
 
 .govuk-button--secondary {
-  background-color: $notify-secondary-button-colour;
+  background-color: $emergency-alerts-secondary-button-colour;
 
   &:hover {
-    background-color: $notify-secondary-button-hover-colour;
+    background-color: $emergency-alerts-secondary-button-hover-colour;
   }
 }
 

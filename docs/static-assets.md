@@ -4,4 +4,5 @@ When running locally static assets are served by Flask at http://localhost:6012/
 
 When running on preview, staging and production there’s a bit more to it:
 
+<!-- This image to be changed out for Emergency Alerts if we're keeping it. -->
 ![notify-static-after](https://user-images.githubusercontent.com/355079/50343595-6ea5de80-051f-11e9-85cf-2c20eb3cdefa.png)

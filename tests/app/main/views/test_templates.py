@@ -8,7 +8,7 @@ from freezegun import freeze_time
 from notifications_python_client.errors import HTTPError
 
 from tests import (
-    NotifyBeautifulSoup,
+    EmergencyAlertsBeautifulSoup,
     sample_uuid,
     template_json,
     validate_route_permission,
@@ -316,7 +316,7 @@ def test_should_show_live_search_if_list_of_templates_taller_than_screen(
     )
     search = page.select_one(".live-search")
 
-    assert search["data-notify-module"] == "live-search"
+    assert search["data-emergency-alerts-module"] == "live-search"
     assert search["data-targets"] == "#template-list .template-list-item"
     assert normalize_spaces(search.select_one("label").text) == "Search by name"
 
@@ -488,23 +488,23 @@ def test_should_show_page_for_one_template(
 
     assert page.select_one("input[type=text]")["value"] == "Two week reminder"
     assert "Template &lt;em&gt;content&lt;/em&gt; with &amp; entity" in str(page.select_one("textarea"))
-    assert page.select_one("textarea")["data-notify-module"] == "enhanced-textbox"
+    assert page.select_one("textarea")["data-emergency-alerts-module"] == "enhanced-textbox"
     assert page.select_one("textarea")["data-highlight-placeholders"] == "true"
     assert "priority" not in str(page.select_one("main"))
 
     assert (
-        (page.select_one("[data-notify-module=update-status]")["data-target"])
+        (page.select_one("[data-emergency-alerts-module=update-status]")["data-target"])
         == (page.select_one("textarea")["id"])
         == "template_content"
     )
 
-    assert (page.select_one("[data-notify-module=update-status]")["data-updates-url"]) == url_for(
+    assert (page.select_one("[data-emergency-alerts-module=update-status]")["data-updates-url"]) == url_for(
         ".count_content_length",
         service_id=SERVICE_ONE_ID,
         template_type="sms",
     )
 
-    assert (page.select_one("[data-notify-module=update-status]")["aria-live"]) == "polite"
+    assert (page.select_one("[data-emergency-alerts-module=update-status]")["aria-live"]) == "polite"
 
     mock_get_service_template.assert_called_with(SERVICE_ONE_ID, template_id, None)
 
@@ -521,22 +521,22 @@ def test_broadcast_template_doesnt_highlight_placeholders_but_does_count_charact
         service_id=SERVICE_ONE_ID,
         template_id=fake_uuid,
     )
-    assert page.select_one("textarea")["data-notify-module"] == "enhanced-textbox"
+    assert page.select_one("textarea")["data-emergency-alerts-module"] == "enhanced-textbox"
     assert page.select_one("textarea")["data-highlight-placeholders"] == "false"
 
     assert (
-        (page.select_one("[data-notify-module=update-status]")["data-target"])
+        (page.select_one("[data-emergency-alerts-module=update-status]")["data-target"])
         == (page.select_one("textarea")["id"])
         == "template_content"
     )
 
-    assert (page.select_one("[data-notify-module=update-status]")["data-updates-url"]) == url_for(
+    assert (page.select_one("[data-emergency-alerts-module=update-status]")["data-updates-url"]) == url_for(
         ".count_content_length",
         service_id=SERVICE_ONE_ID,
         template_type="broadcast",
     )
 
-    assert (page.select_one("[data-notify-module=update-status]")["aria-live"]) == "polite"
+    assert (page.select_one("[data-emergency-alerts-module=update-status]")["aria-live"]) == "polite"
 
 
 def test_caseworker_redirected_to_set_sender_for_one_off(
@@ -2099,7 +2099,7 @@ def test_should_show_page_for_a_deleted_template(
 def test_route_permissions(
     route,
     mocker,
-    notify_admin,
+    emergency_alerts_admin,
     client_request,
     api_user_active,
     service_one,
@@ -2110,7 +2110,7 @@ def test_route_permissions(
     mocker.patch("app.template_statistics_client.get_last_used_date_for_template", return_value="2012-01-01 12:00:00")
     validate_route_permission(
         mocker,
-        notify_admin,
+        emergency_alerts_admin,
         "GET",
         200,
         url_for(route, service_id=service_one["id"], template_type="sms", template_id=fake_uuid),
@@ -2122,7 +2122,7 @@ def test_route_permissions(
 
 def test_route_permissions_for_choose_template(
     mocker,
-    notify_admin,
+    emergency_alerts_admin,
     client_request,
     api_user_active,
     mock_get_template_folders,
@@ -2133,7 +2133,7 @@ def test_route_permissions_for_choose_template(
     mocker.patch("app.job_api_client.get_job")
     validate_route_permission(
         mocker,
-        notify_admin,
+        emergency_alerts_admin,
         "GET",
         200,
         url_for(
@@ -2152,7 +2152,7 @@ def test_route_permissions_for_choose_template(
 def test_route_invalid_permissions(
     route,
     mocker,
-    notify_admin,
+    emergency_alerts_admin,
     client_request,
     api_user_active,
     service_one,
@@ -2161,7 +2161,7 @@ def test_route_invalid_permissions(
 ):
     validate_route_permission(
         mocker,
-        notify_admin,
+        emergency_alerts_admin,
         "GET",
         403,
         url_for(route, service_id=service_one["id"], template_type="sms", template_id=fake_uuid),
@@ -2741,7 +2741,7 @@ def test_content_count_json_endpoint(
     )
 
     html = json.loads(response.get_data(as_text=True))["html"]
-    snippet = NotifyBeautifulSoup(html, "html.parser").select_one("span")
+    snippet = EmergencyAlertsBeautifulSoup(html, "html.parser").select_one("span")
 
     assert normalize_spaces(snippet.text) == expected_message
 

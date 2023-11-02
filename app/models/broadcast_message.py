@@ -13,10 +13,12 @@ from app.broadcast_areas.models import (
     broadcast_area_libraries,
 )
 from app.broadcast_areas.utils import aggregate_areas
+from app.emergency_alerts_client.broadcast_message_api_client import (
+    broadcast_message_api_client,
+)
 from app.formatters import round_to_significant_figures
 from app.models import JSONModel, ModelList
 from app.models.user import User
-from app.notify_client.broadcast_message_api_client import broadcast_message_api_client
 
 ESTIMATED_AREA_OF_LARGEST_UK_COUNTY = broadcast_area_libraries.get_areas(["ctyua21-E10000023"])[  # North Yorkshire
     0

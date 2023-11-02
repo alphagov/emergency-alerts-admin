@@ -1,7 +1,9 @@
 from unittest.mock import ANY, PropertyMock
 
 import pytest
-from emergency_alerts_utils.clients.zendesk.zendesk_client import NotifySupportTicket
+from emergency_alerts_utils.clients.zendesk.zendesk_client import (
+    EmergencyAlertsSupportTicket,
+)
 from flask import url_for
 
 from app.models.branding import EmailBranding
@@ -696,7 +698,7 @@ def test_email_branding_something_else_submit(
     service_one["email_branding"] = sample_uuid()
     service_one["organisation_type"] = "nhs_local"
 
-    mock_create_ticket = mocker.spy(NotifySupportTicket, "__init__")
+    mock_create_ticket = mocker.spy(EmergencyAlertsSupportTicket, "__init__")
     mock_send_ticket_to_zendesk = mocker.patch(
         "app.main.views.service_settings.zendesk_client.send_ticket_to_zendesk",
         autospec=True,

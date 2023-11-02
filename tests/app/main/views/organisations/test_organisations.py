@@ -286,7 +286,7 @@ def test_nhs_local_can_create_own_organisations(
     assert normalize_spaces(page.select_one("main p").text) == (
         "Which NHS Trust or Clinical Commissioning Group do you work for?"
     )
-    assert page.select_one("[data-notify-module=live-search]")["data-targets"] == ".govuk-radios__item"
+    assert page.select_one("[data-emergency-alerts-module=live-search]")["data-targets"] == ".govuk-radios__item"
     assert [
         (normalize_spaces(radio.select_one("label").text), radio.select_one("input")["value"])
         for radio in page.select(".govuk-radios__item")
@@ -840,15 +840,15 @@ def test_manage_org_users_should_show_live_search_if_more_than_7_users(
         org_id=ORGANISATION_ID,
     )
 
-    assert page.select_one("div[data-notify-module=live-search]")["data-targets"] == ".user-list-item"
+    assert page.select_one("div[data-emergency-alerts-module=live-search]")["data-targets"] == ".user-list-item"
     assert len(page.select(".user-list-item")) == number_of_users
 
-    textbox = page.select_one("[data-notify-module=autofocus] .govuk-input")
+    textbox = page.select_one("[data-emergency-alerts-module=autofocus] .govuk-input")
     assert "value" not in textbox
     assert textbox["name"] == "search"
-    # data-notify-module=autofocus is set on a containing element so it
+    # data-emergency-alerts-module=autofocus is set on a containing element so it
     # shouldn’t also be set on the textbox itself
-    assert "data-notify-module" not in textbox
+    assert "data-emergency-alerts-module" not in textbox
     assert not page.select_one("[data-force-focus]")
     assert textbox["class"] == [
         "govuk-input",
@@ -1171,7 +1171,7 @@ def test_archive_organisation_after_confirmation(
     mock_get_service_and_organisation_counts,
 ):
     mock_api = mocker.patch("app.organisations_client.post")
-    redis_delete_mock = mocker.patch("app.notify_client.organisations_api_client.redis_client.delete")
+    redis_delete_mock = mocker.patch("app.emergency_alerts_client.organisations_api_client.redis_client.delete")
 
     client_request.login(platform_admin_user)
     page = client_request.post("main.archive_organisation", org_id=organisation_one["id"], _follow_redirects=True)
@@ -2330,7 +2330,7 @@ def test_add_organisation_email_branding_options_shows_branding_not_in_branding_
     client_request.login(platform_admin_user)
     page = client_request.get(".add_organisation_email_branding_options", org_id=organisation_one["id"])
     assert page.select_one("h1").text == "Add email branding options"
-    assert page.select_one("[data-notify-module=live-search]")["data-targets"] == ".govuk-checkboxes__item"
+    assert page.select_one("[data-emergency-alerts-module=live-search]")["data-targets"] == ".govuk-checkboxes__item"
 
     assert [
         (checkbox.text.strip(), checkbox.input["value"], checkbox.input.has_attr("checked"))
@@ -2746,7 +2746,7 @@ def test_add_organisation_letter_branding_options_shows_branding_not_in_branding
     client_request.login(platform_admin_user)
     page = client_request.get(".add_organisation_letter_branding_options", org_id=organisation_one["id"])
     assert page.select_one("h1").text == "Add letter branding options"
-    assert page.select_one("[data-notify-module=live-search]")["data-targets"] == ".govuk-checkboxes__item"
+    assert page.select_one("[data-emergency-alerts-module=live-search]")["data-targets"] == ".govuk-checkboxes__item"
 
     assert [
         (checkbox.text.strip(), checkbox.input["value"], checkbox.input.has_attr("checked"))
@@ -2950,8 +2950,9 @@ def test_organisation_billing_page_when_the_agreement_is_signed_by_a_known_perso
     )
 
     assert page.select_one("h1").string == "Billing"
-    assert "2.5 of the GOV.UK Notify data sharing and financial agreement on 20 February 2020" in normalize_spaces(
-        page.text
+    assert (
+        "2.5 of the GOV.UK Emergency Alerts data sharing and financial agreement on 20 February 2020"
+        in normalize_spaces(page.text)
     )
     assert f"{expected_signatory} signed" in page.text
     assert page.select_one("main a")["href"] == url_for(".organisation_download_agreement", org_id=ORGANISATION_ID)
@@ -2974,7 +2975,7 @@ def test_organisation_billing_page_when_the_agreement_is_signed_by_an_unknown_pe
 
     assert page.select_one("h1").string == "Billing"
     assert (
-        f'{organisation_one["name"]} has accepted the GOV.UK Notify data ' "sharing and financial agreement."
+        f'{organisation_one["name"]} has accepted the GOV.UK Emergency Alerts data ' "sharing and financial agreement."
     ) in page.text
     assert page.select_one("main a")["href"] == url_for(".organisation_download_agreement", org_id=ORGANISATION_ID)
 
@@ -3014,13 +3015,13 @@ def test_organisation_billing_page_when_the_agreement_is_not_signed(
             True,
             200,
             "crown.pdf",
-            "GOV.UK Notify data sharing and financial agreement.pdf",
+            "GOV.UK Emergency Alerts data sharing and financial agreement.pdf",
         ),
         (
             False,
             200,
             "non-crown.pdf",
-            "GOV.UK Notify data sharing and financial agreement (non-crown).pdf",
+            "GOV.UK Emergency Alerts data sharing and financial agreement (non-crown).pdf",
         ),
         (
             None,

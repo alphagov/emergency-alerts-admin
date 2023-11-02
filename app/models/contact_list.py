@@ -6,9 +6,9 @@ from emergency_alerts_utils.recipients import RecipientCSV
 from flask import abort, current_app
 from werkzeug.utils import cached_property
 
+from app.emergency_alerts_client.contact_list_api_client import contact_list_api_client
 from app.models import JSONModel, ModelList
 from app.models.job import PaginatedJobsAndScheduledJobs
-from app.notify_client.contact_list_api_client import contact_list_api_client
 from app.s3_client.s3_csv_client import (
     get_csv_metadata,
     s3download,

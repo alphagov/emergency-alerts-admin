@@ -72,7 +72,7 @@ def test_all_users_have_upload_contact_list(
             ["letter"],
             (
                 "You have not uploaded any files recently. "
-                "Upload a letter and Notify will print, pack and post it for you."
+                "Upload a letter and Emergency Alerts will print, pack and post it for you."
             ),
         ),
     ),

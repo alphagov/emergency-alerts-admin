@@ -1,8 +1,8 @@
-.notify-radios-with-images {
+.emergency-alerts-radios-with-images {
   display: flex;
 }
 
-.notify-radios-with-images__item {
+.emergency-alerts-radios-with-images__item {
   // Override the lack of margin-right on smaller screens. Inline GOVUK Frontend radios only have it for larger screens.
   @include govuk-responsive-margin(4, "right");
 
@@ -13,7 +13,7 @@
   }
 }
 
-.notify-radios-with-images__image {
+.emergency-alerts-radios-with-images__image {
   display: block;
   max-width: 100%;
   height: auto;
@@ -23,7 +23,7 @@
   border: 1px solid $govuk-border-colour;
 }
 
-.notify-radios-with-images__radio {
+.emergency-alerts-radios-with-images__radio {
   display: block;
   position: relative;
   padding-left: govuk-spacing(7) - 3px;

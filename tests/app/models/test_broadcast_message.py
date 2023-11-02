@@ -62,7 +62,7 @@ def test_areas(areas, expected_length):
     assert len(list(broadcast_message.areas)) == expected_length
 
 
-def test_areas_treats_missing_ids_as_custom_broadcast(notify_admin):
+def test_areas_treats_missing_ids_as_custom_broadcast(emergency_alerts_admin):
     broadcast_message = BroadcastMessage(
         broadcast_message_json(
             areas={

@@ -3,8 +3,8 @@ import pytest
 from app.main.forms import get_placeholder_form_instance
 
 
-def test_form_class_not_mutated(notify_admin):
-    with notify_admin.test_request_context(method="POST", data={"placeholder_value": ""}):
+def test_form_class_not_mutated(emergency_alerts_admin):
+    with emergency_alerts_admin.test_request_context(method="POST", data={"placeholder_value": ""}):
         form1 = get_placeholder_form_instance("name", {}, "sms")
         form2 = get_placeholder_form_instance("city", {}, "sms")
 
@@ -39,14 +39,14 @@ def test_form_class_not_mutated(notify_admin):
     ],
 )
 def test_validates_recipients(
-    notify_admin,
+    emergency_alerts_admin,
     placeholder_name,
     template_type,
     value,
     service_can_send_international_sms,
     expected_error,
 ):
-    with notify_admin.test_request_context(method="POST", data={"placeholder_value": value}):
+    with emergency_alerts_admin.test_request_context(method="POST", data={"placeholder_value": value}):
         form = get_placeholder_form_instance(
             placeholder_name,
             {},

@@ -3,6 +3,7 @@ from collections import OrderedDict
 from flask import abort
 from werkzeug.utils import cached_property
 
+from app.emergency_alerts_client.organisations_api_client import organisations_client
 from app.models import JSONModel, ModelList, SerialisedModelCollection
 from app.models.branding import (
     EmailBranding,
@@ -10,7 +11,6 @@ from app.models.branding import (
     LetterBranding,
     LetterBrandingPool,
 )
-from app.notify_client.organisations_api_client import organisations_client
 
 
 class Organisation(JSONModel):

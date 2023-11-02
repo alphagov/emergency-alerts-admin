@@ -99,7 +99,7 @@ def test_should_redirect_after_email_change(
 ):
     client_request.post(
         "main.user_profile_email",
-        _data={"email_address": "new_notify@notify.gov.uk"},
+        _data={"email_address": "new_eas@eas.gov.uk"},
         _expected_status=302,
         _expected_redirect=url_for(
             "main.user_profile_email_authenticate",
@@ -112,7 +112,7 @@ def test_should_redirect_after_email_change(
 @pytest.mark.parametrize(
     "email_address,error_message",
     [
-        ("me@example.com", "Enter a public sector email address or find out who can use Notify"),
+        ("me@example.com", "Enter a public sector email address or find out who can use Emergency Alerts"),
         ("not_valid", "Enter a valid email address"),  # 2 errors with email address, only first error shown
     ],
 )
@@ -138,7 +138,7 @@ def test_should_show_authenticate_after_email_change(
     client_request,
 ):
     with client_request.session_transaction() as session:
-        session["new-email"] = "new_notify@notify.gov.uk"
+        session["new-email"] = "new_emergency_alerts@emergency_alerts.gov.uk"
 
     page = client_request.get("main.user_profile_email_authenticate")
 
@@ -152,7 +152,7 @@ def test_should_render_change_email_continue_after_authenticate_email(
     mock_send_change_email_verification,
 ):
     with client_request.session_transaction() as session:
-        session["new-email"] = "new_notify@notify.gov.uk"
+        session["new-email"] = "new_emergency_alerts@emergency_alerts.gov.uk"
     page = client_request.post(
         "main.user_profile_email_authenticate",
         _data={"password": "12345"},
@@ -162,15 +162,15 @@ def test_should_render_change_email_continue_after_authenticate_email(
 
 
 def test_should_redirect_to_user_profile_when_user_confirms_email_link(
-    notify_admin,
+    emergency_alerts_admin,
     client_request,
     api_user_active,
     mock_update_user_attribute,
 ):
     token = generate_token(
         payload=json.dumps({"user_id": api_user_active["id"], "email": "new_email@gov.uk"}),
-        secret=notify_admin.config["SECRET_KEY"],
-        salt=notify_admin.config["DANGEROUS_SALT"],
+        secret=emergency_alerts_admin.config["SECRET_KEY"],
+        salt=emergency_alerts_admin.config["DANGEROUS_SALT"],
     )
     client_request.get_url(
         url_for_endpoint_with_token(
@@ -217,7 +217,7 @@ def test_confirm_delete_mobile_number(client_request, api_user_active_email_auth
     )
 
     assert normalize_spaces(page.select_one(".banner-dangerous").text) == (
-        "Are you sure you want to delete your mobile number from Notify? Yes, delete"
+        "Are you sure you want to delete your mobile number from Emergency Alerts? Yes, delete"
     )
     assert "action" not in page.select_one(".banner-dangerous form")
     assert page.select_one(".banner-dangerous form")["method"] == "post"
@@ -476,7 +476,7 @@ def test_should_show_security_keys_page(
     assert normalize_spaces(manage_link.text) == "Manage"
     assert manage_link["href"] == url_for(".user_profile_manage_security_key", key_id=webauthn_credential["id"])
 
-    register_button = page.select_one("[data-notify-module='register-security-key']")
+    register_button = page.select_one("[data-emergency-alerts-module='register-security-key']")
     assert register_button.text.strip() == "Register a key"
 
 

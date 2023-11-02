@@ -7,7 +7,7 @@ from app.utils.letters import (
     get_letter_validation_error,
     printing_today_or_tomorrow,
 )
-from tests import NotifyBeautifulSoup
+from tests import EmergencyAlertsBeautifulSoup
 
 
 @pytest.mark.parametrize(
@@ -138,8 +138,9 @@ def test_get_letter_validation_error_for_unknown_error():
             "unable-to-read-the-file",
             None,
             "There’s a problem with your file",
-            "Notify cannot read this PDF.Save a new copy of your file and try again.",
-            "Validation failed because Notify cannot read this PDF.Save a new copy of your file and try again.",
+            "Emergency Alerts cannot read this PDF.Save a new copy of your file and try again.",
+            "Validation failed because Emergency Alerts cannot read this PDF. \
+            Save a new copy of your file and try again.",
         ),
         (
             "address-is-empty",
@@ -204,8 +205,8 @@ def test_get_letter_validation_error_for_known_errors(
     expected_summary,
 ):
     error = get_letter_validation_error(error_message, invalid_pages=invalid_pages, page_count=13)
-    detail = NotifyBeautifulSoup(error["detail"], "html.parser")
-    summary = NotifyBeautifulSoup(error["summary"], "html.parser")
+    detail = EmergencyAlertsBeautifulSoup(error["detail"], "html.parser")
+    summary = EmergencyAlertsBeautifulSoup(error["summary"], "html.parser")
 
     assert error["title"] == expected_title
 

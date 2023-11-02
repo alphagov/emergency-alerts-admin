@@ -4,7 +4,7 @@
 
   Changes:
   1) Rename macro to `govukRadiosWithImages`
-  2) Add the class `notify-radios-with-images` to `<div class="govuk-radios" ...>`.
+  2) Add the class `emergency-alerts-radios-with-images` to `<div class="govuk-radios" ...>`.
   3) Add these lines after the opening tag of <div class="govuk-radios__item">:
           <img
             src="{{ item.image.url }}"
@@ -12,13 +12,13 @@
             width="{{ item.image.dimensions.width }}"
             height="{{ item.image.dimensions.height }}"
             id="{{ id }}-description"
-            class="notify-radios-with-images__image"
-            data-notify-module="radios-with-images"
+            class="emergency-alerts-radios-with-images__image"
+            data-emergency-alerts-module="radios-with-images"
           />
   4) Wrap the radio inout/label/hint to mimic the following structure:
           <div class="govuk-radios__item">
             <img ...>
-            <div class="notify-radios-with-images__radio">
+            <div class="emergency-alerts-radios-with-images__radio">
               <input ...>
               <label ...>
               <hint ...>
@@ -27,7 +27,7 @@
   5) Add this to the end of the line starting <input class="govuk-radios__input" :
           aria-describedby="{{ id }}-description"
   6) Change <div class="govuk-radios__item"> to:
-          <div class="govuk-radios__item notify-radios-with-images__item">
+          <div class="govuk-radios__item emergency-alerts-radios-with-images__item">
 #}
 
 {% macro govukRadiosWithImages(params) %}
@@ -78,7 +78,7 @@
     'visuallyHiddenText': params.errorMessage.visuallyHiddenText
   }) | trim }}
 {% endif %}
-  <div class="govuk-radios notify-radios-with-images {%- if params.classes %} {{ params.classes }}{% endif %}{%- if ns.isConditional %} govuk-radios--conditional{% endif -%}"
+  <div class="govuk-radios emergency-alerts-radios-with-images {%- if params.classes %} {{ params.classes }}{% endif %}{%- if ns.isConditional %} govuk-radios--conditional{% endif -%}"
     {%- for attribute, value in (params.attributes.items() if params.attributes else {}.items()) %} {{ attribute }}="{{ value }}"{% endfor %}
     {%- if ns.isConditional %} data-module="govuk-radios"{% endif -%}>
     {% for item in params['items'] %}
@@ -100,17 +100,17 @@
         {%- else %}
         {% set hasHint = True if (item.hint.text if item.hint and item.hint.text) or (item.hint.html if item.hint and item.hint.html) %}
         {% set itemHintId = id + '-item-hint' %}
-        <div class="govuk-radios__item notify-radios-with-images__item">
+        <div class="govuk-radios__item emergency-alerts-radios-with-images__item">
           <img
             src="{{ item.image.url }}"
             alt="{{ item.image.alt_text }}"
             width="{{ item.image.dimensions.width }}"
             height="{{ item.image.dimensions.height }}"
             id="{{ id }}-description"
-            class="notify-radios-with-images__image"
-            data-notify-module="radios-with-images"
+            class="emergency-alerts-radios-with-images__image"
+            data-emergency-alerts-module="radios-with-images"
           />
-          <div class="notify-radios-with-images__radio">
+          <div class="emergency-alerts-radios-with-images__radio">
             <input class="govuk-radios__input" id="{{ id }}" name="{{ params.name }}" type="radio" value="{{ item.value }}" aria-describedby="{{ id }}-description"
             {{-" checked" if item.checked }}
             {{-" disabled" if item.disabled }}

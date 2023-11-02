@@ -40,7 +40,7 @@ class TemplatePreview:
 
         resp = requests.post(
             "{}/precompiled-preview.png{}".format(
-                current_app.config["TEMPLATE_PREVIEW_API_HOST"], "?hide_notify=true" if page == "1" else ""
+                current_app.config["TEMPLATE_PREVIEW_API_HOST"], "?hide_emergency_alerts=true" if page == "1" else ""
             ),
             data=base64.b64encode(pdf_page).decode("utf-8"),
             headers={"Authorization": "Token {}".format(current_app.config["TEMPLATE_PREVIEW_API_KEY"])},

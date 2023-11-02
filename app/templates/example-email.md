@@ -1,5 +1,5 @@
 
-This is an example of an email sent using GOV.UK Notify.
+This is an example of an email sent using GOV.UK Emergency Alerts.
 
 The email branding appears at the top of the email, above the text.
 

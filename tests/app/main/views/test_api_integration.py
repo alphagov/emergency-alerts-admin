@@ -37,7 +37,7 @@ def test_should_show_api_page_with_lots_of_notifications(
     )
     rows = page.select("div.api-notifications-item")
     assert " ".join(rows[len(rows) - 1].text.split()) == (
-        "Only showing the first 50 messages. Notify deletes messages after 7 days."
+        "Only showing the first 50 messages. Emergency Alerts deletes messages after 7 days."
     )
 
 
@@ -251,7 +251,9 @@ def test_should_create_api_key_with_type_normal(
     fake_uuid,
     mocker,
 ):
-    post = mocker.patch("app.notify_client.api_key_api_client.ApiKeyApiClient.post", return_value={"data": fake_uuid})
+    post = mocker.patch(
+        "app.emergency_alerts_client.api_key_api_client.ApiKeyApiClient.post", return_value={"data": fake_uuid}
+    )
 
     page = client_request.post(
         "main.create_api_key",
@@ -281,7 +283,7 @@ def test_cant_create_normal_api_key_in_trial_mode(
     fake_uuid,
     mocker,
 ):
-    mock_post = mocker.patch("app.notify_client.api_key_api_client.ApiKeyApiClient.post")
+    mock_post = mocker.patch("app.emergency_alerts_client.api_key_api_client.ApiKeyApiClient.post")
 
     client_request.post(
         "main.create_api_key",
@@ -305,7 +307,7 @@ def test_should_show_confirm_revoke_api_key(
     )
     assert normalize_spaces(page.select(".banner-dangerous")[0].text) == (
         "Are you sure you want to revoke ‘some key name’? "
-        "You will not be able to use this API key to connect to GOV.UK Notify. "
+        "You will not be able to use this API key to connect to GOV.UK Emergency Alerts. "
         "Yes, revoke this API key"
     )
     assert mock_get_api_keys.call_args_list == [
@@ -354,17 +356,17 @@ def test_should_redirect_after_revoking_api_key(
 @pytest.mark.parametrize("route", ["main.api_keys", "main.create_api_key", "main.revoke_api_key"])
 def test_route_permissions(
     mocker,
-    notify_admin,
+    emergency_alerts_admin,
     fake_uuid,
     api_user_active,
     service_one,
     mock_get_api_keys,
     route,
 ):
-    with notify_admin.test_request_context():
+    with emergency_alerts_admin.test_request_context():
         validate_route_permission(
             mocker,
-            notify_admin,
+            emergency_alerts_admin,
             "GET",
             200,
             url_for(route, service_id=service_one["id"], key_id=fake_uuid),
@@ -377,17 +379,17 @@ def test_route_permissions(
 @pytest.mark.parametrize("route", ["main.api_keys", "main.create_api_key", "main.revoke_api_key"])
 def test_route_invalid_permissions(
     mocker,
-    notify_admin,
+    emergency_alerts_admin,
     fake_uuid,
     api_user_active,
     service_one,
     mock_get_api_keys,
     route,
 ):
-    with notify_admin.test_request_context():
+    with emergency_alerts_admin.test_request_context():
         validate_route_permission(
             mocker,
-            notify_admin,
+            emergency_alerts_admin,
             "GET",
             403,
             url_for(route, service_id=service_one["id"], key_id=fake_uuid),

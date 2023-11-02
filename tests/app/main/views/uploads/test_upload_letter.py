@@ -284,7 +284,7 @@ def test_post_choose_upload_file_when_file_is_malformed(mocker, client_request):
     assert page.select_one("div.banner-dangerous").find("h1").text == "There’s a problem with your file"
     assert (
         page.select_one("div.banner-dangerous").find("p").text
-        == "Notify cannot read this PDF.Save a new copy of your file and try again."
+        == "Emergency Alerts cannot read this PDF.Save a new copy of your file and try again."
     )
     assert normalize_spaces(page.select_one("input[type=file]")["data-button-text"]) == "Upload your file again"
 

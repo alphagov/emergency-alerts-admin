@@ -30,4 +30,4 @@
 
   };
 
-})(window.GOVUK.NotifyModules);
+})(window.GOVUK.EmergencyAlertsModules);

@@ -1,7 +1,7 @@
 {% extends "content_template.html" %}
 
 {# Used by the content_template.html layout, prefixes the "navigation" accessible name #}
-{% set navigation_label_prefix = 'Using Notify' %}
+{% set navigation_label_prefix = 'Using Emergency Alerts' %}
 
 {% block per_page_title %}
   Trial mode
@@ -27,7 +27,7 @@
     To remove these restrictions:
   </p>
   <ol class="govuk-list govuk-list--number">
-    <li><a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('.sign_in') }}">Sign in to Notify</a>.</li>
+    <li><a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('.sign_in') }}">Sign in to Emergency Alerts</a>.</li>
     <li>Go to the <b class="govuk-!-font-weight-bold">Settings</b> page.</li>
     <li>Select <b class="govuk-!-font-weight-bold">Request to go live</b>.</li>
   </ol>

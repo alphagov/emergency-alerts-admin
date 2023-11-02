@@ -9,8 +9,8 @@ from fido2.webauthn import (
 )
 from flask import current_app
 
+from app.emergency_alerts_client.user_api_client import user_api_client
 from app.models import JSONModel, ModelList
-from app.notify_client.user_api_client import user_api_client
 
 
 class RegistrationError(Exception):

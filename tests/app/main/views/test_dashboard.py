@@ -462,7 +462,7 @@ def test_download_inbox_strips_formulae(
             "data": [
                 {
                     "user_number": "elevenchars",
-                    "notify_number": "foo",
+                    "emergency_alerts_number": "foo",
                     "content": message_content,
                     "created_at": datetime.utcnow().isoformat(),
                     "id": fake_uuid,
@@ -1165,7 +1165,7 @@ def _test_dashboard_menu(client_request, mocker, usr, service, permissions):
 def test_menu_send_messages(
     client_request,
     mocker,
-    notify_admin,
+    emergency_alerts_admin,
     api_user_active,
     service_one,
     mock_get_service_templates,
@@ -1321,7 +1321,7 @@ def test_menu_all_services_for_platform_admin_user(
 
 def test_route_for_service_permissions(
     mocker,
-    notify_admin,
+    emergency_alerts_admin,
     api_user_active,
     service_one,
     mock_get_service,
@@ -1335,10 +1335,10 @@ def test_route_for_service_permissions(
     mock_get_inbound_sms_summary,
     mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
-    with notify_admin.test_request_context():
+    with emergency_alerts_admin.test_request_context():
         validate_route_permission(
             mocker,
-            notify_admin,
+            emergency_alerts_admin,
             "GET",
             200,
             url_for("main.service_dashboard", service_id=service_one["id"]),

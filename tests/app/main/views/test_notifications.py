@@ -404,7 +404,7 @@ def test_notification_page_shows_validation_failed_precompiled_letter(
         ),
         (
             "technical-failure",
-            "Technical failure – Notify will resend once the team have fixed the problem",
+            "Technical failure – Emergency Alerts will resend once the team have fixed the problem",
         ),
     ),
 )
@@ -674,7 +674,7 @@ def test_notification_page_shows_error_message_if_precompiled_letter_cannot_be_o
     error_message = page.select_one("p.notification-status-cancelled").text
     assert (
         normalize_spaces(error_message)
-        == "Validation failed – There’s a problem with your letter. Notify cannot read this PDF."
+        == "Validation failed – There’s a problem with your letter. Emergency Alerts cannot read this PDF."
     )
 
 

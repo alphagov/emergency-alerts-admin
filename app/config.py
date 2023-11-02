@@ -27,7 +27,7 @@ class Config(object):
 
     # Logging
     DEBUG = False
-    NOTIFY_LOG_PATH = os.getenv("NOTIFY_LOG_PATH")
+    EMERGENCY_ALERTS_LOG_PATH = os.getenv("EMERGENCY_ALERTS_LOG_PATH")
 
     ADMIN_CLIENT_USER_NAME = "notify-admin"
 
@@ -43,8 +43,8 @@ class Config(object):
     EMAIL_2FA_EXPIRY_SECONDS = 1800  # 30 Minutes
     HEADER_COLOUR = "#81878b"  # mix(govuk-colour("dark-grey"), govuk-colour("mid-grey"))
     HTTP_PROTOCOL = "http"
-    NOTIFY_APP_NAME = "admin"
-    NOTIFY_LOG_LEVEL = "DEBUG"
+    EMERGENCY_ALERTS_APP_NAME = "admin"
+    EMERGENCY_ALERTS_LOG_LEVEL = "DEBUG"
     PERMANENT_SESSION_LIFETIME = 30 * 60  # 30 minutes
     SEND_FILE_MAX_AGE_DEFAULT = 365 * 24 * 60 * 60  # 1 year
     SESSION_COOKIE_HTTPONLY = True
@@ -81,9 +81,9 @@ class Config(object):
     # as defined in api db migration 0331_add_broadcast_org.py
     BROADCAST_ORGANISATION_ID = "38e4bf69-93b0-445d-acee-53ea53fe02df"
 
-    NOTIFY_SERVICE_ID = "d6aa2c68-a2d9-4437-ab19-3ae8eb202553"
+    EMERGENCY_ALERTS_SERVICE_ID = "d6aa2c68-a2d9-4437-ab19-3ae8eb202553"
 
-    NOTIFY_BILLING_DETAILS = json.loads(os.environ.get("NOTIFY_BILLING_DETAILS") or "null") or {
+    EMERGENCY_ALERTS_BILLING_DETAILS = json.loads(os.environ.get("EMERGENCY_ALERTS_BILLING_DETAILS") or "null") or {
         "account_number": "98765432",
         "sort_code": "01-23-45",
         "IBAN": "GB33BUKB20201555555555",
@@ -94,14 +94,14 @@ class Config(object):
         ],
     }
 
-    NOTIFY_RUNTIME_PLATFORM = os.environ.get("NOTIFY_RUNTIME_PLATFORM", "paas")
+    EMERGENCY_ALERTS_RUNTIME_PLATFORM = os.environ.get("EMERGENCY_ALERTS_RUNTIME_PLATFORM", "paas")
 
     EMAIL_BRANDING_MIN_LOGO_HEIGHT_PX = 108
     EMAIL_BRANDING_MAX_LOGO_WIDTH_PX = 640
 
 
 class Development(Config):
-    NOTIFY_LOG_PATH = "application.log"
+    EMERGENCY_ALERTS_LOG_PATH = "application.log"
     DEBUG = True
     SESSION_COOKIE_SECURE = False
     SESSION_PROTECTION = None
@@ -124,7 +124,7 @@ class Development(Config):
 
     REDIS_URL = "redis://localhost:6379/0"
     REDIS_ENABLED = os.environ.get("REDIS_ENABLED") == "1"
-    NOTIFY_RUNTIME_PLATFORM = "local"
+    EMERGENCY_ALERTS_RUNTIME_PLATFORM = "local"
 
 
 class Decoupled(Development):

@@ -226,10 +226,10 @@ def test_should_show_job_with_sending_limit_exceeded_status(
     )
 
     assert normalize_spaces(page.select("main p")[1].text) == (
-        "Notify cannot send these messages because you have reached your daily limit. You can only send 1,000 messages per day."  # noqa
+        "Emergency Alerts cannot send these messages because you have reached your daily limit. You can only send 1,000 messages per day."  # noqa
     )
     assert normalize_spaces(page.select("main p")[2].text) == (
-        "Upload this spreadsheet again tomorrow or contact the GOV.UK Notify team to raise the limit."
+        "Upload this spreadsheet again tomorrow or contact the GOV.UK Emergency Alerts team to raise the limit."
     )
 
 

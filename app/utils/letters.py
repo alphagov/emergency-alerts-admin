@@ -92,9 +92,10 @@ LETTER_VALIDATION_MESSAGES = {
     "no-encoded-string": {"title": "Sanitise failed - No encoded string"},
     "unable-to-read-the-file": {
         "title": "There’s a problem with your file",
-        "detail": ("Notify cannot read this PDF." "<br>Save a new copy of your file and try again."),
+        "detail": ("Emergency Alerts cannot read this PDF." "<br>Save a new copy of your file and try again."),
         "summary": (
-            "Validation failed because Notify cannot read this PDF.<br>Save a new copy of your file and try again."
+            "Validation failed because Emergency Alerts cannot read this PDF. \
+            Save a new copy of your file and try again."
         ),
     },
     "address-is-empty": {
@@ -149,11 +150,13 @@ LETTER_VALIDATION_MESSAGES = {
             "following characters: @ ( ) = [ ] ” \\ / , < > ~"
         ),
     },
-    "notify-tag-found-in-content": {
+    "emergency-alerts-tag-found-in-content": {
         "title": "There’s a problem with your letter",
-        "detail": "Your file includes a letter you’ve downloaded from Notify.<br>You need to edit {invalid_pages}.",
+        "detail": "Your file includes a letter you’ve downloaded from Emergency Alerts. \
+            <br>You need to edit {invalid_pages}.",
         "summary": (
-            "Validation failed because your file includes a letter you’ve downloaded from Notify on {invalid_pages}."
+            "Validation failed because your file includes a letter you’ve downloaded from \
+            Emergency Alerts on {invalid_pages}."
         ),
     },
 }
