@@ -127,8 +127,8 @@ class Development(Config):
     NOTIFY_RUNTIME_PLATFORM = "local"
 
 
-class Decoupled(Development):
-    HOST = "decoupled"
+class Hosted(Development):
+    HOST = "hosted"
     API_HOST_NAME = "http://api.ecs.local:6011"
     ADMIN_BASE_URL = "http://admin.ecs.local:6012"
     HEADER_COLOUR = header_colors.get(os.environ.get("ENVIRONMENT"), "#81878b")
@@ -139,99 +139,99 @@ class Decoupled(Development):
     REDIS_URL = "redis://api.ecs.local:6379/0"
 
 
-class Test(Development):
-    DEBUG = True
-    TESTING = True
-    WTF_CSRF_ENABLED = False
-    CSV_UPLOAD_BUCKET_NAME = "test-notifications-csv-upload"
-    CONTACT_LIST_UPLOAD_BUCKET_NAME = "test-contact-list"
-    LOGO_UPLOAD_BUCKET_NAME = "public-logos-test"
-    LOGO_CDN_DOMAIN = "static-logos.test.com"
-    MOU_BUCKET_NAME = "test-mou"
-    TRANSIENT_UPLOADED_LETTERS = "test-transient-uploaded-letters"
-    PRECOMPILED_ORIGINALS_BACKUP_LETTERS = "test-letters-precompiled-originals-backup"
-    HOST = "test"
-    API_HOST_NAME = "http://you-forgot-to-mock-an-api-call-to"
-    TEMPLATE_PREVIEW_API_HOST = "http://localhost:9999"
-    ANTIVIRUS_API_HOST = "https://test-antivirus"
-    ANTIVIRUS_API_KEY = "test-antivirus-secret"
-    ANTIVIRUS_ENABLED = True
-    SUBDOMAIN = f"{os.environ.get('ENVIRONMENT')}." if os.environ.get("ENVIRONMENT") != "production" else ""
-    ADMIN_EXTERNAL_URL = f"https://admin.{SUBDOMAIN}emergency-alerts.service.gov.uk"
-    ASSET_DOMAIN = "static.example.com"
-    ASSET_PATH = "https://static.example.com/"
+# class Test(Development):
+#     DEBUG = True
+#     TESTING = True
+#     WTF_CSRF_ENABLED = False
+#     CSV_UPLOAD_BUCKET_NAME = "test-notifications-csv-upload"
+#     CONTACT_LIST_UPLOAD_BUCKET_NAME = "test-contact-list"
+#     LOGO_UPLOAD_BUCKET_NAME = "public-logos-test"
+#     LOGO_CDN_DOMAIN = "static-logos.test.com"
+#     MOU_BUCKET_NAME = "test-mou"
+#     TRANSIENT_UPLOADED_LETTERS = "test-transient-uploaded-letters"
+#     PRECOMPILED_ORIGINALS_BACKUP_LETTERS = "test-letters-precompiled-originals-backup"
+#     HOST = "test"
+#     API_HOST_NAME = "http://you-forgot-to-mock-an-api-call-to"
+#     TEMPLATE_PREVIEW_API_HOST = "http://localhost:9999"
+#     ANTIVIRUS_API_HOST = "https://test-antivirus"
+#     ANTIVIRUS_API_KEY = "test-antivirus-secret"
+#     ANTIVIRUS_ENABLED = True
+#     SUBDOMAIN = f"{os.environ.get('ENVIRONMENT')}." if os.environ.get("ENVIRONMENT") != "production" else ""
+#     ADMIN_EXTERNAL_URL = f"https://admin.{SUBDOMAIN}emergency-alerts.service.gov.uk"
+#     ASSET_DOMAIN = "static.example.com"
+#     ASSET_PATH = "https://static.example.com/"
 
 
-class Preview(Config):
-    HTTP_PROTOCOL = "https"
-    HEADER_COLOUR = "#F499BE"  # $baby-pink
-    CSV_UPLOAD_BUCKET_NAME = "preview-notifications-csv-upload"
-    CONTACT_LIST_UPLOAD_BUCKET_NAME = "preview-contact-list"
-    LOGO_UPLOAD_BUCKET_NAME = "public-logos-preview"
-    LOGO_CDN_DOMAIN = "static-logos.notify.works"
-    MOU_BUCKET_NAME = "notify.works-mou"
-    TRANSIENT_UPLOADED_LETTERS = "preview-transient-uploaded-letters"
-    PRECOMPILED_ORIGINALS_BACKUP_LETTERS = "preview-letters-precompiled-originals-backup"
-    HOST = "preview"
-    CHECK_PROXY_HEADER = False
-    ASSET_DOMAIN = "static.notify.works"
-    ASSET_PATH = "https://static.notify.works/"
+# class Preview(Config):
+#     HTTP_PROTOCOL = "https"
+#     HEADER_COLOUR = "#F499BE"  # $baby-pink
+#     CSV_UPLOAD_BUCKET_NAME = "preview-notifications-csv-upload"
+#     CONTACT_LIST_UPLOAD_BUCKET_NAME = "preview-contact-list"
+#     LOGO_UPLOAD_BUCKET_NAME = "public-logos-preview"
+#     LOGO_CDN_DOMAIN = "static-logos.notify.works"
+#     MOU_BUCKET_NAME = "notify.works-mou"
+#     TRANSIENT_UPLOADED_LETTERS = "preview-transient-uploaded-letters"
+#     PRECOMPILED_ORIGINALS_BACKUP_LETTERS = "preview-letters-precompiled-originals-backup"
+#     HOST = "preview"
+#     CHECK_PROXY_HEADER = False
+#     ASSET_DOMAIN = "static.notify.works"
+#     ASSET_PATH = "https://static.notify.works/"
 
-    # On preview, extend the validation timeout to allow more leniency when running functional tests
-    REPLY_TO_EMAIL_ADDRESS_VALIDATION_TIMEOUT = 120
-
-
-class Staging(Config):
-    HTTP_PROTOCOL = "https"
-    HEADER_COLOUR = "#6F72AF"  # $mauve
-    CSV_UPLOAD_BUCKET_NAME = "staging-notifications-csv-upload"
-    CONTACT_LIST_UPLOAD_BUCKET_NAME = "staging-contact-list"
-    LOGO_UPLOAD_BUCKET_NAME = "public-logos-staging"
-    LOGO_CDN_DOMAIN = "static-logos.staging-notify.works"
-    MOU_BUCKET_NAME = "staging-notify.works-mou"
-    TRANSIENT_UPLOADED_LETTERS = "staging-transient-uploaded-letters"
-    PRECOMPILED_ORIGINALS_BACKUP_LETTERS = "staging-letters-precompiled-originals-backup"
-    HOST = "staging"
-    CHECK_PROXY_HEADER = False
-    ASSET_DOMAIN = "static.staging-notify.works"
-    ASSET_PATH = "https://static.staging-notify.works/"
+#     # On preview, extend the validation timeout to allow more leniency when running functional tests
+#     REPLY_TO_EMAIL_ADDRESS_VALIDATION_TIMEOUT = 120
 
 
-class Production(Config):
-    HEADER_COLOUR = "#1d70b8"  # $govuk-blue
-    HTTP_PROTOCOL = "https"
-    CSV_UPLOAD_BUCKET_NAME = "live-notifications-csv-upload"
-    CONTACT_LIST_UPLOAD_BUCKET_NAME = "production-contact-list"
-    LOGO_UPLOAD_BUCKET_NAME = "public-logos-production"
-    LOGO_CDN_DOMAIN = "static-logos.notifications.service.gov.uk"
-    MOU_BUCKET_NAME = "notifications.service.gov.uk-mou"
-    TRANSIENT_UPLOADED_LETTERS = "production-transient-uploaded-letters"
-    PRECOMPILED_ORIGINALS_BACKUP_LETTERS = "production-letters-precompiled-originals-backup"
-    HOST = "production"
-    CHECK_PROXY_HEADER = False
-    ASSET_DOMAIN = "static.notifications.service.gov.uk"
-    ASSET_PATH = "https://static.notifications.service.gov.uk/"
+# class Staging(Config):
+#     HTTP_PROTOCOL = "https"
+#     HEADER_COLOUR = "#6F72AF"  # $mauve
+#     CSV_UPLOAD_BUCKET_NAME = "staging-notifications-csv-upload"
+#     CONTACT_LIST_UPLOAD_BUCKET_NAME = "staging-contact-list"
+#     LOGO_UPLOAD_BUCKET_NAME = "public-logos-staging"
+#     LOGO_CDN_DOMAIN = "static-logos.staging-notify.works"
+#     MOU_BUCKET_NAME = "staging-notify.works-mou"
+#     TRANSIENT_UPLOADED_LETTERS = "staging-transient-uploaded-letters"
+#     PRECOMPILED_ORIGINALS_BACKUP_LETTERS = "staging-letters-precompiled-originals-backup"
+#     HOST = "staging"
+#     CHECK_PROXY_HEADER = False
+#     ASSET_DOMAIN = "static.staging-notify.works"
+#     ASSET_PATH = "https://static.staging-notify.works/"
 
 
-class CloudFoundryConfig(Config):
-    pass
+# class Production(Config):
+#     HEADER_COLOUR = "#1d70b8"  # $govuk-blue
+#     HTTP_PROTOCOL = "https"
+#     CSV_UPLOAD_BUCKET_NAME = "live-notifications-csv-upload"
+#     CONTACT_LIST_UPLOAD_BUCKET_NAME = "production-contact-list"
+#     LOGO_UPLOAD_BUCKET_NAME = "public-logos-production"
+#     LOGO_CDN_DOMAIN = "static-logos.notifications.service.gov.uk"
+#     MOU_BUCKET_NAME = "notifications.service.gov.uk-mou"
+#     TRANSIENT_UPLOADED_LETTERS = "production-transient-uploaded-letters"
+#     PRECOMPILED_ORIGINALS_BACKUP_LETTERS = "production-letters-precompiled-originals-backup"
+#     HOST = "production"
+#     CHECK_PROXY_HEADER = False
+#     ASSET_DOMAIN = "static.notifications.service.gov.uk"
+#     ASSET_PATH = "https://static.notifications.service.gov.uk/"
 
 
-# CloudFoundry sandbox
-class Sandbox(CloudFoundryConfig):
-    HTTP_PROTOCOL = "https"
-    HEADER_COLOUR = "#F499BE"  # $baby-pink
-    CSV_UPLOAD_BUCKET_NAME = "cf-sandbox-notifications-csv-upload"
-    LOGO_UPLOAD_BUCKET_NAME = "cf-sandbox-notifications-logo-upload"
-    HOST = "sandbox"
+# class CloudFoundryConfig(Config):
+#     pass
+
+
+# # CloudFoundry sandbox
+# class Sandbox(CloudFoundryConfig):
+#     HTTP_PROTOCOL = "https"
+#     HEADER_COLOUR = "#F499BE"  # $baby-pink
+#     CSV_UPLOAD_BUCKET_NAME = "cf-sandbox-notifications-csv-upload"
+#     LOGO_UPLOAD_BUCKET_NAME = "cf-sandbox-notifications-logo-upload"
+#     HOST = "sandbox"
 
 
 configs = {
     "development": Development,
-    "decoupled": Decoupled,
-    "test": Test,
-    "preview": Preview,
-    "staging": Staging,
-    "production": Production,
-    "sandbox": Sandbox,
+    "hosted": Hosted,
+    # "test": Test,
+    # "preview": Preview,
+    # "staging": Staging,
+    # "production": Production,
+    # "sandbox": Sandbox,
 }
