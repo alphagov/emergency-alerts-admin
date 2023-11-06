@@ -139,27 +139,27 @@ class Hosted(Development):
     REDIS_URL = "redis://api.ecs.local:6379/0"
 
 
-# class Test(Development):
-#     DEBUG = True
-#     TESTING = True
-#     WTF_CSRF_ENABLED = False
-#     CSV_UPLOAD_BUCKET_NAME = "test-notifications-csv-upload"
-#     CONTACT_LIST_UPLOAD_BUCKET_NAME = "test-contact-list"
-#     LOGO_UPLOAD_BUCKET_NAME = "public-logos-test"
-#     LOGO_CDN_DOMAIN = "static-logos.test.com"
-#     MOU_BUCKET_NAME = "test-mou"
-#     TRANSIENT_UPLOADED_LETTERS = "test-transient-uploaded-letters"
-#     PRECOMPILED_ORIGINALS_BACKUP_LETTERS = "test-letters-precompiled-originals-backup"
-#     HOST = "test"
-#     API_HOST_NAME = "http://you-forgot-to-mock-an-api-call-to"
-#     TEMPLATE_PREVIEW_API_HOST = "http://localhost:9999"
-#     ANTIVIRUS_API_HOST = "https://test-antivirus"
-#     ANTIVIRUS_API_KEY = "test-antivirus-secret"
-#     ANTIVIRUS_ENABLED = True
-#     SUBDOMAIN = f"{os.environ.get('ENVIRONMENT')}." if os.environ.get("ENVIRONMENT") != "production" else ""
-#     ADMIN_EXTERNAL_URL = f"https://admin.{SUBDOMAIN}emergency-alerts.service.gov.uk"
-#     ASSET_DOMAIN = "static.example.com"
-#     ASSET_PATH = "https://static.example.com/"
+class Test(Development):
+    DEBUG = True
+    TESTING = True
+    WTF_CSRF_ENABLED = False
+    CSV_UPLOAD_BUCKET_NAME = "test-notifications-csv-upload"
+    CONTACT_LIST_UPLOAD_BUCKET_NAME = "test-contact-list"
+    LOGO_UPLOAD_BUCKET_NAME = "public-logos-test"
+    LOGO_CDN_DOMAIN = "static-logos.test.com"
+    MOU_BUCKET_NAME = "test-mou"
+    TRANSIENT_UPLOADED_LETTERS = "test-transient-uploaded-letters"
+    PRECOMPILED_ORIGINALS_BACKUP_LETTERS = "test-letters-precompiled-originals-backup"
+    HOST = "test"
+    API_HOST_NAME = "http://you-forgot-to-mock-an-api-call-to"
+    TEMPLATE_PREVIEW_API_HOST = "http://localhost:9999"
+    ANTIVIRUS_API_HOST = "https://test-antivirus"
+    ANTIVIRUS_API_KEY = "test-antivirus-secret"
+    ANTIVIRUS_ENABLED = True
+    SUBDOMAIN = f"{os.environ.get('ENVIRONMENT')}." if os.environ.get("ENVIRONMENT") != "production" else ""
+    ADMIN_EXTERNAL_URL = f"https://admin.{SUBDOMAIN}emergency-alerts.service.gov.uk"
+    ASSET_DOMAIN = "static.example.com"
+    ASSET_PATH = "https://static.example.com/"
 
 
 # class Preview(Config):
@@ -229,7 +229,7 @@ class Hosted(Development):
 configs = {
     "development": Development,
     "hosted": Hosted,
-    # "test": Test,
+    "test": Test,
     # "preview": Preview,
     # "staging": Staging,
     # "production": Production,
