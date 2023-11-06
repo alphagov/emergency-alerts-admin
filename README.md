@@ -41,7 +41,7 @@ In the root directory of the application, run:
 
 ```
 echo "
-export NOTIFY_ENVIRONMENT='development'
+export HOST='development'
 export ENVIRONMENT='development'
 
 export FLASK_APP=application.py

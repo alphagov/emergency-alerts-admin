@@ -63,7 +63,7 @@ class Config(object):
 
     REPLY_TO_EMAIL_ADDRESS_VALIDATION_TIMEOUT = 45
 
-    NOTIFY_ENVIRONMENT = "development"
+    HOST = "development"
     LOGO_UPLOAD_BUCKET_NAME = "public-logos-local"
     MOU_BUCKET_NAME = "local-mou"
     TRANSIENT_UPLOADED_LETTERS = "local-transient-uploaded-letters"
@@ -128,7 +128,7 @@ class Development(Config):
 
 
 class Decoupled(Development):
-    NOTIFY_ENVIRONMENT = "decoupled"
+    HOST = "decoupled"
     API_HOST_NAME = "http://api.ecs.local:6011"
     ADMIN_BASE_URL = "http://admin.ecs.local:6012"
     HEADER_COLOUR = header_colors.get(os.environ.get("ENVIRONMENT"), "#81878b")
@@ -150,7 +150,7 @@ class Test(Development):
     MOU_BUCKET_NAME = "test-mou"
     TRANSIENT_UPLOADED_LETTERS = "test-transient-uploaded-letters"
     PRECOMPILED_ORIGINALS_BACKUP_LETTERS = "test-letters-precompiled-originals-backup"
-    NOTIFY_ENVIRONMENT = "test"
+    HOST = "test"
     API_HOST_NAME = "http://you-forgot-to-mock-an-api-call-to"
     TEMPLATE_PREVIEW_API_HOST = "http://localhost:9999"
     ANTIVIRUS_API_HOST = "https://test-antivirus"
@@ -172,7 +172,7 @@ class Preview(Config):
     MOU_BUCKET_NAME = "notify.works-mou"
     TRANSIENT_UPLOADED_LETTERS = "preview-transient-uploaded-letters"
     PRECOMPILED_ORIGINALS_BACKUP_LETTERS = "preview-letters-precompiled-originals-backup"
-    NOTIFY_ENVIRONMENT = "preview"
+    HOST = "preview"
     CHECK_PROXY_HEADER = False
     ASSET_DOMAIN = "static.notify.works"
     ASSET_PATH = "https://static.notify.works/"
@@ -191,7 +191,7 @@ class Staging(Config):
     MOU_BUCKET_NAME = "staging-notify.works-mou"
     TRANSIENT_UPLOADED_LETTERS = "staging-transient-uploaded-letters"
     PRECOMPILED_ORIGINALS_BACKUP_LETTERS = "staging-letters-precompiled-originals-backup"
-    NOTIFY_ENVIRONMENT = "staging"
+    HOST = "staging"
     CHECK_PROXY_HEADER = False
     ASSET_DOMAIN = "static.staging-notify.works"
     ASSET_PATH = "https://static.staging-notify.works/"
@@ -207,7 +207,7 @@ class Production(Config):
     MOU_BUCKET_NAME = "notifications.service.gov.uk-mou"
     TRANSIENT_UPLOADED_LETTERS = "production-transient-uploaded-letters"
     PRECOMPILED_ORIGINALS_BACKUP_LETTERS = "production-letters-precompiled-originals-backup"
-    NOTIFY_ENVIRONMENT = "production"
+    HOST = "production"
     CHECK_PROXY_HEADER = False
     ASSET_DOMAIN = "static.notifications.service.gov.uk"
     ASSET_PATH = "https://static.notifications.service.gov.uk/"
@@ -223,7 +223,7 @@ class Sandbox(CloudFoundryConfig):
     HEADER_COLOUR = "#F499BE"  # $baby-pink
     CSV_UPLOAD_BUCKET_NAME = "cf-sandbox-notifications-csv-upload"
     LOGO_UPLOAD_BUCKET_NAME = "cf-sandbox-notifications-logo-upload"
-    NOTIFY_ENVIRONMENT = "sandbox"
+    HOST = "sandbox"
 
 
 configs = {
