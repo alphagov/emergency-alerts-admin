@@ -2959,7 +2959,7 @@ def set_config_values(app, dict):
 @pytest.fixture
 def webauthn_dev_server(notify_admin, mocker):
     overrides = {
-        "HOST": "development",
+        "HOST": "local",
         "ADMIN_BASE_URL": "https://webauthn.io",
         "ADMIN_EXTERNAL_URL": "https://webauthn.io",
     }

@@ -11,7 +11,7 @@ def init_app(app):
     verify_origin_callback = None
 
     # stub verification in dev (to avoid need for HTTPS)
-    if app.config["HOST"] == "development":
+    if app.config["HOST"] == "local":
         verify_origin_callback = stub_origin_checker
 
     relying_party = PublicKeyCredentialRpEntity(

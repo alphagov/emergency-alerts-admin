@@ -1,7 +1,13 @@
 import json
 import os
 
-header_colors = {"development": "#81878b", "preview": "#F499BE", "staging": "#6F72AF", "production": "#1d70b8"}
+header_colors = {
+    "local": "#FF8000",
+    "development": "#81878b",
+    "preview": "#F499BE",
+    "staging": "#6F72AF",
+    "production": "#1d70b8",
+}
 
 if os.environ.get("VCAP_APPLICATION"):
     # on cloudfoundry, config is a json blob in VCAP_APPLICATION - unpack it, and populate
@@ -63,7 +69,7 @@ class Config(object):
 
     REPLY_TO_EMAIL_ADDRESS_VALIDATION_TIMEOUT = 45
 
-    HOST = "development"
+    HOST = "local"
     LOGO_UPLOAD_BUCKET_NAME = "public-logos-local"
     MOU_BUCKET_NAME = "local-mou"
     TRANSIENT_UPLOADED_LETTERS = "local-transient-uploaded-letters"
@@ -227,6 +233,7 @@ class Test(Development):
 
 
 configs = {
+    "local": Config,
     "development": Development,
     "hosted": Hosted,
     "test": Test,
