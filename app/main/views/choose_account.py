@@ -29,7 +29,7 @@ def choose_account():
         )
     return render_template(
         "views/choose-account.html",
-        can_add_service=current_user.is_gov_user,
+        can_add_service=current_user.platform_admin,
         org_count=org_count,
         live_service_count=live_service_count,
     )

@@ -128,24 +128,6 @@ def test_choose_account_should_show_choose_accounts_page(
     assert mock_get_organisation.call_args_list == []
 
 
-def test_choose_account_should_show_choose_accounts_page_if_no_services(
-    client_request,
-    mock_get_orgs_and_services,
-    mock_get_organisation,
-    mock_get_organisation_services,
-):
-    mock_get_orgs_and_services.return_value = {"organisations": [], "services": []}
-    page = client_request.get("main.choose_account")
-
-    links = page.select("main#main-content a")
-    assert len(links) == 1
-    add_service_link = links[0]
-    assert normalize_spaces(page.select_one("h1").text) == "Choose service"
-    assert normalize_spaces(add_service_link.text) == "Add a new service"
-    assert not page.select("main h2")
-    assert add_service_link["href"] == url_for("main.add_service")
-
-
 @pytest.mark.parametrize(
     "orgs_and_services, expected_headings",
     (
@@ -217,6 +199,11 @@ def test_choose_account_should_should_organisations_link_for_platform_admin(
     first_item = page.select_one(".browse-list-item")
     first_link = first_item.select_one("a")
     first_hint = first_item.select_one(".browse-list-hint")
+
+    links = page.select(".govuk-button")
+    assert normalize_spaces(links[-1].text) == "Add a new service"
+    assert links[-1]["href"] == url_for("main.add_service")
+
     assert first_link.text == "All organisations"
     assert first_link["href"] == url_for("main.organisations")
     assert normalize_spaces(first_hint.text) == "3 organisations, 9,999 live services"

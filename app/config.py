@@ -1,7 +1,13 @@
 import json
 import os
 
-header_colors = {"development": "#81878b", "preview": "#F499BE", "staging": "#6F72AF", "production": "#1d70b8"}
+header_colors = {
+    "local": "#FF8000",
+    "development": "#81878b",
+    "preview": "#F499BE",
+    "staging": "#6F72AF",
+    "production": "#1d70b8",
+}
 
 if os.environ.get("VCAP_APPLICATION"):
     # on cloudfoundry, config is a json blob in VCAP_APPLICATION - unpack it, and populate
@@ -15,8 +21,8 @@ class Config(object):
     ADMIN_CLIENT_SECRET = "dev-notify-secret-key"
     API_HOST_NAME = "http://localhost:6011"
     ADMIN_EXTERNAL_URL = "http://localhost:6012"
-    SECRET_KEY = os.environ.get("SECRET_KEY")
-    DANGEROUS_SALT = os.environ.get("DANGEROUS_SALT")
+    DANGEROUS_SALT = "local-notify-salt"
+    SECRET_KEY = "local-notify-secret-key"
     ZENDESK_API_KEY = os.environ.get("ZENDESK_API_KEY")
 
     # if we're not on cloudfoundry, we can get to this app from localhost. but on cloudfoundry its different
@@ -26,13 +32,13 @@ class Config(object):
     TEMPLATE_PREVIEW_API_KEY = os.environ.get("TEMPLATE_PREVIEW_API_KEY", "my-secret-key")
 
     # Logging
-    DEBUG = False
-    NOTIFY_LOG_PATH = os.getenv("NOTIFY_LOG_PATH")
+    DEBUG = True
+    NOTIFY_LOG_PATH = "application.log"
 
     ADMIN_CLIENT_USER_NAME = "notify-admin"
 
-    ANTIVIRUS_API_HOST = os.environ.get("ANTIVIRUS_API_HOST")
-    ANTIVIRUS_API_KEY = os.environ.get("ANTIVIRUS_API_KEY")
+    ANTIVIRUS_API_HOST = "http://localhost:6016"
+    ANTIVIRUS_API_KEY = "test-key"
 
     ASSETS_DEBUG = False
     AWS_REGION = "eu-west-2"
@@ -49,7 +55,8 @@ class Config(object):
     SEND_FILE_MAX_AGE_DEFAULT = 365 * 24 * 60 * 60  # 1 year
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_NAME = "notify_admin_session"
-    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = False
+    SESSION_PROTECTION = None
     SESSION_COOKIE_SAMESITE = "Lax"
     # don't send back the cookie if it hasn't been modified by the request. this means that the expiry time won't be
     # updated unless the session is changed - but it's generally refreshed by `save_service_or_org_after_request`
@@ -63,7 +70,7 @@ class Config(object):
 
     REPLY_TO_EMAIL_ADDRESS_VALIDATION_TIMEOUT = 45
 
-    NOTIFY_ENVIRONMENT = "development"
+    HOST = "local"
     LOGO_UPLOAD_BUCKET_NAME = "public-logos-local"
     MOU_BUCKET_NAME = "local-mou"
     TRANSIENT_UPLOADED_LETTERS = "local-transient-uploaded-letters"
@@ -72,8 +79,10 @@ class Config(object):
     CHECK_PROXY_HEADER = False
     ANTIVIRUS_ENABLED = True
 
-    REDIS_URL = os.environ.get("REDIS_URL")
-    REDIS_ENABLED = False if os.environ.get("REDIS_ENABLED") == "0" else True
+    LOGO_CDN_DOMAIN = "static-logos.notify.tools"
+
+    REDIS_URL = "redis://localhost:6379/0"
+    REDIS_ENABLED = os.environ.get("REDIS_ENABLED") == "1"
 
     ASSET_DOMAIN = ""
     ASSET_PATH = "/static/"
@@ -100,35 +109,35 @@ class Config(object):
     EMAIL_BRANDING_MAX_LOGO_WIDTH_PX = 640
 
 
-class Development(Config):
-    NOTIFY_LOG_PATH = "application.log"
-    DEBUG = True
-    SESSION_COOKIE_SECURE = False
-    SESSION_PROTECTION = None
-    CSV_UPLOAD_BUCKET_NAME = "development-notifications-csv-upload"
-    CONTACT_LIST_UPLOAD_BUCKET_NAME = "development-contact-list"
-    LOGO_UPLOAD_BUCKET_NAME = "public-logos-tools"
-    LOGO_CDN_DOMAIN = "static-logos.notify.tools"
-    MOU_BUCKET_NAME = "notify.tools-mou"
-    TRANSIENT_UPLOADED_LETTERS = "development-transient-uploaded-letters"
-    PRECOMPILED_ORIGINALS_BACKUP_LETTERS = "development-letters-precompiled-originals-backup"
+# class Development(Config):
+# NOTIFY_LOG_PATH = "application.log"
+# DEBUG = True
+# SESSION_COOKIE_SECURE = False
+# SESSION_PROTECTION = None
+# CSV_UPLOAD_BUCKET_NAME = "development-notifications-csv-upload"
+# CONTACT_LIST_UPLOAD_BUCKET_NAME = "development-contact-list"
+# LOGO_UPLOAD_BUCKET_NAME = "public-logos-tools"
+# LOGO_CDN_DOMAIN = "static-logos.notify.tools"
+# MOU_BUCKET_NAME = "notify.tools-mou"
+# TRANSIENT_UPLOADED_LETTERS = "development-transient-uploaded-letters"
+# PRECOMPILED_ORIGINALS_BACKUP_LETTERS = "development-letters-precompiled-originals-backup"
 
-    DANGEROUS_SALT = "dev-notify-salt"
-    SECRET_KEY = "dev-notify-secret-key"
-    API_HOST_NAME = "http://localhost:6011"
-    ANTIVIRUS_API_HOST = "http://localhost:6016"
-    ANTIVIRUS_API_KEY = "test-key"
-    ANTIVIRUS_ENABLED = os.getenv("ANTIVIRUS_ENABLED") == "1"
+# DANGEROUS_SALT = "dev-notify-salt"
+# SECRET_KEY = "dev-notify-secret-key"
+# API_HOST_NAME = "http://localhost:6011"
+# ANTIVIRUS_API_HOST = "http://localhost:6016"
+# ANTIVIRUS_API_KEY = "test-key"
+# ANTIVIRUS_ENABLED = os.getenv("ANTIVIRUS_ENABLED") == "1"
 
-    ASSET_PATH = "/static/"
+# ASSET_PATH = "/static/"
 
-    REDIS_URL = "redis://localhost:6379/0"
-    REDIS_ENABLED = os.environ.get("REDIS_ENABLED") == "1"
-    NOTIFY_RUNTIME_PLATFORM = "local"
+# REDIS_URL = "redis://localhost:6379/0"
+# REDIS_ENABLED = os.environ.get("REDIS_ENABLED") == "1"
+# NOTIFY_RUNTIME_PLATFORM = "local"
 
 
-class Decoupled(Development):
-    NOTIFY_ENVIRONMENT = "decoupled"
+class Hosted(Config):
+    HOST = "hosted"
     API_HOST_NAME = "http://api.ecs.local:6011"
     ADMIN_BASE_URL = "http://admin.ecs.local:6012"
     HEADER_COLOUR = header_colors.get(os.environ.get("ENVIRONMENT"), "#81878b")
@@ -139,7 +148,7 @@ class Decoupled(Development):
     REDIS_URL = "redis://api.ecs.local:6379/0"
 
 
-class Test(Development):
+class Test(Config):
     DEBUG = True
     TESTING = True
     WTF_CSRF_ENABLED = False
@@ -150,7 +159,7 @@ class Test(Development):
     MOU_BUCKET_NAME = "test-mou"
     TRANSIENT_UPLOADED_LETTERS = "test-transient-uploaded-letters"
     PRECOMPILED_ORIGINALS_BACKUP_LETTERS = "test-letters-precompiled-originals-backup"
-    NOTIFY_ENVIRONMENT = "test"
+    HOST = "test"
     API_HOST_NAME = "http://you-forgot-to-mock-an-api-call-to"
     TEMPLATE_PREVIEW_API_HOST = "http://localhost:9999"
     ANTIVIRUS_API_HOST = "https://test-antivirus"
@@ -162,76 +171,8 @@ class Test(Development):
     ASSET_PATH = "https://static.example.com/"
 
 
-class Preview(Config):
-    HTTP_PROTOCOL = "https"
-    HEADER_COLOUR = "#F499BE"  # $baby-pink
-    CSV_UPLOAD_BUCKET_NAME = "preview-notifications-csv-upload"
-    CONTACT_LIST_UPLOAD_BUCKET_NAME = "preview-contact-list"
-    LOGO_UPLOAD_BUCKET_NAME = "public-logos-preview"
-    LOGO_CDN_DOMAIN = "static-logos.notify.works"
-    MOU_BUCKET_NAME = "notify.works-mou"
-    TRANSIENT_UPLOADED_LETTERS = "preview-transient-uploaded-letters"
-    PRECOMPILED_ORIGINALS_BACKUP_LETTERS = "preview-letters-precompiled-originals-backup"
-    NOTIFY_ENVIRONMENT = "preview"
-    CHECK_PROXY_HEADER = False
-    ASSET_DOMAIN = "static.notify.works"
-    ASSET_PATH = "https://static.notify.works/"
-
-    # On preview, extend the validation timeout to allow more leniency when running functional tests
-    REPLY_TO_EMAIL_ADDRESS_VALIDATION_TIMEOUT = 120
-
-
-class Staging(Config):
-    HTTP_PROTOCOL = "https"
-    HEADER_COLOUR = "#6F72AF"  # $mauve
-    CSV_UPLOAD_BUCKET_NAME = "staging-notifications-csv-upload"
-    CONTACT_LIST_UPLOAD_BUCKET_NAME = "staging-contact-list"
-    LOGO_UPLOAD_BUCKET_NAME = "public-logos-staging"
-    LOGO_CDN_DOMAIN = "static-logos.staging-notify.works"
-    MOU_BUCKET_NAME = "staging-notify.works-mou"
-    TRANSIENT_UPLOADED_LETTERS = "staging-transient-uploaded-letters"
-    PRECOMPILED_ORIGINALS_BACKUP_LETTERS = "staging-letters-precompiled-originals-backup"
-    NOTIFY_ENVIRONMENT = "staging"
-    CHECK_PROXY_HEADER = False
-    ASSET_DOMAIN = "static.staging-notify.works"
-    ASSET_PATH = "https://static.staging-notify.works/"
-
-
-class Production(Config):
-    HEADER_COLOUR = "#1d70b8"  # $govuk-blue
-    HTTP_PROTOCOL = "https"
-    CSV_UPLOAD_BUCKET_NAME = "live-notifications-csv-upload"
-    CONTACT_LIST_UPLOAD_BUCKET_NAME = "production-contact-list"
-    LOGO_UPLOAD_BUCKET_NAME = "public-logos-production"
-    LOGO_CDN_DOMAIN = "static-logos.notifications.service.gov.uk"
-    MOU_BUCKET_NAME = "notifications.service.gov.uk-mou"
-    TRANSIENT_UPLOADED_LETTERS = "production-transient-uploaded-letters"
-    PRECOMPILED_ORIGINALS_BACKUP_LETTERS = "production-letters-precompiled-originals-backup"
-    NOTIFY_ENVIRONMENT = "production"
-    CHECK_PROXY_HEADER = False
-    ASSET_DOMAIN = "static.notifications.service.gov.uk"
-    ASSET_PATH = "https://static.notifications.service.gov.uk/"
-
-
-class CloudFoundryConfig(Config):
-    pass
-
-
-# CloudFoundry sandbox
-class Sandbox(CloudFoundryConfig):
-    HTTP_PROTOCOL = "https"
-    HEADER_COLOUR = "#F499BE"  # $baby-pink
-    CSV_UPLOAD_BUCKET_NAME = "cf-sandbox-notifications-csv-upload"
-    LOGO_UPLOAD_BUCKET_NAME = "cf-sandbox-notifications-logo-upload"
-    NOTIFY_ENVIRONMENT = "sandbox"
-
-
 configs = {
-    "development": Development,
-    "decoupled": Decoupled,
+    "local": Config,
+    "hosted": Hosted,
     "test": Test,
-    "preview": Preview,
-    "staging": Staging,
-    "production": Production,
-    "sandbox": Sandbox,
 }
