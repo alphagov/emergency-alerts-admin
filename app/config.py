@@ -109,33 +109,6 @@ class Config(object):
     EMAIL_BRANDING_MAX_LOGO_WIDTH_PX = 640
 
 
-# class Development(Config):
-# NOTIFY_LOG_PATH = "application.log"
-# DEBUG = True
-# SESSION_COOKIE_SECURE = False
-# SESSION_PROTECTION = None
-# CSV_UPLOAD_BUCKET_NAME = "development-notifications-csv-upload"
-# CONTACT_LIST_UPLOAD_BUCKET_NAME = "development-contact-list"
-# LOGO_UPLOAD_BUCKET_NAME = "public-logos-tools"
-# LOGO_CDN_DOMAIN = "static-logos.notify.tools"
-# MOU_BUCKET_NAME = "notify.tools-mou"
-# TRANSIENT_UPLOADED_LETTERS = "development-transient-uploaded-letters"
-# PRECOMPILED_ORIGINALS_BACKUP_LETTERS = "development-letters-precompiled-originals-backup"
-
-# DANGEROUS_SALT = "dev-notify-salt"
-# SECRET_KEY = "dev-notify-secret-key"
-# API_HOST_NAME = "http://localhost:6011"
-# ANTIVIRUS_API_HOST = "http://localhost:6016"
-# ANTIVIRUS_API_KEY = "test-key"
-# ANTIVIRUS_ENABLED = os.getenv("ANTIVIRUS_ENABLED") == "1"
-
-# ASSET_PATH = "/static/"
-
-# REDIS_URL = "redis://localhost:6379/0"
-# REDIS_ENABLED = os.environ.get("REDIS_ENABLED") == "1"
-# NOTIFY_RUNTIME_PLATFORM = "local"
-
-
 class Hosted(Config):
     HOST = "hosted"
     API_HOST_NAME = "http://api.ecs.local:6011"
