@@ -38,7 +38,7 @@ applications:
       NOTIFY_APP_NAME: admin
       NOTIFY_LOG_PATH: /home/vcap/logs/app.log
       FLASK_APP: application.py
-      NOTIFY_ENVIRONMENT: {{ environment }}
+      HOST: {{ environment }}
 
       # Credentials variables
       ADMIN_CLIENT_SECRET: '{{ ADMIN_CLIENT_SECRET }}'

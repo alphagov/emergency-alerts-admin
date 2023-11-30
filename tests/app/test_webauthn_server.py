@@ -13,14 +13,14 @@ def app_with_mock_config(mocker):
 
     app.config = {
         "ADMIN_EXTERNAL_URL": f"https://admin.{subdomain}emergency-alerts.service.gov.uk",
-        "NOTIFY_ENVIRONMENT": "development",
+        "HOST": "local",
     }
     return app
 
 
-@pytest.mark.parametrize(("environment, allowed"), [("development", True), ("production", False)])
+@pytest.mark.parametrize(("environment, allowed"), [("local", True), ("production", False)])
 def test_server_origin_verification(app_with_mock_config, environment, allowed):
-    app_with_mock_config.config["NOTIFY_ENVIRONMENT"] = environment
+    app_with_mock_config.config["HOST"] = environment
     webauthn_server.init_app(app_with_mock_config)
     assert app_with_mock_config.webauthn_server._verify("fake-domain") == allowed
 

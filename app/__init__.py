@@ -144,7 +144,7 @@ navigation = {
 
 
 def create_app(application):
-    notify_environment = os.environ["NOTIFY_ENVIRONMENT"]
+    notify_environment = os.environ["HOST"]
 
     application.config.from_object(configs[notify_environment])
     asset_fingerprinter._asset_root = application.config["ASSET_PATH"]
