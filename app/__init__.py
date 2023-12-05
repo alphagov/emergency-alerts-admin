@@ -476,7 +476,7 @@ def setup_blueprints(application):
     from app.status import status as status_blueprint
 
     application.register_blueprint(main_blueprint)
-    # no_cookie_blueprint specifically doesn't have `make_session_permanent` or `save_service_or_org_after_request`
+    # no_cookie_blueprint specifically doesn't have `save_service_or_org_after_request`
     application.register_blueprint(no_cookie_blueprint)
     application.register_blueprint(status_blueprint)
 
