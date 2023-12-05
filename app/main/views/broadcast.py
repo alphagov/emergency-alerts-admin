@@ -110,7 +110,7 @@ def broadcast_dashboard_rejected(service_id):
     )
 
 
-@main.route("/services/<uuid:service_id>/broadcast-dashboard.json")
+@no_cookie.route("/services/<uuid:service_id>/broadcast-dashboard.json")
 @user_has_permissions()
 @service_has_permission("broadcast")
 def broadcast_dashboard_updates(service_id):
@@ -124,7 +124,7 @@ def get_broadcast_dashboard_partials(service_id):
             "views/broadcast/partials/dashboard-table.html",
             broadcasts=broadcast_messages.with_status("pending-approval", "broadcasting"),
             empty_message="You do not have any current alerts",
-            view_broadcast_endpoint=".view_current_broadcast",
+            view_broadcast_endpoint="main.view_current_broadcast",
         ),
     )
 

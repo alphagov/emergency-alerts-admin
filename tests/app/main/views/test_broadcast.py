@@ -41,7 +41,7 @@ sample_uuid = sample_uuid()
             405,
         ),
         (
-            ".broadcast_dashboard_updates",
+            "no_cookie.broadcast_dashboard_updates",
             {},
             403,
             405,
@@ -638,7 +638,7 @@ def test_broadcast_dashboard_json(
     service_one["permissions"] += ["broadcast"]
 
     response = client_request.get_response(
-        ".broadcast_dashboard_updates",
+        "no_cookie.broadcast_dashboard_updates",
         service_id=SERVICE_ONE_ID,
     )
 

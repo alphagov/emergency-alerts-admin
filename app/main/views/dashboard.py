@@ -46,7 +46,7 @@ def service_dashboard(service_id):
     )
 
 
-@main.route("/services/<uuid:service_id>/dashboard.json")
+@no_cookie.route("/services/<uuid:service_id>/dashboard.json")
 @user_has_permissions("view_activity")
 def service_dashboard_updates(service_id):
     return jsonify(**get_dashboard_partials(service_id))
