@@ -275,19 +275,6 @@ def load_user(user_id):
     return User.from_id(user_id)
 
 
-def make_session_permanent():
-    """
-    Make sessions permanent. By permanent, we mean "admin app sets when it expires". Normally the cookie would expire
-    whenever you close the browser. With this, the session expiry is set in `config['PERMANENT_SESSION_LIFETIME']`
-    (30 minutes). IE: you will be logged out 30 minutes after authenticating.
-
-    We don't _need_ to set this every request (it's saved within the cookie itself under the `_permanent` flag), only
-    when you first log in/sign up/get invited/etc, but we do it just to be safe. For more reading, check here:
-    https://stackoverflow.com/questions/34118093/flask-permanent-session-where-to-define-them
-    """
-    session.permanent = True
-
-
 def load_service_before_request():
     g.current_service = None
 
@@ -510,11 +497,10 @@ def setup_blueprints(application):
     from app.main import no_cookie as no_cookie_blueprint
     from app.status import status as status_blueprint
 
-    main_blueprint.before_request(make_session_permanent)
     main_blueprint.after_request(save_service_or_org_after_request)
 
     application.register_blueprint(main_blueprint)
-    # no_cookie_blueprint specifically doesn't have `make_session_permanent` or `save_service_or_org_after_request`
+    # no_cookie_blueprint specifically doesn't have `save_service_or_org_after_request`
     application.register_blueprint(no_cookie_blueprint)
     application.register_blueprint(status_blueprint)
 
