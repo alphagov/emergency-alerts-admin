@@ -1,3 +1,4 @@
+import datetime
 from functools import wraps
 
 from flask import redirect, request, session, url_for
@@ -22,6 +23,7 @@ def log_in_user(user_id):
         user = User.from_id(user_id)
         # the user will have a new current_session_id set by the API - store it in the cookie for future requests
         session["current_session_id"] = user.current_session_id
+        session["current_session_expiry_utc"] = datetime.utcnow() + datetime.timedelta(hours=1)
         # Check if coming from new password page
         if "password" in session.get("user_details", {}):
             user.update_password(session["user_details"]["password"])
