@@ -488,10 +488,6 @@ def setup_blueprints(application):
     cookies unnecessarily and potentially getting in to strange race conditions and overwriting other cookies, as we've
     seen in the send message flow. Currently, this includes letter template previews, and the iframe from the platform
     admin email branding preview pages.
-
-    This notably doesn't include the *.json ajax endpoints. If we included them in this, the cookies wouldn't be
-    updated, including the expiration date. If you have a dashboard open and in focus it'll refresh the expiration timer
-    every two seconds, and you will never log out, which is behaviour we want to preserve.
     """
     from app.main import main as main_blueprint
     from app.main import no_cookie as no_cookie_blueprint

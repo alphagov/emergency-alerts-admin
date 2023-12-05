@@ -15,7 +15,7 @@ from app import (
     template_statistics_client,
 )
 from app.formatters import format_date_numeric, format_datetime_numeric
-from app.main import main
+from app.main import main, no_cookie
 from app.statistics_utils import get_formatted_percentage
 from app.utils import (
     DELIVERED_STATUSES,
@@ -55,7 +55,7 @@ def service_dashboard(service_id):
     )
 
 
-@main.route("/services/<uuid:service_id>/dashboard.json")
+@no_cookie.route("/services/<uuid:service_id>/dashboard.json")
 @user_has_permissions("view_activity")
 def service_dashboard_updates(service_id):
     return jsonify(**get_dashboard_partials(service_id))
