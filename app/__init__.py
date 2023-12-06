@@ -267,6 +267,18 @@ def load_user(user_id):
     return User.from_id(user_id)
 
 
+def make_session_volatile():
+    """
+    Make sessions impermanent, i.e., volatile. This means that the cookie will expire when the browser is closed.
+    The session expiry is set in `config['PERMANENT_SESSION_LIFETIME']` at 60 minutes.
+
+    We don't _need_ to set this every request (it's saved within the cookie itself under the `_permanent` flag), only
+    when you first log in/sign up/get invited/etc, but we do it just to be safe. For more reading, check here:
+    https://stackoverflow.com/questions/34118093/flask-permanent-session-where-to-define-them
+    """
+    session.permanent = False
+
+
 def load_service_before_request():
     g.current_service = None
 
@@ -464,6 +476,8 @@ def setup_blueprints(application):
     """
     from app.main import main as main_blueprint
     from app.status import status as status_blueprint
+
+    main_blueprint.before_request(make_session_volatile)
 
     application.register_blueprint(main_blueprint)
     application.register_blueprint(status_blueprint)
