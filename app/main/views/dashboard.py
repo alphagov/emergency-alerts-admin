@@ -50,7 +50,7 @@ def service_dashboard(service_id):
 
     return render_template(
         "views/dashboard/dashboard.html",
-        updates_url=url_for(".service_dashboard_updates", service_id=service_id),
+        updates_url=url_for("no_cookie.service_dashboard_updates", service_id=service_id),
         partials=get_dashboard_partials(service_id),
     )
 
