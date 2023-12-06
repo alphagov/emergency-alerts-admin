@@ -456,24 +456,16 @@ def register_errorhandlers(application):  # noqa (C901 too complex)
 
 def setup_blueprints(application):
     """
-    There are three blueprints: status_blueprint, no_cookie_blueprint, and main_blueprint.
+    There are two blueprints: status_blueprint, and main_blueprint.
 
     main_blueprint is the default for everything.
 
     status_blueprint is only for the status page - unauthenticated, unstyled, no cookies, etc.
-
-    no_cookie_blueprint is for subresources (things loaded asynchronously) that we might be concerned are setting
-    cookies unnecessarily and potentially getting in to strange race conditions and overwriting other cookies, as we've
-    seen in the send message flow. Currently, this includes letter template previews, and the iframe from the platform
-    admin email branding preview pages.
     """
     from app.main import main as main_blueprint
-    from app.main import no_cookie as no_cookie_blueprint
     from app.status import status as status_blueprint
 
     application.register_blueprint(main_blueprint)
-    # no_cookie_blueprint specifically doesn't have `save_service_or_org_after_request`
-    application.register_blueprint(no_cookie_blueprint)
     application.register_blueprint(status_blueprint)
 
 

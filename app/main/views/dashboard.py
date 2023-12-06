@@ -41,12 +41,12 @@ def service_dashboard(service_id):
 
     return render_template(
         "views/dashboard/dashboard.html",
-        updates_url=url_for("no_cookie.service_dashboard_updates", service_id=service_id),
+        updates_url=url_for(".service_dashboard_updates", service_id=service_id),
         partials=get_dashboard_partials(service_id),
     )
 
 
-@no_cookie.route("/services/<uuid:service_id>/dashboard.json")
+@main.route("/services/<uuid:service_id>/dashboard.json")
 @user_has_permissions("view_activity")
 def service_dashboard_updates(service_id):
     return jsonify(**get_dashboard_partials(service_id))

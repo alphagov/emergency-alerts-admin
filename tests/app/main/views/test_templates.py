@@ -865,8 +865,8 @@ def test_should_show_page_template_with_priority_select_if_platform_admin(
 @pytest.mark.parametrize(
     "view, extra_view_args",
     [
-        ("no_cookie.view_letter_template_preview", {}),
-        ("no_cookie.view_template_version_preview", {"version": 1}),
+        (".view_letter_template_preview", {}),
+        (".view_template_version_preview", {"version": 1}),
     ],
 )
 def test_should_show_preview_letter_templates(
@@ -891,7 +891,7 @@ def test_dont_show_preview_letter_templates_for_bad_filetype(
     client_request, mock_get_service_template, service_one, fake_uuid
 ):
     client_request.get_response(
-        "no_cookie.view_letter_template_preview",
+        ".view_letter_template_preview",
         service_id=service_one["id"],
         template_id=fake_uuid,
         filetype="blah",
