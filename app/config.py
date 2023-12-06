@@ -58,7 +58,7 @@ class Config(object):
     HTTP_PROTOCOL = "http"
     NOTIFY_APP_NAME = "admin"
     NOTIFY_LOG_LEVEL = "DEBUG"
-    PERMANENT_SESSION_LIFETIME = 30 * 60  # 30 minutes - User must refresh their session manually before this expiry
+    PERMANENT_SESSION_LIFETIME = 60 * 60  # 60 minutes - maximum duration for a session
     SEND_FILE_MAX_AGE_DEFAULT = 365 * 24 * 60 * 60  # 1 year
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_NAME = "emergency_alerts_session"
