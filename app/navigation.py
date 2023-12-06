@@ -140,7 +140,7 @@ class MainNavigation(Navigation):
         },
         "current-broadcasts": {
             "broadcast_dashboard",
-            "no_cookie.broadcast_dashboard_updates",
+            "broadcast_dashboard_updates",
             "view_current_broadcast",
             "new_broadcast",
             "write_new_broadcast",
@@ -174,7 +174,7 @@ class MainNavigation(Navigation):
             "send_one_off_letter_address",
             "send_one_off_step",
             "send_one_off_to_myself",
-            "no_cookie.send_test_preview",
+            "send_test_preview",
             "set_sender",
             "set_template_sender",
             "view_template",
@@ -298,7 +298,7 @@ class CaseworkNavigation(Navigation):
             "broadcast_tour",
             "broadcast_dashboard",
             "broadcast_dashboard_previous",
-            "no_cookie.broadcast_dashboard_updates",
+            "broadcast_dashboard_updates",
         },
         "send-one-off": {
             "choose_from_contact_list",

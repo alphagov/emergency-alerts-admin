@@ -295,7 +295,7 @@ def test_letter_template_preview_links_to_the_correct_image(
 
     image_link = page.select_one("img")["src"]
 
-    assert image_link == url_for("no_cookie.letter_branding_preview_image", filename=filename, page=1)
+    assert image_link == url_for(".letter_branding_preview_image", filename=filename, page=1)
 
 
 def test_letter_template_preview_headers(
