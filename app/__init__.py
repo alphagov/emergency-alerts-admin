@@ -328,20 +328,6 @@ def load_service_status_before_request():
     g.service_status_text = service_is_not_live_flag["display_html"] if flag_enabled else None
 
 
-def save_service_or_org_after_request(response):
-    # Only save the current session if the request is 200
-    service_id = request.view_args.get("service_id", None) if request.view_args else None
-    organisation_id = request.view_args.get("org_id", None) if request.view_args else None
-    if response.status_code == 200:
-        if service_id:
-            session["service_id"] = service_id
-            session["organisation_id"] = None
-        elif organisation_id:
-            session["service_id"] = None
-            session["organisation_id"] = organisation_id
-    return response
-
-
 #  https://www.owasp.org/index.php/List_of_useful_HTTP_headers
 def useful_headers_after_request(response):
     response.headers.add("X-Frame-Options", "deny")
@@ -492,8 +478,6 @@ def setup_blueprints(application):
     from app.main import main as main_blueprint
     from app.main import no_cookie as no_cookie_blueprint
     from app.status import status as status_blueprint
-
-    main_blueprint.after_request(save_service_or_org_after_request)
 
     application.register_blueprint(main_blueprint)
     # no_cookie_blueprint specifically doesn't have `save_service_or_org_after_request`
