@@ -18,11 +18,11 @@ if os.environ.get("VCAP_APPLICATION"):
 
 
 class Config(object):
-    ADMIN_CLIENT_SECRET = "dev-notify-secret-key"
+    ADMIN_CLIENT_SECRET = os.environ.get("ADMIN_CLIENT_SECRET")
     API_HOST_NAME = "http://localhost:6011"
     ADMIN_EXTERNAL_URL = "http://localhost:6012"
-    DANGEROUS_SALT = "dev-notify-salt"
-    SECRET_KEY = "dev-notify-secret-key"
+    DANGEROUS_SALT = os.environ.get("DANGEROUS_SALT")
+    SECRET_KEY = os.environ.get("SECRET_KEY")
     ZENDESK_API_KEY = os.environ.get("ZENDESK_API_KEY")
 
     # if we're not on cloudfoundry, we can get to this app from localhost. but on cloudfoundry its different
