@@ -21,8 +21,8 @@ class Config(object):
     ADMIN_CLIENT_SECRET = "dev-notify-secret-key"
     API_HOST_NAME = "http://localhost:6011"
     ADMIN_EXTERNAL_URL = "http://localhost:6012"
-    DANGEROUS_SALT = "local-notify-salt"
-    SECRET_KEY = "local-notify-secret-key"
+    DANGEROUS_SALT = "dev-notify-salt"
+    SECRET_KEY = "dev-notify-secret-key"
     ZENDESK_API_KEY = os.environ.get("ZENDESK_API_KEY")
 
     # if we're not on cloudfoundry, we can get to this app from localhost. but on cloudfoundry its different
