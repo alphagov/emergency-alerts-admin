@@ -1,7 +1,7 @@
 #! /bin/sh
 
 function check_status_endpoint(){
-  curl -f 0.0.0.0:6011/_admin_status || exit 1
+  curl -f 0.0.0.0:6012/_admin_status || exit 1
 }
 
 if [[ ! -z $DEBUG ]]; then
