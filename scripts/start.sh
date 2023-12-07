@@ -11,7 +11,7 @@ function run_admin(){
     . $VENV_ADMIN/bin/activate && flask run -p 6012 --host=0.0.0.0
 }
 
-if [[ ! -z $DEBUG ]]; then
+if [[ $DEBUG == "true" ]]; then
     echo "Starting in debug mode.."
     while true; do echo 'Debug mode active..'; sleep 30; done
 else
