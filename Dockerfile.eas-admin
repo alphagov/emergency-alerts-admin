@@ -13,6 +13,7 @@ RUN python$PYTHON_VERSION -m venv $VENV_ADMIN && cd $DIR_ADMIN && . $VENV_ADMIN/
 # Create a blank configuration file
 RUN echo "" > $DIR_ADMIN/environment.sh
 
+COPY scripts/healthcheck-admin.sh /
 COPY scripts/start.sh /
 CMD bash /start.sh
 
