@@ -19,10 +19,15 @@ if os.environ.get("VCAP_APPLICATION"):
 
 class Config(object):
     ADMIN_CLIENT_SECRET = os.environ.get("ADMIN_CLIENT_SECRET")
+
+    SECRET_KEY = os.environ.get("SECRET_KEY")
+    DANGEROUS_SALT = os.environ.get("DANGEROUS_SALT")
+
+    ENCRYPTION_SECRET_KEY = os.environ.get("ENCRYPTION_SECRET_KEY")
+    ENCRYPTION_DANGEROUS_SALT = os.environ.get("ENCRYPTION_DANGEROUS_SALT")
+
     API_HOST_NAME = "http://localhost:6011"
     ADMIN_EXTERNAL_URL = "http://localhost:6012"
-    DANGEROUS_SALT = os.environ.get("DANGEROUS_SALT")
-    SECRET_KEY = os.environ.get("SECRET_KEY")
     ZENDESK_API_KEY = os.environ.get("ZENDESK_API_KEY")
 
     # if we're not on cloudfoundry, we can get to this app from localhost. but on cloudfoundry its different
@@ -119,6 +124,10 @@ class Hosted(Config):
     TEMPLATE_PREVIEW_API_HOST = "http://api.ecs.local:6013"
     ANTIVIRUS_API_HOST = "http://admin.ecs.local:6016"
     REDIS_URL = "redis://api.ecs.local:6379/0"
+
+    DEBUG = False
+    SESSION_COOKIE_SECURE = True
+    SESSION_PROTECTION = "strong"
 
 
 class Test(Config):
