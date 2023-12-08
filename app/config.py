@@ -18,9 +18,13 @@ if os.environ.get("VCAP_APPLICATION"):
 
 
 class Config(object):
-    ADMIN_CLIENT_SECRET = os.environ.get("ENCRYPTION_SECRET_KEY")
-    SECRET_KEY = os.environ.get("ENCRYPTION_SECRET_KEY")
-    DANGEROUS_SALT = os.environ.get("ENCRYPTION_DANGEROUS_SALT")
+    ADMIN_CLIENT_SECRET = os.environ.get("ADMIN_CLIENT_SECRET")
+
+    SECRET_KEY = os.environ.get("SECRET_KEY")
+    DANGEROUS_SALT = os.environ.get("DANGEROUS_SALT")
+
+    ENCRYPTION_SECRET_KEY = os.environ.get("ENCRYPTION_SECRET_KEY")
+    ENCRYPTION_DANGEROUS_SALT = os.environ.get("ENCRYPTION_DANGEROUS_SALT")
 
     API_HOST_NAME = "http://localhost:6011"
     ADMIN_EXTERNAL_URL = "http://localhost:6012"
