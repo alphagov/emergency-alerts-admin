@@ -111,6 +111,7 @@ const javascripts = () => {
 
   // JS local to this application
   const local = src([
+    paths.src + 'javascripts/sessionMonitor.js',
     paths.src + 'javascripts/modules.js',
     paths.src + 'javascripts/govuk-frontend-toolkit/show-hide-content.js',
     paths.src + 'javascripts/govuk/cookie-functions.js',
