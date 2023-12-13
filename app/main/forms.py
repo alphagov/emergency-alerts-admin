@@ -1223,7 +1223,10 @@ class ChooseDurationForm(StripWhitespaceForm):
         "Choose alert duration",
         choices=[("PT30M", "30 minutes"), ("PT3H", "3 hours"), ("PT6H", "6 hours"), ("PT22H", "22 hours")],
         validators=[DataRequired(message="Select an alert duration to continue")],
-        param_extensions={"fieldset": {"legend": {"classes": "govuk-visually-hidden"}}},
+        param_extensions={
+            "fieldset": {"legend": {"classes": "govuk-visually-hidden"}},
+            "hint": {"text": "Select the amount of time that the alert should be live for after approval."},
+        },
     )
 
 
