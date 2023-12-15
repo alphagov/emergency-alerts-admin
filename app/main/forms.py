@@ -1225,7 +1225,10 @@ class ChooseDurationForm(StripWhitespaceForm):
         validators=[DataRequired(message="Select an alert duration to continue")],
         param_extensions={
             "fieldset": {"legend": {"classes": "govuk-visually-hidden"}},
-            "hint": {"text": "Select the amount of time that the alert should be live for after approval."},
+            "hint": {
+                "text": "This alert will be broadcast for the duration you choose."
+                " You can stop the broadcast at any time."
+            },
         },
     )
 

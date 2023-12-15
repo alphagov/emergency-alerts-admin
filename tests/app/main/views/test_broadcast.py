@@ -1909,9 +1909,7 @@ def test_preview_broadcast_message_page(
         "Scotland",
     ]
 
-    assert (
-        page.select_one("p.duration-preview").text == "This alert will be live for 0 seconds from when it is approved."
-    )
+    assert page.select_one("p.duration-preview").text == "Duration: 0 seconds"
 
     assert normalize_spaces(page.select_one("h2.broadcast-message-heading").text) == "Emergency alert"
 

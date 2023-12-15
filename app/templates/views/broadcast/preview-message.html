@@ -21,7 +21,7 @@
   {{ broadcast_message.template|string }}
 
   <div class="govuk-!-margin-bottom-3">
-    <p class="govuk-!-margin-right-2 area-list">Area: </p>
+    <p class="govuk-!-margin-right-2 area-list"><b class="govuk-!-font-weight-bold">Area: </b></p>
     <ul class="area-list">
       {% for area in broadcast_message.areas %}
         <li class="area-list-item area-list-item--unremoveable">
@@ -29,7 +29,7 @@
         </li>
       {% endfor %}
     </ul>
-    <p class="govuk-!-margin-right-2 duration-preview">This alert will be live for <b class="govuk-!-font-weight-bold">{{ broadcast_message.duration|format_seconds_duration_as_time }}</b> from when it is approved.</p>
+    <p class="govuk-!-margin-right-2 duration-preview"><b class="govuk-!-font-weight-bold">Duration:</b> {{ broadcast_message.duration|format_seconds_duration_as_time }}</p>
   </div>
 
   {% call form_wrapper() %}
