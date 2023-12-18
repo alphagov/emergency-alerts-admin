@@ -640,6 +640,7 @@ class GovukCheckboxesField(GovukFrontendWidgetMixin, SelectMultipleField):
             "asList": self.render_as_list,
             "errorMessage": self.get_error_message(),
             "items": items,
+            "hint": {"text": "Select all that apply."},
         }
 
         return params
@@ -1147,7 +1148,7 @@ class ConfirmPasswordForm(StripWhitespaceForm):
 
 class NewBroadcastForm(StripWhitespaceForm):
     content = GovukRadiosField(
-        "New alert",
+        "Create new alert",
         choices=[
             ("freeform", "Write your own message"),
             ("template", "Use a template"),

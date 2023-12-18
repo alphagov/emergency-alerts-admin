@@ -7,7 +7,7 @@
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
 
 {% block service_page_title %}
-  Preview message
+  Preview alert
 {% endblock %}
 
 {% block backLink %}
@@ -16,7 +16,7 @@
 
 {% block maincolumn_content %}
 
-  {{ page_header("Preview") }}
+  {{ page_header("Preview alert") }}
 
   {{ broadcast_message.template|string }}
 
