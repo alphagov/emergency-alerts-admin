@@ -1,85 +1,60 @@
-sessionMonitor = function(options) {
-    "use strict";
-    console.log('Before defaults')
-    var defaults = {
-            // Session lifetime (milliseconds)
-            sessionLifetime: 2 * 60 * 1000,
-            // Amount of time before session expiration when the warning is shown (milliseconds)
-            timeBeforeWarning: 1 * 60 * 1000,
-            // Minimum time between pings to the server (milliseconds)
-            minPingInterval: 1 * 60 * 1000,
-            // Space-separated list of events passed to $(document).on() that indicate a user is active
-            activityEvents: 'mouseup',
-            // URL used to log out when the user clicks a "Log out" button
-            logoutUrl: '/sign-out',
-            // URL used to log out when the session times out
-            timeoutUrl: '/sign-out?timeout=1',
-            logout: function() {
-                // Go to the logout page.
-                window.location.href = self.logoutUrl;
-                console.log('logout')
-            },
-            onwarning: function() {
-                // Below is example code to demonstrate basic functionality. Use this to warn
-                // the user that the session will expire and allow the user to take action.
-                // Override this method to customize the warning.
-            },
-            onbeforetimeout: function() {
-                // By default this does nothing. Override this method to perform actions
-                // (such as saving draft data) before the user is automatically logged out.
-                // This may optionally return a jQuery Deferred object, in which case
-                // ontimeout will be executed when the deferred is resolved or rejected.
-            },
-            ontimeout: function() {
-                // Go to the timeout page.
-                window.location.href = self.logoutUrl;
-                console.log('logging out')
-            }
-        },
-        self = {},
-        _warningTimeoutID,
-        _expirationTimeoutID,
-        // The time of the last ping to the server.
-        _lastPingTime = 0;
+let initial_popup;
+let initial_logout;
 
-    function extendsess() {
-        // Extend the session expiration. Ping the server and reset the timers if
-        // the minimum interval has passed since the last ping.
-        var now = $.now(),
-            timeSinceLastPing = now - _lastPingTime;
+let mins = 0.2; // to display first popup
+let warning_mins = 2; // to logout if popup not clicked
+let timeout_warning_mins = 58; // // to display final popup before logged out
 
-        if (timeSinceLastPing > self.minPingInterval) {
-            _lastPingTime = now;
-            _resetTimers();
-            self.ping();
-        }
-    }
+var loggedInTimestamp = new Date(logged_in_at);
+var logged_in = (loggedInTimestamp instanceof Date) & !isNaN(loggedInTimestamp);
 
-    function _resetTimers() {
-        // Reset the session warning and session expiration timers.
-        var warningTimeout = self.sessionLifetime - self.timeBeforeWarning;
+var inactivity_popup = document.getElementById("popup");
+var session_expiry_popup = document.getElementById("timeout_popup");
+var resetButton = document.getElementById("popup-button");
 
-        window.clearTimeout(_warningTimeoutID);
-        window.clearTimeout(_expirationTimeoutID);
-        _warningTimeoutID = window.setTimeout(self.onwarning, warningTimeout);
-        _expirationTimeoutID = window.setTimeout(_onTimeout, self.sessionLifetime);
-    }
+function startInactivityTimeout() {
+  if (logged_in) {
+    console.log("Starting timeout");
+    initial_popup = setTimeout(function () {
+      inactivity_popup.style.display = "block";
+      startInactivityPopupTimeout();
+    }, 1000 * 60 * mins);
+  } else {
+    console.log("Not logged in");
+  }
+}
 
-    function _onTimeout() {
-        // A wrapper that calls onbeforetimeout and ontimeout and supports asynchronous code.
-        $.when(self.onbeforetimeout()).always(self.ontimeout);
-        console.log('Ping')
-    }
+function startInactivityPopupTimeout() {
+  initial_logout = setTimeout(function () {
+    window.location.href = "/sign-out";
+  }, 1000 * 60 * warning_mins);
+}
 
-    // Add default variables and methods, user specified options, and non-overridable
-    // public methods to the session monitor instance.
-    $.extend(self, defaults, options, {
-        extendsess: extendsess
+function resetTimeouts() {
+  if (resetButton) {
+    resetButton.addEventListener("click", function () {
+      clearTimeout(initial_popup);
+      clearTimeout(initial_logout);
+      inactivity_popup.style.display = "none";
+      startInactivityTimeout();
     });
-    // Set an event handler to extend the session upon user activity (e.g. mouseup).
-    $(document).on(self.activityEvents, extendsess);
-    // Start the timers and ping the server to ensure they are in sync with the backend session expiration.
-    extendsess();
+  }
+}
 
-    return self;
-};
+function sessionExpiryPopup() {
+  if (logged_in) {
+    console.log(loggedInTimestamp);
+    console.log(new Date() - loggedInTimestamp);
+    if (new Date() - loggedInTimestamp > 1000 * 60 * timeout_warning_mins) {
+      timeout_popup.style.display = "block";
+    }
+  }
+}
+
+// document.addEventListener('mousemove', function() {
+//     resetTimeouts();
+// })
+
+sessionExpiryPopup();
+startInactivityTimeout();
+resetTimeouts();
