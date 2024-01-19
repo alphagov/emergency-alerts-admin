@@ -1,0 +1,26 @@
+{% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
+{% macro inactivityPopup(params) %}
+
+<html>
+
+<body>
+    <dialog open id="popup" class="hmrc-timeout-dialog" style="z-index: 10000;display: none; position:fixed;top:15%;left:5%;">
+        <h2 id="dialog-title" class="govuk-heading-l">
+            You're about to be signed out
+        </h2>
+        <div class="govuk-body">
+            Due to inactivity, you'll be signed out in 2 minutes.
+        </div>
+        <div class="govuk-button-group">
+            <button id="popup-button" type="submit" class="govuk-button" data-module="govuk-button">
+              Stay Signed In
+            </button>
+            <a class="govuk-link" href="/sign-out">Sign Out</a>
+          </div>
+
+    </dialog>
+</body>
+
+</html>
+
+{% endmacro %}
