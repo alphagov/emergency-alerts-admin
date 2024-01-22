@@ -24,7 +24,6 @@ def log_in_user(user_id):
         # the user will have a new current_session_id set by the API - store it in the cookie for future requests
         session["current_session_id"] = user.current_session_id
         session["session_start_utc"] = str(datetime.now(timezone.utc))
-        session["logged_in_at"] = datetime.strptime(user.logged_in_at, "%Y-%m-%dT%H:%M:%S.%fZ")
         # Check if coming from new password page
         if "password" in session.get("user_details", {}):
             user.update_password(session["user_details"]["password"])

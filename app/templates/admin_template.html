@@ -203,7 +203,7 @@ sessionExpiryPopup -%}
 {% endblock %}
 <!--[if gt IE 8]><!-->
 <script>
-  var logged_in_at =  '{{session.get('logged_in_at')}}'
+  var logged_in_at =  '{{session.get('session_start_utc')}}'
 </script>
 <script type="text/javascript" src="{{ asset_url('javascripts/all.js') }}"></script>
 

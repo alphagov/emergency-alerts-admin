@@ -1,7 +1,7 @@
 let initial_popup;
 let initial_logout;
 
-let mins = 0.2; // to display first popup
+let mins = 28; // to display first popup
 let warning_mins = 2; // to logout if popup not clicked
 let timeout_warning_mins = 58; // // to display final popup before logged out
 
@@ -43,17 +43,16 @@ function resetTimeouts() {
 
 function sessionExpiryPopup() {
   if (logged_in) {
-    console.log(loggedInTimestamp);
-    console.log(new Date() - loggedInTimestamp);
-    if (new Date() - loggedInTimestamp > 1000 * 60 * timeout_warning_mins) {
+    expiry_time = new Date();
+    current_time = new Date();
+    expiry_time.setMinutes(
+      loggedInTimestamp.getMinutes() + timeout_warning_mins
+    );
+    initial_logout = setTimeout(function () {
       timeout_popup.style.display = "block";
-    }
+    }, expiry_time - current_time);
   }
 }
-
-// document.addEventListener('mousemove', function() {
-//     resetTimeouts();
-// })
 
 sessionExpiryPopup();
 startInactivityTimeout();
