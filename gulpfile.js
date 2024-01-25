@@ -53,6 +53,12 @@ const copy = {
       return src(paths.npm + 'leaflet/dist/leaflet.js')
         .pipe(dest(paths.dist + 'javascripts/'))
     }
+  },
+  hmrc_timeout: {
+    js: () => {
+      return src(paths.npm + 'hmrc-frontend/hmrc/components/timeout-dialog/timeout-dialog.js')
+        .pipe(dest(paths.dist + 'javascripts/'))
+    }
   }
 };
 
@@ -93,7 +99,6 @@ const javascripts = () => {
 
   // JS local to this application
   const local = src([
-    paths.src + 'javascripts/sessionMonitor.js',
     paths.src + 'javascripts/modules.js',
     paths.src + 'javascripts/govuk-frontend-toolkit/show-hide-content.js',
     paths.src + 'javascripts/govuk/cookie-functions.js',
@@ -221,7 +226,8 @@ const defaultTask = parallel(
   parallel(
     copy.govuk_frontend.fonts,
     images,
-    copy.leaflet.js
+    copy.leaflet.js,
+    copy.hmrc_timeout.js
   ),
   series(
     copy.error_pages,

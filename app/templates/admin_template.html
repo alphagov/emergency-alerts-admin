@@ -1,10 +1,8 @@
 {% extends "govuk_frontend_jinja/template.html"%}
 {% from "components/banner.html" import banner %}
 {%- from "govuk_frontend_jinja/components/notification-banner/macro.html" import govukNotificationBanner -%}
-{%- from "govuk_frontend_jinja_overrides/templates/components/session-timeouts/inactivityPopup.html" import inactivityPopup
--%}
-{%- from "govuk_frontend_jinja_overrides/templates/components/session-timeouts/sessionExpiryPopup.html" import
-sessionExpiryPopup -%}
+{%- from "partials/notifications/inactivityDialog.html" import
+inactivityDialog -%}
 {% from "components/cookie-banner.html" import cookie_banner %}
 
 {% block headIcons %}
@@ -51,6 +49,7 @@ sessionExpiryPopup -%}
 
 {% block bodyStart %}
 {% block extra_javascripts_before_body %}
+{{ inactivityDialog() }}
 {% endblock %}
 
 {% block cookie_message %}
@@ -60,8 +59,6 @@ sessionExpiryPopup -%}
 
 {% block header %}
 {% if current_user.is_authenticated %}
-{{ inactivityPopup()}}
-{{ sessionExpiryPopup()}}
 {% if current_user.platform_admin %}
 {% set navigation = [
 {
@@ -202,7 +199,7 @@ sessionExpiryPopup -%}
 {% endblock %}
 <!--[if gt IE 8]><!-->
 <script>
-  var logged_in_at =  '{{session.get('session_start_utc')}}'
+  var logged_in_at = '{{session.get('session_start_utc')}}'
 </script>
 <script type="text/javascript" src="{{ asset_url('javascripts/all.js') }}"></script>
 
