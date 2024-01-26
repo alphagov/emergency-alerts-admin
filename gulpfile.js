@@ -164,7 +164,8 @@ const sass = () => {
   return src([
       paths.src + '/stylesheets/main*.scss',
       paths.src + '/stylesheets/map.scss',
-      paths.src + '/stylesheets/print.scss'
+      paths.src + '/stylesheets/print.scss',
+      paths.src + '/stylesheets/timeout.scss',
     ])
     .pipe(plugins.prettyerror())
     .pipe(plugins.sass.sync({
