@@ -53,12 +53,6 @@ const copy = {
       return src(paths.npm + 'leaflet/dist/leaflet.js')
         .pipe(dest(paths.dist + 'javascripts/'))
     }
-  },
-  hmrc_timeout: {
-    js: () => {
-      return src(paths.npm + 'hmrc-frontend/hmrc/components/timeout-dialog/timeout-dialog.js')
-        .pipe(dest(paths.dist + 'javascripts/'))
-    }
   }
 };
 
@@ -94,7 +88,8 @@ const javascripts = () => {
       paths.npm + 'query-command-supported/dist/queryCommandSupported.min.js',
       paths.npm + 'timeago/jquery.timeago.js',
       paths.npm + 'textarea-caret/index.js',
-      paths.npm + 'cbor-js/cbor.js'
+      paths.npm + 'cbor-js/cbor.js',
+      paths.npm + 'hmrc-frontend/hmrc/all.js',
     ]));
 
   // JS local to this application
@@ -150,7 +145,8 @@ const sass = () => {
   return src([
       paths.src + '/stylesheets/main*.scss',
       paths.src + '/stylesheets/map.scss',
-      paths.src + '/stylesheets/print.scss'
+      paths.src + '/stylesheets/print.scss',
+      paths.src + '/stylesheets/timeout.scss',
     ])
     .pipe(plugins.prettyerror())
     .pipe(plugins.sass.sync({
@@ -226,8 +222,7 @@ const defaultTask = parallel(
   parallel(
     copy.govuk_frontend.fonts,
     images,
-    copy.leaflet.js,
-    copy.hmrc_timeout.js
+    copy.leaflet.js
   ),
   series(
     copy.error_pages,
