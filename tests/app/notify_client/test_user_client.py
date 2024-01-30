@@ -86,13 +86,14 @@ def test_client_passes_admin_url_when_sending_email_auth(
 
     user_api_client.send_verify_code(fake_uuid, "email", "ignored@example.com")
 
+    tenant = f"{os.environ.get('TENANT')}." if os.environ.get("TENANT") is not None else ""
     subdomain = f"{os.environ.get('ENVIRONMENT')}." if os.environ.get("ENVIRONMENT") != "production" else ""
 
     mock_post.assert_called_once_with(
         "/user/{}/email-code".format(fake_uuid),
         data={
             "to": "ignored@example.com",
-            "email_auth_link_host": f"https://admin.{subdomain}emergency-alerts.service.gov.uk",
+            "email_auth_link_host": f"https://{tenant}admin.{subdomain}emergency-alerts.service.gov.uk",
         },
     )
 
@@ -313,13 +314,14 @@ def test_reset_password(
 
     user_api_client.send_reset_password_url("test@example.com")
 
+    tenant = f"{os.environ.get('TENANT')}." if os.environ.get("TENANT") is not None else ""
     subdomain = f"{os.environ.get('ENVIRONMENT')}." if os.environ.get("ENVIRONMENT") != "production" else ""
 
     mock_post.assert_called_once_with(
         "/user/reset-password",
         data={
             "email": "test@example.com",
-            "admin_base_url": f"https://admin.{subdomain}emergency-alerts.service.gov.uk",
+            "admin_base_url": f"https://{tenant}admin.{subdomain}emergency-alerts.service.gov.uk",
         },
     )
 
@@ -332,12 +334,13 @@ def test_send_registration_email(
 
     user_api_client.send_verify_email(fake_uuid, "test@example.com")
 
+    tenant = f"{os.environ.get('TENANT')}." if os.environ.get("TENANT") is not None else ""
     subdomain = f"{os.environ.get('ENVIRONMENT')}." if os.environ.get("ENVIRONMENT") != "production" else ""
 
     mock_post.assert_called_once_with(
         f"/user/{fake_uuid}/email-verification",
         data={
             "to": "test@example.com",
-            "admin_base_url": f"https://admin.{subdomain}emergency-alerts.service.gov.uk",
+            "admin_base_url": f"https://{tenant}admin.{subdomain}emergency-alerts.service.gov.uk",
         },
     )
