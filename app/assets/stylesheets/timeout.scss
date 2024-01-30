@@ -1,6 +1,6 @@
 .hmrc-timeout-dialog {
-  background-color: #fff;
-  border: 5px solid #0b0c0c;
+  background-color: #FFF;
+  border: 5px solid #0B0C0C;
   left: 50%;
   overflow-x: hidden;
   overflow-y: auto;
@@ -13,7 +13,7 @@
 }
 @media (min-width:40.0625em) {
   .hmrc-timeout-dialog {
-  width: 435px;
+    width: 435px;
 }
 }.hmrc-timeout-dialog__message {
   -webkit-font-smoothing: antialiased;
@@ -27,18 +27,18 @@
 }
 @media print {
   .hmrc-timeout-dialog__message {
-  font-family: sans-serif;
+    font-family: sans-serif;
 }
 }@media (min-width:40.0625em) {
   .hmrc-timeout-dialog__message {
-  font-size: 19px;
-  font-size: 1.1875rem;
-  line-height: 1.31579;
+    font-size: 19px;
+    font-size: 1.1875rem;
+    line-height: 1.31579;
 }
 }@media print {
   .hmrc-timeout-dialog__message {
-  font-size: 14pt;
-  line-height: 1.15;
+    font-size: 14pt;
+    line-height: 1.15;
 }
 }.hmrc-timeout-dialog__countdown {
   display: inline-block;
@@ -47,9 +47,9 @@
 }
 @media (min-width:40.0625em) {
   .hmrc-timeout-dialog__link-wrapper {
-  display: inline-block;
-  line-height: 2.5em;
-  vertical-align: baseline;
+    display: inline-block;
+    line-height: 2.5em;
+    vertical-align: baseline;
 }
 }.hmrc-timeout-dialog__link {
   -webkit-font-smoothing: antialiased;
@@ -63,45 +63,45 @@
 }
 @media print {
   .hmrc-timeout-dialog__link {
-  font-family: sans-serif;
+    font-family: sans-serif;
 }
 }@media (min-width:40.0625em) {
   .hmrc-timeout-dialog__link {
-  font-size: 24px;
-  font-size: 1.5rem;
-  line-height: 1.25;
+    font-size: 24px;
+    font-size: 1.5rem;
+    line-height: 1.25;
 }
 }@media print {
   .hmrc-timeout-dialog__link {
-  font-size: 18pt;
-  line-height: 1.15;
+    font-size: 18pt;
+    line-height: 1.15;
 }
 }@media (min-width:40.0625em) {
   .hmrc-timeout-dialog__link {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-family: GDS Transport, arial, sans-serif;
-  font-size: 16px;
-  font-size: 1rem;
-  font-weight: 400;
-  line-height: 1.25;
-  line-height: 1.5;
-  padding: .526315em .789473em .263157em;
-  position: relative;
-  top: 2px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-family: GDS Transport, arial, sans-serif;
+    font-size: 16px;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.25;
+    line-height: 1.5;
+    padding: .526315em .789473em .263157em;
+    position: relative;
+    top: 2px;
 }
 }@media print and (min-width:40.0625em) {
   .hmrc-timeout-dialog__link {
-  font-family: sans-serif;
+    font-family: sans-serif;
 }
 }@media (min-width:40.0625em) and (min-width:40.0625em) {
   .hmrc-timeout-dialog__link {
-  font-size: 19px;
-  font-size: 1.1875rem;
-  line-height: 1.31579;
+    font-size: 19px;
+    font-size: 1.1875rem;
+    line-height: 1.31579;
 }
 }@media print and (min-width:40.0625em) {
   .hmrc-timeout-dialog__link {
-  font-size: 14pt;
-  line-height: 1.15;
+    font-size: 14pt;
+    line-height: 1.15;
 }}

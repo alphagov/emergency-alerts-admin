@@ -1,0 +1,119 @@
+let initial_popup;
+let initial_logout;
+
+const inactivity_mins = 0.5; // to display first popup
+const warning_mins = 1; // to logout if stay signed in not chosen
+const timeout_warning_mins = 4; // // to display final popup before logged out by flask
+
+let loggedInTimestamp = new Date(logged_in_at);
+let isLoggedIn = (loggedInTimestamp instanceof Date) & !isNaN(loggedInTimestamp);
+
+let inactivity_popup = document.getElementById("activity");
+let session_expiry_popup = document.getElementById("expiry");
+
+let staySignedInButton = document.getElementById(
+  "hmrc-timeout-keep-signin-btn"
+);
+let signInAgainButton = document.getElementById(
+  "hmrc-timeout-sign-in-again-btn"
+);
+
+function startInactivityTimeout() {
+  timeLeft = getTimeLeftUntilExpiry();
+  if (isLoggedIn & (timeLeft > (timeout_warning_mins - inactivity_mins) * 60 * 1000)) {
+    initial_popup = setTimeout(function () {
+      if (checkLocalStorage()) {
+        lastActiveTimeout();
+      } else {
+        inactivity_popup.open = true;
+        startInactivityPopupTimeout();
+      }
+    }, 1000 * 60 * inactivity_mins);
+  }
+}
+
+function startInactivityPopupTimeout() {
+  initial_logout = setTimeout(function () {
+    window.location.href = "/sign-out";
+  }, 1000 * 60 * warning_mins);
+}
+
+function resetTimeouts() {
+  if (staySignedInButton) {
+    staySignedInButton.addEventListener("click", function () {
+      clearTimeout(initial_popup);
+      clearTimeout(initial_logout);
+      inactivity_popup.open = false;
+      startInactivityTimeout();
+    });
+  }
+}
+
+function sessionExpiryPopup() {
+  if (isLoggedIn) {
+    initial_logout = setTimeout(function () {
+      session_expiry_popup.open = true;
+    }, getTimeLeftUntilExpiry());
+  }
+}
+
+function getTimeLeftUntilExpiry() {
+  let expiry_time = new Date();
+  expiry_time.setMinutes(loggedInTimestamp.getMinutes() + timeout_warning_mins);
+  let current_time = new Date();
+  let timeLeft = expiry_time - current_time;
+  return timeLeft;
+}
+
+function signInAgain() {
+  if (signInAgainButton) {
+    signInAgainButton.addEventListener("click", function () {
+      signOutRedirect();
+      session_expiry_popup.open = false;
+    });
+  }
+}
+
+function updateLocalStorage() {
+  localStorage.setItem("lastActivity", new Date());
+}
+
+function checkLocalStorage() {
+  let lastActive = new Date (localStorage.getItem("lastActivity"));
+  let time = new Date();
+  return ((time - lastActive) < (inactivity_mins * 60 * 1000));
+}
+
+function lastActiveTimeout() {
+  let time = new Date();
+  let lastActive = new Date(localStorage.getItem("lastActivity"));
+  setTimeout(() => {
+    inactivity_popup.open = true;
+    startInactivityPopupTimeout();
+  }, (mins * 60 * 1000) - (time - lastActive));
+}
+
+function signOutRedirect() {
+  let current_page = window.location.pathname;
+  $.ajax(
+    '/sign-out',
+    {
+      'method': 'get',
+    }
+  ).done(
+    response => {
+      window.location.href = current_page;
+      console.log(response);
+    }
+  ).fail(
+    response => {
+      console.log(response);
+    }
+  );
+}
+
+updateLocalStorage();
+sessionExpiryPopup();
+startInactivityTimeout();
+resetTimeouts();
+signInAgain();
