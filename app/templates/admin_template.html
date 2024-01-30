@@ -1,8 +1,7 @@
 {% extends "govuk_frontend_jinja/template.html"%}
 {% from "components/banner.html" import banner %}
 {%- from "govuk_frontend_jinja/components/notification-banner/macro.html" import govukNotificationBanner -%}
-{%- from "govuk_frontend_jinja_overrides/templates/components/session-timeouts/inactivityDialog.html" import
-inactivityDialog -%}
+{%- from "partials/notifications/inactivityDialog.html" import inactivityDialog -%}
 {% from "components/cookie-banner.html" import cookie_banner %}
 
 {% block headIcons %}
@@ -180,7 +179,8 @@ inactivityDialog -%}
 
 {% if current_service and current_service.research_mode %}
 {% set meta_suffix = 'Built by the <a href="https://www.gov.uk/government/organisations/government-digital-service"
-  class="govuk-footer__link">Government Digital Service</a><span id="research-mode" class="research-mode">research mode</span>' %}
+  class="govuk-footer__link">Government Digital Service</a><span id="research-mode" class="research-mode">research
+  mode</span>' %}
 {% else %}
 {% set meta_suffix = 'Built by the <a href="https://www.gov.uk/government/organisations/government-digital-service"
   class="govuk-footer__link">Government Digital Service</a>' %}
@@ -201,7 +201,7 @@ inactivityDialog -%}
 {% endblock %}
 <!--[if gt IE 8]><!-->
 <script>
-  var logged_in_at = '{{session.get('session_start_utc')}}'
+  let logged_in_at = "{{session.get('session_start_utc')}}"
 </script>
 <script type="text/javascript" src="{{ asset_url('javascripts/all.js') }}"></script>
 
