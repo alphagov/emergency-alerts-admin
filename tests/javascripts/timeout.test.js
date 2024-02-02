@@ -15,7 +15,8 @@ function isDialogOpen(dialog) {
   return dialog.hasAttribute("open");
 }
 
-const inactivity_period = window.GOVUK.inactivity_mins * 1.1;
+const inactivity_period = window.GOVUK.inactivity_mins * 1.1; // 1.1 to ensure it doesn't test for as soon as soon as timeout has finished
+const timeout_period = window.GOVUK.timeout_warning_mins * 1.1;
 
 const html_content = `
 <dialog id="activity" tabindex="-1" aria-modal="true" class="hmrc-timeout-dialog"
@@ -65,27 +66,44 @@ describe("Inactivity dialog appears and components within it function correctly"
   test("Dialog opens after timeout", () => {
     expect(inactivity_popup.open).toEqual(false);
     jest.advanceTimersByTime(60 * inactivity_period * 1000);
-    expect(isDialogOpen(inactivity_popup)).toEqual(true);
+    if (window.GOVUK.isLoggedIn()) {
+      expect(isDialogOpen(inactivity_popup)).toEqual(true); // displays after period of inactivity
+    } else {
+      expect(isDialogOpen(inactivity_popup)).toEqual(false);
+    }
   });
 
   test("Inactivity dialog text appears in dialog", () => {
     jest.advanceTimersByTime(60 * inactivity_period * 1000);
-    expect(isDialogOpen(inactivity_popup)).toEqual(true);
-    expect(inactivity_popup.querySelector("h1").textContent).toBe(
-      "You're about to be signed out"
-    );
-    expect(inactivity_popup.querySelector("p").textContent).toBe(
-      "For your security, we will sign you out in 2 minutes."
-    );
+
+    if (window.GOVUK.isLoggedIn()) {
+      expect(isDialogOpen(inactivity_popup)).toEqual(true);
+      expect(inactivity_popup.querySelector("h1").textContent).toBe(
+        "You're about to be signed out"
+      );
+      expect(inactivity_popup.querySelector("p").textContent).toBe(
+        "For your security, we will sign you out in 2 minutes."
+      );
+      // expect(inactivity_popup.querySelector("h1").textContent).toBeVisible();
+      // expect(inactivity_popup.querySelector("p").textContent).toBeVisible();
+    } else {
+      expect(isDialogOpen(inactivity_popup)).toEqual(false);
+      // expect(inactivity_popup.querySelector("h1").textContent).not.toBeVisible();
+      // expect(inactivity_popup.querySelector("p").textContent).not.toBeVisible();
+    }
   });
 
   test("Stay signed in button should close dialog and reset timeout ", () => {
     jest.advanceTimersByTime(60 * inactivity_period * 1000);
-    expect(isDialogOpen(inactivity_popup)).toEqual(true);
+    if (window.GOVUK.isLoggedIn()) {
+      expect(isDialogOpen(inactivity_popup)).toEqual(true);
 
-    helpers.triggerEvent(inactivity_button, "click");
+      helpers.triggerEvent(inactivity_button, "click");
 
-    expect(isDialogOpen(inactivity_popup)).toEqual(false);
+      expect(isDialogOpen(inactivity_popup)).toEqual(false);
+    } else {
+      expect(isDialogOpen(inactivity_popup)).toEqual(false);
+    }
   });
 
   test("Sign out button should close dialog and take to sign out screen", () => {
@@ -94,11 +112,15 @@ describe("Inactivity dialog appears and components within it function correctly"
     link.addEventListener("click", hasBeenClicked);
 
     jest.advanceTimersByTime(60 * inactivity_period * 1000);
-    expect(isDialogOpen(inactivity_popup)).toEqual(true);
+    if (window.GOVUK.isLoggedIn()) {
+      expect(isDialogOpen(inactivity_popup)).toEqual(true);
 
-    helpers.triggerEvent(link, "click");
+      helpers.triggerEvent(link, "click");
 
-    expect(hasBeenClicked).toHaveBeenCalled();
+      expect(hasBeenClicked).toHaveBeenCalled();
+    } else {
+      expect(isDialogOpen(inactivity_popup)).toEqual(false);
+    }
     // expect(window.location.pathname).toBe("/sign-out"); //maybe try something else to test this
   });
 });
@@ -116,14 +138,27 @@ describe("Timeout dialog appears", () => {
 
   test("Dialog opens after timeout", () => {
     const expiry_popup = document.querySelector("#expiry");
-    jest.advanceTimersByTime(60 * 4.15 * 1000);
-    expect(isDialogOpen(expiry_popup)).toEqual(true);
+    jest.advanceTimersByTime(60 * timeout_period * 1000);
+    if (window.GOVUK.isLoggedIn()) {
+      expect(isDialogOpen(expiry_popup)).toEqual(true);
+
+      helpers.triggerEvent(link, "click");
+
+      expect(hasBeenClicked).toHaveBeenCalled();
+    } else {
+      expect(isDialogOpen(expiry_popup)).toEqual(false);
+    }
   });
 
   test("Expiry dialog text appears in dialog", () => {
-    expect(expiry_popup.querySelector("h1").textContent).toBe(
-      "You can no longer extend your session"
-    );
+    if (window.GOVUK.isLoggedIn()) {
+      expect(expiry_popup.querySelector("h1").textContent).toBe(
+        "You can no longer extend your session"
+      );
+    } else {
+      expect(isDialogOpen(expiry_popup)).toEqual(false);
+      // not to be visible
+    }
   });
 
   test("Sign in again button should close dialog and sign out ", () => {
@@ -132,15 +167,19 @@ describe("Timeout dialog appears", () => {
     );
     const expiry_popup = document.querySelector("#expiry");
     const hasBeenClicked = jest.fn();
+    jest.advanceTimersByTime(60 * timeout_period * 1000);
 
-    expiry_button.addEventListener("click", hasBeenClicked);
+    if (window.GOVUK.isLoggedIn()) {
+      expiry_button.addEventListener("click", hasBeenClicked);
 
-    helpers.triggerEvent(expiry_button, "click");
+      helpers.triggerEvent(expiry_button, "click");
 
-    window.GOVUK.signOutRedirect();
-    expect(isDialogOpen(expiry_popup)).toEqual(false);
-    expect(hasBeenClicked).toHaveBeenCalled();
-    // expect(window.location.pathname).toBe('/sign-out');
+      window.GOVUK.signOutRedirect();
+      expect(isDialogOpen(expiry_popup)).toEqual(false);
+      expect(hasBeenClicked).toHaveBeenCalled();
+    } else {
+      expect(isDialogOpen(expiry_popup)).toEqual(false);
+    }
   });
 });
 
@@ -161,6 +200,12 @@ describe("Activity in another tab delays inactivity timeout", () => {
     later.setSeconds(later.getSeconds() + 20);
     localStorage.setItem("lastActivity", later);
     jest.advanceTimersByTime(60 * inactivity_period * 1000);
-    expect(isDialogOpen(inactivity_popup)).toEqual(false);
+    if (window.GOVUK.isLoggedIn()) {
+      expect(isDialogOpen(inactivity_popup)).toEqual(false);
+      jest.advanceTimersByTime(60 * 0.3 * 1000);
+      expect(isDialogOpen(inactivity_popup)).toEqual(true);
+    } else {
+      expect(isDialogOpen(inactivity_popup)).toEqual(false);
+    }
   });
 });
