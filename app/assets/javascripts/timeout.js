@@ -2,21 +2,28 @@ let initial_logout;
 let initial_popup;
 let timeLeft;
 
-const inactivity_mins = 0.5; // to display first popup
-const initial_warning_mins = 2; // to logout if no response after popup displayed
-const timeout_warning_mins = 4; // // to display final popup before logged out by flask
-const logged_in_at = new Date(); // NEED TO REMOVE BUT FOR NOW FOR TESTS
+const inactivity_mins = 0.2; // to display first popup
+const initial_warning_mins = 0.5; // to logout if no response after popup displayed
+const timeout_warning_mins = 2; // // to display final popup before logged out by flask
+let logged_in_at_var = "Test"|| logged_in_at; // NEED TO REMOVE BUT FOR NOW FOR TESTS
 
 
 (function (window) {
   "use strict";
 
   function isLoggedIn() {
-    let loggedInTimestamp = new Date(logged_in_at);
+    let loggedInTimestamp;
+    if (logged_in_at_var != "Test") {
+      console.log('Logged In');
+      let loggedInTimestamp = new Date(logged_in_at_var);
+    } else {
+      console.log('Not logged in');
+      let loggedInTimestamp = "";
+    }
     return (loggedInTimestamp instanceof Date) & !isNaN(loggedInTimestamp);
   }
   function loggedInAt() {
-    let loggedInTimestamp = new Date(logged_in_at);
+    let loggedInTimestamp = new Date(logged_in_at_var);
     return loggedInTimestamp;
   }
 
@@ -158,5 +165,7 @@ const logged_in_at = new Date(); // NEED TO REMOVE BUT FOR NOW FOR TESTS
   window.GOVUK.resetTimeouts = resetTimeouts;
   window.GOVUK.updateLocalStorage = updateLocalStorage;
   window.GOVUK.inactivity_mins = inactivity_mins;
+  window.GOVUK.timeout_warning_mins = timeout_warning_mins;
+  window.GOVUK.isLoggedIn = isLoggedIn;
 
 })(window);
