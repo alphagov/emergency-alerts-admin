@@ -118,10 +118,10 @@ class Hosted(Config):
     HOST = "hosted"
     TENANT = f"{os.environ.get('TENANT')}." if os.environ.get("TENANT") is not None else ""
     SUBDOMAIN = (
-        f"{os.environ.get('ENVIRONMENT')}."
-        if os.environ.get("ENVIRONMENT") != "production"
-        else "dev."
+        "dev."
         if os.environ.get("ENVIRONMENT") == "development"
+        else f"{os.environ.get('ENVIRONMENT')}."
+        if os.environ.get("ENVIRONMENT") != "production"
         else ""
     )
     API_HOST_NAME = f"http://api.{TENANT}ecs.local:6011"
@@ -156,10 +156,10 @@ class Test(Config):
     ANTIVIRUS_ENABLED = True
     TENANT = f"{os.environ.get('TENANT')}." if os.environ.get("TENANT") is not None else ""
     SUBDOMAIN = (
-        f"{os.environ.get('ENVIRONMENT')}."
-        if os.environ.get("ENVIRONMENT") != "production"
-        else "dev."
+        "dev."
         if os.environ.get("ENVIRONMENT") == "development"
+        else f"{os.environ.get('ENVIRONMENT')}."
+        if os.environ.get("ENVIRONMENT") != "production"
         else ""
     )
     ADMIN_EXTERNAL_URL = f"https://{TENANT}admin.{SUBDOMAIN}emergency-alerts.service.gov.uk"

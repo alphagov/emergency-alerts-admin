@@ -88,10 +88,10 @@ def test_client_passes_admin_url_when_sending_email_auth(
 
     tenant = f"{os.environ.get('TENANT')}." if os.environ.get("TENANT") is not None else ""
     subdomain = (
-        f"{os.environ.get('ENVIRONMENT')}."
-        if os.environ.get("ENVIRONMENT") != "production"
-        else "dev."
+        "dev."
         if os.environ.get("ENVIRONMENT") == "development"
+        else f"{os.environ.get('ENVIRONMENT')}."
+        if os.environ.get("ENVIRONMENT") != "production"
         else ""
     )
 
@@ -322,10 +322,10 @@ def test_reset_password(
 
     tenant = f"{os.environ.get('TENANT')}." if os.environ.get("TENANT") is not None else ""
     subdomain = (
-        f"{os.environ.get('ENVIRONMENT')}."
-        if os.environ.get("ENVIRONMENT") != "production"
-        else "dev."
+        "dev."
         if os.environ.get("ENVIRONMENT") == "development"
+        else f"{os.environ.get('ENVIRONMENT')}."
+        if os.environ.get("ENVIRONMENT") != "production"
         else ""
     )
 
@@ -348,10 +348,10 @@ def test_send_registration_email(
 
     tenant = f"{os.environ.get('TENANT')}." if os.environ.get("TENANT") is not None else ""
     subdomain = (
-        f"{os.environ.get('ENVIRONMENT')}."
-        if os.environ.get("ENVIRONMENT") != "production"
-        else "dev."
+        "dev."
         if os.environ.get("ENVIRONMENT") == "development"
+        else f"{os.environ.get('ENVIRONMENT')}."
+        if os.environ.get("ENVIRONMENT") != "production"
         else ""
     )
 

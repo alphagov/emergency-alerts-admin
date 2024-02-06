@@ -11,10 +11,10 @@ def app_with_mock_config(mocker):
 
     tenant = f"{os.environ.get('TENANT')}." if os.environ.get("TENANT") is not None else ""
     subdomain = (
-        f"{os.environ.get('ENVIRONMENT')}."
-        if os.environ.get("ENVIRONMENT") != "production"
-        else "dev."
+        "dev."
         if os.environ.get("ENVIRONMENT") == "development"
+        else f"{os.environ.get('ENVIRONMENT')}."
+        if os.environ.get("ENVIRONMENT") != "production"
         else ""
     )
 
