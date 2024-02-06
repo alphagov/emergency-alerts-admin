@@ -34,7 +34,13 @@ def test_client_creates_invite(
     invite_api_client.create_invite("12345", "67890", "test@example.com", {"send_messages"}, "sms_auth", [fake_uuid])
 
     tenant = f"{os.environ.get('TENANT')}." if os.environ.get("TENANT") is not None else ""
-    subdomain = f"{os.environ.get('ENVIRONMENT')}." if os.environ.get("ENVIRONMENT") != "production" else ""
+    subdomain = (
+        f"{os.environ.get('ENVIRONMENT')}."
+        if os.environ.get("ENVIRONMENT") != "production"
+        else "dev."
+        if os.environ.get("ENVIRONMENT") == "development"
+        else ""
+    )
 
     mock_post.assert_called_once_with(
         url="/service/{}/invite".format("67890"),

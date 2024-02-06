@@ -117,13 +117,19 @@ class Config(object):
 class Hosted(Config):
     HOST = "hosted"
     TENANT = f"{os.environ.get('TENANT')}." if os.environ.get("TENANT") is not None else ""
-    SUBDOMAIN = f"{os.environ.get('ENVIRONMENT')}." if os.environ.get("ENVIRONMENT") != "production" else ""
+    SUBDOMAIN = (
+        f"{os.environ.get('ENVIRONMENT')}."
+        if os.environ.get("ENVIRONMENT") != "production"
+        else "dev."
+        if os.environ.get("ENVIRONMENT") == "development"
+        else ""
+    )
     API_HOST_NAME = f"http://api.{TENANT}ecs.local:6011"
     ADMIN_BASE_URL = f"http://admin.{TENANT}ecs.local:6012"
     HEADER_COLOUR = header_colors.get(os.environ.get("ENVIRONMENT"), "#81878b")
     ADMIN_EXTERNAL_URL = f"https://{TENANT}admin.{SUBDOMAIN}emergency-alerts.service.gov.uk"
     TEMPLATE_PREVIEW_API_HOST = f"http://api.{TENANT}ecs.local:6013"
-    ANTIVIRUS_API_HOST = "http://admin.ecs.local:6016"
+    ANTIVIRUS_API_HOST = f"http://admin.{TENANT}ecs.local:6016"
     REDIS_URL = f"redis://api.{TENANT}ecs.local:6379/0"
 
     DEBUG = False
@@ -149,7 +155,13 @@ class Test(Config):
     ANTIVIRUS_API_KEY = "test-antivirus-secret"
     ANTIVIRUS_ENABLED = True
     TENANT = f"{os.environ.get('TENANT')}." if os.environ.get("TENANT") is not None else ""
-    SUBDOMAIN = f"{os.environ.get('ENVIRONMENT')}." if os.environ.get("ENVIRONMENT") != "production" else ""
+    SUBDOMAIN = (
+        f"{os.environ.get('ENVIRONMENT')}."
+        if os.environ.get("ENVIRONMENT") != "production"
+        else "dev."
+        if os.environ.get("ENVIRONMENT") == "development"
+        else ""
+    )
     ADMIN_EXTERNAL_URL = f"https://{TENANT}admin.{SUBDOMAIN}emergency-alerts.service.gov.uk"
     ASSET_DOMAIN = "static.example.com"
     ASSET_PATH = "https://static.example.com/"

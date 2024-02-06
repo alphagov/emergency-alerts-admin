@@ -10,7 +10,13 @@ def app_with_mock_config(mocker):
     app = mocker.Mock()
 
     tenant = f"{os.environ.get('TENANT')}." if os.environ.get("TENANT") is not None else ""
-    subdomain = f"{os.environ.get('ENVIRONMENT')}." if os.environ.get("ENVIRONMENT") != "production" else ""
+    subdomain = (
+        f"{os.environ.get('ENVIRONMENT')}."
+        if os.environ.get("ENVIRONMENT") != "production"
+        else "dev."
+        if os.environ.get("ENVIRONMENT") == "development"
+        else ""
+    )
 
     app.config = {
         "ADMIN_EXTERNAL_URL": f"https://{tenant}admin.{subdomain}emergency-alerts.service.gov.uk",

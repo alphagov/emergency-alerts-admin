@@ -87,7 +87,13 @@ def test_client_passes_admin_url_when_sending_email_auth(
     user_api_client.send_verify_code(fake_uuid, "email", "ignored@example.com")
 
     tenant = f"{os.environ.get('TENANT')}." if os.environ.get("TENANT") is not None else ""
-    subdomain = f"{os.environ.get('ENVIRONMENT')}." if os.environ.get("ENVIRONMENT") != "production" else ""
+    subdomain = (
+        f"{os.environ.get('ENVIRONMENT')}."
+        if os.environ.get("ENVIRONMENT") != "production"
+        else "dev."
+        if os.environ.get("ENVIRONMENT") == "development"
+        else ""
+    )
 
     mock_post.assert_called_once_with(
         "/user/{}/email-code".format(fake_uuid),
@@ -315,7 +321,13 @@ def test_reset_password(
     user_api_client.send_reset_password_url("test@example.com")
 
     tenant = f"{os.environ.get('TENANT')}." if os.environ.get("TENANT") is not None else ""
-    subdomain = f"{os.environ.get('ENVIRONMENT')}." if os.environ.get("ENVIRONMENT") != "production" else ""
+    subdomain = (
+        f"{os.environ.get('ENVIRONMENT')}."
+        if os.environ.get("ENVIRONMENT") != "production"
+        else "dev."
+        if os.environ.get("ENVIRONMENT") == "development"
+        else ""
+    )
 
     mock_post.assert_called_once_with(
         "/user/reset-password",
@@ -335,7 +347,13 @@ def test_send_registration_email(
     user_api_client.send_verify_email(fake_uuid, "test@example.com")
 
     tenant = f"{os.environ.get('TENANT')}." if os.environ.get("TENANT") is not None else ""
-    subdomain = f"{os.environ.get('ENVIRONMENT')}." if os.environ.get("ENVIRONMENT") != "production" else ""
+    subdomain = (
+        f"{os.environ.get('ENVIRONMENT')}."
+        if os.environ.get("ENVIRONMENT") != "production"
+        else "dev."
+        if os.environ.get("ENVIRONMENT") == "development"
+        else ""
+    )
 
     mock_post.assert_called_once_with(
         f"/user/{fake_uuid}/email-verification",
