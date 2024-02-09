@@ -27,7 +27,7 @@ fido2==1.1.0
 pyproj==3.4.0
 
 itsdangerous==2.1.2
-govuk-frontend-jinja==2.3.0
+govuk-frontend-jinja==2.8.0
 
 # gds-metrics requires prometheseus 0.2.0, override that requirement as later versions bring significant performance gains
 prometheus-client==0.15.0
