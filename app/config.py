@@ -26,8 +26,8 @@ class Config(object):
     ENCRYPTION_SECRET_KEY = os.environ.get("ENCRYPTION_SECRET_KEY")
     ENCRYPTION_DANGEROUS_SALT = os.environ.get("ENCRYPTION_DANGEROUS_SALT")
 
-    API_HOST_NAME = "http://localhost:6011"
-    ADMIN_EXTERNAL_URL = "http://localhost:6012"
+    API_HOST_NAME = os.environ.get("API_HOST_NAME", "http://localhost:6011")
+    ADMIN_EXTERNAL_URL = os.environ.get("ADMIN_EXTERNAL_URL", "http://localhost:6012")
     ZENDESK_API_KEY = os.environ.get("ZENDESK_API_KEY")
 
     # if we're not on cloudfoundry, we can get to this app from localhost. but on cloudfoundry its different
