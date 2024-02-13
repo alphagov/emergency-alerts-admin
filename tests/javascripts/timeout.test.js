@@ -84,12 +84,8 @@ describe("Inactivity dialog appears and components within it function correctly"
       expect(inactivity_popup.querySelector("p").textContent).toBe(
         "For your security, we will sign you out in 2 minutes."
       );
-      // expect(inactivity_popup.querySelector("h1").textContent).toBeVisible();
-      // expect(inactivity_popup.querySelector("p").textContent).toBeVisible();
     } else {
       expect(isDialogOpen(inactivity_popup)).toEqual(false);
-      // expect(inactivity_popup.querySelector("h1").textContent).not.toBeVisible();
-      // expect(inactivity_popup.querySelector("p").textContent).not.toBeVisible();
     }
   });
 
@@ -121,7 +117,6 @@ describe("Inactivity dialog appears and components within it function correctly"
     } else {
       expect(isDialogOpen(inactivity_popup)).toEqual(false);
     }
-    // expect(window.location.pathname).toBe("/sign-out"); //maybe try something else to test this
   });
 });
 

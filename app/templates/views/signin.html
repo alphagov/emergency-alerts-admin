@@ -21,6 +21,14 @@
         <p class="govuk-body">
           We signed you out because you logged in to Emergency Alerts on another device.
         </p>
+      {% elif expired %}
+        <p class="govuk-body">
+          Your session has closed due to security. Sign back in to continue where you left off.
+        </p>
+      {% elif inactive %}
+        <p class="govuk-body">
+          You've been signed out due to inactivity. Sign back in to continue where you left off.
+        </p>
       {% else %}
         <p class="govuk-body">
           We signed you out because you have not used Emergency Alerts for a while.
