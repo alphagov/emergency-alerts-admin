@@ -173,6 +173,7 @@ def estimate_number_of_smartphones_in_area(country_or_ward_code):
 
 
 test_filepath = source_files_path / "Test.geojson"
+postcode_filepath = source_files_path / "Postcodes.geojson"
 ctry19_filepath = source_files_path / "Countries.geojson"
 
 # https://geoportal.statistics.gov.uk/datasets/ons::wards-december-2021-uk-bgc
@@ -247,6 +248,40 @@ def add_test_areas():
     for feature in dataset_geojson["features"]:
         f_id = feature["properties"]["id"]
         f_name = feature["properties"]["name"]
+
+        print()  # noqa: T201
+        print(f_name)  # noqa: T201
+
+        feature, _, utm_crs = polygons_and_simplified_polygons(feature["geometry"])
+        areas_to_add.append(
+            [
+                f"{dataset_id}-{f_id}",
+                f_name,
+                dataset_id,
+                None,
+                feature,
+                feature,
+                utm_crs,
+                0,
+            ]
+        )
+    repo.insert_broadcast_areas(areas_to_add, keep_old_polygons)
+
+
+def add_postcode_areas():
+    dataset_id = "postcodes"
+    dataset_geojson = geojson.loads(postcode_filepath.read_text())
+    repo.insert_broadcast_area_library(
+        dataset_id,
+        name="Postcode areas",
+        name_singular="postcode area",
+        is_group=False,
+    )
+
+    areas_to_add = []
+    for feature in dataset_geojson["features"]:
+        f_id = feature["properties"]["POSTCODE"]
+        f_name = feature["properties"]["POSTCODE"]
 
         print()  # noqa: T201
         print(f_name)  # noqa: T201
@@ -489,6 +524,7 @@ if keep_old_polygons:
 else:
     repo.delete_db()
     repo.create_tables()
+add_postcode_areas()
 add_test_areas()
 add_police_force_areas()
 add_countries()
