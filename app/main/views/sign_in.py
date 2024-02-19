@@ -64,14 +64,15 @@ def sign_in():
             Markup(
                 (
                     f"The email address or password you entered is incorrect."
-                    f"&ensp;<a href={password_reset_url} class='govuk-link'>Forgotten your password?</a>"
+                    f"&ensp;"
+                    f"<a href={password_reset_url} class='govuk-link'>Forgotten your password?</a>"
                 )
             )
         )
 
     other_device = current_user.logged_in_elsewhere()
     return render_template(
-        "views/signin.html",
+        "views/signi.html",
         form=form,
         again=bool(redirect_url),
         other_device=other_device,
