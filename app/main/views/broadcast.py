@@ -1,4 +1,5 @@
 from flask import abort, flash, jsonify, redirect, render_template, request, url_for
+from shapely.geometry import Polygon, Point
 
 from app import current_service
 from app.main import main
@@ -282,10 +283,14 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
 
     if library_slug == 'postcodes':
         form = PostcodeForm()
+        if form.validate_on_submit():
+            broadcast_message = redirect_to_postcode_map(service_id, broadcast_message_id, form)
+
         return render_template(
             "views/broadcast/search-postcodes.html",
             broadcast_message=broadcast_message,
-            back_link='',
+            back_link=url_for(
+                ".write_new_broadcast", service_id=current_service.id, broadcast_message_id=broadcast_message_id),
             form=form
         )
 
@@ -338,6 +343,35 @@ def _get_broadcast_sub_area_back_link(service_id, broadcast_message_id, library_
         )
 
 
+def redirect_to_postcode_map(service_id, broadcast_message_id, form):
+    print(form.data)  # noqa: T201
+    broadcast_message = BroadcastMessage.from_id(
+        broadcast_message_id,
+        service_id=current_service.id,
+    )
+    postcode = 'postcodes-'+form.data['postcode']
+    area = BroadcastMessage.libraries.get_areas([postcode])[0]
+    print(area.id)  # noqa: T201
+    # centroid = get_centroid(area)
+    # circle_polygon = create_circle(centroid, int(form.data['radius']))
+    broadcast_message.add_areas(area.id)  # need to append polygon here
+    return broadcast_message
+
+
+def get_centroid(area):
+    print(area)  # noqa: T201
+    polygons = area.polygons[0]  # returns all polygons currently
+    print(Polygon(polygons).centroid)  # noqa: T201
+    return Polygon(polygons).centroid
+
+
+def create_circle(center, radius):
+    circle = center.buffer(radius)
+    circle_polygon = Polygon(circle.boundary)
+    print(circle_polygon)  # noqa: T201
+    return circle_polygon
+
+
 @main.route(
     "/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/libraries/<library_slug>/<area_slug>",
     methods=["GET", "POST"],
@@ -361,6 +395,7 @@ def choose_broadcast_sub_area(service_id, broadcast_message_id, library_slug, ar
     )
     if form.validate_on_submit():
         broadcast_message.add_areas(*form.selected_areas)
+        print(*form.selected_areas)  # noqa: T201
         return redirect(
             url_for(
                 ".preview_broadcast_areas",
@@ -403,6 +438,7 @@ def remove_broadcast_area(service_id, broadcast_message_id, area_slug):
         broadcast_message_id,
         service_id=current_service.id,
     ).remove_area(area_slug)
+    print(area_slug)  # noqa: T201
     return redirect(
         url_for(
             ".preview_broadcast_areas",
@@ -611,26 +647,4 @@ def cancel_broadcast_message(service_id, broadcast_message_id):
         "views/broadcast/view-message.html",
         broadcast_message=broadcast_message,
         hide_stop_link=True,
-    )
-
-
-@main.route(
-    "/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/libraries/<library_slug>",
-    methods=["GET", "POST"],
-)
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-@service_has_permission("broadcast")
-def choose_postcode(service_id, broadcast_message_id):
-    # Here i want to create route for broadcast area to be added and then the page reloaded
-    broadcast_message = BroadcastMessage.from_id(
-        broadcast_message_id,
-        service_id=current_service.id,
-    )
-    # form = PostcodeForm()
-    broadcast_message.add_areas()
-
-    return render_template(
-        "views/broadcast/search-postcodes.html",
-        broadcast_message=broadcast_message,
-        hide_stop_link=True
     )
