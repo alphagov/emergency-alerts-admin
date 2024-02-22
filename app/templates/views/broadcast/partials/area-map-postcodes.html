@@ -107,24 +107,29 @@
   mapElement.setAttribute('role', 'region');
   addAriaLabel(mapElement);
   addAriaDescription(mapElement);
-
   var mymap = L.map(
     'area-list-map',
     {
       scrollWheelZoom: false
     }
   )
+  mymap.setView(
+    [55.378052, -3.435973],
+    5
+  );
+
+  if (polygons.length > 0) {
+    var polygonGroup = L.featureGroup(polygons).addTo(mymap);
+    mymap.fitBounds(
+      polygonGroup.getBounds(),
+      {padding: [1, 1]}
+    );
+  }
+
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   }).addTo(mymap);
-
-  var polygonGroup = L.featureGroup(polygons).addTo(mymap);
-  mymap.fitBounds(
-    polygonGroup.getBounds(),
-    {padding: [1, 1]}
-  );
-
   // if element is inside a details element then close the details element
   if (isInDetails) {
     details.open = false;
