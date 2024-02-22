@@ -9,6 +9,7 @@ from app.main.forms import (
     ConfirmBroadcastForm,
     NewBroadcastForm,
     SearchByNameForm,
+    PostcodeForm
 )
 from app.models.broadcast_message import BroadcastMessage, BroadcastMessages
 from app.utils import service_has_permission
@@ -276,7 +277,17 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
         broadcast_message_id,
         service_id=current_service.id,
     )
+
     library = BroadcastMessage.libraries.get(library_slug)
+
+    if library_slug == 'postcodes':
+        form = PostcodeForm()
+        return render_template(
+            "views/broadcast/search-postcodes.html",
+            broadcast_message=broadcast_message,
+            back_link='',
+            form=form
+        )
 
     if library.is_group:
         return render_template(
@@ -412,6 +423,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
         broadcast_message_id,
         service_id=current_service.id,
     )
+    # add here
     if request.method == "POST":
         broadcast_message.request_approval()
         return redirect(
@@ -599,4 +611,26 @@ def cancel_broadcast_message(service_id, broadcast_message_id):
         "views/broadcast/view-message.html",
         broadcast_message=broadcast_message,
         hide_stop_link=True,
+    )
+
+
+@main.route(
+    "/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/libraries/<library_slug>",
+    methods=["GET", "POST"],
+)
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+@service_has_permission("broadcast")
+def choose_postcode(service_id, broadcast_message_id):
+    # Here i want to create route for broadcast area to be added and then the page reloaded
+    broadcast_message = BroadcastMessage.from_id(
+        broadcast_message_id,
+        service_id=current_service.id,
+    )
+    # form = PostcodeForm()
+    broadcast_message.add_areas()
+
+    return render_template(
+        "views/broadcast/search-postcodes.html",
+        broadcast_message=broadcast_message,
+        hide_stop_link=True
     )

@@ -117,7 +117,7 @@ def polygons_and_simplified_polygons(feature):
     ]
     polygons = Polygons(clean_raw_polygons)
 
-    full_resolution = polygons.remove_too_small
+    full_resolution = polygons
     smoothed = full_resolution.smooth
     simplified = smoothed.simplify
 
@@ -173,7 +173,7 @@ def estimate_number_of_smartphones_in_area(country_or_ward_code):
 
 
 test_filepath = source_files_path / "Test.geojson"
-postcode_filepath = source_files_path / "Postcodes.geojson"
+postcode_filepath = source_files_path / "AB.geojson"
 ctry19_filepath = source_files_path / "Countries.geojson"
 
 # https://geoportal.statistics.gov.uk/datasets/ons::wards-december-2021-uk-bgc
@@ -287,6 +287,16 @@ def add_postcode_areas():
         print(f_name)  # noqa: T201
 
         feature, _, utm_crs = polygons_and_simplified_polygons(feature["geometry"])
+        print([
+                f"{dataset_id}-{f_id}",
+                f_name,
+                dataset_id,
+                None,
+                feature,
+                feature,
+                utm_crs,
+                0,
+        ])
         areas_to_add.append(
             [
                 f"{dataset_id}-{f_id}",

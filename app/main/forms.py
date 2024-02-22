@@ -2562,3 +2562,21 @@ class PlatformAdminSearch(StripWhitespaceForm):
         param_extensions={"hint": {"text": ("Search for users, services, and organisations by name or partial name.")}},
         validators=[DataRequired()],
     )
+
+
+class PostcodeForm(StripWhitespaceForm):
+    postcode = GovukSearchField(
+        "Search Postcode",
+        validators=[
+            DataRequired(message="Cannot be empty"),
+            MustContainAlphanumericCharacters(),
+            Length(max=255, message="Service name must be 255 characters or fewer"),
+        ],
+    )
+    radius = GovukSearchField(
+        "Add Radius",
+        validators=[
+            DataRequired(message="Cannot be empty"),
+            MustContainAlphanumericCharacters()
+        ],
+    )

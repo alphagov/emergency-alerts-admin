@@ -1,0 +1,54 @@
+{% extends "withnav_template.html" %}
+{% from "components/form.html" import form_wrapper %}
+{% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
+{% from "components/page-header.html" import page_header %}
+{% from "components/page-footer.html" import page_footer %}
+{% from "views/broadcast/macros/postcode-map.html" import map %}
+{% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
+{% from "govuk_frontend_jinja/components/input/macro.html" import govukInput %}
+
+
+{% block service_page_title %}
+  Choose Postcode area
+{% endblock %}
+
+{% block extra_stylesheets %}
+  {% include "views/broadcast/partials/area-map-stylesheets.html" %}
+{% endblock %}
+
+{% block extra_javascripts %}
+  {% include "views/broadcast/partials/area-map-postcodes.html" %}
+{% endblock %}
+
+{% block backLink %}
+  {{ govukBackLink({ "href": back_link }) }}
+{% endblock %}
+
+{% block maincolumn_content %}
+
+  {{ page_header("Choose Postcode") }}
+
+  {% call form_wrapper() %}
+    <div  class="form-group govuk-input--width-10">
+        {{ form.postcode}}
+        {{ form.radius}}
+        {{ govukButton({
+            "element": "a",
+            "text": "Search",
+            "href": url_for('.choose_postcode', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug='postcodes'),
+            "classes": "govuk-button govuk-button--secondary"
+          }) }}
+    </div>
+{% endcall %}
+
+  {{ map(broadcast_message) }}
+
+
+  {{ govukButton({
+    "element": "a",
+    "text": "Preview this alert",
+    "href": url_for('.preview_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
+    "classes": "govuk-button"
+  }) }}
+
+{% endblock %}
