@@ -510,8 +510,8 @@ def setup_blueprints(application):
     """
     from app.main import main as main_blueprint
     from app.main import no_cookie as no_cookie_blueprint
-    from app.status import status as status_blueprint
     from app.metadata import metadata as metadata_blueprint
+    from app.status import status as status_blueprint
 
     main_blueprint.before_request(make_session_permanent)
     main_blueprint.after_request(save_service_or_org_after_request)
