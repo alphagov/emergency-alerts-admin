@@ -1,7 +1,8 @@
-from flask import abort, flash, jsonify, redirect, render_template, request, url_for
-import pyproj
-from shapely.geometry import Polygon
 from functools import partial
+
+import pyproj
+from flask import abort, flash, jsonify, redirect, render_template, request, url_for
+from shapely.geometry import Polygon
 from shapely.ops import transform
 
 from app import current_service
@@ -12,8 +13,8 @@ from app.main.forms import (
     BroadcastTemplateForm,
     ConfirmBroadcastForm,
     NewBroadcastForm,
+    PostcodeForm,
     SearchByNameForm,
-    PostcodeForm
 )
 from app.models.broadcast_message import BroadcastMessage, BroadcastMessages
 from app.utils import service_has_permission
@@ -284,7 +285,7 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
 
     library = BroadcastMessage.libraries.get(library_slug)
 
-    if library_slug == 'postcodes':
+    if library_slug == "postcodes":
         form = PostcodeForm()
         if form.validate_on_submit():
             broadcast_message = redirect_to_postcode_map(service_id, broadcast_message_id, form)
@@ -299,8 +300,9 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
             "views/broadcast/search-postcodes.html",
             broadcast_message=broadcast_message,
             back_link=url_for(
-                ".write_new_broadcast", service_id=current_service.id, broadcast_message_id=broadcast_message_id),
-            form=form
+                ".write_new_broadcast", service_id=current_service.id, broadcast_message_id=broadcast_message_id
+            ),
+            form=form,
         )
 
     if library.is_group:
@@ -357,13 +359,13 @@ def redirect_to_postcode_map(service_id, broadcast_message_id, form):
         broadcast_message_id,
         service_id=current_service.id,
     )
-    postcode = 'postcodes-'+form.data['postcode']
+    postcode = "postcodes-" + form.data["postcode"]
     try:
         area = BroadcastMessage.libraries.get_areas([postcode])[0]
         circle_id = f"{form.data['postcode']}-{form.data['radius']}"
 
         centroid = get_centroid(area)
-        circle_polygon = create_circle(centroid, int(form.data['radius'])*1000)
+        circle_polygon = create_circle(centroid, int(form.data["radius"]) * 1000)
 
         broadcast_message.add_custom_areas(circle_polygon, id=circle_id)
     except IndexError:
@@ -382,24 +384,14 @@ def create_circle(center, radius):
     # Setting projection params
     project = partial(
         pyproj.transform,
-        pyproj.Proj(init='epsg:4326'),
-        pyproj.Proj(
-            proj='aeqd',
-            datum='WGS84',
-            lat_0=center.y,
-            lon_0=center.x
-        )
+        pyproj.Proj(init="epsg:4326"),
+        pyproj.Proj(proj="aeqd", datum="WGS84", lat_0=center.y, lon_0=center.x),
     )
     # Setting params for reverse projection, to convert buffer back into WGS84 coords
     project_inverse = partial(
         pyproj.transform,
-        pyproj.Proj(
-            proj='aeqd',
-            datum='WGS84',
-            lat_0=center.y,
-            lon_0=center.x
-        ),
-        pyproj.Proj(init='epsg:4326')
+        pyproj.Proj(proj="aeqd", datum="WGS84", lat_0=center.y, lon_0=center.x),
+        pyproj.Proj(init="epsg:4326"),
     )
 
     transformed_center = transform(project, center)

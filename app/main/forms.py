@@ -2577,8 +2577,5 @@ class PostcodeForm(StripWhitespaceForm):
     radius = GovukSearchField(
         "Add Radius",
         param_extensions={"classes": "govuk-input govuk-input--width-10", "attributes": {"pattern": "[0-9]*"}},
-        validators=[
-            DataRequired(message="Cannot be empty"),
-            MustContainAlphanumericCharacters(),
-            Regexp(regex=r"^\d+$", message="Numbers only"),
-        ])
+        validators=[DataRequired(message="Cannot be empty"), Regexp(regex=r"^\d+$", message="Numbers only")],
+    )

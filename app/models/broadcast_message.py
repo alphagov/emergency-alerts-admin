@@ -274,23 +274,21 @@ class BroadcastMessage(JSONModel):
     def add_custom_areas(self, *circle_polygon, force_override=False, id):
         print(circle_polygon)  # noqa : T201
         broadcast_message = broadcast_message_api_client.get_broadcast_message(
-                service_id=self.service_id,
-                broadcast_message_id=self.id,
-            )
-        if ('ids' in broadcast_message['areas']) and (id in broadcast_message['areas']['ids']):
-            print('Area already added')  # noqa : T201
+            service_id=self.service_id,
+            broadcast_message_id=self.id,
+        )
+        if ("ids" in broadcast_message["areas"]) and (id in broadcast_message["areas"]["ids"]):
+            print("Area already added")  # noqa : T201
         else:
             areas = {}
-            areas['ids'] = list(OrderedSet(self.area_ids + [id]))
-            areas['names'] = [area.name for area in self.areas] + [id]
+            areas["ids"] = list(OrderedSet(self.area_ids + [id]))
+            areas["names"] = [area.name for area in self.areas] + [id]
             areas["aggregate_names"] = [area.name for area in aggregate_areas(self.areas)] + [id]
-            areas['simple_polygons'] = self.simple_polygons.as_coordinate_pairs_lat_long + list(circle_polygon)
+            areas["simple_polygons"] = self.simple_polygons.as_coordinate_pairs_lat_long + list(circle_polygon)
             data = {"areas": areas}
 
             broadcast_message_api_client.update_broadcast_message(
-                broadcast_message_id=self.id,
-                service_id=self.service_id,
-                data=data
+                broadcast_message_id=self.id, service_id=self.service_id, data=data
             )
 
     def remove_area(self, area_id):

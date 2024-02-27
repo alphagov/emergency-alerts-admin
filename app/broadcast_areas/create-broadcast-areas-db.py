@@ -287,7 +287,8 @@ def add_postcode_areas():
         print(f_name)  # noqa: T201
 
         feature, _, utm_crs = polygons_and_simplified_polygons(feature["geometry"])
-        print([
+        print(  # noqa: T201
+            [
                 f"{dataset_id}-{f_id}",
                 f_name,
                 dataset_id,
@@ -296,7 +297,8 @@ def add_postcode_areas():
                 feature,
                 utm_crs,
                 0,
-        ])
+            ]
+        )
         areas_to_add.append(
             [
                 f"{dataset_id}-{f_id}",
