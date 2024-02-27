@@ -1,5 +1,8 @@
 from flask import abort, flash, jsonify, redirect, render_template, request, url_for
-from shapely.geometry import Polygon, Point
+import pyproj
+from shapely.geometry import Polygon
+from functools import partial
+from shapely.ops import transform
 
 from app import current_service
 from app.main import main
@@ -286,6 +289,12 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
         if form.validate_on_submit():
             broadcast_message = redirect_to_postcode_map(service_id, broadcast_message_id, form)
 
+        # Ensuring latest areas will display on map
+        broadcast_message = BroadcastMessage.from_id(
+            broadcast_message_id,
+            service_id=current_service.id,
+        )
+
         return render_template(
             "views/broadcast/search-postcodes.html",
             broadcast_message=broadcast_message,
@@ -344,32 +353,62 @@ def _get_broadcast_sub_area_back_link(service_id, broadcast_message_id, library_
 
 
 def redirect_to_postcode_map(service_id, broadcast_message_id, form):
-    print(form.data)  # noqa: T201
     broadcast_message = BroadcastMessage.from_id(
         broadcast_message_id,
         service_id=current_service.id,
     )
     postcode = 'postcodes-'+form.data['postcode']
-    area = BroadcastMessage.libraries.get_areas([postcode])[0]
-    print(area.id)  # noqa: T201
-    # centroid = get_centroid(area)
-    # circle_polygon = create_circle(centroid, int(form.data['radius']))
-    broadcast_message.add_areas(area.id)  # need to append polygon here
+    try:
+        area = BroadcastMessage.libraries.get_areas([postcode])[0]
+        circle_id = f"{form.data['postcode']}-{form.data['radius']}"
+
+        centroid = get_centroid(area)
+        circle_polygon = create_circle(centroid, int(form.data['radius'])*1000)
+
+        broadcast_message.add_custom_areas(circle_polygon, id=circle_id)
+    except IndexError:
+        # add error to form
+        form.form_errors.append("Postcode doesn't exist. Enter a correct postcode.")
+
     return broadcast_message
 
 
 def get_centroid(area):
-    print(area)  # noqa: T201
-    polygons = area.polygons[0]  # returns all polygons currently
-    print(Polygon(polygons).centroid)  # noqa: T201
+    polygons = area.polygons[0]
     return Polygon(polygons).centroid
 
 
 def create_circle(center, radius):
-    circle = center.buffer(radius)
-    circle_polygon = Polygon(circle.boundary)
-    print(circle_polygon)  # noqa: T201
-    return circle_polygon
+    # Setting projection params
+    project = partial(
+        pyproj.transform,
+        pyproj.Proj(init='epsg:4326'),
+        pyproj.Proj(
+            proj='aeqd',
+            datum='WGS84',
+            lat_0=center.y,
+            lon_0=center.x
+        )
+    )
+    # Setting params for reverse projection, to convert buffer back into WGS84 coords
+    project_inverse = partial(
+        pyproj.transform,
+        pyproj.Proj(
+            proj='aeqd',
+            datum='WGS84',
+            lat_0=center.y,
+            lon_0=center.x
+        ),
+        pyproj.Proj(init='epsg:4326')
+    )
+
+    transformed_center = transform(project, center)
+    buffer = transformed_center.buffer(radius)
+    buffer_wgs84 = transform(project_inverse, buffer)
+    coordinates_to_reverse = list(buffer_wgs84.exterior.coords)
+    # lat & lng to cartesian
+    coordinates = [[lon, lat] for lat, lon in coordinates_to_reverse]
+    return coordinates
 
 
 @main.route(
