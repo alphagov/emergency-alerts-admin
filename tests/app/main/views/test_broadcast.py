@@ -85,12 +85,12 @@ sample_uuid = sample_uuid()
             403,
             405,
         ),
-        # (
-        #     ".choose_broadcast_duration",
-        #     {"broadcast_message_id": sample_uuid},
-        #     403,
-        #     403,
-        # ),
+        (
+            ".choose_broadcast_duration",
+            {"broadcast_message_id": sample_uuid},
+            403,
+            403,
+        ),
         (
             ".preview_broadcast_message",
             {"broadcast_message_id": sample_uuid},
@@ -585,7 +585,7 @@ def test_broadcast_dashboard_has_new_alert_button_if_user_has_permission_to_crea
         service_id=SERVICE_ONE_ID,
     )
     button = page.select_one(".js-stick-at-bottom-when-scrolling a.govuk-button.govuk-button--secondary")
-    assert normalize_spaces(button.text) == "New alert"
+    assert normalize_spaces(button.text) == "Create new alert"
     assert button["href"] == url_for(
         "main.new_broadcast",
         service_id=SERVICE_ONE_ID,
@@ -683,7 +683,7 @@ def test_new_broadcast_page(
         service_id=SERVICE_ONE_ID,
     )
 
-    assert normalize_spaces(page.select_one("h1").text) == "New alert"
+    assert normalize_spaces(page.select_one("h1").text) == "Create new alert"
 
     form = page.select_one("form")
     assert form["method"] == "post"
@@ -743,7 +743,7 @@ def test_write_new_broadcast_page(
         service_id=SERVICE_ONE_ID,
     )
 
-    assert normalize_spaces(page.select_one("h1").text) == "New alert message"
+    assert normalize_spaces(page.select_one("h1").text) == "Write new alert"
 
     form = page.select_one("form")
     assert form["method"] == "post"
@@ -1503,7 +1503,7 @@ def test_preview_broadcast_areas_has_back_link_with_uuid(
     page = client_request.get(
         "main.preview_broadcast_areas", service_id=SERVICE_ONE_ID, broadcast_message_id=str(uuid.UUID(int=0))
     )
-    assert normalize_spaces(page.select_one("h1").text) == "Area defined"
+    assert normalize_spaces(page.select_one("h1").text) == "Confirm the area for the alert"
     back_link = page.select_one(".govuk-back-link")
     assert back_link["href"] == url_for(
         expected_back_link_url,
@@ -1833,60 +1833,60 @@ def test_remove_broadcast_area_page(
     )
 
 
-# def test_choose_broadcast_duration_page(
-#     client_request,
-#     service_one,
-#     active_user_create_broadcasts_permission,
-#     mock_get_draft_broadcast_message,
-#     fake_uuid,
-# ):
-#     service_one["permissions"] += ["broadcast"]
-#     client_request.login(active_user_create_broadcasts_permission)
-#     page = client_request.get(
-#         ".choose_broadcast_duration",
-#         service_id=SERVICE_ONE_ID,
-#         broadcast_message_id=fake_uuid,
-#     )
+def test_choose_broadcast_duration_page(
+    client_request,
+    service_one,
+    active_user_create_broadcasts_permission,
+    mock_get_draft_broadcast_message,
+    fake_uuid,
+):
+    service_one["permissions"] += ["broadcast"]
+    client_request.login(active_user_create_broadcasts_permission)
+    page = client_request.get(
+        ".choose_broadcast_duration",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+    )
 
-#     assert normalize_spaces(page.select_one("h1").text) == "Choose alert duration"
+    assert normalize_spaces(page.select_one("h1").text) == "Choose alert duration"
 
-#     form = page.select_one("form")
-#     assert form["method"] == "post"
-#     assert "action" not in form
+    form = page.select_one("form")
+    assert form["method"] == "post"
+    assert "action" not in form
 
-#     assert [
-#         (
-#             choice.select_one("input")["name"],
-#             choice.select_one("input")["value"],
-#             normalize_spaces(choice.select_one("label").text),
-#         )
-#         for choice in form.select(".govuk-radios__item")
-#     ] == [
-#         ("content", "PT30M", "30 minutes"),
-#         ("content", "PT3H", "3 hours"),
-#         ("content", "PT6H", "6 hours"),
-#         ("content", "PT22H", "22 hours"),
-#     ]
+    assert [
+        (
+            choice.select_one("input")["name"],
+            choice.select_one("input")["value"],
+            normalize_spaces(choice.select_one("label").text),
+        )
+        for choice in form.select(".govuk-radios__item")
+    ] == [
+        ("content", "PT30M", "30 minutes"),
+        ("content", "PT3H", "3 hours"),
+        ("content", "PT6H", "6 hours"),
+        ("content", "PT22H", "22 hours"),
+    ]
 
 
-# def test_choose_broadcast_duration(
-#     client_request,
-#     service_one,
-#     mock_get_draft_broadcast_message,
-#     mock_update_broadcast_message,
-#     fake_uuid,
-#     active_user_create_broadcasts_permission,
-# ):
-#     service_one["permissions"] += ["broadcast"]
+def test_choose_broadcast_duration(
+    client_request,
+    service_one,
+    mock_get_draft_broadcast_message,
+    mock_update_broadcast_message,
+    fake_uuid,
+    active_user_create_broadcasts_permission,
+):
+    service_one["permissions"] += ["broadcast"]
 
-#     client_request.login(active_user_create_broadcasts_permission)
-#     client_request.post(
-#         ".choose_broadcast_duration",
-#         service_id=SERVICE_ONE_ID,
-#         broadcast_message_id=fake_uuid,
-#         _data={"duration": "PT30M"},
-#         _expected_status=200,
-#     )
+    client_request.login(active_user_create_broadcasts_permission)
+    client_request.post(
+        ".choose_broadcast_duration",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        _data={"duration": "PT30M"},
+        _expected_status=200,
+    )
 
 
 def test_preview_broadcast_message_page(
@@ -1909,7 +1909,7 @@ def test_preview_broadcast_message_page(
         "Scotland",
     ]
 
-    # assert page.select_one("p.duration-preview").text == "Duration: 0 seconds"
+    assert page.select_one("p.duration-preview").text == "Duration: 0 seconds"
 
     assert normalize_spaces(page.select_one("h2.broadcast-message-heading").text) == "Emergency alert"
 

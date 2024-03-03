@@ -7,21 +7,21 @@
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
 
 {% block service_page_title %}
-  Preview message
+  Preview alert
 {% endblock %}
 
 {% block backLink %}
-  {{ govukBackLink({ "href": url_for('.preview_broadcast_areas', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }) }}
+  {{ govukBackLink({ "href": url_for('.choose_broadcast_duration', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }) }}
 {% endblock %}
 
 {% block maincolumn_content %}
 
-  {{ page_header("Preview") }}
+  {{ page_header("Preview alert") }}
 
   {{ broadcast_message.template|string }}
 
   <div class="govuk-!-margin-bottom-3">
-    <p class="govuk-!-margin-right-2 area-list">Area: </p>
+    <p class="govuk-!-margin-right-2 area-list"><b class="govuk-!-font-weight-bold">Area: </b></p>
     <ul class="area-list">
       {% for area in broadcast_message.areas %}
         <li class="area-list-item area-list-item--unremoveable">
@@ -29,7 +29,7 @@
         </li>
       {% endfor %}
     </ul>
-    <!-- <p class="govuk-!-margin-right-2 duration-preview">Duration: {{ broadcast_message.duration|format_seconds_duration_as_time }}</p> -->
+    <p class="govuk-!-margin-right-2 duration-preview"><b class="govuk-!-font-weight-bold">Duration:</b> {{ broadcast_message.duration|format_seconds_duration_as_time }}</p>
   </div>
 
   {% call form_wrapper() %}

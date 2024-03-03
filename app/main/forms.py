@@ -640,6 +640,7 @@ class GovukCheckboxesField(GovukFrontendWidgetMixin, SelectMultipleField):
             "asList": self.render_as_list,
             "errorMessage": self.get_error_message(),
             "items": items,
+            "hint": {"text": "Select all that apply."},
         }
 
         return params
@@ -1147,7 +1148,7 @@ class ConfirmPasswordForm(StripWhitespaceForm):
 
 class NewBroadcastForm(StripWhitespaceForm):
     content = GovukRadiosField(
-        "New alert",
+        "Create new alert",
         choices=[
             ("freeform", "Write your own message"),
             ("template", "Use a template"),
@@ -1223,7 +1224,13 @@ class ChooseDurationForm(StripWhitespaceForm):
         "Choose alert duration",
         choices=[("PT30M", "30 minutes"), ("PT3H", "3 hours"), ("PT6H", "6 hours"), ("PT22H", "22 hours")],
         validators=[DataRequired(message="Select an alert duration to continue")],
-        param_extensions={"fieldset": {"legend": {"classes": "govuk-visually-hidden"}}},
+        param_extensions={
+            "fieldset": {"legend": {"classes": "govuk-visually-hidden"}},
+            "hint": {
+                "text": "This alert will be broadcast for the duration you choose."
+                " You can stop the broadcast at any time."
+            },
+        },
     )
 
 
