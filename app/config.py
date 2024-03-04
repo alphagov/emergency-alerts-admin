@@ -59,7 +59,7 @@ class Config(object):
     PERMANENT_SESSION_LIFETIME = 30 * 60  # 30 minutes
     SEND_FILE_MAX_AGE_DEFAULT = 365 * 24 * 60 * 60  # 1 year
     SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_NAME = "notify_admin_session"
+    SESSION_COOKIE_NAME = "emergency_alerts_session"
     SESSION_COOKIE_SECURE = False
     SESSION_PROTECTION = None
     SESSION_COOKIE_SAMESITE = "Lax"
