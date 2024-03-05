@@ -272,24 +272,30 @@ class BroadcastMessage(JSONModel):
         self._update_areas()
 
     def add_custom_areas(self, *circle_polygon, force_override=False, id):
-        print(circle_polygon)  # noqa : T201
-        broadcast_message = broadcast_message_api_client.get_broadcast_message(
-            service_id=self.service_id,
-            broadcast_message_id=self.id,
-        )
-        if ("ids" in broadcast_message["areas"]) and (id in broadcast_message["areas"]["ids"]):
-            print("Area already added")  # noqa : T201
-        else:
+        if (id not in self.area_ids):
+            name = id.split('-')[0]
+            area_radius = id.split('-')[1]
+            area_name = f'A radius of {area_radius}km around {name}'
+
             areas = {}
             areas["ids"] = list(OrderedSet(self.area_ids + [id]))
-            areas["names"] = [area.name for area in self.areas] + [id]
+            areas["names"] = [area.name for area in self.areas] + [area_name]
             areas["aggregate_names"] = [area.name for area in aggregate_areas(self.areas)] + [id]
             areas["simple_polygons"] = self.simple_polygons.as_coordinate_pairs_lat_long + list(circle_polygon)
             data = {"areas": areas}
 
+            self.area_ids.append(id)
+
             broadcast_message_api_client.update_broadcast_message(
                 broadcast_message_id=self.id, service_id=self.service_id, data=data
             )
+
+    def remove_postcode_area(self, area):
+        index = self.areas.items.index(area)
+        self.areas.items.pop(index)
+        self.areas._polygons.pop(index)
+        self.area_ids.pop(index)
+        self._update_areas()
 
     def remove_area(self, area_id):
         self.area_ids = list(set(self._dict["areas"]["ids"]) - {area_id})

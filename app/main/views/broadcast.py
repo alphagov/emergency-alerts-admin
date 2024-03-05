@@ -370,8 +370,7 @@ def redirect_to_postcode_map(service_id, broadcast_message_id, form):
         broadcast_message.add_custom_areas(circle_polygon, id=circle_id)
     except IndexError:
         # add error to form
-        form.form_errors.append("Postcode doesn't exist. Enter a correct postcode.")
-
+        form.postcode.errors.append("Postcode not found. Enter a different postcode.")
     return broadcast_message
 
 
@@ -401,6 +400,29 @@ def create_circle(center, radius):
     # lat & lng to cartesian
     coordinates = [[lon, lat] for lat, lon in coordinates_to_reverse]
     return coordinates
+
+
+@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/remove_custom/<area_id>")
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+@service_has_permission("broadcast")
+def remove_custom_area(service_id, broadcast_message_id, area_id):
+    broadcast_message = BroadcastMessage.from_id(
+        broadcast_message_id,
+        service_id=current_service.id,
+    ).remove_postcode_area(area_id)
+
+    broadcast_message = BroadcastMessage.from_id(
+        broadcast_message_id,
+        service_id=current_service.id)
+
+    return redirect(
+            url_for(
+                ".choose_broadcast_area",
+                service_id=current_service.id,
+                broadcast_message_id=broadcast_message.id,
+                library_slug='postcodes'
+            )
+        )
 
 
 @main.route(
@@ -469,7 +491,6 @@ def remove_broadcast_area(service_id, broadcast_message_id, area_slug):
         broadcast_message_id,
         service_id=current_service.id,
     ).remove_area(area_slug)
-    print(area_slug)  # noqa: T201
     return redirect(
         url_for(
             ".preview_broadcast_areas",
