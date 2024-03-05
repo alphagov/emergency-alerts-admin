@@ -282,6 +282,15 @@ class GovukIntegerField(GovukTextInputFieldMixin, IntegerField):
     pass
 
 
+class PostcodeSearchField(GovukSearchField):
+    param_extensions = {"classes": "govuk-input govuk-input--width-10"},
+    validators = [
+        DataRequired(message="Cannot be empty"),
+        MustContainAlphanumericCharacters(),
+        Length(max=255, message="Service name must be 255 characters or fewer"),
+    ]
+
+
 class SMSCode(GovukTextInputField):
     # the design system recommends against ever using `type="number"`. "tel" makes mobile browsers
     # show a phone keypad input rather than a full qwerty keyboard.
@@ -2565,17 +2574,10 @@ class PlatformAdminSearch(StripWhitespaceForm):
 
 
 class PostcodeForm(StripWhitespaceForm):
-    postcode = GovukSearchField(
-        "Search Postcode",
-        param_extensions={"classes": "govuk-input govuk-input--width-10"},
-        validators=[
-            DataRequired(message="Cannot be empty"),
-            MustContainAlphanumericCharacters(),
-            Length(max=255, message="Service name must be 255 characters or fewer"),
-        ],
-    )
+    postcode = PostcodeSearchField("Search Postcode")
     radius = GovukSearchField(
         "Add Radius",
-        param_extensions={"classes": "govuk-input govuk-input--width-10", "attributes": {"pattern": "[0-9]*"}},
+        param_extensions={"classes": "govuk-input govuk-input--width-5",  "suffix": {"text": "km"},
+                          "attributes": {"pattern": "[0-9]*"}},
         validators=[DataRequired(message="Cannot be empty"), Regexp(regex=r"^\d+$", message="Numbers only")],
     )

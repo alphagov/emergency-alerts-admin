@@ -2,6 +2,12 @@
 <script>
 
   var polygons = []
+  var markers = []
+  var markerIcon = L.icon({
+    iconUrl:"{{ asset_url('images/marker-icon.png') }}",
+    iconSize: [20, 20],
+  });
+
   {% if broadcast_message.areas %}
     {% for polygon in broadcast_message.simple_polygons_with_bleed.as_coordinate_pairs_lat_long %}
       polygons.push(
@@ -26,6 +32,10 @@
           weight: 2
         })
       );
+      var bounds = L.polygon({{polygon}}).getBounds();
+      var center = bounds.getCenter();
+      <!-- markers.push(L.marker(center, {icon : markerIcon})) -->
+
     {% endfor %}
   {% endif %}
 
@@ -120,6 +130,7 @@
 
   if (polygons.length > 0) {
     var polygonGroup = L.featureGroup(polygons).addTo(mymap);
+    var markerGroup = L.featureGroup(markers).addTo(mymap);
     mymap.fitBounds(
       polygonGroup.getBounds(),
       {padding: [1, 1]}

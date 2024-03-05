@@ -173,7 +173,7 @@ def estimate_number_of_smartphones_in_area(country_or_ward_code):
 
 
 test_filepath = source_files_path / "Test.geojson"
-postcode_filepath = source_files_path / "AB.geojson"
+postcode_filepath = source_files_path / "postcodes.geojson"
 ctry19_filepath = source_files_path / "Countries.geojson"
 
 # https://geoportal.statistics.gov.uk/datasets/ons::wards-december-2021-uk-bgc

@@ -27,24 +27,26 @@
 {% block maincolumn_content %}
 
   {{ page_header("Choose Postcode") }}
-
   {% call form_wrapper() %}
-    <div style="display: flex; justify-content:space-evenly">
+    <div>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         {{ form.postcode}}
         {{ form.radius}}
-        {{ page_footer('Search', search=True) }}
-
+        {{ govukButton({
+          "classes": "notify-simple-search-form__button search-postcode-button",
+          "html": "Search <span class=\"govuk-visually-hidden\">for areas</span>",
+        }) }}
     </div>
 {% endcall %}
 
 {% if broadcast_message.areas %}
   <div>
-    <p class="govuk-!-margin-right-2 area-list">Postcodes selected: </p>
+    <p class="govuk-!-margin-right-2 area-list">Areas selected: </p>
     <ul class="area-list">
       {% for area in broadcast_message.areas %}
         <li class="area-list-item">
           {{ area.name }}
-          <a class="area-list-item-remove govuk-button" data-module="govuk-button" role="button" href="{{ url_for('.remove_broadcast_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, area_slug=area.name) }}">
+          <a class="area-list-item-remove govuk-button" data-module="govuk-button" role="button" href="{{ url_for('.remove_custom_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, area_id=area.name) }}">
             <svg id="area-list-item-remove__icon" width="11" height="11" viewbox="0 0 10 10" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
               <g transform="rotate(45),translate(1, -6)">
                 <line stroke-width="1.75" id="svg_1" y2="0" x2="6" y1="12" x1="6" stroke="currentColor" fill="none"/>
