@@ -608,16 +608,18 @@ def _check_messages(service_id, template_id, upload_id, preview_row, letters_as_
         db_template,
         current_service,
         show_recipient=True,
-        letter_preview_url=url_for(
-            "no_cookie.check_messages_preview",
-            service_id=service_id,
-            template_id=template_id,
-            upload_id=upload_id,
-            filetype="png",
-            row_index=preview_row,
-        )
-        if not letters_as_pdf
-        else None,
+        letter_preview_url=(
+            url_for(
+                "no_cookie.check_messages_preview",
+                service_id=service_id,
+                template_id=template_id,
+                upload_id=upload_id,
+                filetype="png",
+                row_index=preview_row,
+            )
+            if not letters_as_pdf
+            else None
+        ),
         email_reply_to=email_reply_to,
         sms_sender=sms_sender,
         # In this case, we don't provide template values when calculating the page count
@@ -630,11 +632,13 @@ def _check_messages(service_id, template_id, upload_id, preview_row, letters_as_
         template=template,
         max_initial_rows_shown=50,
         max_errors_shown=50,
-        guestlist=itertools.chain.from_iterable(
-            [user.name, user.mobile_number, user.email_address] for user in Users(service_id)
-        )
-        if current_service.trial_mode
-        else None,
+        guestlist=(
+            itertools.chain.from_iterable(
+                [user.name, user.mobile_number, user.email_address] for user in Users(service_id)
+            )
+            if current_service.trial_mode
+            else None
+        ),
         remaining_messages=remaining_messages,
         allow_international_sms=current_service.has_permission("international_sms"),
         allow_international_letters=current_service.has_permission("international_letters"),
