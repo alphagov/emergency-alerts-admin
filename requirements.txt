@@ -86,7 +86,7 @@ govuk-frontend-jinja==2.8.0
     # via -r requirements.in
 greenlet==1.1.2
     # via eventlet
-gunicorn @ git+https://github.com/benoitc/gunicorn.git@1299ea9e967a61ae2edebe191082fd169b864c64
+gunicorn[eventlet] @ git+https://github.com/benoitc/gunicorn.git@1299ea9e967a61ae2edebe191082fd169b864c64
     # via -r requirements.in
 humanize==4.4.0
     # via -r requirements.in
@@ -108,10 +108,7 @@ jinja2==3.1.2
     #   -r requirements.in
     #   flask
     #   govuk-frontend-jinja
-    #   jinja2-cli
     #   moto
-jinja2-cli[yaml]==0.8.2
-    # via -r requirements.in
 jmespath==1.0.1
     # via
     #   boto3
@@ -206,10 +203,8 @@ pytz==2022.6
     # via
     #   -r requirements.in
     #   moto
-pyyaml==5.4.1
-    # via
-    #   jinja2-cli
-    #   responses
+pyyaml==6.0.1
+    # via responses
 requests==2.28.1
     # via
     #   govuk-bank-holidays
