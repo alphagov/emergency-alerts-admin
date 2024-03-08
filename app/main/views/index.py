@@ -1,5 +1,14 @@
 from emergency_alerts_utils.template import HTMLEmailTemplate, LetterImageTemplate
-from flask import abort, make_response, redirect, render_template, request, url_for
+from flask import (
+    abort,
+    current_app,
+    make_response,
+    redirect,
+    render_template,
+    request,
+    send_from_directory,
+    url_for,
+)
 from flask_login import current_user
 
 from app import letter_branding_client
@@ -33,6 +42,11 @@ def cookies():
 @main.route("/privacy")
 def privacy():
     return render_template("views/privacy.html")
+
+
+@main.route("/robots.txt")
+def static_from_root():
+    return send_from_directory(current_app.static_folder, "metadata/" + request.path[1:])
 
 
 @main.route("/accessibility-statement")
