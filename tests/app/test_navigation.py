@@ -236,6 +236,7 @@ EXCLUDED_ENDPOINTS = tuple(
             "revalidate_email_sent",
             "revoke_api_key",
             "roadmap",
+            "robots",
             "save_contact_list",
             "security",
             "security_policy",

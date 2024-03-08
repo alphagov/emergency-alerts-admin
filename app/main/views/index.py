@@ -45,7 +45,7 @@ def privacy():
 
 
 @main.route("/robots.txt")
-def static_from_root():
+def robots():
     return send_from_directory(current_app.static_folder, "metadata/" + request.path[1:])
 
 
