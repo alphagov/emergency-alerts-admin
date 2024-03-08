@@ -303,6 +303,7 @@ EXCLUDED_ENDPOINTS = tuple(
             "sign_in",
             "sign_out",
             "start_job",
+            "static",
             "submit_request_to_go_live",
             "support",
             "support_public",
