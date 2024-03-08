@@ -425,7 +425,7 @@ def test_all_endpoints_are_covered(navigation_instance):
     covered_endpoints = (
         navigation_instance.endpoints_with_navigation
         + EXCLUDED_ENDPOINTS
-        + ("static", "status.show_status", "metadata.noindex", "metrics")
+        + ("static", "status.show_status", "static.static", "static.send_robots_txt", "metrics")
     )
 
     for endpoint in all_endpoints:

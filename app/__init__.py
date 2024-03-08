@@ -509,7 +509,7 @@ def setup_blueprints(application):
     """
     from app.main import main as main_blueprint
     from app.main import no_cookie as no_cookie_blueprint
-    from app.static_blueprint import static as static_blueprint
+    from app.static_robot.views import static as static_blueprint
     from app.status import status as status_blueprint
 
     main_blueprint.before_request(make_session_permanent)
