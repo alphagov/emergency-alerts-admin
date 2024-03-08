@@ -491,7 +491,7 @@ def register_errorhandlers(application):  # noqa (C901 too complex)
 
 def setup_blueprints(application):
     """
-    There are four blueprints: status_blueprint, no_cookie_blueprint, main_blueprint, static_blueprint
+    There are three blueprints: status_blueprint, no_cookie_blueprint, main_blueprint
 
     main_blueprint is the default for everything.
 
@@ -509,7 +509,6 @@ def setup_blueprints(application):
     """
     from app.main import main as main_blueprint
     from app.main import no_cookie as no_cookie_blueprint
-    from app.static_robot.views import static as static_blueprint
     from app.status import status as status_blueprint
 
     main_blueprint.before_request(make_session_permanent)
@@ -519,7 +518,6 @@ def setup_blueprints(application):
     # no_cookie_blueprint specifically doesn't have `make_session_permanent` or `save_service_or_org_after_request`
     application.register_blueprint(no_cookie_blueprint)
     application.register_blueprint(status_blueprint)
-    application.register_blueprint(static_blueprint)
 
 
 def setup_event_handlers():

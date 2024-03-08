@@ -53,6 +53,10 @@ const copy = {
       return src(paths.npm + 'leaflet/dist/leaflet.js')
         .pipe(dest(paths.dist + 'javascripts/'))
     }
+  },
+  robots: () => {
+    return src(paths.src + 'metadata/robots.txt')
+      .pipe(dest(paths.dist + 'metadata/'))
   }
 };
 
@@ -220,7 +224,8 @@ const defaultTask = parallel(
   parallel(
     copy.govuk_frontend.fonts,
     images,
-    copy.leaflet.js
+    copy.leaflet.js,
+    copy.robots
   ),
   series(
     copy.error_pages,

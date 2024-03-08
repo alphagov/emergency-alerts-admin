@@ -236,6 +236,7 @@ EXCLUDED_ENDPOINTS = tuple(
             "revalidate_email_sent",
             "revoke_api_key",
             "roadmap",
+            "robots",
             "save_contact_list",
             "security",
             "security_policy",
@@ -423,9 +424,7 @@ def test_excluded_navigation_items_are_properly_defined():
 )
 def test_all_endpoints_are_covered(navigation_instance):
     covered_endpoints = (
-        navigation_instance.endpoints_with_navigation
-        + EXCLUDED_ENDPOINTS
-        + ("static", "status.show_status", "static.static", "static.send_robots_txt", "metrics")
+        navigation_instance.endpoints_with_navigation + EXCLUDED_ENDPOINTS + ("static", "status.show_status", "metrics")
     )
 
     for endpoint in all_endpoints:
