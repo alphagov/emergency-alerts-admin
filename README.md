@@ -6,11 +6,14 @@ GOV.UK Emergency Alerts admin application - https://admin.emergency-alerts.servi
  - Create and manage services
  - Author and approve emergency alerts
 
-## Setting up
+## Setting up to run the Admin UI Server locally
+
+### Local Development Environment Setup
+Ensure that you have first followed all of the local development environment setup steps, that can be found [here](https://gds-ea.atlassian.net/wiki/spaces/EA/pages/3211265/Mac+Setup), before attempting to run the Admin UI Server locally.
 
 ### Python version
 
-At the moment we run Python 3.9 in production.
+You can find instructions on specifying the correct Python version [here](https://gds-ea.atlassian.net/wiki/spaces/EA/pages/192217089/Setting+up+Local+Development+Environment#Setting-Python-Version).
 
 ### NodeJS & NPM
 
@@ -29,26 +32,9 @@ have that version, it should tell you how to install it.
 nvm use
 ```
 
-### Pre-commit
-
-We use [pre-commit](https://pre-commit.com/) to ensure that committed code meets basic standards for formatting, and will make basic fixes for you to save time and aggravation.
-
-Install pre-commit system-wide with, eg `brew install pre-commit`. Then, install the hooks in this repository with `pre-commit install --install-hooks`.
-
 ### `environment.sh`
 
-In the root directory of the application, run:
-
-```
-echo "
-export HOST='local'
-export ENVIRONMENT='local'
-
-export FLASK_APP=application.py
-export FLASK_DEBUG=False
-export WERKZEUG_DEBUG_PIN=off
-"> environment.sh
-```
+The instructions on setting up the `environment.sh` file can be found [here](https://gds-ea.atlassian.net/wiki/spaces/EA/pages/192217089/Setting+up+Local+Development+Environment#Getting-Admin-UI-setup).
 
 ## Running the Admin and Api services with Postgres
 
@@ -58,39 +44,17 @@ Please refer to the README in the /emergency-alerts-tooling repository, in the /
 
 For webauthn to work, the relying party URL must be equal to the domain, or be equal to a registrable sub-domain.  The lower environments, preview and staging, have URLs matching the Route 53 DNS entries. However, production is a special case, so in /emergency-alerts-admin/app/webauthn_server.py, the production URL is defined as a sub-domain to prevent environment names being prefixed to the URL as with the lower environments.
 
-## THE FOLLOWING INSTRUCTIONS ARE DEPRECATED AND SHOULD BE USED FOR HISTORICAL REFERENCE ONLY
-(This section will be removed in the future, as the Emergency Alerts app is fully decoupled from Notify)
-
-### AWS credentials
-
-To run parts of the app, such as uploading letters, you will need appropriate AWS credentials. See the [Wiki](https://github.com/alphagov/notifications-manuals/wiki/aws-accounts#how-to-set-up-local-development) for more details.
-
 ## To run the application
 
-```shell
-# install dependencies, etc.
-make bootstrap
-
-# run the web app
-make run-flask
-```
-
-Then visit [localhost:6012](http://localhost:6012).
+The instructions for running the Admin UI Server can be found [here](https://gds-ea.atlassian.net/wiki/spaces/EA/pages/192217089/Setting+up+Local+Development+Environment#Run-the-Admin-UI-Server).
 
 Any Python code changes you make should be picked up automatically in development. If you're developing JavaScript code, run `npm run watch` to achieve the same.
 
 ## To test the application
 
-```
-# install dependencies, etc.
-make bootstrap
+Current instructions for unit tests can be found [here](https://gds-ea.atlassian.net/wiki/spaces/EA/pages/192217089/Setting+up+Local+Development+Environment#Running-the-Unit-Tests).
 
-# run all the tests
-make test
-
-# continuously run js tests
-npm run test-watch
-```
+To continuously run js tests, run `npm run test-watch`.
 
 To run a specific JavaScript test, you'll need to copy the full command from `package.json`.
 
