@@ -14,6 +14,7 @@ CF_HOME ?= ${HOME}
 CF_APP ?= notify-admin
 CF_MANIFEST_PATH ?= /tmp/manifest.yml
 $(eval export CF_HOME)
+BUCKET_NAME = ${GEOJSON_BUCKET_NAME}
 
 NOTIFY_CREDENTIALS ?= ~/.notify-credentials
 
@@ -28,6 +29,12 @@ bootstrap: generate-version-file ## Set up everything to run the app
 	${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements_local_utils.txt
 	source $(HOME)/.nvm/nvm.sh && nvm install && npm ci --no-audit
 	source $(HOME)/.nvm/nvm.sh && npm run build
+	@if ! [ -f "./app/broadcast_areas/broadcast-areas.sqlite3" ]; then \
+		aws s3 cp s3://$(BUCKET_NAME)/broadcast-areas.sqlite3 ./app/broadcast_areas; \
+	else \
+		echo "Sqlite file already exists"; \
+	fi
+
 
 .PHONY: bootstrap-for-tests
 bootstrap-for-tests: generate-version-file ## Set up everything to run the app
