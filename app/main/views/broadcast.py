@@ -300,7 +300,7 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
             "views/broadcast/search-postcodes.html",
             broadcast_message=broadcast_message,
             back_link=url_for(
-                ".write_new_broadcast", service_id=current_service.id, broadcast_message_id=broadcast_message_id
+                ".choose_broadcast_library", service_id=service_id, broadcast_message_id=broadcast_message_id
             ),
             form=form,
         )
@@ -370,7 +370,7 @@ def redirect_to_postcode_map(service_id, broadcast_message_id, form):
         broadcast_message.add_custom_areas(circle_polygon, id=circle_id)
     except IndexError:
         # add error to form
-        form.postcode.errors.append("Postcode not found. Enter a different postcode.")
+        form.postcode.errors.append("Postcode not found. Enter a valid postcode.")
     return broadcast_message
 
 
