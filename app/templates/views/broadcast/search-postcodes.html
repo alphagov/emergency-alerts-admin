@@ -30,11 +30,15 @@
   {% call form_wrapper() %}
     <div>
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        {{ form.postcode}}
-        {{ form.radius}}
+        {{ form.postcode(param_extensions={
+          "hint": {"text": "This postcode is at the centre of your emergency alert area."}
+        }) }}
+        {{ form.radius(param_extensions={
+          "hint": {"text": "This is the distance from the centre of your postcode to the edge of the alert area."},
+        })}}
         {{ govukButton({
           "classes": "notify-simple-search-form__button search-postcode-button",
-          "html": "Search <span class=\"govuk-visually-hidden\">for areas</span>",
+          "html": "Search<span class=\"govuk-visually-hidden\">for areas</span>",
         }) }}
     </div>
 {% endcall %}

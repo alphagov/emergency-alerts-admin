@@ -282,10 +282,11 @@ class GovukIntegerField(GovukTextInputFieldMixin, IntegerField):
     pass
 
 
-class PostcodeSearchField(GovukSearchField):
-    param_extensions = {"classes": "govuk-input govuk-input--width-10"},
+class PostcodeSearchField(GovukTextInputFieldMixin, SearchField):
+    input_type = "Search"
+    param_extensions = {"classes": "govuk-input--width-10"}
     validators = [
-        DataRequired(message="Cannot be empty"),
+        DataRequired(message="Enter a valid postcode."),
         MustContainAlphanumericCharacters(),
         Length(max=255, message="Service name must be 255 characters or fewer"),
     ]
@@ -2577,7 +2578,13 @@ class PostcodeForm(StripWhitespaceForm):
     postcode = PostcodeSearchField("Search Postcode")
     radius = GovukSearchField(
         "Add Radius",
-        param_extensions={"classes": "govuk-input govuk-input--width-5",  "suffix": {"text": "km"},
-                          "attributes": {"pattern": "[0-9]*"}},
-        validators=[DataRequired(message="Cannot be empty"), Regexp(regex=r"^\d+$", message="Numbers only")],
+        param_extensions={
+            "classes": "govuk-input govuk-input--width-5",
+            "suffix": {"text": "km"},
+            "attributes": {"pattern": "[0-9]*"},
+        },
+        validators=[
+            DataRequired(message="Enter a valid radius."),
+            Regexp(regex=r"^\d+$", message="Enter a valid radius."),
+        ],
     )
