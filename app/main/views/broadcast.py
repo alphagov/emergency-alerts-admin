@@ -6,6 +6,7 @@ from shapely.geometry import Polygon
 from shapely.ops import transform
 
 from app import current_service
+from app.broadcast_areas.models import CustomBroadcastArea
 from app.main import main
 from app.main.forms import (
     BroadcastAreaForm,
@@ -261,13 +262,16 @@ def preview_broadcast_areas(service_id, broadcast_message_id):
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
 def choose_broadcast_library(service_id, broadcast_message_id):
+    broadcast_message = BroadcastMessage.from_id(
+        broadcast_message_id,
+        service_id=current_service.id,
+    )
+    is_custom_broadcast = any(type(area) is CustomBroadcastArea for area in broadcast_message.areas)
     return render_template(
         "views/broadcast/libraries.html",
         libraries=BroadcastMessage.libraries,
-        broadcast_message=BroadcastMessage.from_id(
-            broadcast_message_id,
-            service_id=current_service.id,
-        ),
+        broadcast_message=broadcast_message,
+        custom_broadcast=is_custom_broadcast,
     )
 
 
@@ -304,7 +308,15 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
             ),
             form=form,
         )
-
+    else:
+        """To ensure area types not mixed, if area is of type CustombroadcastArea then
+        other library areas not added properly"""
+        if broadcast_message.areas and (any(type(area) is CustomBroadcastArea for area in broadcast_message.areas)):
+            broadcast_message.clear_areas()
+            broadcast_message = BroadcastMessage.from_id(
+                broadcast_message_id,
+                service_id=current_service.id,
+            )
     if library.is_group:
         return render_template(
             "views/broadcast/areas-with-sub-areas.html",
@@ -402,27 +414,22 @@ def create_circle(center, radius):
     return coordinates
 
 
-@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/remove_custom/<area_id>")
+@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/remove_custom/<postcode_slug>")
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
-def remove_custom_area(service_id, broadcast_message_id, area_id):
-    broadcast_message = BroadcastMessage.from_id(
+def remove_postcode_area(service_id, broadcast_message_id, postcode_slug):
+    BroadcastMessage.from_id(
         broadcast_message_id,
         service_id=current_service.id,
-    ).remove_postcode_area(area_id)
-
-    broadcast_message = BroadcastMessage.from_id(
-        broadcast_message_id,
-        service_id=current_service.id)
-
+    ).remove_area(postcode_slug)
     return redirect(
-            url_for(
-                ".choose_broadcast_area",
-                service_id=current_service.id,
-                broadcast_message_id=broadcast_message.id,
-                library_slug='postcodes'
-            )
+        url_for(
+            ".choose_broadcast_area",
+            service_id=current_service.id,
+            broadcast_message_id=broadcast_message_id,
+            library_slug="postcodes",
         )
+    )
 
 
 @main.route(
@@ -511,7 +518,6 @@ def preview_broadcast_message(service_id, broadcast_message_id):
         broadcast_message_id,
         service_id=current_service.id,
     )
-    # add here
     if request.method == "POST":
         broadcast_message.request_approval()
         return redirect(
