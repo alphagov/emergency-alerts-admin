@@ -8,7 +8,7 @@ from flask import url_for
 from freezegun import freeze_time
 
 from tests import NotifyBeautifulSoup, broadcast_message_json, sample_uuid, user_json
-from tests.app.broadcast_areas.custom_polygons import BRISTOL, SKYE
+from tests.app.broadcast_areas.custom_polygons import BD1_1EE_1, BRISTOL, SKYE
 from tests.conftest import (
     SERVICE_ONE_ID,
     SERVICE_TWO_ID,
@@ -82,6 +82,12 @@ sample_uuid = sample_uuid()
         (
             ".remove_broadcast_area",
             {"broadcast_message_id": sample_uuid, "area_slug": "countries-E92000001"},
+            403,
+            405,
+        ),
+        (
+            ".remove_postcode_area",
+            {"broadcast_message_id": sample_uuid, "postcode_slug": "BD1 1EE-1"},
             403,
             405,
         ),
@@ -171,6 +177,12 @@ def test_broadcast_pages_403_without_permission(
         (
             ".remove_broadcast_area",
             {"broadcast_message_id": sample_uuid, "area_slug": "england"},
+            403,
+            405,
+        ),
+        (
+            ".remove_postcode_area",
+            {"broadcast_message_id": sample_uuid, "postcode_slug": "BD1 1EE-1"},
             403,
             405,
         ),
@@ -1026,6 +1038,14 @@ def test_preview_broadcast_areas_page(
                 "3,000 to 4,000 phones",
             ],
         ),
+        (
+            BD1_1EE_1,
+            [
+                "An area of 1 square miles Will get the alert",
+                "An extra area of 3 square miles is Likely to get the alert",
+                "10,000 to 50,000 phones",
+            ],
+        ),
     ),
 )
 def test_preview_broadcast_areas_page_with_custom_polygons(
@@ -1130,6 +1150,16 @@ def test_preview_broadcast_areas_page_with_custom_polygons(
                 "Test areas",
             ],
         ),
+        (
+            ["BD1 1EE-1"],
+            [
+                "Countries",
+                "Local authorities",
+                "Police forces in England and Wales",
+                "Postcode areas",
+                "Test areas",
+            ],
+        ),
     ),
 )
 def test_choose_broadcast_library_page(
@@ -1159,7 +1189,6 @@ def test_choose_broadcast_library_page(
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
     )
-
     assert [normalize_spaces(title.text) for title in page.select("main a.govuk-link")] == expected_list
 
     assert normalize_spaces(page.select(".file-list-hint-large")[0].text) == (
@@ -1197,9 +1226,7 @@ def test_suggested_area_has_correct_link(
     )
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.get(
-        ".choose_broadcast_library",
-        service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        ".choose_broadcast_library", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid, custom_broadcast=False
     )
     link = page.select_one("main a.govuk-link")
 
@@ -1226,6 +1253,7 @@ def test_suggested_area_has_correct_link(
             "test",
             "Choose test areas",
         ),
+        ("postcodes", "Choose Postcode"),
     ),
 )
 def test_choose_broadcast_area_page_titles(
@@ -1647,6 +1675,22 @@ def test_add_broadcast_area(
         "app.models.broadcast_message.BroadcastMessage.get_polygons_from_areas",
         return_value=polygons,
     )
+    mock_get_broadcast_message = mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            area_ids=["ctry19-E92000001", "ctry19-W92000004"],
+            areas={
+                "ids": ["ctry19-E92000001", "ctry19-W92000004"],
+                "names": ["England", "Wales"],
+                "simple_polygons": [polygons],
+            },
+        ),
+    )
 
     client_request.login(active_user_create_broadcasts_permission)
     client_request.post(
@@ -1657,6 +1701,8 @@ def test_add_broadcast_area(
         _data={"areas": ["ctry19-E92000001", "ctry19-W92000004"]},
     )
     mock_get_polygons_from_areas.assert_called_once_with(area_attribute="simple_polygons")
+    mock_get_broadcast_message.assert_called_once_with(service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
+
     mock_update_broadcast_message.assert_called_once_with(
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
@@ -1668,6 +1714,47 @@ def test_add_broadcast_area(
                 "simple_polygons": coordinates,
             }
         },
+    )
+
+
+def test_add_custom_area(
+    client_request,
+    service_one,
+    mock_get_draft_broadcast_message,
+    mock_update_broadcast_message,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
+    customBroadcastArea,
+):
+    service_one["permissions"] += ["broadcast"]
+    mock_get_broadcast_message = mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            area_ids=[],
+            areas=[],
+        ),
+    )
+
+    client_request.login(active_user_create_broadcasts_permission)
+    client_request.post(
+        ".choose_broadcast_area",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        library_slug="postcodes",
+        _data={"areas": []},
+    )
+    mock_get_broadcast_message.assert_called_once_with(service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
+
+    mock_update_broadcast_message.assert_called_once_with(
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        data={customBroadcastArea},
     )
 
 
@@ -1828,6 +1915,63 @@ def test_remove_broadcast_area_page(
                 "names": ["Scotland"],
                 "aggregate_names": ["Scotland"],
                 "ids": ["ctry19-S92000003"],
+            },
+        },
+    )
+
+
+@pytest.mark.parametrize(
+    "postcode_slug",
+    ((["BD1 1EE-1"])),
+)
+def test_remove_custom_area_page(
+    client_request,
+    service_one,
+    mock_get_draft_broadcast_message,
+    mock_update_broadcast_message,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
+    customBroadcastArea,
+    postcode_slug,
+):
+    service_one["permissions"] += ["broadcast"]
+    mock_get_broadcast_message = mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            area_ids=[postcode_slug],
+            areas=customBroadcastArea,
+        ),
+    )
+
+    client_request.login(active_user_create_broadcasts_permission)
+    client_request.get(
+        ".remove_postcode_area",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        postcode_slug=postcode_slug,
+        _expected_redirect=url_for(
+            ".choose_broadcast_area",
+            service_id=SERVICE_ONE_ID,
+            broadcast_message_id=fake_uuid,
+            library_slug="postcodes",
+        ),
+    )
+    mock_get_broadcast_message.assert_called_once_with(service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
+    mock_update_broadcast_message.assert_called_once_with(
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        data={
+            "areas": {
+                "simple_polygons": [],
+                "names": [],
+                "aggregate_names": [],
+                "ids": [],
             },
         },
     )

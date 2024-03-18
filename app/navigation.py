@@ -190,7 +190,7 @@ class MainNavigation(Navigation):
             "approve_broadcast_message",
             "reject_broadcast_message",
             "cancel_broadcast_message",
-            "remove_custom_area",
+            "remove_postcode_area",
         },
         "uploads": {
             "upload_contact_list",

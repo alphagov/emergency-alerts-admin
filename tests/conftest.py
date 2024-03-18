@@ -13,6 +13,7 @@ from flask import Flask, url_for
 from notifications_python_client.errors import HTTPError
 
 from app import create_app, webauthn_server
+from tests.app.broadcast_areas.custom_polygons import BD1_1EE_1
 
 from . import (
     NotifyBeautifulSoup,
@@ -2794,14 +2795,14 @@ def client_request(_logged_in_client, mocker, service_one):  # noqa (C901 too co
                     ("p", "govuk-body"),
                     ("a", "govuk-link govuk-link--no-visited-state"),
                 ):
-                    element = page.select_one(f"{tag}:not([class])")
+                    element = page.select_one(f"{tag}: not([class])")
                     if (
                         element
                         and not element.has_attr("style")  # Elements with inline CSS are exempt
                         and element.text.strip()  # Empty elements are exempt
                     ):
                         raise AssertionError(
-                            f"Found a <{tag}> without a class attribute:\n"
+                            f"Found a <{tag}> without a class attribute: \n"
                             f"    {element}\n"
                             f"\n"
                             f'(you probably want to add class="{hint}")'
@@ -4160,3 +4161,8 @@ def webauthn_credential_2():
         "created_at": "2021-05-14T16:57:14.154185Z",
         "logged_in_at": None,
     }
+
+
+@pytest.fixture(scope="function")
+def customBroadcastArea():
+    return {"ids": ["BD1 1EE-1"], "names": ["BD1 1EE-1"], "simple_polygons": [BD1_1EE_1], "aggregate_names": []}
