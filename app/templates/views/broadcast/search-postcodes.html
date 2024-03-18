@@ -1,12 +1,12 @@
 {% extends "withnav_template.html" %}
+{% from "components/banner.html" import banner_wrapper %}
 {% from "components/form.html" import form_wrapper %}
 {% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
 {% from "components/page-header.html" import page_header %}
 {% from "components/page-footer.html" import page_footer %}
-{% from "views/broadcast/macros/postcode-map.html" import map %}
+{% from "views/broadcast/macros/area-map.html" import map %}
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
 {% from "govuk_frontend_jinja/components/input/macro.html" import govukInput %}
-
 
 {% block service_page_title %}
   Choose Postcode area
@@ -41,30 +41,45 @@
           "html": "Search<span class=\"govuk-visually-hidden\">for areas</span>",
         }) }}
     </div>
+    <!-- <div style="display: flex; align-items:center">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {{ form.postcode}}
+          <div style="margin-left:10%">
+            {{ form.radius}}
+          </div>
+        {{ govukButton({
+          "classes": "notify-simple-search-form__button search-postcode-button govuk-button--secondary",
+          "html": "Search<span class=\"govuk-visually-hidden\">for areas</span>",
+        }) }}
+    </div> -->
 {% endcall %}
 
 {% if broadcast_message.areas %}
   <div>
-    <p class="govuk-!-margin-right-2 area-list">Areas selected: </p>
+    <p class="govuk-!-margin-right-2 area-list">Area selected: </p>
     <ul class="area-list">
       {% for area in broadcast_message.areas %}
-        <li class="area-list-item">
-          {{ area.name }}
-          <a class="area-list-item-remove govuk-button" data-module="govuk-button" role="button" href="{{ url_for('.remove_custom_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, area_id=area.name) }}">
-            <svg id="area-list-item-remove__icon" width="11" height="11" viewbox="0 0 10 10" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
-              <g transform="rotate(45),translate(1, -6)">
-                <line stroke-width="1.75" id="svg_1" y2="0" x2="6" y1="12" x1="6" stroke="currentColor" fill="none"/>
-                <line stroke-width="1.75" id="svg_3" y2="6" x2="0" y1="6" x1="12" stroke="currentColor" fill="none"/>
-              </g>
-            </svg>
-            <span class="govuk-visually-hidden">Remove {{ area.name }}</span>
-          </a>
-        </li>
+        {% set item = area.name.split('-') %}
+        {% if item|length > 1 %}
+          {% set name = "A radius of "+item[1]+"km around "+item[0] %}
+          <li class="area-list-item">
+            {{name}}
+            <a class="area-list-item-remove govuk-button" data-module="govuk-button" role="button" href="{{ url_for('.remove_postcode_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, postcode_slug=area.name) }}">
+              <svg id="area-list-item-remove__icon" width="11" height="11" viewbox="0 0 10 10" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+                <g transform="rotate(45),translate(1, -6)">
+                  <line stroke-width="1.75" id="svg_1" y2="0" x2="6" y1="12" x1="6" stroke="currentColor" fill="none"/>
+                  <line stroke-width="1.75" id="svg_3" y2="6" x2="0" y1="6" x1="12" stroke="currentColor" fill="none"/>
+                </g>
+              </svg>
+              <span class="govuk-visually-hidden">Remove {{ area.name }}</span>
+            </a>
+          </li>
+        {% endif %}
       {% endfor %}
     </ul>
   </div>
-  {% endif %}
-  {{ map(broadcast_message) }}
+{% endif %}
+{{ map(broadcast_message) }}
 
 
   {{ govukButton({
