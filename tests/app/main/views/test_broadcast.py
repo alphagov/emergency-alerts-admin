@@ -597,7 +597,7 @@ def test_broadcast_dashboard_has_new_alert_button_if_user_has_permission_to_crea
         service_id=SERVICE_ONE_ID,
     )
     button = page.select_one(".js-stick-at-bottom-when-scrolling a.govuk-button.govuk-button--secondary")
-    assert normalize_spaces(button.text) == "New alert"
+    assert normalize_spaces(button.text) == "Create new alert"
     assert button["href"] == url_for(
         "main.new_broadcast",
         service_id=SERVICE_ONE_ID,
@@ -695,7 +695,7 @@ def test_new_broadcast_page(
         service_id=SERVICE_ONE_ID,
     )
 
-    assert normalize_spaces(page.select_one("h1").text) == "New alert"
+    assert normalize_spaces(page.select_one("h1").text) == "Create new alert"
 
     form = page.select_one("form")
     assert form["method"] == "post"
@@ -755,7 +755,7 @@ def test_write_new_broadcast_page(
         service_id=SERVICE_ONE_ID,
     )
 
-    assert normalize_spaces(page.select_one("h1").text) == "New alert message"
+    assert normalize_spaces(page.select_one("h1").text) == "Write new alert"
 
     form = page.select_one("form")
     assert form["method"] == "post"
@@ -1531,7 +1531,7 @@ def test_preview_broadcast_areas_has_back_link_with_uuid(
     page = client_request.get(
         "main.preview_broadcast_areas", service_id=SERVICE_ONE_ID, broadcast_message_id=str(uuid.UUID(int=0))
     )
-    assert normalize_spaces(page.select_one("h1").text) == "Area defined"
+    assert normalize_spaces(page.select_one("h1").text) == "Confirm the area for the alert"
     back_link = page.select_one(".govuk-back-link")
     assert back_link["href"] == url_for(
         expected_back_link_url,
