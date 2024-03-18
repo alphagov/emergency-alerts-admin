@@ -112,13 +112,12 @@ def polygons_and_simplified_polygons(feature, name):
     simplified = smoothed.simplify
 
     if not (len(full_resolution) or len(simplified)):
-        # raise RuntimeError("Polygon of 0 size found")
-        return None, None, None
+        raise RuntimeError("Polygon of 0 size found")
 
     print(  # noqa: T201
-        f"    Original:{full_resolution.point_count: >5} points"
-        f"    Smoothed:{smoothed.point_count: >5} points"
-        f"    Simplified:{simplified.point_count: >4} points"
+        f"    Original: {full_resolution.point_count: >5} points"
+        f"    Smoothed: {smoothed.point_count: >5} points"
+        f"    Simplified: {simplified.point_count: >4} points"
     )
 
     point_counts.append(simplified.point_count)
@@ -136,10 +135,10 @@ def polygons_and_simplified_polygons(feature, name):
     ]
 
     # Check that the simplification process hasn’t introduced bad data
-    if name != "postcodes":
-        for dataset in output:
-            for polygon in dataset:
-                assert Polygon(polygon).is_valid
+
+    for dataset in output:
+        for polygon in dataset:
+            assert Polygon(polygon).is_valid
 
     return output + [simplified.utm_crs]
 
@@ -207,7 +206,7 @@ most_detailed_polygons = formatted_list(
 print(  # noqa: T201
     "\n"
     "DONE\n"
-    f"    Processed {len(point_counts):,} polygons.\n"
-    f"    Cleaned up {len(invalid_polygons):,} polygons.\n"
+    f"    Processed {len(point_counts): , } polygons.\n"
+    f"    Cleaned up {len(invalid_polygons) : , } polygons.\n"
     f"    Highest point counts once simplifed: {most_detailed_polygons}\n"
 )
