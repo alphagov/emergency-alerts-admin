@@ -1725,7 +1725,7 @@ def test_add_custom_area(
     fake_uuid,
     mocker,
     active_user_create_broadcasts_permission,
-    customBroadcastArea,
+    custom_broadcast_area,
 ):
     service_one["permissions"] += ["broadcast"]
     mock_get_broadcast_message = mocker.patch(
@@ -1754,7 +1754,7 @@ def test_add_custom_area(
     mock_update_broadcast_message.assert_called_once_with(
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
-        data={customBroadcastArea},
+        data={custom_broadcast_area},
     )
 
 
@@ -1932,7 +1932,7 @@ def test_remove_custom_area_page(
     fake_uuid,
     mocker,
     active_user_create_broadcasts_permission,
-    customBroadcastArea,
+    custom_broadcast_area,
     postcode_slug,
 ):
     service_one["permissions"] += ["broadcast"]
@@ -1945,7 +1945,7 @@ def test_remove_custom_area_page(
             service_id=SERVICE_ONE_ID,
             status="draft",
             area_ids=[postcode_slug],
-            areas=customBroadcastArea,
+            areas=custom_broadcast_area,
         ),
     )
 
