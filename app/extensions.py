@@ -5,5 +5,3 @@ from emergency_alerts_utils.clients.zendesk.zendesk_client import ZendeskClient
 antivirus_client = AntivirusClient()
 zendesk_client = ZendeskClient()
 redis_client = RedisClient()
-
-# fake comment here
