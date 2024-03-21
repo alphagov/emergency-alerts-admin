@@ -1,5 +1,8 @@
 #!/bin/sh
 
+print "$1"
+print "$2"
+
 STAGED_FILES=$(git diff-index --name-only --cached --diff-filter=ACMR HEAD -- )
 STAGED_REQ_FILES=0
 
