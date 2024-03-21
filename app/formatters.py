@@ -17,6 +17,8 @@ from emergency_alerts_utils.take import Take
 from emergency_alerts_utils.timezones import utc_string_to_aware_gmt_datetime
 from flask import Markup, url_for
 
+# fake comment here
+
 
 def convert_to_boolean(value):
     if isinstance(value, str):

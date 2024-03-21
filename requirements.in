@@ -1,7 +1,7 @@
 # Run `make freeze-requirements` to update requirements.txt
 # with package version changes made in requirements-app.txt
 
-ago==0.0.95
+ago==12.0.95
 govuk-bank-holidays==0.11
 humanize==4.4.0
 Flask==2.2.2
