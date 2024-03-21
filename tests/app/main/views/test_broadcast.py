@@ -11,6 +11,7 @@ from tests import NotifyBeautifulSoup, broadcast_message_json, sample_uuid, user
 from tests.app.broadcast_areas.custom_polygons import (
     BD1_1EE_1,
     BD1_1EE_2,
+    BD1_1EE_3,
     BRISTOL,
     SKYE,
 )
@@ -1051,6 +1052,22 @@ def test_preview_broadcast_areas_page(
                 "10,000 to 50,000 phones",
             ],
         ),
+        (
+            [BD1_1EE_2],
+            [
+                "An area of 5 square miles Will get the alert",
+                "An extra area of 5 square miles is Likely to get the alert",
+                "50,000 to 100,000 phones",
+            ],
+        ),
+        (
+            [BD1_1EE_3],
+            [
+                "An area of 10 square miles Will get the alert",
+                "An extra area of 7 square miles is Likely to get the alert",
+                "100,000 to 200,000 phones",
+            ],
+        ),
     ),
 )
 def test_preview_broadcast_areas_page_with_custom_polygons(
@@ -1157,6 +1174,16 @@ def test_preview_broadcast_areas_page_with_custom_polygons(
         ),
         (
             ["BD1 1EE-1"],
+            [
+                "Countries",
+                "Local authorities",
+                "Police forces in England and Wales",
+                "Postcode areas",
+                "Test areas",
+            ],
+        ),
+        (
+            ["BD1 1EE-3"],
             [
                 "Countries",
                 "Local authorities",
@@ -1722,6 +1749,33 @@ def test_add_broadcast_area(
     )
 
 
+@pytest.mark.parametrize(
+    "post_data, update_broadcast_data",
+    (
+        (
+            {"postcode": "BD1 1EE", "radius": "2"},
+            {
+                "areas": {
+                    "ids": ["BD1 1EE-2"],
+                    "names": ["BD1 1EE-2"],
+                    "aggregate_names": [],
+                    "simple_polygons": [BD1_1EE_2],
+                }
+            },
+        ),
+        (
+            {"postcode": "BD1 1EE", "radius": "3"},
+            {
+                "areas": {
+                    "ids": ["BD1 1EE-3"],
+                    "names": ["BD1 1EE-3"],
+                    "aggregate_names": [],
+                    "simple_polygons": [BD1_1EE_3],
+                }
+            },
+        ),
+    ),
+)
 def test_add_custom_area(
     client_request,
     service_one,
@@ -1730,6 +1784,8 @@ def test_add_custom_area(
     fake_uuid,
     mocker,
     active_user_create_broadcasts_permission,
+    post_data,
+    update_broadcast_data,
 ):
     service_one["permissions"] += ["broadcast"]
     mock_get_broadcast_message = mocker.patch(
@@ -1745,32 +1801,27 @@ def test_add_custom_area(
     )
 
     client_request.login(active_user_create_broadcasts_permission)
-    client_request.post(
+    page = client_request.post(
         ".choose_broadcast_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug="postcodes",
-        _data={
-            "postcode": "BD1 1EE",
-            "radius": 2,
-        },
+        _data=post_data,
         _follow_redirects=True,
     )
 
     mock_update_broadcast_message.assert_called_once_with(
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
-        data={
-            "areas": {
-                "ids": ["BD1 1EE-2"],
-                "names": ["BD1 1EE-2"],
-                "aggregate_names": [],
-                "simple_polygons": [BD1_1EE_2],
-            },
-        },
+        data=update_broadcast_data,
     )
+    form = page.select_one("form")
+    postcode_value = form.select_one("#postcode")["value"]
+    radius_value = form.select_one("#radius")["value"]
+    assert normalize_spaces(form.select_one("button").text) == "Search for areas"
+    assert postcode_value == post_data["postcode"]
+    assert radius_value == post_data["radius"]
     assert mock_get_broadcast_message.call_count == 3
-    # will add tests for page content
 
 
 @pytest.mark.parametrize(
