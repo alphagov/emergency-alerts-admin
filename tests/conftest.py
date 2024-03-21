@@ -13,7 +13,6 @@ from flask import Flask, url_for
 from notifications_python_client.errors import HTTPError
 
 from app import create_app, webauthn_server
-from tests.app.broadcast_areas.custom_polygons import BD1_1EE_1
 
 from . import (
     NotifyBeautifulSoup,
@@ -4161,8 +4160,3 @@ def webauthn_credential_2():
         "created_at": "2021-05-14T16:57:14.154185Z",
         "logged_in_at": None,
     }
-
-
-@pytest.fixture(scope="function")
-def custom_broadcast_area():
-    return {"ids": ["BD1 1EE-1"], "names": ["BD1 1EE-1"], "simple_polygons": [BD1_1EE_1], "aggregate_names": []}
