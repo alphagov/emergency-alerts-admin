@@ -2589,3 +2589,6 @@ class PostcodeForm(StripWhitespaceForm):
             Regexp(regex=r"^\d+$", message="Enter a valid radius."),
         ],
     )
+
+    def post_validate(self):
+        return False if self.errors else True

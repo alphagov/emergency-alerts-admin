@@ -293,6 +293,7 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
         form = PostcodeForm()
         if form.validate_on_submit():
             broadcast_message = redirect_to_postcode_map(service_id, broadcast_message_id, form)
+            form.post_validate()
 
         # Ensuring latest areas will display on map
         broadcast_message = BroadcastMessage.from_id(
@@ -366,7 +367,7 @@ def _get_broadcast_sub_area_back_link(service_id, broadcast_message_id, library_
         )
 
 
-def redirect_to_postcode_map(service_id, broadcast_message_id, form):
+def redirect_to_postcode_map(service_id, broadcast_message_id, form: PostcodeForm):
     broadcast_message = BroadcastMessage.from_id(
         broadcast_message_id,
         service_id=current_service.id,
@@ -383,6 +384,7 @@ def redirect_to_postcode_map(service_id, broadcast_message_id, form):
     except IndexError:
         # add error to form
         form.postcode.errors.append("Postcode not found. Enter a valid postcode.")
+        # form.postcode.validate()
     return broadcast_message
 
 
