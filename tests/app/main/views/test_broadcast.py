@@ -1740,9 +1740,9 @@ def test_add_broadcast_area(
         broadcast_message_id=fake_uuid,
         data={
             "areas": {
-                "ids": ["ctry19-E92000001", "ctry19-S92000003", "ctry19-W92000004"],
-                "names": ["England", "Scotland", "Wales"],
-                "aggregate_names": ["England", "Scotland", "Wales"],
+                "ids": ["ctry19-E92000001", "ctry19-W92000004"],
+                "names": ["England", "Wales"],
+                "aggregate_names": ["England", "Wales"],
                 "simple_polygons": coordinates,
             }
         },
