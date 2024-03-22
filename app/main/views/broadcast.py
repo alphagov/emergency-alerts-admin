@@ -1,9 +1,7 @@
-from functools import partial
-
 import pyproj
 from flask import abort, flash, jsonify, redirect, render_template, request, url_for
+from shapely import Point
 from shapely.geometry import Polygon
-from shapely.ops import transform
 
 from app import current_service
 from app.broadcast_areas.models import CustomBroadcastArea
@@ -394,26 +392,19 @@ def get_centroid(area):
 
 
 def create_circle(center, radius):
-    # Setting projection params
-    project = partial(
-        pyproj.transform,
-        pyproj.Proj(init="epsg:4326"),
-        pyproj.Proj(proj="aeqd", datum="WGS84", lat_0=center.y, lon_0=center.x),
-    )
-    # Setting params for reverse projection, to convert buffer back into WGS84 coords
-    project_inverse = partial(
-        pyproj.transform,
-        pyproj.Proj(proj="aeqd", datum="WGS84", lat_0=center.y, lon_0=center.x),
-        pyproj.Proj(init="epsg:4326"),
-    )
+    crs_4326 = pyproj.CRS("EPSG:4326")
+    crs_normalized = pyproj.CRS(proj="aeqd", datum="WGS84", lat_0=center.y, lon_0=center.x)
 
-    transformed_center = transform(project, center)
-    buffer = transformed_center.buffer(radius)
-    buffer_wgs84 = transform(project_inverse, buffer)
-    coordinates_to_reverse = list(buffer_wgs84.exterior.coords)
-    # lat & lng to cartesian
-    coordinates = [[lon, lat] for lat, lon in coordinates_to_reverse]
-    return coordinates
+    transformer = pyproj.Transformer.from_crs(crs_4326, crs_normalized)
+    transformer_inverse = pyproj.Transformer.from_crs(crs_normalized, crs_4326)
+
+    normalized_center = Point(transformer.transform(center.y, center.x))
+    circle = normalized_center.buffer(radius)
+    xx, yy = circle.exterior.coords.xy
+    xx_wgs84, yy_wgs84 = transformer_inverse.transform(xx, yy)
+    coordinates_new = [[lat, lon] for lat, lon in zip(xx_wgs84, yy_wgs84)]
+
+    return coordinates_new
 
 
 @main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/remove_custom/<postcode_slug>")
