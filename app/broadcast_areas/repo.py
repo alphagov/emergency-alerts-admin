@@ -10,7 +10,7 @@ rtree_index = pickle.loads(rtree_index_path.read_bytes())
 
 class BroadcastAreasRepository(object):
     def __init__(self):
-        database_name = "broadcast-areas.sqlite3" if not os.environ.get("IN_CI/CD") else "broadcast-areas-test.sqlite3"
+        database_name = "broadcast-areas.sqlite3" if not os.environ.get("IN_CICD") else "broadcast-areas-test.sqlite3"
         self.database = Path(__file__).resolve().parent / database_name
 
     def conn(self):
