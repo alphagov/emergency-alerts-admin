@@ -25,7 +25,7 @@ jobs:
           export DANGEROUS_SALT='dev-notify-salt'
           export SECRET_KEY='dev-notify-secret-key'
           export ADMIN_CLIENT_SECRET='dev-notify-secret-key'
-          export IN_CI/CD = 'True'
+          export IN_CICD='True'
           export FLASK_APP=application.py
           set -eu
           make bootstrap-for-tests
