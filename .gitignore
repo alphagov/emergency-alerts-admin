@@ -110,4 +110,4 @@ app/static
 
 # Files too large to be committed
 app/broadcast_areas/source_files/postcodes.geojson
-*.sqlite3
+app/broadcast_areas/broadcast-areas.sqlite3
