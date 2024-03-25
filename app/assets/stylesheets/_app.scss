@@ -231,3 +231,12 @@ details .arrow {
   margin-bottom: 1%;
   align-self: flex-start;
 }
+
+.search-postcode-form {
+  display: flex;
+  align-items:center;
+}
+
+.search-postcode-margin-left {
+  margin-left: govuk-spacing(5);
+}

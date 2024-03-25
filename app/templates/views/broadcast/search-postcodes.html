@@ -28,7 +28,7 @@
 
   {{ page_header("Choose Postcode") }}
   {% call form_wrapper() %}
-    <div>
+    <!-- <div>
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         {{ form.postcode(param_extensions={
           "hint": {"text": "This postcode is at the centre of your emergency alert area."}
@@ -40,18 +40,20 @@
           "classes": "notify-simple-search-form__button search-postcode-button",
           "html": "Search <span class=\"govuk-visually-hidden\">for areas</span>",
         }) }}
-    </div>
-    <!-- <div style="display: flex; align-items:center">
+    </div> -->
+    <div class="search-postcode-form">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             {{ form.postcode}}
-          <div style="margin-left:10%">
+          <div class="search-postcode-margin-left">
             {{ form.radius}}
           </div>
-        {{ govukButton({
-          "classes": "notify-simple-search-form__button search-postcode-button govuk-button--secondary",
-          "html": "Search <span class=\"govuk-visually-hidden\">for areas</span>",
-        }) }}
-    </div> -->
+          <div class="search-postcode-margin-left">
+            {{ govukButton({
+              "classes": "notify-simple-search-form__button search-postcode-button govuk-button--secondary",
+              "html": "Search <span class=\"govuk-visually-hidden\">for areas</span>",
+            }) }}
+          </div>
+    </div>
 {% endcall %}
 
 {% if broadcast_message.areas %}
