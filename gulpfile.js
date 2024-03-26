@@ -54,8 +54,8 @@ const copy = {
         .pipe(dest(paths.dist + 'javascripts/'))
     }
   },
-  robots: () => {
-    return src(paths.src + 'metadata/robots.txt')
+  static: () => {
+    return src(paths.src + 'metadata/*')
       .pipe(dest(paths.dist + 'metadata/'))
   }
 };
@@ -225,7 +225,7 @@ const defaultTask = parallel(
     copy.govuk_frontend.fonts,
     images,
     copy.leaflet.js,
-    copy.robots
+    copy.static
   ),
   series(
     copy.error_pages,

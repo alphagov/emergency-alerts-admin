@@ -6,7 +6,7 @@
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
 
 {% block service_page_title %}
-  Area defined
+  Confirm the area for the alert
 {% endblock %}
 
 {% block extra_stylesheets %}
@@ -23,7 +23,7 @@
 
 {% block maincolumn_content %}
 
-  {{ page_header("Area defined") }}
+  {{ page_header("Confirm the area for the alert") }}
 
   {% if broadcast_message.areas %}
     <div>
@@ -55,7 +55,7 @@
     {{ map(broadcast_message) }}
     {{ govukButton({
       "element": "a",
-      "text": "Preview this alert",
+      "text": "Preview alert",
       "href": url_for('.preview_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
       "classes": "govuk-button"
     }) }}

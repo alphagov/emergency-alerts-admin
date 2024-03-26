@@ -7,7 +7,7 @@ repos:
   - id: check-yaml
   - id: debug-statements
 - repo: https://github.com/PyCQA/flake8
-  rev: 6.0.0
+  rev: 7.0.0
   hooks:
   - id: flake8
     name: flake8 (python)
@@ -21,3 +21,9 @@ repos:
   hooks:
     - id: black
       name: black (python)
+- repo: local
+  hooks:
+    - id: check-requirements
+      name: check-requirements
+      entry: ./scripts/check-requirements.sh
+      language: script

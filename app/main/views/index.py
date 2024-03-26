@@ -19,6 +19,11 @@ from app.models.branding import EmailBranding
 from app.utils import hide_from_search_engines
 
 
+@main.route("/robots.txt")
+def static():
+    return send_from_directory(current_app.static_folder, "metadata/" + request.path[1:])
+
+
 @main.route("/")
 def index():
     if current_user and current_user.is_authenticated:
