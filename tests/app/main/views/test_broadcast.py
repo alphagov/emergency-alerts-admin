@@ -2,7 +2,6 @@ import json
 import os
 import uuid
 from collections import namedtuple
-from decimal import ROUND_HALF_UP, Decimal
 from functools import partial
 
 import pytest
@@ -1761,15 +1760,7 @@ def test_add_broadcast_area(
                     "ids": ["BD1 1EE-2"],
                     "names": ["BD1 1EE-2"],
                     "aggregate_names": [],
-                    "simple_polygons": [
-                        [
-                            [
-                                Decimal(coord).quantize(Decimal("1.111111111111"), rounding=ROUND_HALF_UP)
-                                for coord in polygon
-                            ]
-                            for polygon in BD1_1EE_2
-                        ]
-                    ]
+                    "simple_polygons": [[[round(coord, 10) for coord in polygon] for polygon in BD1_1EE_2]]
                     if os.environ.get("IN_CICD")
                     else [BD1_1EE_2],
                 }
@@ -1782,15 +1773,7 @@ def test_add_broadcast_area(
                     "ids": ["BD1 1EE-3"],
                     "names": ["BD1 1EE-3"],
                     "aggregate_names": [],
-                    "simple_polygons": [
-                        [
-                            [
-                                Decimal(coord).quantize(Decimal("1.111111111111"), rounding=ROUND_HALF_UP)
-                                for coord in polygon
-                            ]
-                            for polygon in BD1_1EE_3
-                        ]
-                    ]
+                    "simple_polygons": [[[round(coord, 10) for coord in polygon] for polygon in BD1_1EE_3]]
                     if os.environ.get("IN_CICD")
                     else [BD1_1EE_3],
                 }
@@ -1820,15 +1803,7 @@ def test_add_custom_area(
             status="draft",
             areas={
                 "ids": ["BD1 1EE-1"],
-                "simple_polygons": [
-                    [
-                        [
-                            Decimal(coord).quantize(Decimal("1.111111111111"), rounding=ROUND_HALF_UP)
-                            for coord in polygon
-                        ]
-                        for polygon in BD1_1EE_1
-                    ]
-                ]
+                "simple_polygons": [[[round(coord, 10) for coord in polygon] for polygon in BD1_1EE_1]]
                 if os.environ.get("IN_CICD")
                 else [BD1_1EE_1],
                 "names": ["BD1 1EE-1"],

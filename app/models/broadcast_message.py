@@ -1,7 +1,6 @@
 import itertools
 import os
 from datetime import datetime, timedelta
-from decimal import ROUND_HALF_UP, Decimal
 
 from emergency_alerts_utils.polygons import Polygons
 from emergency_alerts_utils.template import BroadcastPreviewTemplate
@@ -282,14 +281,7 @@ class BroadcastMessage(JSONModel):
             areas["aggregate_names"] = []
             if os.environ.get("IN_CICD"):
                 areas["simple_polygons"] = [
-                    [
-                        [
-                            Decimal(coord).quantize(Decimal("1.111111111111"), rounding=ROUND_HALF_UP)
-                            for coord in polygon
-                        ]
-                        for polygon in polygons
-                    ]
-                    for polygons in simple_polygons
+                    [[round(coord, 10) for coord in polygon] for polygon in polygons] for polygons in simple_polygons
                 ]
             else:
                 areas["simple_polygons"] = simple_polygons
