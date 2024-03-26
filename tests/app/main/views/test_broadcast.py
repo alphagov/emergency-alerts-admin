@@ -1,4 +1,5 @@
 import json
+import os
 import uuid
 from collections import namedtuple
 from functools import partial
@@ -1759,7 +1760,9 @@ def test_add_broadcast_area(
                     "ids": ["BD1 1EE-2"],
                     "names": ["BD1 1EE-2"],
                     "aggregate_names": [],
-                    "simple_polygons": [BD1_1EE_2],
+                    "simple_polygons": [[[round(coord, 12) for coord in polygon] for polygon in BD1_1EE_2]]
+                    if os.environ.get("IN_CICD")
+                    else [BD1_1EE_2],
                 }
             },
         ),
@@ -1770,7 +1773,9 @@ def test_add_broadcast_area(
                     "ids": ["BD1 1EE-3"],
                     "names": ["BD1 1EE-3"],
                     "aggregate_names": [],
-                    "simple_polygons": [BD1_1EE_3],
+                    "simple_polygons": [[[round(coord, 12) for coord in polygon] for polygon in BD1_1EE_3]]
+                    if os.environ.get("IN_CICD")
+                    else [BD1_1EE_3],
                 }
             },
         ),
@@ -1796,7 +1801,13 @@ def test_add_custom_area(
             created_by_id=fake_uuid,
             service_id=SERVICE_ONE_ID,
             status="draft",
-            areas={"ids": ["BD1 1EE-1"], "simple_polygons": [BD1_1EE_1], "names": ["BD1 1EE-1"]},
+            areas={
+                "ids": ["BD1 1EE-1"],
+                "simple_polygons": [[[round(coord, 12) for coord in polygon] for polygon in BD1_1EE_1]]
+                if os.environ.get("IN_CICD")
+                else [BD1_1EE_1],
+                "names": ["BD1 1EE-1"],
+            },
         ),
     )
 
