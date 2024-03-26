@@ -33,11 +33,11 @@ bootstrap: generate-version-file ## Set up everything to run the app
 		if aws s3 ls s3://$(BUCKET_NAME)/broadcast-areas.sqlite3; then \
 			aws s3 cp s3://$(BUCKET_NAME)/broadcast-areas.sqlite3 ./app/broadcast_areas; \
 		else \
-			echo "File not in S3 bucket"; \
+			echo "Postcodes file required by application not found in S3 bucket. Exiting..."; \
 			exit 1; \
 		fi \
 	else \
-		echo "Sqlite file already exists"; \
+		echo "broadcast-areas Sqlite file already exists"; \
 	fi
 
 
