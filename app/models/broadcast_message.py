@@ -1,4 +1,5 @@
 import itertools
+import math
 import os
 from datetime import datetime, timedelta
 
@@ -281,7 +282,8 @@ class BroadcastMessage(JSONModel):
             areas["aggregate_names"] = []
             if os.environ.get("IN_CICD"):
                 areas["simple_polygons"] = [
-                    [[round(coord, 12) for coord in polygon] for polygon in polygons] for polygons in simple_polygons
+                    [[math.ceil(coord, 12) for coord in polygon] for polygon in polygons]
+                    for polygons in simple_polygons
                 ]
             else:
                 areas["simple_polygons"] = simple_polygons
