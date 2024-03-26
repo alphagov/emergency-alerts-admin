@@ -30,7 +30,7 @@ class Config(object):
     ADMIN_EXTERNAL_URL = os.environ.get("ADMIN_EXTERNAL_URL", "http://localhost:6012")
     ZENDESK_API_KEY = os.environ.get("ZENDESK_API_KEY")
 
-    GEOJSON_BUCKET = os.environ.get("GEOJSON_BUCKET_NAME")
+    GEOJSON_BUCKET = os.environ.get("POSTCODE_BUCKET_NAME")
 
     # if we're not on cloudfoundry, we can get to this app from localhost. but on cloudfoundry its different
     ADMIN_BASE_URL = os.environ.get("ADMIN_BASE_URL", "http://localhost:6012")

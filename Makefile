@@ -14,7 +14,7 @@ CF_HOME ?= ${HOME}
 CF_APP ?= notify-admin
 CF_MANIFEST_PATH ?= /tmp/manifest.yml
 $(eval export CF_HOME)
-BUCKET_NAME = ${GEOJSON_BUCKET_NAME}
+BUCKET_NAME = ${POSTCODE_BUCKET_NAME}
 
 NOTIFY_CREDENTIALS ?= ~/.notify-credentials
 
