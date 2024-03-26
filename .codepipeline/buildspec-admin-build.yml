@@ -13,10 +13,10 @@ phases:
       - COMMIT_ID=$(echo $COMMIT_ID | cut -c 1-7)
       - echo Build started on `date`
       - echo Building Docker image...
+      - chmod +x ./scripts/get-broadcast-areas-db.sh
+      - ./scripts/get-broadcast-areas-db.sh "./app/broadcast_areas" "${BROADCAST_AREAS_BUCKET_NAME}"
       - docker build -t $REPOSITORY_URI:latest -t $REPOSITORY_URI:pipeline_$EXECUTION_ID -t $REPOSITORY_URI:commit_$COMMIT_ID
-        -f Dockerfile.eas-admin --build-arg ECS_ACCOUNT_NUMBER=$ACCOUNT_NUMBER --build-arg RESOURCE_PREFIX=${RESOURCE_PREFIX:-eas-app}
-        --build-arg AWS_CONTAINER_CREDENTIALS_RELATIVE_URI=$AWS_CONTAINER_CREDENTIALS_RELATIVE_URI
-        --build-arg AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION --no-cache
+        -f Dockerfile.eas-admin --build-arg ECS_ACCOUNT_NUMBER=$ACCOUNT_NUMBER --build-arg RESOURCE_PREFIX=${RESOURCE_PREFIX:-eas-app} --no-cache
         .
   post_build:
     commands:

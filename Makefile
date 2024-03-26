@@ -14,7 +14,7 @@ CF_HOME ?= ${HOME}
 CF_APP ?= notify-admin
 CF_MANIFEST_PATH ?= /tmp/manifest.yml
 $(eval export CF_HOME)
-BUCKET_NAME = ${POSTCODE_BUCKET_NAME}
+BUCKET_NAME = ${BROADCAST_AREAS_BUCKET_NAME}
 
 NOTIFY_CREDENTIALS ?= ~/.notify-credentials
 
@@ -29,16 +29,7 @@ bootstrap: generate-version-file ## Set up everything to run the app
 	${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements_local_utils.txt
 	source $(HOME)/.nvm/nvm.sh && nvm install && npm ci --no-audit
 	source $(HOME)/.nvm/nvm.sh && npm run build
-	@if ! [ -f "./app/broadcast_areas/broadcast-areas.sqlite3" ]; then \
-		if aws s3 ls s3://$(BUCKET_NAME)/broadcast-areas.sqlite3; then \
-			aws s3 cp s3://$(BUCKET_NAME)/broadcast-areas.sqlite3 ./app/broadcast_areas; \
-		else \
-			echo "Postcodes file required by application not found in S3 bucket. Exiting..."; \
-			exit 1; \
-		fi \
-	else \
-		echo "broadcast-areas Sqlite file already exists"; \
-	fi
+	. environment.sh; ./scripts/get-broadcast-areas-db.sh ./app/broadcast_areas $(BUCKET_NAME)
 
 
 .PHONY: bootstrap-for-tests
