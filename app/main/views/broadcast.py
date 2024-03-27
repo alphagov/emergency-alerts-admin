@@ -372,7 +372,7 @@ def redirect_to_postcode_map(service_id, broadcast_message_id, form: PostcodeFor
         circle_id = f"{form.data['postcode'].upper()}-{form.data['radius']}"
 
         centroid = get_centroid(area)
-        circle_polygon = create_circle(centroid, int(form.data["radius"]) * 1000)
+        circle_polygon = create_circle(centroid, float(form.data["radius"]) * 1000)
 
         broadcast_message.add_custom_areas(circle_polygon, id=circle_id)
     except IndexError:
