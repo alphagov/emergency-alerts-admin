@@ -273,12 +273,14 @@ class BroadcastMessage(JSONModel):
         self._update_areas()
 
     def add_custom_areas(self, *circle_polygon, id):
+        postcode = id.split("-")[0]
+        radius = id.split("-")[1]
         if id not in self.area_ids:
             simple_polygons = list(circle_polygon)
             areas = {}
             areas["ids"] = [id]
             areas["names"] = [id]
-            areas["aggregate_names"] = []
+            areas["aggregate_names"] = [f"A radius of {radius}km around {postcode}"]
             if os.environ.get("IN_CICD"):
                 areas["simple_polygons"] = [
                     [[round(coord, 10) for coord in polygon] for polygon in polygons] for polygons in simple_polygons
