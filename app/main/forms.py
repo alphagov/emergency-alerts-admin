@@ -2590,7 +2590,8 @@ class PostcodeForm(StripWhitespaceForm):
             "suffix": {"text": "km"},
             "attributes": {"pattern": "[0-9]*"},
         },
-        validators=[NumberRange(min=0.1, max=38, message="Enter a radius between 0.1km and 38.0km.")],
+        validators=[NumberRange(min=0.09, max=38.01, message="Enter a radius between 0.1km and 38.0km.")],
+        places=2,
     )
 
     def post_validate(self):
