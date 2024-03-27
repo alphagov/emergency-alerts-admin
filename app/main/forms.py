@@ -2592,7 +2592,7 @@ class PostcodeForm(StripWhitespaceForm):
             "attributes": {"pattern": "[0-9]*"},
         },
         validators=[
-            NumberRange(min=0.09, max=38.01, message="Enter a radius between 0.1km and 38.0km."),
+            NumberRange(min=0.099, max=38.001, message="Enter a radius between 0.1km and 38.0km."),
             Only2DecimalPlaces(),
         ],
     )
