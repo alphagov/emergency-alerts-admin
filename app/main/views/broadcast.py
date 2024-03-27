@@ -369,7 +369,7 @@ def redirect_to_postcode_map(service_id, broadcast_message_id, form: PostcodeFor
     postcode = "postcodes-" + form.data["postcode"].upper()
     try:
         area = BroadcastMessage.libraries.get_areas([postcode])[0]
-        circle_id = f"{form.data['postcode'].upper()}-{form.data['radius']}"
+        circle_id = f"An area of {form.data['radius']}km around {form.data['postcode'].upper()}"
 
         centroid = get_centroid(area)
         circle_polygon = create_circle(centroid, float(form.data["radius"]) * 1000)
