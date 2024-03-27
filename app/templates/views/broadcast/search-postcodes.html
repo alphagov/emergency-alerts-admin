@@ -66,12 +66,19 @@
 {% endif %}
 {{ map(broadcast_message) }}
 
-
-  {{ govukButton({
-    "element": "a",
-    "text": "Preview this alert",
-    "href": url_for('.preview_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
-    "classes": "govuk-button"
-  }) }}
+  {% if broadcast_message.areas %}
+    {{ govukButton({
+      "element": "a",
+      "text": "Preview this alert",
+      "href": url_for('.preview_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
+      "classes": "govuk-button",
+    }) }}
+  {% else %}
+    {{ govukButton({
+      "text": "Preview this alert",
+      "classes": "govuk-button",
+      "disabled": true
+    }) }}
+  {% endif %}
 
 {% endblock %}
