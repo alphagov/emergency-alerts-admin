@@ -1286,7 +1286,7 @@ def test_suggested_area_has_correct_link(
             "test",
             "Choose test areas",
         ),
-        ("postcodes", "Choose Postcode"),
+        ("postcodes", "Alert area"),
     ),
 )
 def test_choose_broadcast_area_page_titles(
