@@ -34,6 +34,10 @@ def check_postcode_exists(form):
             ["", 0.05],
             {"postcode": ["Enter a valid postcode."], "radius": ["Enter a radius between 0.1km and 38.0km."]},
         ),
+        (
+            ["BD1 1EE", 12.345],
+            {"radius": ["Enter a value with 2 decimal places."]},
+        ),
     ),
 )
 def test_invalid_input_messages(post_data, expected_error):
