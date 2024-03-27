@@ -10,7 +10,8 @@ fi
 
 if ! [ -f "$TARGET_LOCAL_DIR/broadcast-areas.sqlite3" ]; then
 	if aws s3 ls "s3://$SOURCE_BUCKET_DIR/broadcast-areas.sqlite3"; then
-		aws s3 cp "s3://$SOURCE_BUCKET_DIR/broadcast-areas.sqlite3" "$TARGET_LOCAL_DIR" "$quiet_flag";
+		echo "Downloading Broadcast Areas Sqlite file..."
+		aws s3 cp "s3://$SOURCE_BUCKET_DIR/broadcast-areas.sqlite3" "$TARGET_LOCAL_DIR" "$quiet_flag"
 	else \
 		echo "Broadcast Areas Sqlite file required by application not found in S3 bucket. Exiting...";
 		exit 1;
