@@ -2587,7 +2587,7 @@ class PostcodeForm(StripWhitespaceForm):
         validators=[
             DataRequired(message="Enter a valid radius."),
             Regexp(
-                regex=r"^(3[0-7]\.\d|2\d\.\|[1-9]\.\d|0\.[1-9])|38\.0$",
+                regex=r"^(3[0-7](\.\d+)?|[1-2]?\d(\.\d+)?)$",
                 message="Enter a radius between 0.1km and 38.0km.",
             ),
         ],
