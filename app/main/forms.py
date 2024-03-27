@@ -25,6 +25,7 @@ from werkzeug.utils import cached_property
 from wtforms import (
     BooleanField,
     DateField,
+    DecimalField,
     EmailField,
     Field,
     FieldList,
@@ -49,6 +50,7 @@ from wtforms.validators import (
     DataRequired,
     InputRequired,
     Length,
+    NumberRange,
     Optional,
     Regexp,
 )
@@ -279,6 +281,10 @@ class GovukDateField(GovukTextInputFieldMixin, DateField):
 
 
 class GovukIntegerField(GovukTextInputFieldMixin, IntegerField):
+    pass
+
+
+class GovukDecimalField(GovukTextInputFieldMixin, DecimalField):
     pass
 
 
@@ -2577,20 +2583,14 @@ class PlatformAdminSearch(StripWhitespaceForm):
 
 class PostcodeForm(StripWhitespaceForm):
     postcode = PostcodeSearchField("Search Postcode")
-    radius = GovukSearchField(
+    radius = GovukDecimalField(
         "Add Radius",
         param_extensions={
             "classes": "govuk-input govuk-input--width-5",
             "suffix": {"text": "km"},
             "attributes": {"pattern": "[0-9]*"},
         },
-        validators=[
-            DataRequired(message="Enter a valid radius."),
-            Regexp(
-                regex=r"^(3[0-7](\.\d+)?|[1-2]?\d(\.\d+)?)$",
-                message="Enter a radius between 0.1km and 38.0km.",
-            ),
-        ],
+        validators=[NumberRange(min=0.1, max=38, message="Enter a radius between 0.1km and 38.0km.")],
     )
 
     def post_validate(self):
