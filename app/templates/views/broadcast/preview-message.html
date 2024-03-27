@@ -11,7 +11,12 @@
 {% endblock %}
 
 {% block backLink %}
-  {{ govukBackLink({ "href": url_for('.preview_broadcast_areas', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }) }}
+  {% if custom_broadcast %}
+    {% set route = '.choose_broadcast_library' %}
+  {% else %}
+    {% set route = '.preview_broadcast_areas' %}
+  {% endif %}
+  {{ govukBackLink({ "href": url_for(route, service_id=current_service.id, broadcast_message_id=broadcast_message.id) }) }}
 {% endblock %}
 
 {% block maincolumn_content %}
@@ -19,6 +24,7 @@
   {{ page_header("Preview alert") }}
 
   {{ broadcast_message.template|string }}
+
 
   <div class="govuk-!-margin-bottom-3">
     <p class="govuk-!-margin-right-2 area-list">Area: </p>

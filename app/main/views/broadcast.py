@@ -312,6 +312,10 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
         other library areas not added properly"""
         if broadcast_message.areas and (any(type(area) is CustomBroadcastArea for area in broadcast_message.areas)):
             broadcast_message.clear_areas()
+            broadcast_message = BroadcastMessage.from_id(
+                broadcast_message_id,
+                service_id=current_service.id,
+            )
     if library.is_group:
         return render_template(
             "views/broadcast/areas-with-sub-areas.html",
@@ -505,6 +509,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
         broadcast_message_id,
         service_id=current_service.id,
     )
+    is_custom_broadcast = any(type(area) is CustomBroadcastArea for area in broadcast_message.areas)
     if request.method == "POST":
         broadcast_message.request_approval()
         return redirect(
@@ -518,6 +523,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
     return render_template(
         "views/broadcast/preview-message.html",
         broadcast_message=broadcast_message,
+        custom_broadcast=is_custom_broadcast,
     )
 
 
