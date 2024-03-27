@@ -1757,9 +1757,9 @@ def test_add_broadcast_area(
             {"postcode": "BD1 1EE", "radius": "2"},
             {
                 "areas": {
-                    "ids": ["An area of 2km around BD1 1EE"],
-                    "names": ["An area of 2km around BD1 1EE"],
-                    "aggregate_names": ["An area of 2km around BD1 1EE"],
+                    "ids": ["an area of 2km around BD1 1EE"],
+                    "names": ["an area of 2km around BD1 1EE"],
+                    "aggregate_names": ["an area of 2km around BD1 1EE"],
                     "simple_polygons": [[[round(coord, 10) for coord in polygon] for polygon in BD1_1EE_2]]
                     if os.environ.get("IN_CICD")
                     else [BD1_1EE_2],
@@ -1770,9 +1770,9 @@ def test_add_broadcast_area(
             {"postcode": "BD1 1EE", "radius": "3"},
             {
                 "areas": {
-                    "ids": ["An area of 3km around BD1 1EE"],
-                    "names": ["An area of 3km around BD1 1EE"],
-                    "aggregate_names": ["An area of 3km around BD1 1EE"],
+                    "ids": ["an area of 3km around BD1 1EE"],
+                    "names": ["an area of 3km around BD1 1EE"],
+                    "aggregate_names": ["an area of 3km around BD1 1EE"],
                     "simple_polygons": [[[round(coord, 10) for coord in polygon] for polygon in BD1_1EE_3]]
                     if os.environ.get("IN_CICD")
                     else [BD1_1EE_3],
@@ -1802,11 +1802,11 @@ def test_add_custom_area(
             service_id=SERVICE_ONE_ID,
             status="draft",
             areas={
-                "ids": ["An area of 1km around BD1 1EE"],
+                "ids": ["an area of 1km around BD1 1EE"],
                 "simple_polygons": [[[round(coord, 10) for coord in polygon] for polygon in BD1_1EE_1]]
                 if os.environ.get("IN_CICD")
                 else [BD1_1EE_1],
-                "names": ["An area of 1km around BD1 1EE"],
+                "names": ["an area of 1km around BD1 1EE"],
             },
         ),
     )

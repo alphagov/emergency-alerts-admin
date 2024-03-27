@@ -369,16 +369,14 @@ def redirect_to_postcode_map(service_id, broadcast_message_id, form: PostcodeFor
     postcode = "postcodes-" + form.data["postcode"].upper()
     try:
         area = BroadcastMessage.libraries.get_areas([postcode])[0]
-        circle_id = f"An area of {form.data['radius']}km around {form.data['postcode'].upper()}"
+        circle_id = f"an area of {form.data['radius']}km around {form.data['postcode'].upper()}"
 
         centroid = get_centroid(area)
         circle_polygon = create_circle(centroid, float(form.data["radius"]) * 1000)
 
         broadcast_message.add_custom_areas(circle_polygon, id=circle_id)
     except IndexError:
-        # add error to form
         form.postcode.errors.append("Postcode not found. Enter a valid postcode.")
-        # form.postcode.validate()
     return broadcast_message
 
 
