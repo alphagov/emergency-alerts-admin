@@ -36,6 +36,11 @@ def test_loads_libraries():
             False,
         ),
         (
+            "postcodes",
+            "Postcode areas",
+            False,
+        ),
+        (
             "test",
             "Test areas",
             False,
@@ -144,10 +149,11 @@ def test_repository_has_all_libraries():
     repo = BroadcastAreasRepository()
     libraries = repo.get_libraries()
 
-    assert len(libraries) == 4
+    assert len(libraries) == 5
     assert [
         ("Countries", "country"),
         ("Police forces in England and Wales", "police force"),
+        ("Postcode areas", "postcode area"),
         ("Test areas", "test area"),
         ("Local authorities", "local authority"),
     ] == [(name, name_singular) for _, name, name_singular, _is_group in libraries]
@@ -158,6 +164,8 @@ def test_every_area_has_count_of_phones(library):
     for area in library:
         if library.id == "test":
             assert area.count_of_phones == 0
+        elif library.id == "postcodes":
+            pass  # Takes ages to verify for this library
         else:
             assert area.count_of_phones > 0
 

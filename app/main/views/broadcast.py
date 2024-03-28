@@ -1,6 +1,10 @@
+import pyproj
 from flask import abort, flash, jsonify, redirect, render_template, request, url_for
+from shapely import Point
+from shapely.geometry import Polygon
 
 from app import current_service
+from app.broadcast_areas.models import CustomBroadcastArea
 from app.main import main
 from app.main.forms import (
     BroadcastAreaForm,
@@ -8,6 +12,7 @@ from app.main.forms import (
     BroadcastTemplateForm,
     ConfirmBroadcastForm,
     NewBroadcastForm,
+    PostcodeForm,
     SearchByNameForm,
 )
 from app.models.broadcast_message import BroadcastMessage, BroadcastMessages
@@ -255,13 +260,18 @@ def preview_broadcast_areas(service_id, broadcast_message_id):
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
 def choose_broadcast_library(service_id, broadcast_message_id):
+    broadcast_message = BroadcastMessage.from_id(
+        broadcast_message_id,
+        service_id=current_service.id,
+    )
+    is_custom_broadcast = any(type(area) is CustomBroadcastArea for area in broadcast_message.areas)
+    if is_custom_broadcast:
+        broadcast_message.clear_areas()
     return render_template(
         "views/broadcast/libraries.html",
         libraries=BroadcastMessage.libraries,
-        broadcast_message=BroadcastMessage.from_id(
-            broadcast_message_id,
-            service_id=current_service.id,
-        ),
+        broadcast_message=broadcast_message,
+        custom_broadcast=is_custom_broadcast,
     )
 
 
@@ -276,7 +286,39 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
         broadcast_message_id,
         service_id=current_service.id,
     )
+
     library = BroadcastMessage.libraries.get(library_slug)
+
+    if library_slug == "postcodes":
+        form = PostcodeForm()
+        if form.validate_on_submit():
+            broadcast_message = redirect_to_postcode_map(service_id, broadcast_message_id, form)
+            form.post_validate()
+
+        # Ensuring latest areas will display on map
+        broadcast_message = BroadcastMessage.from_id(
+            broadcast_message_id,
+            service_id=current_service.id,
+        )
+
+        return render_template(
+            "views/broadcast/search-postcodes.html",
+            broadcast_message=broadcast_message,
+            back_link=url_for(
+                ".choose_broadcast_library", service_id=service_id, broadcast_message_id=broadcast_message_id
+            ),
+            form=form,
+        )
+    # else:
+    #     """To ensure area types not mixed, if area is of type CustombroadcastArea then
+    #     other library areas not added properly"""
+    # if broadcast_message.areas and (any(type(area) is CustomBroadcastArea for area in broadcast_message.areas)):
+    #     print(broadcast_message.areas)
+    # broadcast_message.clear_areas()
+    # broadcast_message = BroadcastMessage.from_id(
+    #     broadcast_message_id,
+    #     service_id=current_service.id,
+    # )
 
     if library.is_group:
         return render_template(
@@ -327,6 +369,65 @@ def _get_broadcast_sub_area_back_link(service_id, broadcast_message_id, library_
         )
 
 
+def redirect_to_postcode_map(service_id, broadcast_message_id, form: PostcodeForm):
+    broadcast_message = BroadcastMessage.from_id(
+        broadcast_message_id,
+        service_id=current_service.id,
+    )
+    postcode = "postcodes-" + form.data["postcode"].upper()
+    try:
+        area = BroadcastMessage.libraries.get_areas([postcode])[0]
+        radius_to_min_sig_figs = "{:g}".format(float(form.data["radius"]))
+        circle_id = f"an area of {radius_to_min_sig_figs}km around {form.data['postcode'].upper()}"
+
+        centroid = get_centroid(area)
+        circle_polygon = create_circle(centroid, float(form.data["radius"]) * 1000)
+
+        broadcast_message.add_custom_areas(circle_polygon, id=circle_id)
+    except IndexError:
+        form.postcode.errors.append("Postcode not found. Enter a valid postcode.")
+    return broadcast_message
+
+
+def get_centroid(area):
+    polygons = area.polygons[0]
+    return Polygon(polygons).centroid
+
+
+def create_circle(center, radius):
+    crs_4326 = pyproj.CRS("EPSG:4326")
+    crs_normalized = pyproj.CRS(proj="aeqd", datum="WGS84", lat_0=center.y, lon_0=center.x)
+
+    transformer = pyproj.Transformer.from_crs(crs_4326, crs_normalized)
+    transformer_inverse = pyproj.Transformer.from_crs(crs_normalized, crs_4326)
+
+    normalized_center = Point(transformer.transform(center.y, center.x))
+    circle = normalized_center.buffer(radius)
+    xx, yy = circle.exterior.coords.xy
+    xx_wgs84, yy_wgs84 = transformer_inverse.transform(xx, yy)
+    coordinates_new = [[lat, lon] for lat, lon in zip(xx_wgs84, yy_wgs84)]
+
+    return coordinates_new
+
+
+@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/remove_custom/<postcode_slug>")
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+@service_has_permission("broadcast")
+def remove_postcode_area(service_id, broadcast_message_id, postcode_slug):
+    BroadcastMessage.from_id(
+        broadcast_message_id,
+        service_id=current_service.id,
+    ).remove_area(postcode_slug)
+    return redirect(
+        url_for(
+            ".choose_broadcast_area",
+            service_id=current_service.id,
+            broadcast_message_id=broadcast_message_id,
+            library_slug="postcodes",
+        )
+    )
+
+
 @main.route(
     "/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/libraries/<library_slug>/<area_slug>",
     methods=["GET", "POST"],
@@ -350,6 +451,7 @@ def choose_broadcast_sub_area(service_id, broadcast_message_id, library_slug, ar
     )
     if form.validate_on_submit():
         broadcast_message.add_areas(*form.selected_areas)
+        print(*form.selected_areas)  # noqa: T201
         return redirect(
             url_for(
                 ".preview_broadcast_areas",
@@ -412,6 +514,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
         broadcast_message_id,
         service_id=current_service.id,
     )
+    is_custom_broadcast = any(type(area) is CustomBroadcastArea for area in broadcast_message.areas)
     if request.method == "POST":
         broadcast_message.request_approval()
         return redirect(
@@ -425,6 +528,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
     return render_template(
         "views/broadcast/preview-message.html",
         broadcast_message=broadcast_message,
+        custom_broadcast=is_custom_broadcast,
     )
 
 

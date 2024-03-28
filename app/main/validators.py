@@ -226,3 +226,14 @@ class FileIsVirusFree:
                         raise StopValidation("Your file contains a virus")
                 finally:
                     field.data.seek(0)
+
+
+class Only2DecimalPlaces:
+    regex = re.compile(r"^[0-9]+(?:\.[0-9]{1,2})?$")
+
+    def __init__(self, message="Enter a value with 2 decimal places."):
+        self.message = message
+
+    def __call__(self, form, field):
+        if field.data and not re.match(self.regex, str(field.data)):
+            raise ValidationError(self.message)

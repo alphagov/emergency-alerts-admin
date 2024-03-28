@@ -264,7 +264,6 @@ def add_test_areas():
                 0,
             ]
         )
-
     repo.insert_broadcast_areas(areas_to_add, keep_old_polygons)
 
 
@@ -489,6 +488,7 @@ if keep_old_polygons:
 else:
     repo.delete_db()
     repo.create_tables()
+
 add_test_areas()
 add_police_force_areas()
 add_countries()

@@ -25,6 +25,7 @@ from werkzeug.utils import cached_property
 from wtforms import (
     BooleanField,
     DateField,
+    DecimalField,
     EmailField,
     Field,
     FieldList,
@@ -49,6 +50,7 @@ from wtforms.validators import (
     DataRequired,
     InputRequired,
     Length,
+    NumberRange,
     Optional,
     Regexp,
 )
@@ -72,6 +74,7 @@ from app.main.validators import (
     NoEmbeddedImagesInSVG,
     NoPlaceholders,
     NoTextInSVG,
+    Only2DecimalPlaces,
     OnlySMSCharacters,
     StringsNotAllowed,
     ValidEmail,
@@ -280,6 +283,20 @@ class GovukDateField(GovukTextInputFieldMixin, DateField):
 
 class GovukIntegerField(GovukTextInputFieldMixin, IntegerField):
     pass
+
+
+class GovukDecimalField(GovukTextInputFieldMixin, DecimalField):
+    pass
+
+
+class PostcodeSearchField(GovukTextInputFieldMixin, SearchField):
+    input_type = "Search"
+    param_extensions = {"classes": "govuk-input--width-10"}
+    validators = [
+        DataRequired(message="Enter a valid postcode."),
+        MustContainAlphanumericCharacters(),
+        Length(max=255, message="Service name must be 255 characters or fewer"),
+    ]
 
 
 class SMSCode(GovukTextInputField):
@@ -2563,3 +2580,22 @@ class PlatformAdminSearch(StripWhitespaceForm):
         param_extensions={"hint": {"text": ("Search for users, services, and organisations by name or partial name.")}},
         validators=[DataRequired()],
     )
+
+
+class PostcodeForm(StripWhitespaceForm):
+    postcode = PostcodeSearchField("Postcode")
+    radius = GovukDecimalField(
+        "Add radius",
+        param_extensions={
+            "classes": "govuk-input govuk-input--width-5",
+            "suffix": {"text": "km"},
+            "attributes": {"pattern": "[0-9]*"},
+        },
+        validators=[
+            NumberRange(min=0.099, max=38.001, message="Enter a radius between 0.1km and 38.0km."),
+            Only2DecimalPlaces(),
+        ],
+    )
+
+    def post_validate(self):
+        return False if self.errors else True

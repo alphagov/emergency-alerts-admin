@@ -14,6 +14,7 @@ CF_HOME ?= ${HOME}
 CF_APP ?= notify-admin
 CF_MANIFEST_PATH ?= /tmp/manifest.yml
 $(eval export CF_HOME)
+BUCKET_NAME = ${BROADCAST_AREAS_BUCKET_NAME}
 
 NOTIFY_CREDENTIALS ?= ~/.notify-credentials
 
@@ -28,6 +29,8 @@ bootstrap: generate-version-file ## Set up everything to run the app
 	${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements_local_utils.txt
 	source $(HOME)/.nvm/nvm.sh && nvm install && npm ci --no-audit
 	source $(HOME)/.nvm/nvm.sh && npm run build
+	. environment.sh; ./scripts/get-broadcast-areas-db.sh ./app/broadcast_areas $(BUCKET_NAME)
+
 
 .PHONY: bootstrap-for-tests
 bootstrap-for-tests: generate-version-file ## Set up everything to run the app
