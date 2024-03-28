@@ -265,6 +265,8 @@ def choose_broadcast_library(service_id, broadcast_message_id):
         service_id=current_service.id,
     )
     is_custom_broadcast = any(type(area) is CustomBroadcastArea for area in broadcast_message.areas)
+    if is_custom_broadcast:
+        broadcast_message.clear_areas()
     return render_template(
         "views/broadcast/libraries.html",
         libraries=BroadcastMessage.libraries,
@@ -307,15 +309,17 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
             ),
             form=form,
         )
-    else:
-        """To ensure area types not mixed, if area is of type CustombroadcastArea then
-        other library areas not added properly"""
-        if broadcast_message.areas and (any(type(area) is CustomBroadcastArea for area in broadcast_message.areas)):
-            broadcast_message.clear_areas()
-            broadcast_message = BroadcastMessage.from_id(
-                broadcast_message_id,
-                service_id=current_service.id,
-            )
+    # else:
+    #     """To ensure area types not mixed, if area is of type CustombroadcastArea then
+    #     other library areas not added properly"""
+    # if broadcast_message.areas and (any(type(area) is CustomBroadcastArea for area in broadcast_message.areas)):
+    #     print(broadcast_message.areas)
+    # broadcast_message.clear_areas()
+    # broadcast_message = BroadcastMessage.from_id(
+    #     broadcast_message_id,
+    #     service_id=current_service.id,
+    # )
+
     if library.is_group:
         return render_template(
             "views/broadcast/areas-with-sub-areas.html",
