@@ -2583,9 +2583,9 @@ class PlatformAdminSearch(StripWhitespaceForm):
 
 
 class PostcodeForm(StripWhitespaceForm):
-    postcode = PostcodeSearchField("Search Postcode")
+    postcode = PostcodeSearchField("Postcode")
     radius = GovukDecimalField(
-        "Add Radius",
+        "Add radius",
         param_extensions={
             "classes": "govuk-input govuk-input--width-5",
             "suffix": {"text": "km"},
