@@ -293,7 +293,7 @@ class PostcodeSearchField(GovukTextInputFieldMixin, SearchField):
     input_type = "Search"
     param_extensions = {"classes": "govuk-input--width-10"}
     validators = [
-        DataRequired(message="Enter a valid postcode."),
+        DataRequired(message="Enter a postcode."),
         MustContainAlphanumericCharacters(),
         Length(max=255, message="Service name must be 255 characters or fewer"),
     ]
@@ -2593,6 +2593,7 @@ class PostcodeForm(StripWhitespaceForm):
         },
         validators=[
             NumberRange(min=0.099, max=38.001, message="Enter a radius between 0.1km and 38.0km."),
+            DataRequired(message="Enter a radius."),
             Only2DecimalPlaces(),
         ],
     )
