@@ -4,7 +4,7 @@ from shapely import Point
 from shapely.geometry import Polygon
 
 from app import current_service
-from app.broadcast_areas.models import CustomBroadcastArea
+from app.broadcast_areas.models import CustomBroadcastAreas
 from app.main import main
 from app.main.forms import (
     BroadcastAreaForm,
@@ -264,7 +264,7 @@ def choose_broadcast_library(service_id, broadcast_message_id):
         broadcast_message_id,
         service_id=current_service.id,
     )
-    is_custom_broadcast = any(type(area) is CustomBroadcastArea for area in broadcast_message.areas)
+    is_custom_broadcast = type(broadcast_message.areas) is CustomBroadcastAreas
     if is_custom_broadcast:
         broadcast_message.clear_areas()
     return render_template(
@@ -368,7 +368,7 @@ def redirect_to_postcode_map(service_id, broadcast_message_id, form: PostcodeFor
     try:
         area = BroadcastMessage.libraries.get_areas([postcode])[0]
         radius_to_min_sig_figs = "{:g}".format(float(form.data["radius"]))
-        circle_id = f"an area of {radius_to_min_sig_figs}km around {form.data['postcode'].upper()}"
+        circle_id = f"an area of {radius_to_min_sig_figs}km around the postcode {form.data['postcode'].upper()}"
 
         centroid = get_centroid(area)
         circle_polygon = create_circle(centroid, float(form.data["radius"]) * 1000)
@@ -504,7 +504,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
         broadcast_message_id,
         service_id=current_service.id,
     )
-    is_custom_broadcast = any(type(area) is CustomBroadcastArea for area in broadcast_message.areas)
+    is_custom_broadcast = type(broadcast_message.areas) is CustomBroadcastAreas
     if request.method == "POST":
         broadcast_message.request_approval()
         return redirect(

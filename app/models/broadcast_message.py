@@ -273,8 +273,11 @@ class BroadcastMessage(JSONModel):
         self._update_areas()
 
     def add_custom_areas(self, *circle_polygon, id):
+        simple_polygons = list(circle_polygon)
+        local_authority = CustomBroadcastArea(name="", polygons=simple_polygons).local_authority
+        if local_authority:
+            id = f"{id}, in {local_authority}"
         if id not in self.area_ids:
-            simple_polygons = list(circle_polygon)
             areas = {}
             areas["ids"] = [id]
             areas["names"] = [id]
