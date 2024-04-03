@@ -109,5 +109,4 @@ app/version.py
 app/static
 
 # Files too large to be committed
-app/broadcast_areas/source_files/postcodes.geojson
 app/broadcast_areas/broadcast-areas.sqlite3
