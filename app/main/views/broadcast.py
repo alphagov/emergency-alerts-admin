@@ -1,4 +1,6 @@
+import pyproj
 from flask import abort, flash, jsonify, redirect, render_template, request, url_for
+from shapely import Point
 
 from app import current_service
 from app.main import main
@@ -6,7 +8,9 @@ from app.main.forms import (
     BroadcastAreaForm,
     BroadcastAreaFormWithSelectAll,
     BroadcastTemplateForm,
+    ChooseCoordinateTypeForm,
     ConfirmBroadcastForm,
+    CoordinatesForm,
     NewBroadcastForm,
     SearchByNameForm,
 )
@@ -278,6 +282,29 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
     )
     library = BroadcastMessage.libraries.get(library_slug)
 
+    if library_slug == "coordinates":
+        form = ChooseCoordinateTypeForm()
+        if form.validate_on_submit():
+            return redirect(
+                url_for(
+                    ".search_coordinates",
+                    service_id=current_service.id,
+                    broadcast_message_id=broadcast_message.id,
+                    library_slug="coordinates",
+                    coordinate_type=form.content.data,
+                )
+            )
+
+        return render_template(
+            "views/broadcast/choose-coordinates-type.html",
+            page_title=f"Choose a {library.name_singular.lower()}",
+            broadcast_message=broadcast_message,
+            back_link=url_for(
+                ".choose_broadcast_library", service_id=service_id, broadcast_message_id=broadcast_message_id
+            ),
+            form=form,
+        )
+
     if library.is_group:
         return render_template(
             "views/broadcast/areas-with-sub-areas.html",
@@ -325,6 +352,62 @@ def _get_broadcast_sub_area_back_link(service_id, broadcast_message_id, library_
             broadcast_message_id=broadcast_message_id,
             library_slug=library_slug,
         )
+
+
+@main.route(
+    "/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/libraries/<library_slug>/<coordinate_type>",
+    methods=["GET", "POST"],
+)
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+@service_has_permission("broadcast")
+def search_coordinates(service_id, broadcast_message_id, library_slug, coordinate_type):
+    broadcast_message = BroadcastMessage.from_id(
+        broadcast_message_id,
+        service_id=current_service.id,
+    )
+    form = CoordinatesForm()
+    if form.validate_on_submit():
+        polygon = create_coordinate_area(
+            float(form.data["latitude"]), float(form.data["longitude"]), float(form.data["radius"]), coordinate_type
+        )
+        if polygon:
+            broadcast_message.add_coordinate_area(polygon)
+
+        broadcast_message = BroadcastMessage.from_id(
+            broadcast_message_id,
+            service_id=current_service.id,
+        )
+
+    return render_template(
+        "views/broadcast/search-coordinates.html",
+        page_title="Choose a coordinate area",
+        broadcast_message=broadcast_message,
+        back_link=url_for(
+            ".choose_broadcast_library", service_id=service_id, broadcast_message_id=broadcast_message_id
+        ),
+        form=form,
+        coordinate_type=coordinate_type,
+    )
+
+
+def create_coordinate_area(lat, lng, radius, type):
+    radius *= 1000
+    if type == "decimal":
+        crs_4326 = pyproj.CRS("EPSG:4326")
+        crs_normalized = pyproj.CRS(proj="aeqd", datum="WGS84", lat_0=lat, lon_0=lng)
+        transformer = pyproj.Transformer.from_crs(crs_4326, crs_normalized)
+        transformer_inverse = pyproj.Transformer.from_crs(crs_normalized, crs_4326)
+        normalized_center = Point(transformer.transform(lat, lng))
+    elif type == "cartesian":
+        crs_4326 = pyproj.CRS("EPSG:4326")
+        crs_normalized = pyproj.CRS("EPSG:27700")
+        transformer_inverse = pyproj.Transformer.from_crs(crs_normalized, crs_4326)
+        normalized_center = Point(lat, lng)
+    circle = normalized_center.buffer(radius)
+    xx, yy = circle.exterior.coords.xy
+    xx_wgs84, yy_wgs84 = transformer_inverse.transform(xx, yy)
+    coordinates_new = [[lat, lon] for lat, lon in zip(xx_wgs84, yy_wgs84)]
+    return coordinates_new
 
 
 @main.route(

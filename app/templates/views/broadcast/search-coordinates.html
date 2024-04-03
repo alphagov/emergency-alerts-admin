@@ -1,0 +1,83 @@
+{% extends "withnav_template.html" %}
+{% from "components/banner.html" import banner_wrapper %}
+{% from "components/form.html" import form_wrapper %}
+{% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
+{% from "components/page-header.html" import page_header %}
+{% from "components/page-footer.html" import page_footer %}
+{% from "views/broadcast/macros/area-map.html" import map %}
+{% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
+{% from "govuk_frontend_jinja/components/input/macro.html" import govukInput %}
+
+{% block service_page_title %}
+  Alert area
+{% endblock %}
+
+{% block extra_stylesheets %}
+  {% include "views/broadcast/partials/area-map-stylesheets.html" %}
+{% endblock %}
+
+{% block extra_javascripts %}
+  {% include "views/broadcast/partials/area-map-javascripts.html" %}
+{% endblock %}
+
+{% block backLink %}
+  {{ govukBackLink({ "href": back_link }) }}
+{% endblock %}
+
+{% if coordinate_type == 'decimal' %}
+  {% set label1 = 'Latitude' %}
+  {% set label2 = 'Longitude' %}
+{% elif coordinate_type == 'cartesian' %}
+  {% set label1 = 'Eastings' %}
+  {% set label2 = 'Northings' %}
+{% endif %}
+
+{% block maincolumn_content %}
+
+  {{ page_header("Alert area") }}
+  {% call form_wrapper() %}
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div style="display: flex; align-items:center; justify-content:space-between">
+        {{ form.latitude(param_extensions={
+          "label": {"text": label1},
+        }) }}
+        {{ form.longitude(param_extensions={
+          "label": {"text": label2},
+        }) }}
+        {{ form.radius}}
+        {{ govukButton({
+            "classes": "notify-simple-search-form__button govuk-button--secondary margin",
+            "html": "Search <span class=\"govuk-visually-hidden\">for areas</span>",
+        }) }}
+        </div>
+  {% endcall %}
+
+{% if broadcast_message.areas %}
+  <div>
+    <ul class="area-list">
+      {% for area in broadcast_message.areas %}
+        <li class="area-list-item govuk-visually-hidden">
+          {{area.name}}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
+{{ map(broadcast_message) }}
+
+  {% if broadcast_message.areas %}
+    {{ govukButton({
+      "element": "a",
+      "text": "Preview this alert",
+      "href": url_for('.preview_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
+      "classes": "govuk-button",
+    }) }}
+  {% else %}
+    {{ govukButton({
+      "text": "Preview this alert",
+      "classes": "govuk-button",
+      "disabled": true
+    }) }}
+  {% endif %}
+
+{% endblock %}

@@ -2563,3 +2563,40 @@ class PlatformAdminSearch(StripWhitespaceForm):
         param_extensions={"hint": {"text": ("Search for users, services, and organisations by name or partial name.")}},
         validators=[DataRequired()],
     )
+
+
+class CoordinatesForm(StripWhitespaceForm):
+    latitude = GovukSearchField(
+        validators=[DataRequired()],
+        param_extensions={
+            "classes": "govuk-input govuk-input--width-7",
+        },
+    )
+    longitude = GovukSearchField(
+        validators=[DataRequired()],
+        param_extensions={
+            "classes": "govuk-input govuk-input--width-7",
+        },
+    )
+    radius = GovukSearchField(
+        "Add radius",
+        validators=[DataRequired()],
+        param_extensions={
+            "classes": "govuk-input govuk-input--width-5",
+        },
+    )
+
+
+class ChooseCoordinateTypeForm(StripWhitespaceForm):
+    content = GovukRadiosField(
+        "Choose Coordinate type",
+        choices=[
+            ("decimal", "Coordinates (Decimal degrees)"),
+            ("cartesian", "Eastings & Northings"),
+        ],
+        param_extensions={
+            "fieldset": {"legend": {"classes": "govuk-visually-hidden"}},
+            "hint": {"text": "Select one option"},
+        },
+        validators=[DataRequired(message="Select which type of coordinates you'd like to use.")],
+    )

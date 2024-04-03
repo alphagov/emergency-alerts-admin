@@ -275,6 +275,21 @@ class BroadcastMessage(JSONModel):
         self.area_ids = list(set(self._dict["areas"]["ids"]) - {area_id})
         self._update_areas()
 
+    def add_coordinate_area(self, polygon):
+        id = "Test"
+        simple_polygons = list(polygon)
+        areas = {}
+        areas["ids"] = [id]
+        areas["names"] = [id]
+        areas["aggregate_names"] = [id]
+        areas["simple_polygons"] = [simple_polygons]
+        data = {"areas": areas}
+
+        self.area_ids = [id]
+        broadcast_message_api_client.update_broadcast_message(
+            broadcast_message_id=self.id, service_id=self.service_id, data=data
+        )
+
     def _set_status_to(self, status):
         broadcast_message_api_client.update_broadcast_message_status(
             status,
