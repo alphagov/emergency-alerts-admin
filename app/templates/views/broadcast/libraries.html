@@ -22,8 +22,13 @@
   {% endfor %}
 
   {% for library in libraries|sort %}
-    <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_broadcast_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug=library.id) }}">{{ library.name }}</a>
-    <p class="file-list-hint-large">{{ library.get_examples() }}</p>
+    {% if library.name != 'Coordinates' %}
+      <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_broadcast_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug=library.id) }}">{{ library.name }}</a>
+      <p class="file-list-hint-large">{{ library.get_examples() }}</p>
+    {% else %}
+      <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_broadcast_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug=library.id) }}">{{ library.name }}</a>
+      <p class="file-list-hint-large">Use coordinates to create an alert area.</p>
+    {% endif %}
   {% endfor %}
 
 {% endblock %}
