@@ -4,7 +4,6 @@ from functools import partial
 from typing import Optional
 
 from flask import (
-    Markup,
     current_app,
     flash,
     redirect,
@@ -14,6 +13,7 @@ from flask import (
     url_for,
 )
 from flask_login import current_user
+from markupsafe import Markup
 from notifications_python_client.errors import HTTPError
 from werkzeug import Response
 from werkzeug.exceptions import abort

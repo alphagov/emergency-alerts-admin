@@ -14,12 +14,13 @@ from emergency_alerts_utils.recipients import (
     normalise_phone_number,
     validate_phone_number,
 )
-from flask import Markup, request
+from flask import request
 from flask_login import current_user
 from flask_wtf import FlaskForm as Form
 from flask_wtf.file import FileAllowed
 from flask_wtf.file import FileField as FileField_wtf
 from flask_wtf.file import FileSize
+from markupsafe import Markup
 from orderedset import OrderedSet
 from werkzeug.utils import cached_property
 from wtforms import (
@@ -947,7 +948,7 @@ class TwoFactorForm(StripWhitespaceForm):
 
     sms_code = SMSCode("Text message code")
 
-    def validate(self):
+    def validate(self, extra_validators=None):
         if not self.sms_code.validate(self):
             return False
 
@@ -1514,8 +1515,8 @@ class AdminProviderRatioForm(Form):
 
         super().__init__(data={provider["identifier"]: provider["priority"] for provider in providers})
 
-    def validate(self):
-        if not super().validate():
+    def validate(self, extra_validators=None):
+        if not super().validate(extra_validators):
             return False
 
         total = sum(getattr(self, provider["identifier"]).data for provider in self._providers)
@@ -1544,7 +1545,7 @@ class ServiceContactDetailsForm(StripWhitespaceForm):
     # This is a text field because the number provided by the user can also be a short code
     phone_number = GovukTextInputField("Phone number")
 
-    def validate(self):
+    def validate(self, extra_validators=None):
         if self.contact_details_type.data == "url":
             self.url.validators = [DataRequired(), URL(message="Must be a valid URL")]
 
@@ -1562,7 +1563,7 @@ class ServiceContactDetailsForm(StripWhitespaceForm):
 
             self.phone_number.validators = [DataRequired(), Length(min=5, max=20), valid_phone_number]
 
-        return super().validate()
+        return super().validate(extra_validators)
 
 
 class ServiceReplyToEmailForm(StripWhitespaceForm):
@@ -1688,8 +1689,8 @@ class AdminEditEmailBrandingForm(StripWhitespaceForm):
         if op == "email-branding-details" and not self.name.data:
             raise ValidationError("This field is required")
 
-    def validate(self):
-        rv = super().validate()
+    def validate(self, extra_validators=None):
+        rv = super().validate(extra_validators)
 
         op = request.form.get("operation")
         if op == "email-branding-details":
@@ -1935,8 +1936,8 @@ class CallbackForm(StripWhitespaceForm):
         validators=[DataRequired(message="Cannot be empty"), Length(min=10, message="Must be at least 10 characters")],
     )
 
-    def validate(self):
-        return super().validate() or self.url.data == ""
+    def validate(self, extra_validators=None):
+        return super().validate(extra_validators) or self.url.data == ""
 
 
 class SMSPrefixForm(StripWhitespaceForm):
@@ -2258,7 +2259,7 @@ class TemplateAndFoldersSelectionForm(Form):
     def is_selected(self, template_folder_id):
         return template_folder_id in (self.templates_and_folders.data or [])
 
-    def validate(self):
+    def validate(self, extra_validators=None):
         self.op = request.form.get("operation")
 
         self.is_move_op = self.op in {"move-to-existing-folder", "move-to-new-folder"}
@@ -2268,7 +2269,7 @@ class TemplateAndFoldersSelectionForm(Form):
         if not (self.is_add_folder_op or self.is_move_op or self.is_add_template_op):
             return False
 
-        return super().validate()
+        return super().validate(extra_validators)
 
     def get_folder_name(self):
         if self.op == "add-new-folder":

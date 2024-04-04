@@ -510,8 +510,8 @@ def setup_blueprints(application):
     from app.main import no_cookie as no_cookie_blueprint
     from app.status import status as status_blueprint
 
-    main_blueprint.before_request(make_session_permanent)
-    main_blueprint.after_request(save_service_or_org_after_request)
+    # main_blueprint.before_request(make_session_permanent)
+    # main_blueprint.after_request(save_service_or_org_after_request)
 
     application.register_blueprint(main_blueprint)
     # no_cookie_blueprint specifically doesn't have `make_session_permanent` or `save_service_or_org_after_request`

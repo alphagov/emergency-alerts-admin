@@ -8,7 +8,6 @@ from emergency_alerts_utils.template import (
     SMSBodyPreviewTemplate,
 )
 from flask import (
-    Markup,
     Response,
     abort,
     flash,
@@ -20,6 +19,7 @@ from flask import (
     url_for,
 )
 from flask_login import current_user
+from markupsafe import Markup
 from notifications_python_client.errors import HTTPError
 
 from app import (

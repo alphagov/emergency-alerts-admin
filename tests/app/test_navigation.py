@@ -380,6 +380,7 @@ EXCLUDED_ENDPOINTS = tuple(
 
 
 def flask_app():
+    # app = Flask("./application.py")
     app = Flask("app")
     create_app(app)
 
