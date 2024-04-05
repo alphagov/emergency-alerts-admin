@@ -38,6 +38,7 @@
             {{ govukButton({
               "classes": "notify-simple-search-form__button search-postcode-button govuk-button--secondary",
               "html": "Search <span class=\"govuk-visually-hidden\">for areas</span>",
+              "name": "search"
             }) }}
           </div>
     </div>
@@ -62,12 +63,14 @@
       "text": "Preview this alert",
       "href": url_for('.preview_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
       "classes": "govuk-button",
+      "name": "preview"
     }) }}
   {% else %}
     {{ govukButton({
       "text": "Preview this alert",
       "classes": "govuk-button",
-      "disabled": true
+      "disabled": true,
+      "name": "preview"
     }) }}
   {% endif %}
 
