@@ -46,7 +46,6 @@ def notify_admin_without_context():
     You probably won't need to use this fixture, unless you need to use the flask.appcontext_pushed hook. Possibly if
     you're patching something on `g`. https://flask.palletsprojects.com/en/1.1.x/testing/#faking-resources-and-context
     """
-    # app = Flask("app/application.py")
     app = Flask("app")
     create_app(app)
     app.test_client_class = TestClient
