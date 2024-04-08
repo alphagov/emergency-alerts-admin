@@ -311,6 +311,11 @@ class BroadcastMessage(JSONModel):
         data = {"areas": areas}
 
         # TEMPORARY: while we migrate to a new format for "areas"
+        """
+            The following link is a ticket to ensure tracking of whether this temporary fix is still required
+            https://gds-ea.atlassian.net/browse/EAS-2037?atlOrigin=eyJpIjoiOWY2OWQ5ZTcwNjU4NDNkZWFjYzE1NDg0NGMwOTgyOTciLCJwIjoiaiJ9
+        """
+
         if force_override:
             data["force_override"] = True
 
@@ -327,6 +332,11 @@ class BroadcastMessage(JSONModel):
         data = {"areas": areas}
 
         # TEMPORARY: while we migrate to a new format for "areas"
+        """
+            The following link is a ticket to ensure tracking of whether this temporary fix is still required
+            https://gds-ea.atlassian.net/browse/EAS-2037?atlOrigin=eyJpIjoiOWY2OWQ5ZTcwNjU4NDNkZWFjYzE1NDg0NGMwOTgyOTciLCJwIjoiaiJ9
+        """
+
         if force_override:
             data["force_override"] = True
 
@@ -375,6 +385,11 @@ class BroadcastMessage(JSONModel):
         data = {"areas": areas}
 
         # TEMPORARY: while we migrate to a new format for "areas"
+        """
+            The following link is a ticket to ensure tracking of whether this temporary fix is still required
+            https://gds-ea.atlassian.net/browse/EAS-2037?atlOrigin=eyJpIjoiOWY2OWQ5ZTcwNjU4NDNkZWFjYzE1NDg0NGMwOTgyOTciLCJwIjoiaiJ9
+        """
+
         if force_override:
             data["force_override"] = True
 
