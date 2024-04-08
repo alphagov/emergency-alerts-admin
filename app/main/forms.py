@@ -68,6 +68,7 @@ from app.main.validators import (
     CsvFileValidator,
     DoesNotStartWithDoubleZero,
     FileIsVirusFree,
+    IsPostcode,
     LettersNumbersSingleQuotesFullStopsAndUnderscoresOnly,
     MustContainAlphanumericCharacters,
     NoCommasInPlaceHolders,
@@ -292,11 +293,7 @@ class GovukDecimalField(GovukTextInputFieldMixin, DecimalField):
 class PostcodeSearchField(GovukTextInputFieldMixin, SearchField):
     input_type = "Search"
     param_extensions = {"classes": "govuk-input--width-10"}
-    validators = [
-        DataRequired(message="Enter a postcode."),
-        MustContainAlphanumericCharacters(),
-        Length(max=255, message="Service name must be 255 characters or fewer"),
-    ]
+    validators = [DataRequired(message="Enter a postcode."), IsPostcode()]
 
 
 class SMSCode(GovukTextInputField):
@@ -2589,7 +2586,7 @@ class PostcodeForm(StripWhitespaceForm):
         param_extensions={
             "classes": "govuk-input govuk-input--width-5",
             "suffix": {"text": "km"},
-            "attributes": {"pattern": "[0-9]*"},
+            "attributes": {"pattern": "^-?\\d+(\\.\\d+)?$"},
         },
         validators=[
             NumberRange(min=0.099, max=38.001, message="Enter a radius between 0.1km and 38.0km."),

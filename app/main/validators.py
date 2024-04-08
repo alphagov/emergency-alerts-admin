@@ -237,3 +237,16 @@ class Only2DecimalPlaces:
     def __call__(self, form, field):
         if field.data and not re.match(self.regex, str(field.data)):
             raise ValidationError(self.message)
+
+
+class IsPostcode:
+    regex = re.compile(
+        r"^([Gg][Ii][Rr] 0[Aa]{2})|((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z])))) [0-9][A-Za-z]{2})$"  # noqa: E501
+    )
+
+    def __init__(self, message="Enter a valid postcode."):
+        self.message = message
+
+    def __call__(self, form, field):
+        if field.data and not re.match(self.regex, str(field.data)):
+            raise ValidationError(self.message)
