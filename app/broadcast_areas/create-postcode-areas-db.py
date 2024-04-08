@@ -34,7 +34,7 @@ def simplify_geometry(feature):
         raise Exception("Unknown type: {}".format(feature["type"]))
 
 
-def clean_up_invalid_polygons(polygons, indent="    "):
+def clean_up_invalid_polygons(postcode, polygons, indent="    "):
     """
     This function expects a list of lists of coordinates defined in degrees
     """
@@ -54,7 +54,7 @@ def clean_up_invalid_polygons(polygons, indent="    "):
         ).simplify(0)
 
         if simplified_polygon.is_valid:
-            print(f"{indent}Polygon {index + 1}/{len(polygons)} is valid")  # noqa: T201
+            print(f"{indent}Polygon {index + 1}/{len(polygons)} is valid")
             yield simplified_polygon
 
         else:
@@ -64,10 +64,10 @@ def clean_up_invalid_polygons(polygons, indent="    "):
             # don’t have an area. They wouldn’t contribute to a broadcast
             # so we can ignore them.
             if simplified_polygon.area == 0:
-                print(f"{indent}Polygon {index + 1}/{len(polygons)} has 0 area, skipping")  # noqa: T201
+                print(f"{indent}Polygon {index + 1}/{len(polygons)} has 0 area, skipping")
                 continue
 
-            print(f"{indent}Polygon {index + 1}/{len(polygons)} needs fixing...")  # noqa: T201
+            print(f"{indent}Polygon {index + 1}/{len(polygons)} needs fixing...")
 
             # Buffering with a size of 0 is a trick to make valid
             # geometries from polygons that self intersect
@@ -78,11 +78,11 @@ def clean_up_invalid_polygons(polygons, indent="    "):
             # instead
             if isinstance(buffered, MultiPolygon):
                 try:
-                    for sub_polygon in clean_up_invalid_polygons(buffered, indent="        "):
+                    for sub_polygon in clean_up_invalid_polygons(postcode, buffered, indent="        "):
                         yield sub_polygon
                     continue
                 except TypeError:
-                    for sub_polygon in clean_up_invalid_polygons(buffered.geoms, indent="        "):
+                    for sub_polygon in clean_up_invalid_polygons(postcode, buffered.geoms, indent="        "):
                         yield sub_polygon
                     continue
             # We only care about the exterior of the polygon, not an
@@ -93,17 +93,16 @@ def clean_up_invalid_polygons(polygons, indent="    "):
             # Make sure the polygon is now valid, and that we haven’t
             # drastically transformed the polygon by ‘fixing’ it
             assert fixed_polygon.is_valid
-            # assert isclose(fixed_polygon.area, shapely_polygon.area, rel_tol=0.001)
 
-            print(f"{indent}Polygon {index + 1}/{len(polygons)} fixed!")  # noqa: T201
+            print(f"{indent}Polygon {index + 1}/{len(polygons)} fixed!")
 
             yield fixed_polygon
 
 
-def polygons_and_simplified_polygons(feature, name):
+def polygons_and_simplified_polygons(feature, name, postcode):
     raw_polygons = simplify_geometry(feature)
     clean_raw_polygons = [
-        [[x, y] for x, y in polygon.exterior.coords] for polygon in clean_up_invalid_polygons(raw_polygons)
+        [[x, y] for x, y in polygon.exterior.coords] for polygon in clean_up_invalid_polygons(postcode, raw_polygons)
     ]
     polygons = Polygons(clean_raw_polygons)
 
@@ -112,12 +111,12 @@ def polygons_and_simplified_polygons(feature, name):
     simplified = smoothed.simplify
 
     if not (len(full_resolution) or len(simplified)):
-        raise RuntimeError("Polygon of 0 size found")
+        return None, None, None
 
-    print(  # noqa: T201
-        f"    Original: {full_resolution.point_count: >5} points"
-        f"    Smoothed: {smoothed.point_count: >5} points"
-        f"    Simplified: {simplified.point_count: >4} points"
+    print(
+        f"    Original:{full_resolution.point_count: >5} points"
+        f"    Smoothed:{smoothed.point_count: >5} points"
+        f"    Simplified:{simplified.point_count: >4} points"
     )
 
     point_counts.append(simplified.point_count)
@@ -135,7 +134,6 @@ def polygons_and_simplified_polygons(feature, name):
     ]
 
     # Check that the simplification process hasn’t introduced bad data
-
     for dataset in output:
         for polygon in dataset:
             assert Polygon(polygon).is_valid
@@ -146,17 +144,13 @@ def polygons_and_simplified_polygons(feature, name):
 def add_postcode_areas(postcode_filepath):
     dataset_id = "postcodes"
     dataset_geojson = geojson.loads(postcode_filepath.read_text())
-    count = 0
 
     areas_to_add = []
     for feature in dataset_geojson["features"]:
         f_id = feature["properties"]["POSTCODE"]
         f_name = feature["properties"]["POSTCODE"]
 
-        count += 1
-        print(f"{f_name} {((count/1735880) * 100):.2f}%")  # noqa : T201
-
-        feature, _, utm_crs = polygons_and_simplified_polygons(feature["geometry"], dataset_id)
+        feature, _, utm_crs = polygons_and_simplified_polygons(feature["geometry"], dataset_id, f_name)
 
         if feature is not None:
             areas_to_add.append(
@@ -203,10 +197,10 @@ most_detailed_polygons = formatted_list(
     after_each="",
 )
 
-print(  # noqa: T201
+print(
     "\n"
     "DONE\n"
-    f"    Processed {len(point_counts): , } polygons.\n"
-    f"    Cleaned up {len(invalid_polygons) : , } polygons.\n"
+    f"    Processed {len(point_counts):,} polygons.\n"
+    f"    Cleaned up {len(invalid_polygons):,} polygons.\n"
     f"    Highest point counts once simplifed: {most_detailed_polygons}\n"
 )
