@@ -14,9 +14,10 @@ beautifulsoup4==4.11.1
     # via -r requirements.in
 black==23.3.0
     # via -r requirements.in
-blinker==1.5
+blinker==1.7.0
     # via
     #   -r requirements.in
+    #   flask
     #   gds-metrics
 boto3==1.26.100
     # via moto
@@ -57,7 +58,7 @@ execnet==1.9.0
     # via pytest-xdist
 fido2==1.1.0
     # via -r requirements.in
-flake8==6.0.0
+flake8==7.0.0
     # via
     #   -r requirements.in
     #   flake8-bugbear
@@ -66,15 +67,15 @@ flake8-bugbear==22.10.27
     # via -r requirements.in
 flake8-print==5.0.0
     # via -r requirements.in
-flask==2.2.2
+flask==3.0.2
     # via
     #   -r requirements.in
     #   flask-login
     #   flask-wtf
     #   gds-metrics
-flask-login==0.6.2
+flask-login==0.6.3
     # via -r requirements.in
-flask-wtf==1.0.1
+flask-wtf==1.2.1
     # via -r requirements.in
 freezegun==1.2.2
     # via -r requirements.in
@@ -121,15 +122,15 @@ lxml==4.9.1
     # via
     #   pyexcel-ezodf
     #   pyexcel-ods3
-markupsafe==2.1.1
+markupsafe==2.1.5
     # via
+    #   -r requirements.in
     #   jinja2
-    #   moto
     #   werkzeug
     #   wtforms
 mccabe==0.7.0
     # via flake8
-moto==4.0.9
+moto==5.0.4
     # via -r requirements.in
 mypy-extensions==1.0.0
     # via black
@@ -155,7 +156,7 @@ prometheus-client==0.15.0
     # via
     #   -r requirements.in
     #   gds-metrics
-pycodestyle==2.10.0
+pycodestyle==2.11.1
     # via
     #   flake8
     #   flake8-print
@@ -178,7 +179,7 @@ pyexcel-xls==0.7.0
     # via -r requirements.in
 pyexcel-xlsx==0.6.0
     # via -r requirements.in
-pyflakes==3.0.1
+pyflakes==3.2.0
     # via flake8
 pyjwt==2.4.0
     # via notifications-python-client
@@ -202,9 +203,7 @@ python-dateutil==2.8.2
     #   freezegun
     #   moto
 pytz==2022.6
-    # via
-    #   -r requirements.in
-    #   moto
+    # via -r requirements.in
 pyyaml==6.0.1
     # via responses
 requests==2.28.1
@@ -244,13 +243,13 @@ urllib3==1.26.9
     #   botocore
     #   requests
     #   responses
-werkzeug==2.2.2
+werkzeug==3.0.2
     # via
     #   -r requirements.in
     #   flask
     #   flask-login
     #   moto
-wtforms==3.0.1
+wtforms==3.1.2
     # via
     #   -r requirements.in
     #   flask-wtf

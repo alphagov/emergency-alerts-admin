@@ -40,7 +40,7 @@ class ElementNotFound(Exception):
     pass
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def notify_admin_without_context():
     """
     You probably won't need to use this fixture, unless you need to use the flask.appcontext_pushed hook. Possibly if
@@ -53,7 +53,7 @@ def notify_admin_without_context():
     return app
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def notify_admin(notify_admin_without_context):
     with notify_admin_without_context.app_context():
         yield notify_admin_without_context

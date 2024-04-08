@@ -15,7 +15,8 @@ from emergency_alerts_utils.formatters import nl2br as utils_nl2br
 from emergency_alerts_utils.recipients import InvalidPhoneError, validate_phone_number
 from emergency_alerts_utils.take import Take
 from emergency_alerts_utils.timezones import utc_string_to_aware_gmt_datetime
-from flask import Markup, url_for
+from flask import url_for
+from markupsafe import Markup
 
 
 def convert_to_boolean(value):

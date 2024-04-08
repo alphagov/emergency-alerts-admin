@@ -1,8 +1,9 @@
 #!/bin/sh
 
+STAGED_FILES=$(git diff-index --name-only --cached --diff-filter=ACMR HEAD -- )
 STAGED_REQ_FILES=0
 
-for FILE in "$@"
+for FILE in $STAGED_FILES
 do
     if [ "$FILE" = "requirements.in" ]; then
         STAGED_REQ_FILES=$((STAGED_REQ_FILES+1))
