@@ -253,6 +253,7 @@ def preview_broadcast_areas(service_id, broadcast_message_id):
         "views/broadcast/preview-areas.html",
         broadcast_message=broadcast_message,
         back_link=back_link,
+        is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
     )
 
 
@@ -441,7 +442,6 @@ def choose_broadcast_sub_area(service_id, broadcast_message_id, library_slug, ar
     )
     if form.validate_on_submit():
         broadcast_message.add_areas(*form.selected_areas)
-        print(*form.selected_areas)  # noqa: T201
         return redirect(
             url_for(
                 ".preview_broadcast_areas",

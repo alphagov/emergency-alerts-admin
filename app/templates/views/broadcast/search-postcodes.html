@@ -24,6 +24,12 @@
   {{ govukBackLink({ "href": back_link }) }}
 {% endblock %}
 
+{% if broadcast_message.areas %}
+  {% set label = "Map of the United Kingdom, showing "+broadcast_message.areas[0].name%}
+{% else %}
+  {% set label = "Map of the United Kingdom, showing no areas" %}
+{% endif %}
+
 {% block maincolumn_content %}
 
   {{ page_header("Alert area") }}
@@ -55,7 +61,10 @@
     </ul>
   </div>
 {% endif %}
-{{ map(broadcast_message) }}
+
+{{ map(broadcast_message, label) }}
+
+
 
   {% if broadcast_message.areas %}
     {{ govukButton({

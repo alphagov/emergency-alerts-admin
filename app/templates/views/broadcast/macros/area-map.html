@@ -1,5 +1,8 @@
-{% macro map(broadcast_message) %}
-  <div id="area-list-map"></div>
+{% macro map(broadcast_message, label) %}
+  <div id="area-list-map" role="region" aria-label="{{label}}" aria-describedby="area-list-map__description"></div>
+    <p id="area-list-map__description" class="govuk-visually-hidden">
+      Use the arrow keys to move the map. Use the buttons to zoom the map in or out
+    </p>
     <p class="area-list-key area-list-key--certain">
       <svg class="area-list-key__icon" width="50" height="50" viewbox="0 0 50 50" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
         <rect x="0" y="0" width="100%" height="100%" fill="#FFFFFF" />

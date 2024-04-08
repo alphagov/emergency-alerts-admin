@@ -47,7 +47,7 @@ def test_invalid_input_messages(post_data, expected_error):
 
 
 def test_nonexistent_postcode_message():
-    form = PostcodeForm(postcode="TEST", radius=2)
+    form = PostcodeForm(postcode="TE10 1TE", radius=2)
     check_postcode_exists(form)
     assert form.validate()
     assert not form.post_validate()

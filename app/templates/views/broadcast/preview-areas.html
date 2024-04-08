@@ -21,6 +21,16 @@
   {{ govukBackLink({ "href": back_link }) }}
 {% endblock %}
 
+{% if broadcast_message.areas %}
+  {% if broadcast_message.areas|length == 1 or is_custom_broadcast %}
+    {% set label = "Map of the United Kingdom, showing the area for "+broadcast_message.areas[0].name %}
+  {% elif broadcast_message.areas|length > 1 %}
+    {% set label = "Map of the United Kingdom, showing the areas for "+broadcast_message.areas[:-1]|map(attribute='name')|join(', ')+' and '+broadcast_message.areas[-1].name  %}
+  {% endif %}
+{% else %}
+  {% set label = "Map of the United Kingdom, showing no areas" %}
+{% endif %}
+
 {% block maincolumn_content %}
 
   {{ page_header("Confirm the area for the alert") }}
@@ -52,7 +62,7 @@
       }) }}
     </div>
 
-    {{ map(broadcast_message) }}
+    {{ map(broadcast_message, label) }}
     {{ govukButton({
       "element": "a",
       "text": "Preview alert",
