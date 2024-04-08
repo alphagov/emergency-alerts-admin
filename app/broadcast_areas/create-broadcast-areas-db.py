@@ -64,7 +64,7 @@ def clean_up_invalid_polygons(polygons, indent="    "):
         ).simplify(0)
 
         if simplified_polygon.is_valid:
-            print(f"{indent}Polygon {index + 1}/{len(polygons)} is valid")  # noqa: T201
+            print(f"{indent}Polygon {index + 1}/{len(polygons)} is valid")
             yield simplified_polygon
 
         else:
@@ -74,10 +74,10 @@ def clean_up_invalid_polygons(polygons, indent="    "):
             # don’t have an area. They wouldn’t contribute to a broadcast
             # so we can ignore them.
             if simplified_polygon.area == 0:
-                print(f"{indent}Polygon {index + 1}/{len(polygons)} has 0 area, skipping")  # noqa: T201
+                print(f"{indent}Polygon {index + 1}/{len(polygons)} has 0 area, skipping")
                 continue
 
-            print(f"{indent}Polygon {index + 1}/{len(polygons)} needs fixing...")  # noqa: T201
+            print(f"{indent}Polygon {index + 1}/{len(polygons)} needs fixing...")
 
             # Buffering with a size of 0 is a trick to make valid
             # geometries from polygons that self intersect
@@ -101,7 +101,7 @@ def clean_up_invalid_polygons(polygons, indent="    "):
             assert fixed_polygon.is_valid
             assert isclose(fixed_polygon.area, shapely_polygon.area, rel_tol=0.001)
 
-            print(f"{indent}Polygon {index + 1}/{len(polygons)} fixed!")  # noqa: T201
+            print(f"{indent}Polygon {index + 1}/{len(polygons)} fixed!")
 
             yield fixed_polygon
 
@@ -124,7 +124,7 @@ def polygons_and_simplified_polygons(feature):
     if not (len(full_resolution) or len(simplified)):
         raise RuntimeError("Polygon of 0 size found")
 
-    print(  # noqa: T201
+    print(
         f"    Original:{full_resolution.point_count: >5} points"
         f"    Smoothed:{smoothed.point_count: >5} points"
         f"    Simplified:{simplified.point_count: >4} points"
@@ -157,7 +157,7 @@ def estimate_number_of_smartphones_in_area(country_or_ward_code):
         # We don’t have population figures for wards of the City of
         # London. We’ll leave it empty here and estimate on the fly
         # later based on physical area.
-        print("    Population:   N/A")  # noqa: T201
+        print("    Population:   N/A")
         return None
 
     # For some reason Bryher is the only ward missing population data, so we
@@ -248,8 +248,8 @@ def add_test_areas():
         f_id = feature["properties"]["id"]
         f_name = feature["properties"]["name"]
 
-        print()  # noqa: T201
-        print(f_name)  # noqa: T201
+        print()
+        print(f_name)
 
         feature, _, utm_crs = polygons_and_simplified_polygons(feature["geometry"])
         areas_to_add.append(
@@ -282,8 +282,8 @@ def add_countries():
         f_id = feature["properties"]["ctry19cd"]
         f_name = feature["properties"]["ctry19nm"]
 
-        print()  # noqa: T201
-        print(f_name)  # noqa: T201
+        print()
+        print(f_name)
 
         feature, simple_feature, utm_crs = polygons_and_simplified_polygons(feature["geometry"])
         areas_to_add.append(
@@ -329,8 +329,8 @@ def add_police_force_areas():
             london_geometry["coordinates"] += feature["geometry"]["coordinates"]
             continue
 
-        print()  # noqa: T201
-        print(f_name)  # noqa: T201
+        print()
+        print(f_name)
 
         feature, simple_feature, utm_crs = polygons_and_simplified_polygons(feature["geometry"])
         id = f"{dataset_id}-{f_id}"
@@ -389,8 +389,8 @@ def _add_electoral_wards(dataset_id):
         ward_name = feature["properties"]["WD21NM"]
         ward_id = "wd21-" + ward_code
 
-        print()  # noqa: T201
-        print(ward_name)  # noqa: T201
+        print()
+        print(ward_name)
 
         la_id = "lad21-" + ward_code_to_la_id_mapping[ward_code]
 
@@ -423,8 +423,8 @@ def _add_local_authorities(dataset_id):
         la_id = feature["properties"]["LAD21CD"]
         group_name = feature["properties"]["LAD21NM"]
 
-        print()  # noqa: T201
-        print(group_name)  # noqa: T201
+        print()
+        print(group_name)
 
         group_id = "lad21-" + la_id
 
@@ -479,7 +479,7 @@ def _add_counties_and_unitary_authorities(dataset_id):
 
 # cheeky global variable
 keep_old_polygons = sys.argv[1:] == ["--keep-old-polygons"]
-print("keep_old_polygons: ", keep_old_polygons)  # noqa: T201
+print("keep_old_polygons: ", keep_old_polygons)
 
 repo = BroadcastAreasRepository()
 
@@ -500,7 +500,7 @@ most_detailed_polygons = formatted_list(
     after_each="",
 )
 
-print(  # noqa: T201
+print(
     "\n"
     "DONE\n"
     f"    Processed {len(point_counts):,} polygons.\n"
