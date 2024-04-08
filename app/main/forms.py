@@ -2581,6 +2581,14 @@ class PlatformAdminSearch(StripWhitespaceForm):
 
 class PostcodeForm(StripWhitespaceForm):
     postcode = PostcodeSearchField("Postcode")
+    """
+    Reasoning for radius field validation limits:
+    The minimum value of 100m / 0.1km was driven by MNO requirements for the most
+    effective transmission to get full penetration without risk of over subscription of
+    cell towers. Too small an area might be difficult for their (MNO) systems to calculate
+    which cell sites and towers to use, and 38km was driven by COBR as bigger
+    than a city and the max side of alerting for non country size areas.
+    """
     radius = GovukDecimalField(
         "Add radius",
         param_extensions={
