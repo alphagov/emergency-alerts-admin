@@ -1,5 +1,6 @@
 import pyproj
 from flask import abort, flash, jsonify, redirect, render_template, request, url_for
+from postcode_validator.uk.uk_postcode_validator import UKPostcode
 from shapely import Point
 from shapely.geometry import Polygon
 
@@ -365,11 +366,12 @@ def redirect_to_postcode_map(service_id, broadcast_message_id, form: PostcodeFor
         broadcast_message_id,
         service_id=current_service.id,
     )
-    postcode = "postcodes-" + form.data["postcode"].upper()
+    postcode_formatted = UKPostcode(form.data["postcode"]).postcode
+    postcode = f"postcodes-{postcode_formatted}"
     try:
         area = BroadcastMessage.libraries.get_areas([postcode])[0]
         radius_to_min_sig_figs = "{:g}".format(float(form.data["radius"]))
-        circle_id = f"an area of {radius_to_min_sig_figs}km around the postcode {form.data['postcode'].upper()}"
+        circle_id = f"an area of {radius_to_min_sig_figs}km around the postcode {postcode_formatted}"
 
         centroid = get_centroid(area)
         circle_polygon = create_circle(centroid, float(form.data["radius"]) * 1000)

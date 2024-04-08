@@ -149,6 +149,8 @@ platformdirs==3.2.0
     # via black
 pluggy==1.0.0
     # via pytest
+postcode-validator==0.0.4
+    # via -r requirements.in
 prometheus-client==0.15.0
     # via
     #   -r requirements.in

@@ -8,6 +8,7 @@ from emergency_alerts_utils.sanitise_text import SanitiseSMS
 from emergency_alerts_utils.template import BroadcastMessageTemplate
 from flask import current_app
 from orderedset import OrderedSet
+from postcode_validator.uk.uk_postcode_regex import postcode_regex
 from wtforms import ValidationError
 from wtforms.validators import StopValidation
 
@@ -240,13 +241,9 @@ class Only2DecimalPlaces:
 
 
 class IsPostcode:
-    regex = re.compile(
-        r"^([Gg][Ii][Rr] 0[Aa]{2})|((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z])))) [0-9][A-Za-z]{2})$"  # noqa: E501
-    )
-
     def __init__(self, message="Enter a valid postcode."):
         self.message = message
 
     def __call__(self, form, field):
-        if field.data and not re.match(self.regex, str(field.data)):
+        if field.data and not re.match(postcode_regex, str(field.data).upper()):
             raise ValidationError(self.message)
