@@ -1,5 +1,4 @@
 import itertools
-import os
 from datetime import datetime, timedelta
 
 from emergency_alerts_utils.polygons import Polygons
@@ -282,12 +281,7 @@ class BroadcastMessage(JSONModel):
             areas["ids"] = [id]
             areas["names"] = [id]
             areas["aggregate_names"] = [id]
-            if os.environ.get("IN_CICD"):
-                areas["simple_polygons"] = [
-                    [[round(coord, 10) for coord in polygon] for polygon in polygons] for polygons in simple_polygons
-                ]
-            else:
-                areas["simple_polygons"] = simple_polygons
+            areas["simple_polygons"] = simple_polygons
             data = {"areas": areas}
 
             self.area_ids = [id]

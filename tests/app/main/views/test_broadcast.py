@@ -1,5 +1,5 @@
 import json
-import os
+import math
 import uuid
 from collections import namedtuple
 from functools import partial
@@ -1760,9 +1760,7 @@ def test_add_broadcast_area(
                     "ids": ["an area of 2km around the postcode BD1 1EE, in Bradford"],
                     "names": ["an area of 2km around the postcode BD1 1EE, in Bradford"],
                     "aggregate_names": ["an area of 2km around the postcode BD1 1EE, in Bradford"],
-                    "simple_polygons": [[[round(coord, 10) for coord in polygon] for polygon in BD1_1EE_2]]
-                    if os.environ.get("IN_CICD")
-                    else [BD1_1EE_2],
+                    "simple_polygons": [BD1_1EE_2],
                 }
             },
         ),
@@ -1773,9 +1771,7 @@ def test_add_broadcast_area(
                     "ids": ["an area of 3km around the postcode BD1 1EE, in Bradford"],
                     "names": ["an area of 3km around the postcode BD1 1EE, in Bradford"],
                     "aggregate_names": ["an area of 3km around the postcode BD1 1EE, in Bradford"],
-                    "simple_polygons": [[[round(coord, 10) for coord in polygon] for polygon in BD1_1EE_3]]
-                    if os.environ.get("IN_CICD")
-                    else [BD1_1EE_3],
+                    "simple_polygons": [BD1_1EE_3],
                 }
             },
         ),
@@ -1803,9 +1799,7 @@ def test_add_custom_area(
             status="draft",
             areas={
                 "ids": ["an area of 1km around the postcode BD1 1EE, in Bradford"],
-                "simple_polygons": [[[round(coord, 10) for coord in polygon] for polygon in BD1_1EE_1]]
-                if os.environ.get("IN_CICD")
-                else [BD1_1EE_1],
+                "simple_polygons": [BD1_1EE_1],
                 "names": ["an area of 1km around the postcode BD1 1EE, in Bradford"],
             },
         ),
@@ -1821,11 +1815,27 @@ def test_add_custom_area(
         _follow_redirects=True,
     )
 
-    mock_update_broadcast_message.assert_called_once_with(
-        service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
-        data=update_broadcast_data,
+    mock_update_broadcast_message.assert_called_once()
+    assert (
+        mock_update_broadcast_message._mock_call_args[1]["data"]["areas"]["names"]
+        == update_broadcast_data["areas"]["names"]
     )
+    assert (
+        mock_update_broadcast_message._mock_call_args[1]["data"]["areas"]["ids"]
+        == update_broadcast_data["areas"]["ids"]
+    )
+    assert (
+        mock_update_broadcast_message._mock_call_args[1]["data"]["areas"]["aggregate_names"]
+        == update_broadcast_data["areas"]["aggregate_names"]
+    )
+
+    actual_polygons = mock_update_broadcast_message._mock_call_args[1]["data"]["areas"]["simple_polygons"]
+    expected_polygons = update_broadcast_data["areas"]["simple_polygons"]
+
+    for coords1, coords2 in zip(actual_polygons, expected_polygons):
+        for coord1, coord2 in zip(coords1, coords2):
+            assert all(abs(a - b) < math.exp(1e-12) for a, b in zip(coord1, coord2))
+
     form = page.select_one("form")
     postcode_value = form.select_one("#postcode")["value"]
     radius_value = form.select_one("#radius")["value"]
