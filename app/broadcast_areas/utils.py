@@ -14,7 +14,7 @@ def _convert_custom_areas_to_wards(areas):
     results = set()
 
     for area in areas:
-        if type(area) == CustomBroadcastArea:
+        if type(area) is CustomBroadcastArea:
             results |= set(area.overlapping_electoral_wards)
         else:
             results |= {area}
