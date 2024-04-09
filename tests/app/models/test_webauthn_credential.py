@@ -49,8 +49,8 @@ def test_from_registration_encodes_as_unicode(webauthn_dev_server):
 
     serialized_credential = credential.serialize()
 
-    assert type(serialized_credential["credential_data"]) == str
-    assert type(serialized_credential["registration_response"]) == str
+    assert type(serialized_credential["credential_data"]) is str
+    assert type(serialized_credential["registration_response"]) is str
 
 
 def test_from_registration_handles_library_errors():

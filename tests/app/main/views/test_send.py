@@ -2115,7 +2115,7 @@ def test_send_test_works_as_letter_preview(
 
     assert response.get_data(as_text=True) == "foo"
     assert mocked_preview.call_args[0][0].id == template_id
-    assert type(mocked_preview.call_args[0][0]) == LetterImageTemplate
+    assert type(mocked_preview.call_args[0][0]) is LetterImageTemplate
     assert mocked_preview.call_args[0][0].values == {"addressline1": "Jo Lastname"}
     assert mocked_preview.call_args[0][1] == filetype
 
@@ -2719,7 +2719,7 @@ def test_should_show_preview_letter_message(
     assert response.get_data(as_text=True) == "foo"
     mocked_preview.assert_called_once()
     assert mocked_preview.call_args[0][0].id == template_id
-    assert type(mocked_preview.call_args[0][0]) == LetterPreviewTemplate
+    assert type(mocked_preview.call_args[0][0]) is LetterPreviewTemplate
     assert mocked_preview.call_args[0][1] == filetype
     assert mocked_preview.call_args[0][0].values == expected_values
     assert mocked_preview.call_args[1] == {"page": expected_page}
