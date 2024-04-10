@@ -107,3 +107,6 @@ environment.sh
 # Files/folders created by build so not present in .cfignore
 app/version.py
 app/static
+
+# Files too large to be committed
+app/broadcast_areas/broadcast-areas.sqlite3

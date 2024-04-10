@@ -80,7 +80,7 @@ def test_areas_treats_missing_ids_as_custom_broadcast(notify_admin):
     )
 
     assert len(list(broadcast_message.areas)) == 2
-    assert type(broadcast_message.areas) == CustomBroadcastAreas
+    assert type(broadcast_message.areas) is CustomBroadcastAreas
 
 
 @pytest.mark.parametrize(
