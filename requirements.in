@@ -26,6 +26,7 @@ notifications-python-client==8.0.0
 rtreelib==0.2.0
 fido2==1.1.0
 pyproj==3.4.0
+postcode-validator==0.0.4
 
 itsdangerous==2.1.2
 govuk-frontend-jinja==2.8.0

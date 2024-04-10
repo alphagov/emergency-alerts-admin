@@ -271,6 +271,24 @@ class BroadcastMessage(JSONModel):
         self.area_ids = list(OrderedSet(self.area_ids + list(new_area_ids)))
         self._update_areas()
 
+    def add_custom_areas(self, *circle_polygon, id):
+        simple_polygons = list(circle_polygon)
+        local_authority = CustomBroadcastArea(name="", polygons=simple_polygons).local_authority
+        if local_authority:
+            id = f"{id}, in {local_authority}"
+        if id not in self.area_ids:
+            areas = {}
+            areas["ids"] = [id]
+            areas["names"] = [id]
+            areas["aggregate_names"] = [id]
+            areas["simple_polygons"] = simple_polygons
+            data = {"areas": areas}
+
+            self.area_ids = [id]
+            broadcast_message_api_client.update_broadcast_message(
+                broadcast_message_id=self.id, service_id=self.service_id, data=data
+            )
+
     def remove_area(self, area_id):
         self.area_ids = list(set(self._dict["areas"]["ids"]) - {area_id})
         self._update_areas()
@@ -293,6 +311,32 @@ class BroadcastMessage(JSONModel):
         data = {"areas": areas}
 
         # TEMPORARY: while we migrate to a new format for "areas"
+        """
+            The following link is a ticket to ensure tracking of whether this temporary fix is still required
+            https://gds-ea.atlassian.net/browse/EAS-2037?atlOrigin=eyJpIjoiOWY2OWQ5ZTcwNjU4NDNkZWFjYzE1NDg0NGMwOTgyOTciLCJwIjoiaiJ9
+        """
+
+        if force_override:
+            data["force_override"] = True
+
+        self._update(**data)
+
+    def _update_custom_areas(self, force_override=False):
+        areas = {
+            "ids": self.area_ids,
+            "names": [area.name for area in self.areas],
+            "aggregate_names": [area.name for area in aggregate_areas(self.areas)],
+            "simple_polygons": self.simple_polygons.as_coordinate_pairs_lat_long,
+        }
+
+        data = {"areas": areas}
+
+        # TEMPORARY: while we migrate to a new format for "areas"
+        """
+            The following link is a ticket to ensure tracking of whether this temporary fix is still required
+            https://gds-ea.atlassian.net/browse/EAS-2037?atlOrigin=eyJpIjoiOWY2OWQ5ZTcwNjU4NDNkZWFjYzE1NDg0NGMwOTgyOTciLCJwIjoiaiJ9
+        """
+
         if force_override:
             data["force_override"] = True
 
@@ -300,8 +344,8 @@ class BroadcastMessage(JSONModel):
 
     def _update(self, **kwargs):
         broadcast_message_api_client.update_broadcast_message(
-            broadcast_message_id=self.id,
             service_id=self.service_id,
+            broadcast_message_id=self.id,
             data=kwargs,
         )
 
@@ -328,6 +372,28 @@ class BroadcastMessage(JSONModel):
 
     def cancel_broadcast(self):
         self._set_status_to("cancelled")
+
+    def clear_areas(self, force_override=False):
+        self.area_ids.clear()
+        areas = {
+            "ids": [],
+            "names": [],
+            "aggregate_names": [],
+            "simple_polygons": [],
+        }
+
+        data = {"areas": areas}
+
+        # TEMPORARY: while we migrate to a new format for "areas"
+        """
+            The following link is a ticket to ensure tracking of whether this temporary fix is still required
+            https://gds-ea.atlassian.net/browse/EAS-2037?atlOrigin=eyJpIjoiOWY2OWQ5ZTcwNjU4NDNkZWFjYzE1NDg0NGMwOTgyOTciLCJwIjoiaiJ9
+        """
+
+        if force_override:
+            data["force_override"] = True
+
+        self._update(**data)
 
 
 class BroadcastMessages(ModelList):

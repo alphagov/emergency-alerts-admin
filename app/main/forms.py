@@ -26,6 +26,7 @@ from werkzeug.utils import cached_property
 from wtforms import (
     BooleanField,
     DateField,
+    DecimalField,
     EmailField,
     Field,
     FieldList,
@@ -50,6 +51,7 @@ from wtforms.validators import (
     DataRequired,
     InputRequired,
     Length,
+    NumberRange,
     Optional,
     Regexp,
 )
@@ -67,12 +69,14 @@ from app.main.validators import (
     CsvFileValidator,
     DoesNotStartWithDoubleZero,
     FileIsVirusFree,
+    IsPostcode,
     LettersNumbersSingleQuotesFullStopsAndUnderscoresOnly,
     MustContainAlphanumericCharacters,
     NoCommasInPlaceHolders,
     NoEmbeddedImagesInSVG,
     NoPlaceholders,
     NoTextInSVG,
+    Only2DecimalPlaces,
     OnlySMSCharacters,
     StringsNotAllowed,
     ValidEmail,
@@ -281,6 +285,16 @@ class GovukDateField(GovukTextInputFieldMixin, DateField):
 
 class GovukIntegerField(GovukTextInputFieldMixin, IntegerField):
     pass
+
+
+class GovukDecimalField(GovukTextInputFieldMixin, DecimalField):
+    pass
+
+
+class PostcodeSearchField(GovukTextInputFieldMixin, SearchField):
+    input_type = "Search"
+    param_extensions = {"classes": "govuk-input--width-10"}
+    validators = [DataRequired(message="Enter a postcode."), IsPostcode()]
 
 
 class SMSCode(GovukTextInputField):
@@ -2564,3 +2578,31 @@ class PlatformAdminSearch(StripWhitespaceForm):
         param_extensions={"hint": {"text": ("Search for users, services, and organisations by name or partial name.")}},
         validators=[DataRequired()],
     )
+
+
+class PostcodeForm(StripWhitespaceForm):
+    postcode = PostcodeSearchField("Postcode")
+    """
+    Reasoning for radius field validation limits:
+    The minimum value of 100m / 0.1km was driven by MNO requirements for the most
+    effective transmission to get full penetration without risk of over subscription of
+    cell towers. Too small an area might be difficult for their (MNO) systems to calculate
+    which cell sites and towers to use, and 38km was driven by COBR as bigger
+    than a city and the max side of alerting for non country size areas.
+    """
+    radius = GovukDecimalField(
+        "Add radius",
+        param_extensions={
+            "classes": "govuk-input govuk-input--width-5",
+            "suffix": {"text": "km"},
+            "attributes": {"pattern": "^-?\\d+(\\.\\d+)?$"},
+        },
+        validators=[
+            NumberRange(min=0.099, max=38.001, message="Enter a radius between 0.1km and 38.0km."),
+            DataRequired(message="Enter a radius."),
+            Only2DecimalPlaces(),
+        ],
+    )
+
+    def post_validate(self):
+        return False if self.errors else True
