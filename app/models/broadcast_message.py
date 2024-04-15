@@ -273,15 +273,15 @@ class BroadcastMessage(JSONModel):
 
     def add_custom_areas(self, *circle_polygon, id):
         simple_polygons = list(circle_polygon)
-        local_authority = CustomBroadcastArea(name="", polygons=simple_polygons).local_authority
-        if local_authority:
+        if local_authority := CustomBroadcastArea(name="", polygons=simple_polygons).local_authority:
             id = f"{id}, in {local_authority}"
         if id not in self.area_ids:
-            areas = {}
-            areas["ids"] = [id]
-            areas["names"] = [id]
-            areas["aggregate_names"] = [id]
-            areas["simple_polygons"] = simple_polygons
+            areas = {
+                "ids": [id],
+                "names": [id],
+                "aggregate_names": [id],
+                "simple_polygons": simple_polygons,
+            }
             data = {"areas": areas}
 
             self.area_ids = [id]
@@ -293,14 +293,16 @@ class BroadcastMessage(JSONModel):
         self.area_ids = list(set(self._dict["areas"]["ids"]) - {area_id})
         self._update_areas()
 
-    def add_coordinate_area(self, polygon):
-        id = "Test"
-        simple_polygons = list(polygon)
-        areas = {}
-        areas["ids"] = [id]
-        areas["names"] = [id]
-        areas["aggregate_names"] = [id]
-        areas["simple_polygons"] = [simple_polygons]
+    def add_coordinate_area(self, polygon, id):
+        simple_polygons = [polygon]
+        if local_authority := CustomBroadcastArea(name="", polygons=simple_polygons).local_authority:
+            id = f"{id}, in {local_authority}"
+        areas = {
+            "ids": [id],
+            "names": [id],
+            "aggregate_names": [id],
+            "simple_polygons": simple_polygons,
+        }
         data = {"areas": areas}
 
         self.area_ids = [id]

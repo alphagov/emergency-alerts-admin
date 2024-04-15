@@ -7,12 +7,16 @@
 {% from "views/broadcast/macros/area-map.html" import map %}
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
 
+{% block service_page_title %}
+  Choose Coordinates type
+{% endblock %}
+
 {% block backLink %}
   {{ govukBackLink({ "href": back_link }) }}
 {% endblock %}
 
 {% block maincolumn_content %}
-
+{{ page_header("Choose Coordinates type") }}
   {% call form_wrapper() %}
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     {{ form.content(

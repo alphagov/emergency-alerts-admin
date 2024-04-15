@@ -22,18 +22,19 @@
   {% endfor %}
 
   {% for library in libraries|sort %}
-    {% if library.name not in ['Coordinates', 'Postcodes']  %}
+    {% if library.id not in ['coordinates', 'postcodes']  %}
       <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_broadcast_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug=library.id) }}">{{ library.name }}</a>
       <p class="file-list-hint-large">{{ library.get_examples() }}</p>
     {% else %}
       {% if (broadcast_message.areas|length == 0) or (custom_broadcast)  %}
-        {% if library.name == 'Coordinates' %}
+        {% if library.id == 'coordinates' %}
           <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_broadcast_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug=library.id) }}">{{ library.name }}</a>
           <p class="file-list-hint-large">Use coordinates to create an alert area.</p>
-        {% elif library.name == 'Postcodes' %}
+        {% elif library.id == 'postcodes' %}
           <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_broadcast_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug=library.id) }}">{{ library.name }}</a>
           <p class="file-list-hint-large">Choose a postcode to create a broadcast area from.</p>
         {% endif %}
+      {% endif %}
     {% endif %}
   {% endfor %}
 

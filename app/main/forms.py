@@ -2609,13 +2609,13 @@ class PostcodeForm(StripWhitespaceForm):
 
 
 class CoordinatesForm(StripWhitespaceForm):
-    latitude = GovukSearchField(
+    first_coordinate = GovukSearchField(
         validators=[DataRequired()],
         param_extensions={
             "classes": "govuk-input govuk-input--width-7",
         },
     )
-    longitude = GovukSearchField(
+    second_coordinate = GovukSearchField(
         validators=[DataRequired()],
         param_extensions={
             "classes": "govuk-input govuk-input--width-7",
@@ -2629,10 +2629,13 @@ class CoordinatesForm(StripWhitespaceForm):
         },
     )
 
+    def post_validate(self):
+        if self.errors:
+            return False
+
 
 class ChooseCoordinateTypeForm(StripWhitespaceForm):
     content = GovukRadiosField(
-        "Choose Coordinate type",
         choices=[
             ("decimal", "Coordinates (Decimal degrees)"),
             ("cartesian", "Eastings & Northings"),

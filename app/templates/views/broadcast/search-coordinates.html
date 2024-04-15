@@ -7,10 +7,7 @@
 {% from "views/broadcast/macros/area-map.html" import map %}
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
 {% from "govuk_frontend_jinja/components/input/macro.html" import govukInput %}
-
-{% block service_page_title %}
-  Alert area
-{% endblock %}
+{% from "components/error-summary.html" import errorSummary %}
 
 {% block extra_stylesheets %}
   {% include "views/broadcast/partials/area-map-stylesheets.html" %}
@@ -28,20 +25,24 @@
   {% set label1 = 'Latitude' %}
   {% set label2 = 'Longitude' %}
 {% elif coordinate_type == 'cartesian' %}
-  {% set label1 = 'Eastings' %}
-  {% set label2 = 'Northings' %}
+  {% set label1 = 'Easting' %}
+  {% set label2 = 'Northing' %}
 {% endif %}
 
-{% block maincolumn_content %}
+{% block service_page_title %}
+  Alert area
+{% endblock %}
 
+{% block maincolumn_content %}
   {{ page_header("Alert area") }}
+  {{ errorSummary(form) }}
   {% call form_wrapper() %}
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div style="display: flex; align-items:center; justify-content:space-between">
-        {{ form.latitude(param_extensions={
+        {{ form.first_coordinate(param_extensions={
           "label": {"text": label1},
         }) }}
-        {{ form.longitude(param_extensions={
+        {{ form.second_coordinate(param_extensions={
           "label": {"text": label2},
         }) }}
         {{ form.radius}}
@@ -49,21 +50,21 @@
             "classes": "notify-simple-search-form__button govuk-button--secondary margin",
             "html": "Search <span class=\"govuk-visually-hidden\">for areas</span>",
         }) }}
-        </div>
+      </div>
   {% endcall %}
 
-{% if broadcast_message.areas %}
-  <div>
-    <ul class="area-list">
-      {% for area in broadcast_message.areas %}
-        <li class="area-list-item govuk-visually-hidden">
-          {{area.name}}
-        </li>
-      {% endfor %}
-    </ul>
-  </div>
-{% endif %}
-{{ map(broadcast_message) }}
+  {% if broadcast_message.areas %}
+    <div>
+      <ul class="area-list">
+        {% for area in broadcast_message.areas %}
+          <li class="area-list-item govuk-visually-hidden">
+            {{area.name}}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+  {{ map(broadcast_message) }}
 
   {% if broadcast_message.areas %}
     {{ govukButton({
