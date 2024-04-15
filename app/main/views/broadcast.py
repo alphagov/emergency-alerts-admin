@@ -12,9 +12,10 @@ from app.main.forms import (
     BroadcastAreaForm,
     BroadcastAreaFormWithSelectAll,
     BroadcastTemplateForm,
+    CartesianCoordinatesForm,
     ChooseCoordinateTypeForm,
     ConfirmBroadcastForm,
-    CoordinatesForm,
+    DecimalCoordinatesForm,
     NewBroadcastForm,
     PostcodeForm,
     SearchByNameForm,
@@ -453,19 +454,25 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
         broadcast_message_id,
         service_id=current_service.id,
     )
-    form = CoordinatesForm()
+    if coordinate_type == "decimal":
+        form = DecimalCoordinatesForm()
+    elif coordinate_type == "cartesian":
+        form = CartesianCoordinatesForm()
     if form.validate_on_submit():
+        first_coordinate = float(form.data["first_coordinate"])
+        second_coordinate = float(form.data["second_coordinate"])
+        radius = float(form.data["radius"])
         in_test_polygon = check_coordinates_valid_for_enclosed_polygon(
             broadcast_message,
-            float(form.data["first_coordinate"]),
-            float(form.data["second_coordinate"]),
+            first_coordinate,
+            second_coordinate,
             coordinate_type,
             "UK",
         )
         in_uk_polygon = check_coordinates_valid_for_enclosed_polygon(
             broadcast_message,
-            float(form.data["first_coordinate"]),
-            float(form.data["second_coordinate"]),
+            first_coordinate,
+            second_coordinate,
             coordinate_type,
             "test",
         )
@@ -474,16 +481,17 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
             broadcast_message.clear_areas()
         else:
             if polygon := create_coordinate_area(
-                float(form.data["first_coordinate"]),
-                float(form.data["second_coordinate"]),
-                float(form.data["radius"]),
+                first_coordinate,
+                second_coordinate,
+                radius,
                 coordinate_type,
             ):
                 form.form_errors = []
-                radius_to_min_sig_figs = "{:g}".format(float(form.data["radius"]))
-                x = float(form.data["first_coordinate"])
-                y = float(form.data["second_coordinate"])
-                id = f"an area of {radius_to_min_sig_figs}km around the coordinates [{x}, {y}]"
+                radius_min_sig_figs = "{:g}".format(radius)
+                id = (
+                    f"an area of {radius_min_sig_figs}km around the coordinates "
+                    + f"[{first_coordinate}, {second_coordinate}]"
+                )
                 broadcast_message.add_coordinate_area(polygon, id)
 
                 broadcast_message = BroadcastMessage.from_id(
