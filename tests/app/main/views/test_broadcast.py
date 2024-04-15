@@ -133,12 +133,6 @@ sample_uuid = sample_uuid()
             403,
             403,
         ),
-        (
-            ".search_coordinates",
-            {"broadcast_message_id": sample_uuid, "coordinate_type": "decimal", "library_slug": "coordinates"},
-            403,
-            403,
-        ),
     ),
 )
 def test_broadcast_pages_403_without_permission(
@@ -1243,8 +1237,9 @@ def test_choose_broadcast_library_page(
         (
             ["an area of 1km around the postcode BD1 1EE, in Bradford"],
             [
-                "Coordinates",
                 "Countries",
+                "Eastings and northings",
+                "Latitude and longitude",
                 "Local authorities",
                 "Police forces in England and Wales",
                 "Postcode areas",
@@ -1254,8 +1249,9 @@ def test_choose_broadcast_library_page(
         (
             ["an area of 3km around the postcode BD1 1EE, in Bradford"],
             [
-                "Coordinates",
                 "Countries",
+                "Eastings and northings",
+                "Latitude and longitude",
                 "Local authorities",
                 "Police forces in England and Wales",
                 "Postcode areas",
@@ -1265,8 +1261,9 @@ def test_choose_broadcast_library_page(
         (
             ["an area of 5km around the coordinates [54.0, -1.7], in Harrogate"],
             [
-                "Coordinates",
                 "Countries",
+                "Eastings and northings",
+                "Latitude and longitude",
                 "Local authorities",
                 "Police forces in England and Wales",
                 "Postcode areas",
@@ -1305,14 +1302,14 @@ def test_choose_broadcast_library_page_with_custom_broadcast(
     assert [normalize_spaces(title.text) for title in page.select("main a.govuk-link")] == expected_list
 
     assert normalize_spaces(page.select(".file-list-hint-large")[0].text) == (
-        "Use coordinates to create an alert area."
+        "England, Northern Ireland, Scotland and Wales"
     )
 
     assert page.select_one("a.file-list-filename-large.govuk-link")["href"] == url_for(
         ".choose_broadcast_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
-        library_slug="coordinates",
+        library_slug="ctry19",
     )
 
 
@@ -1367,7 +1364,8 @@ def test_suggested_area_has_correct_link(
             "Choose test areas",
         ),
         ("postcodes", "Alert area"),
-        ("coordinates", "Choose Coordinates type"),
+        ("cartesian_coordinates", "Alert area"),
+        ("decimal_coordinates", "Alert area"),
     ),
 )
 def test_choose_broadcast_area_page_titles(
@@ -1983,11 +1981,10 @@ def test_add_decimal_coordinate_area(
 
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.post(
-        ".search_coordinates",
+        ".choose_broadcast_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
-        library_slug="coordinates",
-        coordinate_type="decimal",
+        library_slug="decimal_coordinates",
         _data=post_data,
         _follow_redirects=True,
     )
@@ -2081,11 +2078,10 @@ def test_add_cartesian_coordinate_area(
 
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.post(
-        ".search_coordinates",
+        ".choose_broadcast_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
-        library_slug="coordinates",
-        coordinate_type="cartesian",
+        library_slug="cartesian_coordinates",
         _data=post_data,
         _follow_redirects=True,
     )
