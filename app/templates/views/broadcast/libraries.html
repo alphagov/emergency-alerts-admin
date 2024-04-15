@@ -22,17 +22,20 @@
   {% endfor %}
 
   {% for library in libraries|sort %}
-    {% if library.id not in ['coordinates', 'postcodes']  %}
+    {% if library.id not in ['decimal_coordinates', 'postcodes', 'cartesian_coordinates']  %}
       <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_broadcast_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug=library.id) }}">{{ library.name }}</a>
       <p class="file-list-hint-large">{{ library.get_examples() }}</p>
     {% else %}
       {% if (broadcast_message.areas|length == 0) or (custom_broadcast)  %}
-        {% if library.id == 'coordinates' %}
+        {% if library.id == 'decimal_coordinates' %}
           <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_broadcast_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug=library.id) }}">{{ library.name }}</a>
-          <p class="file-list-hint-large">Use coordinates to create an alert area.</p>
+          <p class="file-list-hint-large">For example, 53.76385° -3.73904°.</p>
+        {% elif library.id == 'cartesian_coordinates' %}
+          <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_broadcast_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug=library.id) }}">{{ library.name }}</a>
+          <p class="file-list-hint-large">Should only include numbers, for example 123456.</p>
         {% elif library.id == 'postcodes' %}
           <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_broadcast_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug=library.id) }}">{{ library.name }}</a>
-          <p class="file-list-hint-large">Choose a postcode to create a broadcast area from.</p>
+          <p class="file-list-hint-large">Postcode in England, Northern Ireland, Scotland and Wales, for example LU6 3AN.</p>
         {% endif %}
       {% endif %}
     {% endif %}

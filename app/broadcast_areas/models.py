@@ -233,7 +233,8 @@ class BroadcastAreaLibraries(SerialisedModelCollection, GetItemByIdMixin):
 
     def __init__(self):
         self.items = BroadcastAreasRepository().get_libraries()
-        self.items.append(("coordinates", "Coordinates", "coordinate", 0))
+        self.items.append(("cartesian_coordinates", "Eastings and northings", "cartesian_coordinate", 0))
+        self.items.append(("decimal_coordinates", "Latitude and longitude", "decimal_coordinate", 0))
 
     def get_areas(self, area_ids):
         areas = BroadcastAreasRepository().get_areas(area_ids)

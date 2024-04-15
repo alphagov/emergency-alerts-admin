@@ -2690,17 +2690,3 @@ class CartesianCoordinatesForm(StripWhitespaceForm):
     def post_validate(self):
         if self.errors:
             return False
-
-
-class ChooseCoordinateTypeForm(StripWhitespaceForm):
-    content = GovukRadiosField(
-        choices=[
-            ("decimal", "Coordinates (Decimal degrees)"),
-            ("cartesian", "Eastings & Northings"),
-        ],
-        param_extensions={
-            "fieldset": {"legend": {"classes": "govuk-visually-hidden"}},
-            "hint": {"text": "Select one option"},
-        },
-        validators=[DataRequired(message="Select which type of coordinates you'd like to use.")],
-    )

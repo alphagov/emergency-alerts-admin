@@ -13,7 +13,6 @@ from app.main.forms import (
     BroadcastAreaFormWithSelectAll,
     BroadcastTemplateForm,
     CartesianCoordinatesForm,
-    ChooseCoordinateTypeForm,
     ConfirmBroadcastForm,
     DecimalCoordinatesForm,
     NewBroadcastForm,
@@ -295,26 +294,111 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
 
     library = BroadcastMessage.libraries.get(library_slug)
 
-    if library_slug == "coordinates":
-        form = ChooseCoordinateTypeForm()
+    if library_slug == "decimal_coordinates":
+        form = DecimalCoordinatesForm()
         if form.validate_on_submit():
-            return redirect(
-                url_for(
-                    ".search_coordinates",
-                    service_id=current_service.id,
-                    broadcast_message_id=broadcast_message.id,
-                    library_slug="coordinates",
-                    coordinate_type=form.content.data,
-                )
+            first_coordinate = float(form.data["first_coordinate"])
+            second_coordinate = float(form.data["second_coordinate"])
+            radius = float(form.data["radius"])
+            in_test_polygon = check_coordinates_valid_for_enclosed_polygon(
+                broadcast_message,
+                first_coordinate,
+                second_coordinate,
+                "decimal",
+                "UK",
             )
+            in_uk_polygon = check_coordinates_valid_for_enclosed_polygon(
+                broadcast_message,
+                first_coordinate,
+                second_coordinate,
+                "decimal",
+                "test",
+            )
+            if not (in_test_polygon or in_uk_polygon):
+                form.form_errors.append("Invalid coordinates.")
+                broadcast_message.clear_areas()
+            else:
+                if polygon := create_coordinate_area(
+                    first_coordinate,
+                    second_coordinate,
+                    radius,
+                    "decimal",
+                ):
+                    form.form_errors = []
+                    radius_min_sig_figs = "{:g}".format(radius)
+                    id = (
+                        f"an area of {radius_min_sig_figs}km around the coordinates "
+                        + f"[{first_coordinate}, {second_coordinate}]"
+                    )
+                    broadcast_message.add_coordinate_area(polygon, id)
+
+                    broadcast_message = BroadcastMessage.from_id(
+                        broadcast_message_id,
+                        service_id=current_service.id,
+                    )
 
         return render_template(
-            "views/broadcast/choose-coordinates-type.html",
-            page_title=f"Choose a {library.name_singular.lower()}",
-            form=form,
+            "views/broadcast/search-coordinates.html",
+            page_title="Choose a coordinate area",
+            broadcast_message=broadcast_message,
             back_link=url_for(
                 ".choose_broadcast_library", service_id=service_id, broadcast_message_id=broadcast_message_id
             ),
+            form=form,
+            coordinate_type="decimal",
+        )
+    elif library_slug == "cartesian_coordinates":
+        form = CartesianCoordinatesForm()
+        if form.validate_on_submit():
+            first_coordinate = float(form.data["first_coordinate"])
+            second_coordinate = float(form.data["second_coordinate"])
+            radius = float(form.data["radius"])
+            in_test_polygon = check_coordinates_valid_for_enclosed_polygon(
+                broadcast_message,
+                first_coordinate,
+                second_coordinate,
+                "cartesian",
+                "UK",
+            )
+            in_uk_polygon = check_coordinates_valid_for_enclosed_polygon(
+                broadcast_message,
+                first_coordinate,
+                second_coordinate,
+                "cartesian",
+                "test",
+            )
+            if not (in_test_polygon or in_uk_polygon):
+                form.form_errors.append("Invalid coordinates.")
+                broadcast_message.clear_areas()
+            else:
+                if polygon := create_coordinate_area(
+                    first_coordinate,
+                    second_coordinate,
+                    radius,
+                    "cartesian",
+                ):
+                    form.form_errors = []
+                    radius_min_sig_figs = "{:g}".format(radius)
+                    id = (
+                        f"an area of {radius_min_sig_figs}km around the coordinates "
+                        + f"[{first_coordinate}, {second_coordinate}]"
+                    )
+                    broadcast_message.add_coordinate_area(polygon, id)
+
+                    broadcast_message = BroadcastMessage.from_id(
+                        broadcast_message_id,
+                        service_id=current_service.id,
+                    )
+
+        return render_template(
+            "views/broadcast/search-coordinates.html",
+            page_title="Choose a coordinate area",
+            broadcast_message=broadcast_message,
+            back_link=url_for(
+                ".choose_broadcast_library", service_id=service_id, broadcast_message_id=broadcast_message_id
+            ),
+            form=form,
+            coordinate_type="cartesian",
         )
     elif library_slug == "postcodes":
         form = PostcodeForm()
@@ -440,74 +524,6 @@ def remove_postcode_area(service_id, broadcast_message_id, postcode_slug):
             broadcast_message_id=broadcast_message_id,
             library_slug="postcodes",
         )
-    )
-
-
-@main.route(
-    "/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/libraries/coordinates/<library_slug>/<coordinate_type>",  # noqa: E501
-    methods=["GET", "POST"],
-)
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-@service_has_permission("broadcast")
-def search_coordinates(service_id, broadcast_message_id, library_slug, coordinate_type):
-    broadcast_message = BroadcastMessage.from_id(
-        broadcast_message_id,
-        service_id=current_service.id,
-    )
-    if coordinate_type == "decimal":
-        form = DecimalCoordinatesForm()
-    elif coordinate_type == "cartesian":
-        form = CartesianCoordinatesForm()
-    if form.validate_on_submit():
-        first_coordinate = float(form.data["first_coordinate"])
-        second_coordinate = float(form.data["second_coordinate"])
-        radius = float(form.data["radius"])
-        in_test_polygon = check_coordinates_valid_for_enclosed_polygon(
-            broadcast_message,
-            first_coordinate,
-            second_coordinate,
-            coordinate_type,
-            "UK",
-        )
-        in_uk_polygon = check_coordinates_valid_for_enclosed_polygon(
-            broadcast_message,
-            first_coordinate,
-            second_coordinate,
-            coordinate_type,
-            "test",
-        )
-        if not (in_test_polygon or in_uk_polygon):
-            form.form_errors.append("Invalid coordinates.")
-            broadcast_message.clear_areas()
-        else:
-            if polygon := create_coordinate_area(
-                first_coordinate,
-                second_coordinate,
-                radius,
-                coordinate_type,
-            ):
-                form.form_errors = []
-                radius_min_sig_figs = "{:g}".format(radius)
-                id = (
-                    f"an area of {radius_min_sig_figs}km around the coordinates "
-                    + f"[{first_coordinate}, {second_coordinate}]"
-                )
-                broadcast_message.add_coordinate_area(polygon, id)
-
-                broadcast_message = BroadcastMessage.from_id(
-                    broadcast_message_id,
-                    service_id=current_service.id,
-                )
-
-    return render_template(
-        "views/broadcast/search-coordinates.html",
-        page_title="Choose a coordinate area",
-        broadcast_message=broadcast_message,
-        back_link=url_for(
-            ".choose_broadcast_library", service_id=service_id, broadcast_message_id=broadcast_message_id
-        ),
-        form=form,
-        coordinate_type=coordinate_type,
     )
 
 
