@@ -2695,8 +2695,8 @@ class CartesianCoordinatesForm(StripWhitespaceForm):
 class ChooseCoordinateTypeForm(StripWhitespaceForm):
     content = GovukRadiosField(
         choices=[
-            ("decimal", "Coordinates (Decimal degrees)"),
-            ("cartesian", "Eastings & Northings"),
+            ("decimal", "Latitude and longitude (decimal degrees)"),
+            ("cartesian", "Eastings and northings"),
         ],
         param_extensions={
             "fieldset": {"legend": {"classes": "govuk-visually-hidden"}},
