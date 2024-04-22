@@ -9,12 +9,20 @@
 {% from "govuk_frontend_jinja/components/input/macro.html" import govukInput %}
 {% from "components/error-summary.html" import errorSummary %}
 
+{% block per_page_title %}
+  {{ page_title }} – {{ current_service.name }}
+{% endblock %}
+
+{% block service_page_title %}
+  {{ page_title }}
+{% endblock %}
+
 {% block extra_stylesheets %}
   {% include "views/broadcast/partials/area-map-stylesheets.html" %}
 {% endblock %}
 
 {% block extra_javascripts %}
-  {% include "views/broadcast/partials/area-map-javascripts.html" %}
+  {% include "views/broadcast/partials/area-map-postcodes.html" %}
 {% endblock %}
 
 {% block backLink %}
@@ -29,12 +37,16 @@
   {% set label2 = 'Northings' %}
 {% endif %}
 
-{% block service_page_title %}
-  Alert area
-{% endblock %}
+{% if broadcast_message.areas %}
+  {% set label = "Map of the United Kingdom, showing "+broadcast_message.areas[0].name%}
+{% else %}
+  {% set label = "Map of the United Kingdom, showing no areas" %}
+{% endif %}
+
+{% set radius = form.radius.value %}
 
 {% block maincolumn_content %}
-  {{ page_header("Choose your alert area") }}
+  {{ page_header("Choose alert area") }}
   {{ errorSummary(form) }}
   {% call form_wrapper() %}
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -45,24 +57,32 @@
         {{ form.second_coordinate(param_extensions={
           "label": {"text": label2},
         }) }}
+        {{ govukButton({
+          "classes": "notify-simple-search-form__button govuk-button--secondary margin",
+          "html": "Search",
+          "name": 'search_btn',
+          "value": True
+        }) }}
         {{ form.radius}}
         {{ govukButton({
-            "classes": "notify-simple-search-form__button govuk-button--secondary margin",
-            "html": "Search <span class=\"govuk-visually-hidden\">for areas</span>",
+          "classes": "notify-simple-search-form__button govuk-button--secondary margin",
+          "html": "Add radius area",
+          "name": 'radius_btn',
+          "value": True
         }) }}
         {% if broadcast_message.areas %}
-        {{ govukButton({
-          "element": "a",
-          "text": "Preview this alert",
-          "href": url_for('.preview_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
-          "classes": "govuk-button",
-        }) }}
-      {% else %}
-        {{ govukButton({
-          "text": "Preview this alert",
-          "classes": "govuk-button",
-          "disabled": true
-        }) }}
+          {{ govukButton({
+            "element": "a",
+            "text": "Preview this alert",
+            "href": url_for('.preview_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
+            "classes": "govuk-button",
+          }) }}
+        {% else %}
+          {{ govukButton({
+            "text": "Preview this alert",
+            "classes": "govuk-button",
+            "disabled": true
+          }) }}
       {% endif %}
       </div>
   {% endcall %}
@@ -78,6 +98,6 @@
       </ul>
     </div>
   {% endif %}
-  {{ map(broadcast_message) }}
+  {{ map(broadcast_message, label, True, radius) }}
 
 {% endblock %}

@@ -2591,7 +2591,7 @@ class PostcodeForm(StripWhitespaceForm):
     than a city and the max side of alerting for non country size areas.
     """
     radius = GovukDecimalField(
-        "Add radius",
+        "Radius",
         param_extensions={
             "classes": "govuk-input govuk-input--width-5",
             "suffix": {"text": "km"},
@@ -2609,6 +2609,15 @@ class PostcodeForm(StripWhitespaceForm):
 
 
 class DecimalCoordinatesForm(StripWhitespaceForm):
+    """
+    This form contains the input fields for creation of areas using decimal coordinates i.e. Latitude & longitude.
+    For the first coordinate, latitude, to be valid the value entered must be numeric and between -90 and 90,
+    hence the NumberRange validator.
+    For the second coordinate, longitude, to be valid the value again must be number and between -180 and 180.
+    There is additional validation post-submission of the form that checks whether the coordinate lies within
+    either the UK or the test polygons in Finland, and if both are false then an error is appended to the form.
+    """
+
     first_coordinate = GovukDecimalField(
         "Latitude",
         validators=[
@@ -2616,7 +2625,7 @@ class DecimalCoordinatesForm(StripWhitespaceForm):
             NumberRange(min=-90.0099, max=90.001, message="Enter a Latitude between -90 and 90."),
         ],
         param_extensions={
-            "classes": "govuk-input govuk-input--width-7",
+            "classes": "govuk-input govuk-input--width-6",
             "attributes": {"pattern": "^-?\\d+(\\.\\d+)?$"},
         },
     )
@@ -2627,12 +2636,12 @@ class DecimalCoordinatesForm(StripWhitespaceForm):
             NumberRange(min=-180.0099, max=180.001, message="Enter a Longitude between -180 and 180."),
         ],
         param_extensions={
-            "classes": "govuk-input govuk-input--width-7",
+            "classes": "govuk-input govuk-input--width-6",
             "attributes": {"pattern": "^-?\\d+(\\.\\d+)?$"},
         },
     )
     radius = GovukDecimalField(
-        "Add radius",
+        "Radius",
         param_extensions={
             "classes": "govuk-input govuk-input--width-5",
             "suffix": {"text": "km"},
@@ -2651,30 +2660,34 @@ class DecimalCoordinatesForm(StripWhitespaceForm):
 
 
 class CartesianCoordinatesForm(StripWhitespaceForm):
+    """
+    This form contains the input fields for creation of areas using cartesian coordinates i.e. Eastings & northings.
+    There is additional validation post-submission of the form that checks whether the coordinate lies within
+    either the UK or the test polygons in Finland, and if both are false then an error is appended to the form.
+    """
+
     first_coordinate = GovukDecimalField(
-        "Easting",
+        "Eastings",
         validators=[
             DataRequired(message="Enter a value."),
-            NumberRange(min=0.0099, max=500000.001, message="Enter an Easting between 0 and 500,000."),
         ],
         param_extensions={
-            "classes": "govuk-input govuk-input--width-7",
+            "classes": "govuk-input govuk-input--width-6",
             "attributes": {"pattern": "^-?\\d+(\\.\\d+)?$"},
         },
     )
     second_coordinate = GovukDecimalField(
-        "Northing",
+        "Northings",
         validators=[
             DataRequired(message="Enter a value."),
-            NumberRange(min=0.0099, message="Enter a Northing greater than 0."),
         ],
         param_extensions={
-            "classes": "govuk-input govuk-input--width-7",
+            "classes": "govuk-input govuk-input--width-6",
             "attributes": {"pattern": "^-?\\d+(\\.\\d+)?$"},
         },
     )
     radius = GovukDecimalField(
-        "Add radius",
+        "Radius",
         param_extensions={
             "classes": "govuk-input govuk-input--width-5",
             "suffix": {"text": "km"},
@@ -2701,6 +2714,10 @@ class ChooseCoordinateTypeForm(StripWhitespaceForm):
         param_extensions={
             "fieldset": {"legend": {"classes": "govuk-visually-hidden"}},
             "hint": {"text": "Select one option"},
+            "items": [
+                {"hint": {"text": "For example, 51.5036303, -0.1267696."}},
+                {"hint": {"text": "For example, 530111, 179963."}},
+            ],
         },
         validators=[DataRequired(message="Select which type of coordinates you'd like to use.")],
     )

@@ -21,18 +21,13 @@ def close_enough(a, b):
 def test_loads_libraries():
     assert [(library.id, library.name, library.is_group) for library in sorted(broadcast_area_libraries)] == [
         (
+            "coordinates",
+            "Coordinates",
+            False,
+        ),
+        (
             "ctry19",
             "Countries",
-            False,
-        ),
-        (
-            "cartesian_coordinates",
-            "Eastings and northings",
-            False,
-        ),
-        (
-            "decimal_coordinates",
-            "Latitude and longitude",
             False,
         ),
         (

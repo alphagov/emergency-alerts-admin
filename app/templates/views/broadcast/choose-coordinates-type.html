@@ -7,8 +7,12 @@
 {% from "views/broadcast/macros/area-map.html" import map %}
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
 
+{% block per_page_title %}
+  {{ page_title }} – {{ current_service.name }}
+{% endblock %}
+
 {% block service_page_title %}
-  Choose Coordinates type
+  {{ page_title }}
 {% endblock %}
 
 {% block backLink %}
