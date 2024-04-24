@@ -27,6 +27,7 @@
     "leaflet": "1.6.0",
     "leaflet-path-drag": "^1.9.5",
     "morphdom": "2.6.1",
+    "proj4": "^2.11.0",
     "query-command-supported": "1.0.0",
     "textarea-caret": "3.1.0",
     "timeago": "1.6.5"
