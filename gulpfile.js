@@ -29,7 +29,8 @@ const paths = {
   src: 'app/assets/',
   dist: 'app/static/',
   npm: 'node_modules/',
-  govuk_frontend: 'node_modules/govuk-frontend/'
+  govuk_frontend: 'node_modules/govuk-frontend/',
+  proj4: 'node_modules/proj4/',
 };
 
 // 3. TASKS
@@ -51,6 +52,12 @@ const copy = {
   leaflet: {
     js: () => {
       return src(paths.npm + 'leaflet/dist/leaflet.js')
+        .pipe(dest(paths.dist + 'javascripts/'))
+    }
+  },
+  proj4: {
+    js: () => {
+      return src(paths.npm + 'proj4/dist/proj4.js')
         .pipe(dest(paths.dist + 'javascripts/'))
     }
   },
@@ -93,7 +100,6 @@ const javascripts = () => {
       paths.npm + 'timeago/jquery.timeago.js',
       paths.npm + 'textarea-caret/index.js',
       paths.npm + 'cbor-js/cbor.js',
-      paths.npm + 'proj4/dist/proj4.js'
     ]));
 
   // JS local to this application
@@ -226,6 +232,7 @@ const defaultTask = parallel(
     copy.govuk_frontend.fonts,
     images,
     copy.leaflet.js,
+    copy.proj4.js,
     copy.static
   ),
   series(
