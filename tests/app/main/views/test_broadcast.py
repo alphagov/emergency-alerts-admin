@@ -133,6 +133,12 @@ sample_uuid = sample_uuid()
             403,
             403,
         ),
+        (
+            ".search_coordinates",
+            {"broadcast_message_id": sample_uuid, "coordinate_type": "decimal", "library_slug": "coordinates"},
+            403,
+            403,
+        ),
     ),
 )
 def test_broadcast_pages_403_without_permission(
@@ -1237,9 +1243,8 @@ def test_choose_broadcast_library_page(
         (
             ["an area of 1km around the postcode BD1 1EE, in Bradford"],
             [
+                "Coordinates",
                 "Countries",
-                "Eastings and northings",
-                "Latitude and longitude",
                 "Local authorities",
                 "Police forces in England and Wales",
                 "Postcode areas",
@@ -1249,9 +1254,8 @@ def test_choose_broadcast_library_page(
         (
             ["an area of 3km around the postcode BD1 1EE, in Bradford"],
             [
+                "Coordinates",
                 "Countries",
-                "Eastings and northings",
-                "Latitude and longitude",
                 "Local authorities",
                 "Police forces in England and Wales",
                 "Postcode areas",
@@ -1261,9 +1265,8 @@ def test_choose_broadcast_library_page(
         (
             ["an area of 5km around the coordinates [54.0, -1.7], in Harrogate"],
             [
+                "Coordinates",
                 "Countries",
-                "Eastings and northings",
-                "Latitude and longitude",
                 "Local authorities",
                 "Police forces in England and Wales",
                 "Postcode areas",
@@ -1302,14 +1305,14 @@ def test_choose_broadcast_library_page_with_custom_broadcast(
     assert [normalize_spaces(title.text) for title in page.select("main a.govuk-link")] == expected_list
 
     assert normalize_spaces(page.select(".file-list-hint-large")[0].text) == (
-        "England, Northern Ireland, Scotland and Wales"
+        "Use coordinates to create an alert area."
     )
 
     assert page.select_one("a.file-list-filename-large.govuk-link")["href"] == url_for(
         ".choose_broadcast_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
-        library_slug="ctry19",
+        library_slug="coordinates",
     )
 
 
@@ -1363,9 +1366,8 @@ def test_suggested_area_has_correct_link(
             "test",
             "Choose test areas",
         ),
-        ("postcodes", "Alert area"),
-        ("cartesian_coordinates", "Alert area"),
-        ("decimal_coordinates", "Alert area"),
+        ("postcodes", "Choose alert area"),
+        ("coordinates", "Choose coordinates type"),
     ),
 )
 def test_choose_broadcast_area_page_titles(
@@ -1833,7 +1835,7 @@ def test_add_broadcast_area(
     "post_data, update_broadcast_data",
     (
         (
-            {"postcode": "BD1 1EE", "radius": "2"},
+            {"postcode": "BD1 1EE", "radius": "2", "radius_btn": True},
             {
                 "areas": {
                     "ids": ["an area of 2km around the postcode BD1 1EE, in Bradford"],
@@ -1844,7 +1846,7 @@ def test_add_broadcast_area(
             },
         ),
         (
-            {"postcode": "BD1 1EE", "radius": "3"},
+            {"postcode": "BD1 1EE", "radius": "3", "radius_btn": True},
             {
                 "areas": {
                     "ids": ["an area of 3km around the postcode BD1 1EE, in Bradford"],
@@ -1893,7 +1895,6 @@ def test_add_postcode_area(
         _data=post_data,
         _follow_redirects=True,
     )
-
     mock_update_broadcast_message.assert_called_once()
     assert (
         mock_update_broadcast_message._mock_call_args[1]["data"]["areas"]["names"]
@@ -1928,23 +1929,23 @@ def test_add_postcode_area(
     "post_data, update_broadcast_data",
     (
         (
-            {"first_coordinate": "54", "second_coordinate": "-1.7", "radius": "5"},
+            {"first_coordinate": "54", "second_coordinate": "-1.7", "radius": "5", "radius_btn": True},
             {
                 "areas": {
-                    "ids": ["an area of 5km around the coordinates [54.0, -1.7], in Harrogate"],
-                    "names": ["an area of 5km around the coordinates [54.0, -1.7], in Harrogate"],
-                    "aggregate_names": ["an area of 5km around the coordinates [54.0, -1.7], in Harrogate"],
+                    "ids": ["an area of 5km around 54.0 Latitude, -1.7 Longitude, in Harrogate"],
+                    "names": ["an area of 5km around 54.0 Latitude, -1.7 Longitude, in Harrogate"],
+                    "aggregate_names": ["an area of 5km around 54.0 Latitude, -1.7 Longitude, in Harrogate"],
                     "simple_polygons": [HG3_2RL],
                 }
             },
         ),
         (
-            {"first_coordinate": "53.793", "second_coordinate": "-1.75", "radius": "3"},
+            {"first_coordinate": "53.793", "second_coordinate": "-1.75", "radius": "3", "radius_btn": True},
             {
                 "areas": {
-                    "ids": ["an area of 3km around the coordinates [53.793, -1.75], in Bradford"],
-                    "names": ["an area of 3km around the coordinates [53.793, -1.75], in Bradford"],
-                    "aggregate_names": ["an area of 3km around the coordinates [53.793, -1.75], in Bradford"],
+                    "ids": ["an area of 3km around 53.793 Latitude, -1.75 Longitude, in Bradford"],
+                    "names": ["an area of 3km around 53.793 Latitude, -1.75 Longitude, in Bradford"],
+                    "aggregate_names": ["an area of 3km around 53.793 Latitude, -1.75 Longitude, in Bradford"],
                     "simple_polygons": [BD1_1EE],
                 }
             },
@@ -1978,13 +1979,13 @@ def test_add_decimal_coordinate_area(
             },
         ),
     )
-
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.post(
-        ".choose_broadcast_area",
+        ".search_coordinates",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
-        library_slug="decimal_coordinates",
+        library_slug="coordinates",
+        coordinate_type="decimal",
         _data=post_data,
         _follow_redirects=True,
     )
@@ -2014,7 +2015,7 @@ def test_add_decimal_coordinate_area(
     first_coordinate = form.select_one("#first_coordinate")["value"]
     second_coordinate = form.select_one("#second_coordinate")["value"]
     radius_value = form.select_one("#radius")["value"]
-    assert normalize_spaces(form.select_one("button").text) == "Search for areas"
+    assert normalize_spaces(form.select_one("button").text) == "Search"
     assert first_coordinate == post_data["first_coordinate"]
     assert second_coordinate == post_data["second_coordinate"]
     assert radius_value == post_data["radius"]
@@ -2025,23 +2026,31 @@ def test_add_decimal_coordinate_area(
     "post_data, update_broadcast_data",
     (
         (
-            {"first_coordinate": "419763", "second_coordinate": "456038", "radius": "5"},
+            {"first_coordinate": "419763", "second_coordinate": "456038", "radius": "5", "radius_btn": True},
             {
                 "areas": {
-                    "ids": ["an area of 5km around the coordinates [419763.0, 456038.0], in Harrogate"],
-                    "names": ["an area of 5km around the coordinates [419763.0, 456038.0], in Harrogate"],
-                    "aggregate_names": ["an area of 5km around the coordinates [419763.0, 456038.0], in Harrogate"],
+                    "ids": ["an area of 5km around the Easting of 419763.0 and the Northing of 456038.0, in Harrogate"],
+                    "names": [
+                        "an area of 5km around the Easting of 419763.0 and the Northing of 456038.0, in Harrogate"
+                    ],
+                    "aggregate_names": [
+                        "an area of 5km around the Easting of 419763.0 and the Northing of 456038.0, in Harrogate"
+                    ],
                     "simple_polygons": [HG3_2RL],
                 }
             },
         ),
         (
-            {"first_coordinate": "416567", "second_coordinate": "432994", "radius": "3"},
+            {"first_coordinate": "416567", "second_coordinate": "432994", "radius": "3", "radius_btn": True},
             {
                 "areas": {
-                    "ids": ["an area of 3km around the coordinates [416567.0, 432994.0], in Bradford"],
-                    "names": ["an area of 3km around the coordinates [416567.0, 432994.0], in Bradford"],
-                    "aggregate_names": ["an area of 3km around the coordinates [416567.0, 432994.0], in Bradford"],
+                    "ids": ["an area of 3km around the Easting of 416567.0 and the Northing of 432994.0, in Bradford"],
+                    "names": [
+                        "an area of 3km around the Easting of 416567.0 and the Northing of 432994.0, in Bradford"
+                    ],
+                    "aggregate_names": [
+                        "an area of 3km around the Easting of 416567.0 and the Northing of 432994.0, in Bradford"
+                    ],
                     "simple_polygons": [BD1_1EE],
                 }
             },
@@ -2078,15 +2087,16 @@ def test_add_cartesian_coordinate_area(
 
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.post(
-        ".choose_broadcast_area",
-        service_id=SERVICE_ONE_ID,
+        ".search_coordinates",
         broadcast_message_id=fake_uuid,
-        library_slug="cartesian_coordinates",
+        service_id=SERVICE_ONE_ID,
+        library_slug="coordinates",
+        coordinate_type="cartesian",
         _data=post_data,
         _follow_redirects=True,
     )
-
     mock_update_broadcast_message.assert_called_once()
+
     assert (
         mock_update_broadcast_message._mock_call_args[1]["data"]["areas"]["names"]
         == update_broadcast_data["areas"]["names"]
@@ -2111,7 +2121,7 @@ def test_add_cartesian_coordinate_area(
     first_coordinate = form.select_one("#first_coordinate")["value"]
     second_coordinate = form.select_one("#second_coordinate")["value"]
     radius_value = form.select_one("#radius")["value"]
-    assert normalize_spaces(form.select_one("button").text) == "Search for areas"
+    assert normalize_spaces(form.select_one("button").text) == "Search"
     assert first_coordinate == post_data["first_coordinate"]
     assert second_coordinate == post_data["second_coordinate"]
     assert radius_value == post_data["radius"]

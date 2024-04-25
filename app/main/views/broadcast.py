@@ -319,8 +319,10 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
     elif library_slug == "postcodes":
         form = PostcodeForm()
         marker = None
+        bleed = None
+        centroid = None
         if request.method == "POST":
-            if request.form.get("search_btn"):
+            if request.form.get("search_btn") and form.postcode.validate(form):
                 broadcast_message.clear_areas()
                 postcode_formatted = UKPostcode(form.data["postcode"]).postcode
                 postcode = f"postcodes-{postcode_formatted}"
@@ -331,12 +333,15 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
                     x, y = centroid.x, centroid.y
                     marker = [y, x]
                 except IndexError:
-                    pass  # error appended here
+                    form.postcode.errors.append("Postcode not found. Enter a valid postcode.")
             elif request.form.get("radius_btn"):
                 if form.validate_on_submit():
-                    broadcast_message, centroid = redirect_to_postcode_map(service_id, broadcast_message_id, form)
+                    broadcast_message, centroid, bleed = redirect_to_postcode_map(
+                        service_id, broadcast_message_id, form
+                    )
+                    x, y = centroid.x, centroid.y
+                    marker = [y, x]
                     form.post_validate()
-
         # Ensuring latest areas will display on map
         broadcast_message = BroadcastMessage.from_id(
             broadcast_message_id,
@@ -351,7 +356,9 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
                 ".choose_broadcast_library", service_id=service_id, broadcast_message_id=broadcast_message_id
             ),
             form=form,
-            marker=marker or None,
+            marker=marker,
+            bleed=bleed or None,
+            centroid=[centroid.y, centroid.x] if centroid else None,
         )
 
     if library.is_group:
@@ -407,6 +414,7 @@ def redirect_to_postcode_map(service_id, broadcast_message_id, form: PostcodeFor
         broadcast_message_id,
         service_id=current_service.id,
     )
+    bleed = None
     postcode_formatted = UKPostcode(form.data["postcode"]).postcode
     postcode = f"postcodes-{postcode_formatted}"
     try:
@@ -417,10 +425,10 @@ def redirect_to_postcode_map(service_id, broadcast_message_id, form: PostcodeFor
         centroid = get_centroid(area)
         circle_polygon = create_circle(centroid, float(form.data["radius"]) * 1000)
 
-        broadcast_message.add_custom_areas(circle_polygon, id=circle_id)
+        bleed = broadcast_message.add_custom_areas(circle_polygon, id=circle_id)
     except IndexError:
         form.postcode.errors.append("Postcode not found. Enter a valid postcode.")
-    return broadcast_message, centroid or None
+    return broadcast_message, centroid or None, bleed
 
 
 def get_centroid(area):
@@ -468,6 +476,7 @@ def remove_postcode_area(service_id, broadcast_message_id, postcode_slug):
 @service_has_permission("broadcast")
 def search_coordinates(service_id, broadcast_message_id, library_slug, coordinate_type):
     polygon = None
+    bleed = None
     broadcast_message = BroadcastMessage.from_id(
         broadcast_message_id,
         service_id=current_service.id,
@@ -477,15 +486,11 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
         form = DecimalCoordinatesForm()
     elif coordinate_type == "cartesian":
         form = CartesianCoordinatesForm()
-    if request.method == "POST":
+    if request.method == "POST" and (form.first_coordinate.validate(form) and form.second_coordinate.validate(form)):
         first_coordinate = float(form.data["first_coordinate"])
         second_coordinate = float(form.data["second_coordinate"])
 
-        if (  # if search button used and form fields are valid
-            request.form.get("search_btn")
-            and form.first_coordinate.validate(form)
-            and form.second_coordinate.validate(form)
-        ):
+        if request.form.get("search_btn"):
             in_test_polygon = check_coordinates_valid_for_enclosed_polygon(
                 broadcast_message,
                 first_coordinate,
@@ -504,14 +509,8 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
             if not (in_test_polygon or in_uk_polygon):  # if coordinate not in either UK or test area
                 form.form_errors.append("Invalid coordinates.")
             else:  # if in either test area or UK, plot the marker
-                if coordinate_type == "cartesian":
-                    crs_4326 = pyproj.CRS("EPSG:4326")
-                    crs_normalised = pyproj.CRS("EPSG:27700")
-                    transformer = pyproj.Transformer.from_crs(crs_normalised, crs_4326)
-                    x, y = transformer.transform(first_coordinate, second_coordinate)
-                    marker = [x, y]
-                else:
-                    marker = [first_coordinate, second_coordinate]
+                Point = normalising_point(first_coordinate, second_coordinate, coordinate_type)
+                marker = [Point.y, Point.x]
         elif request.form.get("radius_btn"):  # if add radius button clicked
             if form.validate_on_submit():
                 radius = float(form.data["radius"])
@@ -543,10 +542,11 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
                         radius_min_sig_figs = "{:g}".format(radius)
                         id = f"an area of {radius_min_sig_figs}km around "
                         if coordinate_type == "decimal":
-                            id = f"{id}{first_coordinate} Latitude,  {second_coordinate} Longitude"
+                            id = f"{id}{first_coordinate} Latitude, {second_coordinate} Longitude"
                         elif coordinate_type == "cartesian":
                             id = f"{id}the Easting of {first_coordinate} and the Northing of {second_coordinate}"
-                    broadcast_message.add_coordinate_area(polygon, id)
+                    bleed = broadcast_message.add_custom_areas(polygon, id=id)
+
     broadcast_message = BroadcastMessage.from_id(
         broadcast_message_id,
         service_id=current_service.id,
@@ -561,6 +561,8 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
         form=form,
         coordinate_type=coordinate_type,
         marker=marker or None,
+        bleed=bleed or None,
+        centroid=None,
     )
 
 
@@ -599,6 +601,11 @@ def check_coordinates_valid_for_enclosed_polygon(message, lat, lng, type, polygo
         )
     polygons = [Polygon(area.polygons.as_coordinate_pairs_long_lat[0]) for area in areas]
     combined_polygon = unary_union(polygons)
+    normalized_center = normalising_point(lat, lng, type)
+    return combined_polygon.contains(normalized_center)
+
+
+def normalising_point(lat, lng, type):
     if type == "cartesian":
         crs_4326 = pyproj.CRS("EPSG:4326")
         crs_normalized = pyproj.CRS("EPSG:27700")
@@ -607,7 +614,7 @@ def check_coordinates_valid_for_enclosed_polygon(message, lat, lng, type, polygo
         normalized_center = Point(lng, lat)
     elif type == "decimal":
         normalized_center = Point(lng, lat)
-    return combined_polygon.contains(normalized_center)
+    return normalized_center
 
 
 @main.route(

@@ -273,7 +273,9 @@ class BroadcastMessage(JSONModel):
 
     def add_custom_areas(self, *circle_polygon, id):
         simple_polygons = list(circle_polygon)
-        if local_authority := CustomBroadcastArea(name="", polygons=simple_polygons).local_authority:
+        area_to_get_params = CustomBroadcastArea(name="", polygons=simple_polygons)
+        bleed = area_to_get_params.estimated_bleed_in_m
+        if local_authority := area_to_get_params.local_authority:
             id = f"{id}, in {local_authority}"
         if id not in self.area_ids:
             areas = {
@@ -288,27 +290,11 @@ class BroadcastMessage(JSONModel):
             broadcast_message_api_client.update_broadcast_message(
                 broadcast_message_id=self.id, service_id=self.service_id, data=data
             )
+        return bleed
 
     def remove_area(self, area_id):
         self.area_ids = list(set(self._dict["areas"]["ids"]) - {area_id})
         self._update_areas()
-
-    def add_coordinate_area(self, polygon, id):
-        simple_polygons = [polygon]
-        if local_authority := CustomBroadcastArea(name="", polygons=simple_polygons).local_authority:
-            id = f"{id}, in {local_authority}"
-        areas = {
-            "ids": [id],
-            "names": [id],
-            "aggregate_names": [id],
-            "simple_polygons": simple_polygons,
-        }
-        data = {"areas": areas}
-
-        self.area_ids = [id]
-        broadcast_message_api_client.update_broadcast_message(
-            broadcast_message_id=self.id, service_id=self.service_id, data=data
-        )
 
     def _set_status_to(self, status):
         broadcast_message_api_client.update_broadcast_message_status(
