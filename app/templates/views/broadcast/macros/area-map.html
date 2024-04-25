@@ -1,20 +1,13 @@
-{% macro map(broadcast_message, label, custom, radius_value) %}
+{% macro map(broadcast_message, label) %}
   <div id="area-list-map" role="region" aria-label="{{label}}" aria-describedby="area-list-map__description"></div>
     <p id="area-list-map__description" class="govuk-visually-hidden">
       Use the arrow keys to move the map. Use the buttons to zoom the map in or out
     </p>
     <p class="area-list-key area-list-key--certain">
-      {% if custom %}
-        <svg class="area-list-key__icon" width="50" height="50" viewbox="0 0 50 50" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-          <rect x="0" y="0" width="100%" height="100%" fill="#FFFFFF" />
-          <polygon points="25 5, 45 25, 25 45, 5 25" stroke="#0B0B0C" stroke-width="2" fill="none" />
-        </svg>
-      {% else %}
-        <svg class="area-list-key__icon" width="50" height="50" viewbox="0 0 50 50" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-          <rect x="0" y="0" width="100%" height="100%" fill="#FFFFFF" />
-          <polygon points="25 5, 45 25, 25 45, 5 25" stroke="#0B0B0C" stroke-width="2" fill="#96C6E2" />
-        </svg>
-      {% endif%}
+      <svg class="area-list-key__icon" width="50" height="50" viewbox="0 0 50 50" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="100%" height="100%" fill="#FFFFFF" />
+        <polygon points="25 5, 45 25, 25 45, 5 25" stroke="#0B0B0C" stroke-width="2" fill="none" />
+      </svg>
       <span class="govuk-visually-hidden">
         An area of {{ (broadcast_message.simple_polygons.estimated_area)|square_metres_to_square_miles|round_to_significant_figures(1)|format_thousands }} square miles&nbsp;
       </span>
@@ -24,8 +17,7 @@
       </span>
       alert
     </p>
-    {% if not custom %}
-      <p class="area-list-key area-list-key--likely">
+    <p class="area-list-key area-list-key--likely">
       <svg class="area-list-key__icon" width="50" height="50" viewbox="0 0 50 50" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
         <rect x="0" y="0" width="100%" height="100%" fill="#FFFFFF" />
         <polygon points="25 5, 45 25, 25 45, 5 25" stroke="#1d70b8" stroke-opacity="1" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" stroke-dasharray="4,7.5,5,7.5,8,8,5,8,7.5,8,5,8,7,8,5,8,4" fill="#5694ca" fill-opacity="0.15" />
@@ -33,13 +25,12 @@
       <span class="govuk-visually-hidden">
         An extra area of {{ (broadcast_message.simple_polygons_with_bleed.estimated_area - broadcast_message.simple_polygons.estimated_area)|square_metres_to_square_miles|round_to_significant_figures(1)|format_thousands }} square miles is&nbsp;
       </span>
-        Likely to get
+      Likely to get
       <span class="govuk-visually-hidden">
         the
       </span>
       alert
-      </p>
-    {% endif %}
+    </p>
     <p class="area-list-key area-list-key--phone-estimate">
       {% if broadcast_message.count_of_phones == 0 %}
         Unknown number of phones
