@@ -2621,7 +2621,6 @@ class DecimalCoordinatesForm(StripWhitespaceForm):
     first_coordinate = GovukDecimalField(
         "Latitude",
         validators=[
-            DataRequired(message="Enter a value."),
             NumberRange(min=-90.0099, max=90.001, message="Enter a Latitude between -90 and 90."),
         ],
         param_extensions={
@@ -2632,7 +2631,6 @@ class DecimalCoordinatesForm(StripWhitespaceForm):
     second_coordinate = GovukDecimalField(
         "Longitude",
         validators=[
-            DataRequired(message="Enter a value."),
             NumberRange(min=-180.0099, max=180.001, message="Enter a Longitude between -180 and 180."),
         ],
         param_extensions={
@@ -2668,9 +2666,6 @@ class CartesianCoordinatesForm(StripWhitespaceForm):
 
     first_coordinate = GovukDecimalField(
         "Eastings",
-        validators=[
-            DataRequired(message="Enter a value."),
-        ],
         param_extensions={
             "classes": "govuk-input govuk-input--width-6",
             "attributes": {"pattern": "^-?\\d+(\\.\\d+)?$"},
@@ -2678,9 +2673,6 @@ class CartesianCoordinatesForm(StripWhitespaceForm):
     )
     second_coordinate = GovukDecimalField(
         "Northings",
-        validators=[
-            DataRequired(message="Enter a value."),
-        ],
         param_extensions={
             "classes": "govuk-input govuk-input--width-6",
             "attributes": {"pattern": "^-?\\d+(\\.\\d+)?$"},
