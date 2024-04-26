@@ -420,7 +420,7 @@ def redirect_to_postcode_map(service_id, broadcast_message_id, form: PostcodeFor
     try:
         area = BroadcastMessage.libraries.get_areas([postcode])[0]
         radius_to_min_sig_figs = "{:g}".format(float(form.data["radius"]))
-        circle_id = f"an area of {radius_to_min_sig_figs}km around the postcode {postcode_formatted}"
+        circle_id = f"{radius_to_min_sig_figs}km around the postcode {postcode_formatted}"
 
         centroid = get_centroid(area)
         circle_polygon = create_circle(centroid, float(form.data["radius"]) * 1000)
@@ -540,11 +540,11 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
                     ):
                         form.form_errors = []
                         radius_min_sig_figs = "{:g}".format(radius)
-                        id = f"an area of {radius_min_sig_figs}km around "
+                        id = f"{radius_min_sig_figs}km around "
                         if coordinate_type == "decimal":
-                            id = f"{id}{first_coordinate} Latitude, {second_coordinate} Longitude"
+                            id = f"{id}{first_coordinate} latitude, {second_coordinate} longitude"
                         elif coordinate_type == "cartesian":
-                            id = f"{id}the Easting of {first_coordinate} and the Northing of {second_coordinate}"
+                            id = f"{id}the easting of {first_coordinate} and the northing of {second_coordinate}"
                     bleed = broadcast_message.add_custom_areas(polygon, id=id)
 
     broadcast_message = BroadcastMessage.from_id(

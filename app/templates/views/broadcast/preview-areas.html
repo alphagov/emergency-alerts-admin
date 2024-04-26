@@ -41,7 +41,7 @@
       <ul class="area-list">
         {% for area in broadcast_message.areas %}
           <li class="area-list-item">
-            {{area.name[0].upper()+area.name[1:]}}
+            {{area.name}}
             <a class="area-list-item-remove govuk-button" data-module="govuk-button" role="button" href="{{ url_for('.remove_broadcast_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, area_slug=area.id) }}">
               <svg id="area-list-item-remove__icon" width="11" height="11" viewbox="0 0 10 10" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
                 <g transform="rotate(45),translate(1, -6)">

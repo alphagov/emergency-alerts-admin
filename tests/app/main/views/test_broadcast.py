@@ -98,7 +98,7 @@ sample_uuid = sample_uuid()
             ".remove_postcode_area",
             {
                 "broadcast_message_id": sample_uuid,
-                "postcode_slug": "an area of 1km around the postcode BD1 1EE, in Bradford",
+                "postcode_slug": "1km around the postcode BD1 1EE, in Bradford",
             },
             403,
             405,
@@ -202,7 +202,7 @@ def test_broadcast_pages_403_without_permission(
             ".remove_postcode_area",
             {
                 "broadcast_message_id": sample_uuid,
-                "postcode_slug": "an area of 1km around the postcode BD1 1EE, in Bradford",
+                "postcode_slug": "1km around the postcode BD1 1EE, in Bradford",
             },
             403,
             405,
@@ -1241,7 +1241,7 @@ def test_choose_broadcast_library_page(
     "area_ids, expected_list",
     (
         (
-            ["an area of 1km around the postcode BD1 1EE, in Bradford"],
+            ["1km around the postcode BD1 1EE, in Bradford"],
             [
                 "Coordinates",
                 "Countries",
@@ -1252,7 +1252,7 @@ def test_choose_broadcast_library_page(
             ],
         ),
         (
-            ["an area of 3km around the postcode BD1 1EE, in Bradford"],
+            ["3km around the postcode BD1 1EE, in Bradford"],
             [
                 "Coordinates",
                 "Countries",
@@ -1263,7 +1263,7 @@ def test_choose_broadcast_library_page(
             ],
         ),
         (
-            ["an area of 5km around the coordinates [54.0, -1.7], in Harrogate"],
+            ["5km around the coordinates [54.0, -1.7], in Harrogate"],
             [
                 "Coordinates",
                 "Countries",
@@ -1838,9 +1838,9 @@ def test_add_broadcast_area(
             {"postcode": "BD1 1EE", "radius": "2", "radius_btn": True},
             {
                 "areas": {
-                    "ids": ["an area of 2km around the postcode BD1 1EE, in Bradford"],
-                    "names": ["an area of 2km around the postcode BD1 1EE, in Bradford"],
-                    "aggregate_names": ["an area of 2km around the postcode BD1 1EE, in Bradford"],
+                    "ids": ["2km around the postcode BD1 1EE, in Bradford"],
+                    "names": ["2km around the postcode BD1 1EE, in Bradford"],
+                    "aggregate_names": ["2km around the postcode BD1 1EE, in Bradford"],
                     "simple_polygons": [BD1_1EE_2],
                 }
             },
@@ -1849,9 +1849,9 @@ def test_add_broadcast_area(
             {"postcode": "BD1 1EE", "radius": "3", "radius_btn": True},
             {
                 "areas": {
-                    "ids": ["an area of 3km around the postcode BD1 1EE, in Bradford"],
-                    "names": ["an area of 3km around the postcode BD1 1EE, in Bradford"],
-                    "aggregate_names": ["an area of 3km around the postcode BD1 1EE, in Bradford"],
+                    "ids": ["3km around the postcode BD1 1EE, in Bradford"],
+                    "names": ["3km around the postcode BD1 1EE, in Bradford"],
+                    "aggregate_names": ["3km around the postcode BD1 1EE, in Bradford"],
                     "simple_polygons": [BD1_1EE_3],
                 }
             },
@@ -1879,9 +1879,9 @@ def test_add_postcode_area(
             service_id=SERVICE_ONE_ID,
             status="draft",
             areas={
-                "ids": ["an area of 1km around the postcode BD1 1EE, in Bradford"],
+                "ids": ["1km around the postcode BD1 1EE, in Bradford"],
                 "simple_polygons": [BD1_1EE_1],
-                "names": ["an area of 1km around the postcode BD1 1EE, in Bradford"],
+                "names": ["1km around the postcode BD1 1EE, in Bradford"],
             },
         ),
     )
@@ -1932,9 +1932,9 @@ def test_add_postcode_area(
             {"first_coordinate": "54", "second_coordinate": "-1.7", "radius": "5", "radius_btn": True},
             {
                 "areas": {
-                    "ids": ["an area of 5km around 54.0 Latitude, -1.7 Longitude, in Harrogate"],
-                    "names": ["an area of 5km around 54.0 Latitude, -1.7 Longitude, in Harrogate"],
-                    "aggregate_names": ["an area of 5km around 54.0 Latitude, -1.7 Longitude, in Harrogate"],
+                    "ids": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
+                    "names": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
+                    "aggregate_names": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
                     "simple_polygons": [HG3_2RL],
                 }
             },
@@ -1943,9 +1943,9 @@ def test_add_postcode_area(
             {"first_coordinate": "53.793", "second_coordinate": "-1.75", "radius": "3", "radius_btn": True},
             {
                 "areas": {
-                    "ids": ["an area of 3km around 53.793 Latitude, -1.75 Longitude, in Bradford"],
-                    "names": ["an area of 3km around 53.793 Latitude, -1.75 Longitude, in Bradford"],
-                    "aggregate_names": ["an area of 3km around 53.793 Latitude, -1.75 Longitude, in Bradford"],
+                    "ids": ["3km around 53.793 latitude, -1.75 longitude, in Bradford"],
+                    "names": ["3km around 53.793 latitude, -1.75 longitude, in Bradford"],
+                    "aggregate_names": ["3km around 53.793 latitude, -1.75 longitude, in Bradford"],
                     "simple_polygons": [BD1_1EE],
                 }
             },
@@ -2029,12 +2029,10 @@ def test_add_decimal_coordinate_area(
             {"first_coordinate": "419763", "second_coordinate": "456038", "radius": "5", "radius_btn": True},
             {
                 "areas": {
-                    "ids": ["an area of 5km around the Easting of 419763.0 and the Northing of 456038.0, in Harrogate"],
-                    "names": [
-                        "an area of 5km around the Easting of 419763.0 and the Northing of 456038.0, in Harrogate"
-                    ],
+                    "ids": ["5km around the easting of 419763.0 and the northing of 456038.0, in Harrogate"],
+                    "names": ["5km around the easting of 419763.0 and the northing of 456038.0, in Harrogate"],
                     "aggregate_names": [
-                        "an area of 5km around the Easting of 419763.0 and the Northing of 456038.0, in Harrogate"
+                        "5km around the easting of 419763.0 and the northing of 456038.0, in Harrogate"
                     ],
                     "simple_polygons": [HG3_2RL],
                 }
@@ -2044,13 +2042,9 @@ def test_add_decimal_coordinate_area(
             {"first_coordinate": "416567", "second_coordinate": "432994", "radius": "3", "radius_btn": True},
             {
                 "areas": {
-                    "ids": ["an area of 3km around the Easting of 416567.0 and the Northing of 432994.0, in Bradford"],
-                    "names": [
-                        "an area of 3km around the Easting of 416567.0 and the Northing of 432994.0, in Bradford"
-                    ],
-                    "aggregate_names": [
-                        "an area of 3km around the Easting of 416567.0 and the Northing of 432994.0, in Bradford"
-                    ],
+                    "ids": ["3km around the easting of 416567.0 and the northing of 432994.0, in Bradford"],
+                    "names": ["3km around the easting of 416567.0 and the northing of 432994.0, in Bradford"],
+                    "aggregate_names": ["3km around the easting of 416567.0 and the northing of 432994.0, in Bradford"],
                     "simple_polygons": [BD1_1EE],
                 }
             },
@@ -2309,7 +2303,7 @@ def test_remove_postcode_area(
             service_id=SERVICE_ONE_ID,
             status="draft",
             areas={
-                "ids": ["an area of 1km around the postcode BD1 1EE, in Bradford"],
+                "ids": ["1km around the postcode BD1 1EE, in Bradford"],
                 "names": ["BDE 1EE-1"],
                 "simple_polygons": [BD1_1EE_1],
             },
@@ -2321,7 +2315,7 @@ def test_remove_postcode_area(
         ".remove_postcode_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
-        postcode_slug="an area of 1km around the postcode BD1 1EE, in Bradford",
+        postcode_slug="1km around the postcode BD1 1EE, in Bradford",
         _expected_redirect=url_for(
             ".choose_broadcast_area",
             service_id=SERVICE_ONE_ID,
