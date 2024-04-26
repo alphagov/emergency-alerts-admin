@@ -56,7 +56,7 @@
           <div class="search-postcode-margin-left">
             {{ govukButton({
               "classes": "notify-simple-search-form__button search-postcode-button govuk-button--secondary",
-              "html": "Add radius areas",
+              "html": "Add radius",
               "name": "radius_btn",
               "value": True
             }) }}
@@ -64,14 +64,14 @@
           {% if broadcast_message.areas %}
           {{ govukButton({
             "element": "a",
-            "text": "Preview this alert",
+            "text": "Preview alert",
             "href": url_for('.preview_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
             "classes": "govuk-button search-postcode-margin-left",
             "name": "preview"
           }) }}
         {% else %}
           {{ govukButton({
-            "text": "Preview this alert",
+            "text": "Preview alert",
             "classes": "govuk-button search-postcode-margin-left",
             "disabled": true,
             "name": "preview"

@@ -66,20 +66,20 @@
         {{ form.radius}}
         {{ govukButton({
           "classes": "notify-simple-search-form__button govuk-button--secondary margin",
-          "html": "Add radius area",
+          "html": "Add radius",
           "name": 'radius_btn',
           "value": True
         }) }}
         {% if broadcast_message.areas %}
           {{ govukButton({
             "element": "a",
-            "text": "Preview this alert",
+            "text": "Preview alert",
             "href": url_for('.preview_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
             "classes": "govuk-button",
           }) }}
         {% else %}
           {{ govukButton({
-            "text": "Preview this alert",
+            "text": "Preview alert",
             "classes": "govuk-button",
             "disabled": true
           }) }}
