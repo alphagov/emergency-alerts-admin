@@ -128,7 +128,7 @@ class MainNavigation(Navigation):
     mapping = {
         "dashboard": {
             "broadcast_tour",
-            "conversation",
+            # "conversation",
             "inbox",
             "monthly",
             "returned_letter_summary",
@@ -163,7 +163,7 @@ class MainNavigation(Navigation):
             "choose_template",
             "choose_template_to_copy",
             "confirm_redact_template",
-            "conversation_reply",
+            # "conversation_reply",
             "copy_template",
             "delete_service_template",
             "edit_service_template",
