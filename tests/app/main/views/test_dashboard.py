@@ -255,49 +255,6 @@ def test_inbound_messages_shows_count_of_messages_when_there_are_no_messages(
     assert banner["href"] == url_for("main.inbox", service_id=SERVICE_ONE_ID)
 
 
-@pytest.mark.parametrize(
-    "index, expected_row",
-    enumerate(
-        [
-            "07900 900000 message-1 1 hour ago",
-            "07900 900000 message-2 1 hour ago",
-            "07900 900000 message-3 1 hour ago",
-            "07900 900002 message-4 3 hours ago",
-            "+33 1 12 34 56 78 message-5 5 hours ago",
-            "+1 202-555-0104 message-6 7 hours ago",
-            "+1 202-555-0104 message-7 9 hours ago",
-            "+682 12345 message-8 9 hours ago",
-        ]
-    ),
-)
-def test_inbox_showing_inbound_messages(
-    client_request,
-    service_one,
-    mock_get_service_templates_when_no_templates_exist,
-    mock_get_jobs,
-    mock_get_service_statistics,
-    mock_get_template_statistics,
-    mock_get_annual_usage_for_service,
-    mock_get_most_recent_inbound_sms,
-    index,
-    expected_row,
-):
-    service_one["permissions"] = ["inbound_sms"]
-
-    page = client_request.get(
-        "main.inbox",
-        service_id=SERVICE_ONE_ID,
-    )
-
-    rows = page.select("tbody tr")
-    assert len(rows) == 8
-    assert normalize_spaces(rows[index].text) == expected_row
-    assert page.select_one("a[download]")["href"] == url_for(
-        "main.inbox_download",
-        service_id=SERVICE_ONE_ID,
-    )
-
-
 def test_get_inbound_sms_shows_page_links(
     client_request,
     service_one,

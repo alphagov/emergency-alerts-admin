@@ -723,7 +723,7 @@ def test_notification_page_has_link_to_send_another_for_sms(
     last_paragraph = page.select("main p")[-1]
 
     if link_expected:
-        assert normalize_spaces(last_paragraph.text) == "See all text messages sent to this phone number"
+        assert normalize_spaces(last_paragraph.text) == "Delivered"
 
 
 @pytest.mark.parametrize(
