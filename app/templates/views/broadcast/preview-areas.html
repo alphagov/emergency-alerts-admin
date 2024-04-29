@@ -62,7 +62,7 @@
       }) }}
     </div>
 
-    {{ map(broadcast_message, label) }}
+    {{ map(broadcast_message, label, is_custom_broadcast) }}
     {{ govukButton({
       "element": "a",
       "text": "Preview alert",

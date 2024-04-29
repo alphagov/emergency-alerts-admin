@@ -1,13 +1,22 @@
 <script src="{{ asset_url('javascripts/leaflet.js') }}"></script>
 <script>
   let polygons = []
+  {% if is_custom_broadcast %}
+    area_color = "#0201FE"
+    bleed_color = "#0201FE"
+    fill_color = "none"
+  {% else %}
+    area_color = "#0B0B0C"
+    bleed_color = "#1d70b8"
+    fill_color = "#5694ca"
+  {% endif %}
 
   {% for polygon in broadcast_message.simple_polygons_with_bleed.as_coordinate_pairs_lat_long %}
     polygons.push(
       L.polygon({{polygon}}, {
         opacity: 1,
-        color: '#1d70b8',
-        fillColor: '#5694ca',
+        color: bleed_color,
+        fillColor: fill_color,
         fillOpacity: 0.15,
         weight: 2,
         dashArray: [6, 7],
@@ -19,8 +28,8 @@
   {% for polygon in broadcast_message.polygons.as_coordinate_pairs_lat_long %}
     polygons.push(
       L.polygon({{polygon}}, {
-        color: '#0b0b0c',
-        fillColor: '#5694ca',
+        color: area_color,
+        fillColor: fill_color,
         fillOpacity: 0.3,
         weight: 2
       })
