@@ -276,7 +276,12 @@ class BroadcastMessage(JSONModel):
         area_to_get_params = CustomBroadcastArea(name="", polygons=simple_polygons)
         bleed = area_to_get_params.estimated_bleed_in_m
         if local_authority := area_to_get_params.local_authority:
-            id = f"{id}, in {local_authority}"
+            if local_authority.endswith(", City of"):
+                id = f"{id}, in City of {local_authority[:-9]}"
+            elif local_authority.endswith(", County of"):
+                id = f"{id}, in County of {local_authority[:-11]}"
+            else:
+                id = f"{id}, in {local_authority}"
         if id not in self.area_ids:
             areas = {
                 "ids": [id],
