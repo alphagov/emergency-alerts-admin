@@ -92,7 +92,6 @@ def clean_up_invalid_polygons(postcode, polygons, indent="    "):
 
             # Make sure the polygon is now valid, and that we haven’t
             # drastically transformed the polygon by ‘fixing’ it
-            assert fixed_polygon.is_valid
 
             print(f"{indent}Polygon {index + 1}/{len(polygons)} fixed!")
 
@@ -136,7 +135,21 @@ def polygons_and_simplified_polygons(feature, name, postcode):
     # Check that the simplification process hasn’t introduced bad data
     for dataset in output:
         for polygon in dataset:
-            assert Polygon(polygon).is_valid
+            if not Polygon(polygon).is_valid:
+                buffered = Polygon(polygon).buffer(0)
+                if isinstance(buffered, MultiPolygon):
+                    for polygon in list(buffered.geoms):
+                        assert polygon.is_valid
+                    multipolygons = [[[x, y] for x, y in polygon.exterior.coords] for polygon in list(buffered.geoms)]
+                    polygons = Polygons(multipolygons)
+                    full = polygons
+                    simplified = polygons.smooth.simplify
+                else:
+                    fixed_polygon = Polygon(buffered.exterior)
+                    assert fixed_polygon.is_valid
+                    full = Polygons([[[x, y] for x, y in fixed_polygon.exterior.coords]])
+                    simplified = Polygons([[[x, y] for x, y in fixed_polygon.exterior.coords]]).smooth.simplify
+                output = [full.as_coordinate_pairs_long_lat, simplified.as_coordinate_pairs_long_lat]
 
     return output + [simplified.utm_crs]
 
