@@ -721,18 +721,9 @@ def test_notification_page_has_link_to_send_another_for_sms(
     )
 
     last_paragraph = page.select("main p")[-1]
-    # conversation_link = url_for(
-    #     ".conversation",
-    #     service_id=SERVICE_ONE_ID,
-    #     notification_id=fake_uuid,
-    #     _anchor="n{}".format(fake_uuid),
-    # )
 
     if link_expected:
         assert normalize_spaces(last_paragraph.text) == "See all text messages sent to this phone number"
-    #     assert last_paragraph.select_one("a")["href"] == conversation_link
-    # else:
-    #     assert conversation_link not in str(page.select_one("main"))
 
 
 @pytest.mark.parametrize(
