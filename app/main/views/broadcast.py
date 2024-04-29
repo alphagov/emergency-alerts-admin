@@ -339,8 +339,9 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
                     broadcast_message, centroid, bleed = redirect_to_postcode_map(
                         service_id, broadcast_message_id, form
                     )
-                    x, y = centroid.x, centroid.y
-                    marker = [y, x]
+                    if centroid is not None:
+                        x, y = centroid.x, centroid.y
+                        marker = [y, x]
                     form.post_validate()
         # Ensuring latest areas will display on map
         broadcast_message = BroadcastMessage.from_id(
@@ -415,6 +416,7 @@ def redirect_to_postcode_map(service_id, broadcast_message_id, form: PostcodeFor
         service_id=current_service.id,
     )
     bleed = None
+    centroid = None
     postcode_formatted = UKPostcode(form.data["postcode"]).postcode
     postcode = f"postcodes-{postcode_formatted}"
     try:
@@ -428,7 +430,7 @@ def redirect_to_postcode_map(service_id, broadcast_message_id, form: PostcodeFor
         bleed = broadcast_message.add_custom_areas(circle_polygon, id=circle_id)
     except IndexError:
         form.postcode.errors.append("Postcode not found. Enter a valid postcode.")
-    return broadcast_message, centroid or None, bleed
+    return broadcast_message, centroid, bleed
 
 
 def get_centroid(area):
