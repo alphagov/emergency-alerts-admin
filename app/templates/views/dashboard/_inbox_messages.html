@@ -18,15 +18,6 @@
     ],
     field_headings_visible=False
   ) %}
-    {% call field() %}
-      <a
-        class="govuk-link govuk-link--no-visited-state file-list-filename"
-        href="{{ url_for('.conversation', service_id=current_service.id, notification_id=item.id) }}#n{{ item.id }}"
-      >
-        {{ item.user_number | format_phone_number_human_readable }}
-      </a>
-      <span class="file-list-hint">{{ item.content }}</span>
-    {% endcall %}
     {% call field(align='right') %}
       <span class="align-with-message-body">
         {{ item.created_at | format_delta }}

@@ -693,9 +693,6 @@ def get_url_for_notify_record(uuid_):
             "service_inbound_api": _EndpointSpec(".received_text_messages_callback", with_service_id=True),
             "service_callback_api": _EndpointSpec(".delivery_status_callback", with_service_id=True),
             "complaint": _EndpointSpec(".platform_admin_list_complaints"),
-            "inbound_sms": _EndpointSpec(
-                ".conversation", "notification_id", with_service_id=True, extra={"_anchor": f"n{uuid_}"}
-            ),
         }
         if not (spec := url_for_data.get(result["type"])):
             raise KeyError(f"Don't know how to redirect to {result['type']}")

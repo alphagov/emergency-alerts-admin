@@ -33,7 +33,6 @@ from app.main.views import (  # noqa isort:skip
     broadcast,
     choose_account,
     code_not_received,
-    conversation,
     dashboard,
     email_branding,
     feedback,
