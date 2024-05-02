@@ -7,6 +7,7 @@
 {% from "views/broadcast/macros/area-map.html" import map %}
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
 {% from "govuk_frontend_jinja/components/input/macro.html" import govukInput %}
+{% from "components/error-summary.html" import errorSummary %}
 
 {% block per_page_title %}
   {{ page_title }} – {{ current_service.name }}
@@ -37,7 +38,8 @@
 {% set radius = form.radius.value %}
 
 {% block maincolumn_content %}
-{{ page_header("Choose alert area") }}
+  {{ page_header("Choose alert area") }}
+  {{ errorSummary(form) }}
   {% call form_wrapper() %}
     <div class="search-postcode-form">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
