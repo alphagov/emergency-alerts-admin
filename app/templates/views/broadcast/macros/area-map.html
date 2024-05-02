@@ -8,10 +8,12 @@
   {% set bleed_color = "#1d70b8" %}
   {% set fill = "#5694ca" %}
 {% endif %}
-  <div id="area-list-map" role="region" aria-label="{{label}}" aria-describedby="area-list-map__description"></div>
-    <p id="area-list-map__description" class="govuk-visually-hidden">
-      Use the arrow keys to move the map. Use the buttons to zoom the map in or out
-    </p>
+
+<div id="area-list-map" role="region" aria-label="{{label}}" aria-describedby="area-list-map__description"></div>
+<p id="area-list-map__description" class="govuk-visually-hidden">
+  Use the arrow keys to move the map. Use the buttons to zoom the map in or out
+</p>
+  {% if broadcast_message.areas %}
     <p class="area-list-key area-list-key--certain">
       <svg class="area-list-key__icon" width="50" height="50" viewbox="0 0 50 50" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
         <rect x="0" y="0" width="100%" height="100%" fill="#FFFFFF" />
@@ -49,4 +51,5 @@
         {{ broadcast_message.count_of_phones|format_thousands }} to {{ broadcast_message.count_of_phones_likely|format_thousands }} phones
       {% endif %}
     </p>
+{% endif %}
 {% endmacro %}
