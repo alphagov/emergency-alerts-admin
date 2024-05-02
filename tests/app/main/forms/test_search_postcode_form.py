@@ -36,7 +36,7 @@ def check_postcode_exists(form):
         ),
         (
             ["BD1 1EE", 12.345],
-            {"radius": ["Enter a value with 2 decimal places."]},
+            {"radius": ["Enter a value with 2 decimal places"]},
         ),
     ),
 )

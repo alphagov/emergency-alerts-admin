@@ -34,7 +34,7 @@ def check_coordinate_exists(form):
         ),
         (
             [90, 180, 2.555],
-            {"radius": ["Enter a value with 2 decimal places."]},
+            {"radius": ["Enter a value with 2 decimal places"]},
         ),
     ),
 )
@@ -57,7 +57,7 @@ def test_invalid_input_messages_for_decimal_coordinates(post_data, expected_erro
         ),
         (
             [480000, 2, 2.555],
-            {"radius": ["Enter a value with 2 decimal places."]},
+            {"radius": ["Enter a value with 2 decimal places"]},
         ),
     ),
 )
