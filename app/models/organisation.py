@@ -4,12 +4,6 @@ from flask import abort
 from werkzeug.utils import cached_property
 
 from app.models import JSONModel, ModelList, SerialisedModelCollection
-from app.models.branding import (
-    EmailBranding,
-    EmailBrandingPool,
-    LetterBranding,
-    LetterBrandingPool,
-)
 from app.notify_client.organisations_api_client import organisations_client
 
 
@@ -48,8 +42,6 @@ class Organisation(JSONModel):
         "active",
         "crown",
         "organisation_type",
-        "letter_branding_id",
-        "email_branding_id",
         "agreement_signed",
         "agreement_signed_at",
         "agreement_signed_by_id",
@@ -116,8 +108,6 @@ class Organisation(JSONModel):
             self.domains = []
             self.organisation_type = None
             self.request_to_go_live_notes = None
-            self.email_branding_id = None
-            self.letter_branding_id = None
 
     @property
     def organisation_type_label(self):
@@ -175,30 +165,6 @@ class Organisation(JSONModel):
     @cached_property
     def team_members(self):
         return self.invited_users + self.active_users
-
-    @cached_property
-    def email_branding(self):
-        return EmailBranding.from_id(self.email_branding_id)
-
-    @cached_property
-    def email_branding_pool(self):
-        return EmailBrandingPool(self.id)
-
-    @property
-    def email_branding_pool_excluding_default(self):
-        return self.email_branding_pool.excluding(self.email_branding_id)
-
-    @cached_property
-    def letter_branding(self):
-        return LetterBranding.from_id(self.letter_branding_id)
-
-    @cached_property
-    def letter_branding_pool(self):
-        return LetterBrandingPool(self.id)
-
-    @property
-    def letter_branding_pool_excluding_default(self):
-        return self.letter_branding_pool.excluding(self.letter_branding_id)
 
     @cached_property
     def agreement_signed_by(self):

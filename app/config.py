@@ -112,9 +112,6 @@ class Config(object):
 
     NOTIFY_RUNTIME_PLATFORM = os.environ.get("NOTIFY_RUNTIME_PLATFORM", "paas")
 
-    EMAIL_BRANDING_MIN_LOGO_HEIGHT_PX = 108
-    EMAIL_BRANDING_MAX_LOGO_WIDTH_PX = 640
-
 
 class Hosted(Config):
     HOST = "hosted"

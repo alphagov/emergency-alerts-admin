@@ -99,64 +99,6 @@
         }}
       {% endcall %}
       {% call row() %}
-        {{ text_field('Email branding options') }}
-        {% set email_branding_html %}
-          <div {% if current_org.email_branding_pool_excluding_default %}class="govuk-!-margin-bottom-3"{% endif %}>
-            {{ current_org.email_branding.name }}
-            <br>
-            <div class="table-field-status-default">
-              Default
-            </div>
-          </div>
-
-          {% for item in current_org.email_branding_pool_excluding_default %}
-            {% if loop.first %}<ul>{% endif %}
-              <li>
-                {{ item.name }}
-              </li>
-            {% if loop.last %}</ul>{% endif %}
-          {% endfor %}
-        {% endset %}
-        {% call field() %}
-          {{ email_branding_html }}
-        {% endcall %}
-        {{ edit_field(
-            'Manage',
-            url_for('.organisation_email_branding', org_id=current_org.id),
-            suffix='email branding options for the organisation'
-          )
-        }}
-      {% endcall %}
-      {% call row() %}
-        {{ text_field('Letter branding options') }}
-        {% set letter_branding_html %}
-          <div {% if current_org.letter_branding_pool_excluding_default %}class="govuk-!-margin-bottom-3"{% endif %}>
-            {{ current_org.letter_branding.name or "No branding" }}
-            <br>
-            <div class="table-field-status-default">
-              Default
-            </div>
-          </div>
-          {% for item in current_org.letter_branding_pool_excluding_default %}
-            {% if loop.first %}<ul>{% endif %}
-              <li>
-                {{ item.name }}
-              </li>
-            {% if loop.last %}</ul>{% endif %}
-          {% endfor %}
-        {% endset %}
-
-        {% call field() %}
-          {{ letter_branding_html }}
-        {% endcall %}
-        {{ edit_field(
-            'Manage',
-            url_for('.organisation_letter_branding', org_id=current_org.id),
-            suffix='letter branding options for the organisation'
-            )
-        }}
-      {% endcall %}
-      {% call row() %}
         {{ text_field('Known email domains') }}
         {{ optional_text_field(current_org.domains or None, default='None') }}
         {{ edit_field(

@@ -3,7 +3,6 @@ from flask import abort, current_app
 from werkzeug.utils import cached_property
 
 from app.models import JSONModel
-from app.models.branding import EmailBranding, LetterBranding
 from app.models.contact_list import ContactLists
 from app.models.job import ImmediateJobs, PaginatedJobs, PaginatedUploads, ScheduledJobs
 from app.models.organisation import Organisation
@@ -431,26 +430,6 @@ class Service(JSONModel):
             "days_of_retention", current_app.config["ACTIVITY_STATS_LIMIT_DAYS"]
         )
 
-    @property
-    def email_branding_id(self):
-        return self._dict["email_branding"]
-
-    @cached_property
-    def email_branding(self):
-        return EmailBranding.from_id(self.email_branding_id)
-
-    @property
-    def needs_to_change_email_branding(self):
-        return self.email_branding.is_govuk and self.organisation_type != Organisation.TYPE_CENTRAL
-
-    @property
-    def letter_branding_id(self):
-        return self._dict["letter_branding"]
-
-    @cached_property
-    def letter_branding(self):
-        return LetterBranding.from_id(self.letter_branding_id)
-
     @cached_property
     def organisation(self):
         return Organisation.from_id(self.organisation_id)
@@ -578,18 +557,6 @@ class Service(JSONModel):
     @property
     def contact_lists(self):
         return ContactLists(self.id)
-
-    @property
-    def email_branding_pool(self):
-        return self.organisation.email_branding_pool
-
-    @property
-    def letter_branding_pool(self):
-        return self.organisation.letter_branding_pool
-
-    @property
-    def can_use_govuk_branding(self):
-        return self.organisation_type == Organisation.TYPE_CENTRAL and not self.organisation.email_branding
 
 
 class Services(SerialisedModelCollection):

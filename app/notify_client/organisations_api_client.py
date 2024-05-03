@@ -55,29 +55,7 @@ class OrganisationsClient(NotifyAdminAPIClient):
         if "name" in kwargs:
             redis_client.delete(f"organisation-{org_id}-name")
 
-        if kwargs.get("email_branding_id"):
-            redis_client.delete(f"organisation-{org_id}-email-branding-pool")
-
-        if kwargs.get("letter_branding_id"):
-            redis_client.delete(f"organisation-{org_id}-letter-branding-pool")
-
-        from app.models.organisation import Organisation
-
-        if kwargs.get("organisation_type") in Organisation.NHS_TYPES:
-            # If an org gets set to an NHS org type we add NHS branding to the branding pools, so need
-            # to clear those caches
-            redis_client.delete(f"organisation-{org_id}-email-branding-pool")
-            redis_client.delete(f"organisation-{org_id}-letter-branding-pool")
-
         return api_response
-
-    @cache.delete("organisation-{org_id}-email-branding-pool")
-    def add_brandings_to_email_branding_pool(self, org_id, branding_ids):
-        return self.post(url=f"/organisations/{org_id}/email-branding-pool", data={"branding_ids": branding_ids})
-
-    @cache.delete("organisation-{org_id}-letter-branding-pool")
-    def add_brandings_to_letter_branding_pool(self, org_id, branding_ids):
-        return self.post(url=f"/organisations/{org_id}/letter-branding-pool", data={"branding_ids": branding_ids})
 
     @cache.delete("service-{service_id}")
     @cache.delete("live-service-and-organisation-counts")
@@ -105,28 +83,6 @@ class OrganisationsClient(NotifyAdminAPIClient):
             url=f"/organisations/{org_id}/archive",
             data=None,
         )
-
-    @cache.set("organisation-{org_id}-email-branding-pool")
-    def get_email_branding_pool(self, org_id):
-        branding = self.get(
-            url=f"/organisations/{org_id}/email-branding-pool",
-        )
-        return branding["data"]
-
-    @cache.set("organisation-{org_id}-letter-branding-pool")
-    def get_letter_branding_pool(self, org_id):
-        branding = self.get(
-            url=f"/organisations/{org_id}/letter-branding-pool",
-        )
-        return branding["data"]
-
-    @cache.delete("organisation-{org_id}-email-branding-pool")
-    def remove_email_branding_from_pool(self, org_id, branding_id):
-        self.delete(f"/organisations/{org_id}/email-branding-pool/{branding_id}")
-
-    @cache.delete("organisation-{org_id}-letter-branding-pool")
-    def remove_letter_branding_from_pool(self, org_id, branding_id):
-        self.delete(f"/organisations/{org_id}/letter-branding-pool/{branding_id}")
 
 
 organisations_client = OrganisationsClient()

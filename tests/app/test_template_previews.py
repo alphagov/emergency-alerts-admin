@@ -5,8 +5,6 @@ from unittest.mock import Mock
 import pytest
 from emergency_alerts_utils.template import LetterPreviewTemplate
 
-from app import load_service_before_request
-from app.models.branding import LetterBranding
 from app.template_previews import (
     TemplatePreview,
     get_page_count_for_letter,
@@ -34,62 +32,6 @@ def test_from_utils_template_calls_through(
 
     assert ret == mock_from_db.return_value
     mock_from_db.assert_called_once_with(template._template, "foo", template.values, page=expected_page_argument)
-
-
-@pytest.mark.parametrize(
-    "partial_call, expected_url",
-    [
-        (
-            partial(TemplatePreview.from_database_object, filetype="bar"),
-            "http://localhost:9999/preview.bar",
-        ),
-        (
-            partial(TemplatePreview.from_database_object, filetype="baz"),
-            "http://localhost:9999/preview.baz",
-        ),
-        (
-            partial(TemplatePreview.from_database_object, filetype="bar", page=99),
-            "http://localhost:9999/preview.bar?page=99",
-        ),
-    ],
-)
-@pytest.mark.parametrize(
-    "letter_branding, expected_filename",
-    [(LetterBranding({"filename": "hm-government"}), "hm-government"), (LetterBranding.from_id(None), None)],
-)
-def test_from_database_object_makes_request(
-    mocker,
-    client_request,
-    partial_call,
-    expected_url,
-    letter_branding,
-    expected_filename,
-    mock_get_service_letter_template,
-):
-    # This test is calling `current_service` outside a Flask endpoint, so we need to make sure
-    # `service` is in the `_request_ctx_stack` to avoid an error
-    load_service_before_request()
-
-    resp = Mock(content="a", status_code="b", headers={"content-type": "image/png"})
-    request_mock = mocker.patch("app.template_previews.requests.post", return_value=resp)
-    mocker.patch("app.template_previews.current_service", letter_branding=letter_branding)
-    template = mock_get_service_letter_template("123", "456")["data"]
-
-    ret = partial_call(template=template)
-
-    assert ret[0] == "a"
-    assert ret[1] == "b"
-    assert list(ret[2]) == [("content-type", "image/png")]
-
-    data = {
-        "letter_contact_block": None,
-        "template": template,
-        "values": None,
-        "filename": expected_filename,
-    }
-    headers = {"Authorization": "Token my-secret-key"}
-
-    request_mock.assert_called_once_with(expected_url, json=data, headers=headers)
 
 
 @pytest.mark.parametrize(
