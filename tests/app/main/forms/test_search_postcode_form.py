@@ -12,27 +12,27 @@ def check_postcode_exists(form):
     (
         (
             ["", 2],
-            {"postcode": ["Enter a postcode."]},
+            {"postcode": ["Enter a postcode"]},
         ),
         (
             ["BD1 1EE", 0],
-            {"radius": ["Enter a radius."]},
+            {"radius": ["Enter a radius"]},
         ),
         (
             ["", 0],
-            {"postcode": ["Enter a postcode."], "radius": ["Enter a radius."]},
+            {"postcode": ["Enter a postcode"], "radius": ["Enter a radius"]},
         ),
         (
             ["BD1 1EE", 38.2],
-            {"radius": ["Enter a radius between 0.1km and 38.0km."]},
+            {"radius": ["Enter a radius between 0.1km and 38.0km"]},
         ),
         (
             ["BD1 1EE", 0.05],
-            {"radius": ["Enter a radius between 0.1km and 38.0km."]},
+            {"radius": ["Enter a radius between 0.1km and 38.0km"]},
         ),
         (
             ["", 0.05],
-            {"postcode": ["Enter a postcode."], "radius": ["Enter a radius between 0.1km and 38.0km."]},
+            {"postcode": ["Enter a postcode"], "radius": ["Enter a radius between 0.1km and 38.0km"]},
         ),
         (
             ["BD1 1EE", 12.345],

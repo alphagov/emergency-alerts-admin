@@ -77,6 +77,7 @@ from app.main.validators import (
     NoPlaceholders,
     NoTextInSVG,
     Only2DecimalPlaces,
+    Only6DecimalPlaces,
     OnlySMSCharacters,
     StringsNotAllowed,
     ValidEmail,
@@ -294,7 +295,7 @@ class GovukDecimalField(GovukTextInputFieldMixin, DecimalField):
 class PostcodeSearchField(GovukTextInputFieldMixin, SearchField):
     input_type = "Search"
     param_extensions = {"classes": "govuk-input--width-10"}
-    validators = [DataRequired(message="Enter a postcode."), IsPostcode()]
+    validators = [DataRequired(message="Enter a postcode"), IsPostcode()]
 
 
 class SMSCode(GovukTextInputField):
@@ -2598,14 +2599,17 @@ class PostcodeForm(StripWhitespaceForm):
             "attributes": {"pattern": "^-?\\d+(\\.\\d+)?$"},
         },
         validators=[
-            NumberRange(min=0.099, max=38.001, message="Enter a radius between 0.1km and 38.0km."),
-            DataRequired(message="Enter a radius."),
+            NumberRange(min=0.099, max=38.001, message="Enter a radius between 0.1km and 38.0km"),
+            DataRequired(message="Enter a radius"),
             Only2DecimalPlaces(),
         ],
     )
 
+    def pre_validate(self, form):
+        return self.postcode.validate(form)
+
     def post_validate(self):
-        return not self.errors
+        return not self.errors and not self.postcode.errors and not self.radius.errors
 
 
 class DecimalCoordinatesForm(StripWhitespaceForm):
@@ -2621,7 +2625,9 @@ class DecimalCoordinatesForm(StripWhitespaceForm):
     first_coordinate = GovukDecimalField(
         "Latitude",
         validators=[
-            NumberRange(min=-90.0099, max=90.001, message="Enter a Latitude between -90 and 90."),
+            InputRequired("Enter a valid latitude"),
+            NumberRange(min=-90.0099, max=90.001, message="Enter a latitude between -90 and 90"),
+            Only6DecimalPlaces(),
         ],
         param_extensions={
             "classes": "govuk-input govuk-input--width-6",
@@ -2631,7 +2637,9 @@ class DecimalCoordinatesForm(StripWhitespaceForm):
     second_coordinate = GovukDecimalField(
         "Longitude",
         validators=[
-            NumberRange(min=-180.0099, max=180.001, message="Enter a Longitude between -180 and 180."),
+            InputRequired("Enter a valid longitude"),
+            Only6DecimalPlaces(),
+            NumberRange(min=-180.0099, max=180.001, message="Enter a longitude between -180 and 180"),
         ],
         param_extensions={
             "classes": "govuk-input govuk-input--width-6",
@@ -2646,15 +2654,19 @@ class DecimalCoordinatesForm(StripWhitespaceForm):
             "attributes": {"pattern": "^-?\\d+(\\.\\d+)?$"},
         },
         validators=[
-            NumberRange(min=0.099, max=38.001, message="Enter a radius between 0.1km and 38.0km."),
-            DataRequired(message="Enter a radius."),
+            NumberRange(min=0.099, max=38.001, message="Enter a radius between 0.1km and 38.0km"),
+            DataRequired(message="Enter a radius"),
             Only2DecimalPlaces(),
         ],
     )
 
     def post_validate(self):
-        if self.errors:
-            return False
+        return not self.errors
+
+    def pre_validate(self, form):
+        self.first_coordinate.validate(form)
+        self.second_coordinate.validate(form)
+        return self.first_coordinate.validate(form) and self.second_coordinate.validate(form)
 
 
 class CartesianCoordinatesForm(StripWhitespaceForm):
@@ -2670,6 +2682,7 @@ class CartesianCoordinatesForm(StripWhitespaceForm):
             "classes": "govuk-input govuk-input--width-6",
             "attributes": {"pattern": "^-?\\d+(\\.\\d+)?$"},
         },
+        validators=[InputRequired("Enter a valid easting"), Only6DecimalPlaces()],
     )
     second_coordinate = GovukDecimalField(
         "Northings",
@@ -2677,6 +2690,7 @@ class CartesianCoordinatesForm(StripWhitespaceForm):
             "classes": "govuk-input govuk-input--width-6",
             "attributes": {"pattern": "^-?\\d+(\\.\\d+)?$"},
         },
+        validators=[InputRequired("Enter a valid northing"), Only6DecimalPlaces()],
     )
     radius = GovukDecimalField(
         "Radius",
@@ -2686,15 +2700,19 @@ class CartesianCoordinatesForm(StripWhitespaceForm):
             "attributes": {"pattern": "^-?\\d+(\\.\\d+)?$"},
         },
         validators=[
-            NumberRange(min=0.099, max=38.001, message="Enter a radius between 0.1km and 38.0km."),
-            DataRequired(message="Enter a radius."),
+            NumberRange(min=0.099, max=38.001, message="Enter a radius between 0.1km and 38.0km"),
+            DataRequired(message="Enter a radius"),
             Only2DecimalPlaces(),
         ],
     )
 
     def post_validate(self):
-        if self.errors:
-            return False
+        return not self.errors
+
+    def pre_validate(self, form):
+        self.first_coordinate.validate(form)
+        self.second_coordinate.validate(form)
+        return self.first_coordinate.validate(form) and self.second_coordinate.validate(form)
 
 
 class ChooseCoordinateTypeForm(StripWhitespaceForm):
@@ -2711,5 +2729,5 @@ class ChooseCoordinateTypeForm(StripWhitespaceForm):
                 {"hint": {"text": "For example, 530111, 179963."}},
             ],
         },
-        validators=[DataRequired(message="Select which type of coordinates you'd like to use.")],
+        validators=[DataRequired(message="Select which type of coordinates you'd like to use")],
     )
