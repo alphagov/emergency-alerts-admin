@@ -274,7 +274,6 @@ class BroadcastMessage(JSONModel):
     def add_custom_areas(self, *circle_polygon, id):
         simple_polygons = list(circle_polygon)
         area_to_get_params = CustomBroadcastArea(name="", polygons=simple_polygons)
-        bleed = area_to_get_params.estimated_bleed_in_m
         if local_authority := area_to_get_params.local_authority:
             if local_authority.endswith(", City of"):
                 id = f"{id}, in City of {local_authority[:-9]}"
@@ -295,7 +294,6 @@ class BroadcastMessage(JSONModel):
             broadcast_message_api_client.update_broadcast_message(
                 broadcast_message_id=self.id, service_id=self.service_id, data=data
             )
-        return bleed
 
     def remove_area(self, area_id):
         self.area_ids = list(set(self._dict["areas"]["ids"]) - {area_id})
