@@ -47,8 +47,9 @@
 
 {% block maincolumn_content %}
   <div class="{% if show_error %}form-group-error{% endif %}">
-    {{ page_header("Choose alert area") }}
-
+    <h1 class="heading-large heading-large-no-margin-top">
+      Choose alert area
+    </h1>
     {% if not show_error %}
       {{ errorSummary(form) }}
     {% else %}
@@ -80,14 +81,14 @@
             {% if bleed %}
               {{ govukButton({
                 "text": "Preview alert",
-                "classes": "govuk-button search-postcode-margin-left notify-simple-search-form__button",
+                "classes": "govuk-button",
                 "name": "preview",
                 "value": True
               }) }}
             {% else %}
               {{ govukButton({
                 "text": "Preview alert",
-                "classes": "govuk-button search-postcode-margin-left",
+                "classes": "govuk-button",
                 "disabled": true,
                 "name": "preview"
               }) }}
