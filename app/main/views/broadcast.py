@@ -1,9 +1,4 @@
-import pyproj
 from flask import abort, flash, jsonify, redirect, render_template, request, url_for
-from postcode_validator.uk.uk_postcode_validator import UKPostcode
-from shapely import Point
-from shapely.geometry import Polygon
-from shapely.ops import unary_union
 
 from app import current_service
 from app.broadcast_areas.models import CustomBroadcastAreas
@@ -22,6 +17,24 @@ from app.main.forms import (
 )
 from app.models.broadcast_message import BroadcastMessage, BroadcastMessages
 from app.utils import service_has_permission
+from app.utils.broadcast import (
+    all_fields_empty,
+    check_coordinates_valid_for_enclosed_polygons,
+    create_coordinate_area,
+    create_coordinate_area_id,
+    create_custom_area_polygon,
+    create_postcode_area_id,
+    create_postcode_db_id,
+    extract_attributes_from_custom_area,
+    get_centroid,
+    normalising_point,
+    parse_coordinate_form_data,
+    postcode_in_db,
+    preview_button_clicked,
+    render_postcode_page,
+    valid_postcode_and_radius_entered,
+    valid_postcode_entered,
+)
 from app.utils.user import user_has_permissions
 
 
@@ -318,48 +331,56 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
         )
     elif library_slug == "postcodes":
         form = PostcodeForm()
-        marker = None
-        bleed = None
-        centroid = None
-        if request.method == "POST":
-            if request.form.get("search_btn") and form.postcode.validate(form):
-                broadcast_message.clear_areas()
-                postcode_formatted = UKPostcode(form.data["postcode"]).postcode
-                postcode = f"postcodes-{postcode_formatted}"
-                try:
-                    area = BroadcastMessage.libraries.get_areas([postcode])[0]
-                    polygons = area.polygons[0]
-                    centroid = Polygon(polygons).centroid
-                    x, y = centroid.x, centroid.y
-                    marker = [y, x]
-                except IndexError:
-                    form.postcode.errors.append("Postcode not found. Enter a valid postcode.")
-            elif request.form.get("radius_btn"):
-                if form.validate_on_submit():
-                    broadcast_message, centroid, bleed = redirect_to_postcode_map(
-                        service_id, broadcast_message_id, form
-                    )
-                    if centroid is not None:
-                        x, y = centroid.x, centroid.y
-                        marker = [y, x]
-                    form.post_validate()
-        # Ensuring latest areas will display on map
-        broadcast_message = BroadcastMessage.from_id(
-            broadcast_message_id,
-            service_id=current_service.id,
+        centroid, bleed, estimated_area, estimated_area_with_bleed, count_of_phones, count_of_phones_likely = (
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
         )
 
-        return render_template(
-            "views/broadcast/search-postcodes.html",
-            broadcast_message=broadcast_message,
-            page_title="Choose alert area",
-            back_link=url_for(
-                ".choose_broadcast_library", service_id=service_id, broadcast_message_id=broadcast_message_id
-            ),
-            form=form,
-            marker=marker,
-            bleed=bleed or None,
-            centroid=[centroid.y, centroid.x] if centroid else None,
+        if all_fields_empty(request, form):
+            form.validate_on_submit()
+        elif valid_postcode_entered(request, form):
+            broadcast_message.clear_areas()
+            postcode = create_postcode_db_id(form)
+            try:
+                area = BroadcastMessage.libraries.get_areas([postcode])[0]
+                centroid = get_centroid(area)
+            except IndexError:
+                form.postcode.errors.append("Postcode not found. Enter a valid postcode.")
+        elif valid_postcode_and_radius_entered(request, form):
+            centroid, circle_polygon = create_custom_area_polygon(broadcast_message, form)
+            if postcode_in_db(form):
+                (
+                    bleed,
+                    estimated_area,
+                    estimated_area_with_bleed,
+                    count_of_phones,
+                    count_of_phones_likely,
+                ) = extract_attributes_from_custom_area(circle_polygon)
+                id = create_postcode_area_id(form)
+                if preview_button_clicked(request):
+                    broadcast_message.add_custom_areas(circle_polygon, id=id)
+                    return redirect(
+                        url_for(
+                            ".preview_broadcast_message",
+                            service_id=current_service.id,
+                            broadcast_message_id=broadcast_message.id,
+                        )
+                    )
+        return render_postcode_page(
+            service_id,
+            broadcast_message_id,
+            broadcast_message,
+            form,
+            centroid,
+            bleed,
+            estimated_area,
+            estimated_area_with_bleed,
+            count_of_phones,
+            count_of_phones_likely,
         )
 
     if library.is_group:
@@ -410,48 +431,6 @@ def _get_broadcast_sub_area_back_link(service_id, broadcast_message_id, library_
         )
 
 
-def redirect_to_postcode_map(service_id, broadcast_message_id, form: PostcodeForm):
-    broadcast_message = BroadcastMessage.from_id(
-        broadcast_message_id,
-        service_id=current_service.id,
-    )
-    bleed = None
-    centroid = None
-    postcode_formatted = UKPostcode(form.data["postcode"]).postcode
-    postcode = f"postcodes-{postcode_formatted}"
-    try:
-        area = BroadcastMessage.libraries.get_areas([postcode])[0]
-        radius_to_min_sig_figs = "{:g}".format(float(form.data["radius"]))
-        circle_id = f"{radius_to_min_sig_figs}km around the postcode {postcode_formatted}"
-
-        centroid = get_centroid(area)
-        circle_polygon = create_circle(centroid, float(form.data["radius"]) * 1000)
-
-        bleed = broadcast_message.add_custom_areas(circle_polygon, id=circle_id)
-    except IndexError:
-        form.postcode.errors.append("Postcode not found. Enter a valid postcode.")
-    return broadcast_message, centroid, bleed
-
-
-def get_centroid(area):
-    polygons = area.polygons[0]
-    return Polygon(polygons).centroid
-
-
-def create_circle(center, radius):
-    crs_4326 = pyproj.CRS("EPSG:4326")
-    crs_normalized = pyproj.CRS(proj="aeqd", datum="WGS84", lat_0=center.y, lon_0=center.x)
-
-    transformer = pyproj.Transformer.from_crs(crs_4326, crs_normalized)
-    transformer_inverse = pyproj.Transformer.from_crs(crs_normalized, crs_4326)
-
-    normalized_center = Point(transformer.transform(center.y, center.x))
-    circle = normalized_center.buffer(radius)
-    xx, yy = circle.exterior.coords.xy
-    xx_wgs84, yy_wgs84 = transformer_inverse.transform(xx, yy)
-    return [[lat, lon] for lat, lon in zip(xx_wgs84, yy_wgs84)]
-
-
 @main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/remove_custom/<postcode_slug>")
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
@@ -477,146 +456,114 @@ def remove_postcode_area(service_id, broadcast_message_id, postcode_slug):
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
 def search_coordinates(service_id, broadcast_message_id, library_slug, coordinate_type):
-    polygon = None
-    bleed = None
+    (
+        polygon,
+        bleed,
+        estimated_area,
+        estimated_area_with_bleed,
+        count_of_phones,
+        count_of_phones_likely,
+        marker,
+        show_error,
+    ) = (
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        False,
+    )
     broadcast_message = BroadcastMessage.from_id(
         broadcast_message_id,
         service_id=current_service.id,
     )
-    marker = None
     if coordinate_type == "decimal":
         form = DecimalCoordinatesForm()
     elif coordinate_type == "cartesian":
         form = CartesianCoordinatesForm()
-    if request.method == "POST" and (form.first_coordinate.validate(form) and form.second_coordinate.validate(form)):
+
+    if (
+        request.method == "POST"
+        and form.data["radius"] is None
+        and (form.data["first_coordinate"] is None or form.data["second_coordinate"] is None)
+    ):
+        form.validate_on_submit()
+    elif request.method == "POST" and form.data["radius"] is None and form.pre_validate(form):
         first_coordinate = float(form.data["first_coordinate"])
         second_coordinate = float(form.data["second_coordinate"])
+        in_enclosed_polygons = check_coordinates_valid_for_enclosed_polygons(
+            broadcast_message,
+            first_coordinate,
+            second_coordinate,
+            coordinate_type,
+        )
+        broadcast_message.clear_areas()
+        if not in_enclosed_polygons:  # if coordinate not in either UK or test area
+            form.form_errors.append("Invalid coordinates.")
+            show_error = True
+        else:  # if in either test area or UK, plot the marker
+            Point = normalising_point(first_coordinate, second_coordinate, coordinate_type)
+            marker = [Point.y, Point.x]
+    elif request.method == "POST" and form.data["radius"] is not None and form.validate_on_submit():
+        first_coordinate, second_coordinate, radius = parse_coordinate_form_data(form)
+        if in_enclosed_polygons := check_coordinates_valid_for_enclosed_polygons(
+            broadcast_message,
+            first_coordinate,
+            second_coordinate,
+            coordinate_type,
+        ):
+            if polygon := create_coordinate_area(
+                first_coordinate,
+                second_coordinate,
+                radius,
+                coordinate_type,
+            ):
+                form.form_errors = []
+                id = create_coordinate_area_id(coordinate_type, first_coordinate, second_coordinate, radius)
+                (
+                    bleed,
+                    estimated_area,
+                    estimated_area_with_bleed,
+                    count_of_phones,
+                    count_of_phones_likely,
+                ) = extract_attributes_from_custom_area(polygon)
 
-        if request.form.get("search_btn"):
-            in_test_polygon = check_coordinates_valid_for_enclosed_polygon(
-                broadcast_message,
-                first_coordinate,
-                second_coordinate,
-                coordinate_type,
-                "UK",
-            )
-            in_uk_polygon = check_coordinates_valid_for_enclosed_polygon(
-                broadcast_message,
-                first_coordinate,
-                second_coordinate,
-                coordinate_type,
-                "test",
-            )
+        else:
+            form.form_errors.append("Invalid coordinates.")
+            show_error = True
             broadcast_message.clear_areas()
-            if not (in_test_polygon or in_uk_polygon):  # if coordinate not in either UK or test area
-                form.form_errors.append("Invalid coordinates.")
-            else:  # if in either test area or UK, plot the marker
-                Point = normalising_point(first_coordinate, second_coordinate, coordinate_type)
-                marker = [Point.y, Point.x]
-        elif request.form.get("radius_btn"):  # if add radius button clicked
-            if form.validate_on_submit():
-                radius = float(form.data["radius"])
-                in_test_polygon = check_coordinates_valid_for_enclosed_polygon(
-                    broadcast_message,
-                    first_coordinate,
-                    second_coordinate,
-                    coordinate_type,
-                    "UK",
+        if request.form.get("preview"):
+            broadcast_message.add_custom_areas(polygon, id=id)
+            return redirect(
+                url_for(
+                    ".preview_broadcast_message",
+                    service_id=current_service.id,
+                    broadcast_message_id=broadcast_message.id,
                 )
-                in_uk_polygon = check_coordinates_valid_for_enclosed_polygon(
-                    broadcast_message,
-                    first_coordinate,
-                    second_coordinate,
-                    coordinate_type,
-                    "test",
-                )
-                if not (in_test_polygon or in_uk_polygon):
-                    form.form_errors.append("Invalid coordinates.")
-                    broadcast_message.clear_areas()
-                else:
-                    if polygon := create_coordinate_area(
-                        first_coordinate,
-                        second_coordinate,
-                        radius,
-                        coordinate_type,
-                    ):
-                        form.form_errors = []
-                        radius_min_sig_figs = "{:g}".format(radius)
-                        id = f"{radius_min_sig_figs}km around "
-                        if coordinate_type == "decimal":
-                            id = f"{id}{first_coordinate} latitude, {second_coordinate} longitude"
-                        elif coordinate_type == "cartesian":
-                            id = f"{id}the easting of {first_coordinate} and the northing of {second_coordinate}"
-                    bleed = broadcast_message.add_custom_areas(polygon, id=id)
-
-    broadcast_message = BroadcastMessage.from_id(
-        broadcast_message_id,
-        service_id=current_service.id,
-    )
+            )
     return render_template(
         "views/broadcast/search-coordinates.html",
         page_title="Choose a coordinate area",
         broadcast_message=broadcast_message,
         back_link=url_for(
-            ".choose_broadcast_library", service_id=service_id, broadcast_message_id=broadcast_message_id
+            ".choose_broadcast_area",
+            service_id=service_id,
+            broadcast_message_id=broadcast_message_id,
+            library_slug="coordinates",
         ),
         form=form,
+        show_error=show_error,
         coordinate_type=coordinate_type,
-        marker=marker or None,
-        bleed=bleed or None,
-        centroid=None,
+        marker=marker,
+        bleed=bleed,
+        estimated_area=estimated_area,
+        estimated_area_with_bleed=estimated_area_with_bleed,
+        count_of_phones=count_of_phones,
+        count_of_phones_likely=count_of_phones_likely,
+        centroid=marker,
     )
-
-
-def create_coordinate_area(lat, lng, radius, type):
-    radius *= 1000
-    if type == "cartesian":
-        crs_4326 = pyproj.CRS("EPSG:4326")
-        crs_normalized = pyproj.CRS("EPSG:27700")
-        transformer_inverse = pyproj.Transformer.from_crs(crs_normalized, crs_4326)
-        normalized_center = Point(lat, lng)
-    elif type == "decimal":
-        crs_4326 = pyproj.CRS("EPSG:4326")
-        crs_normalized = pyproj.CRS(proj="aeqd", datum="WGS84", lat_0=lat, lon_0=lng)
-        transformer = pyproj.Transformer.from_crs(crs_4326, crs_normalized)
-        transformer_inverse = pyproj.Transformer.from_crs(crs_normalized, crs_4326)
-        normalized_center = Point(transformer.transform(lat, lng))
-    circle = normalized_center.buffer(radius)
-    xx, yy = circle.exterior.coords.xy
-    xx_wgs84, yy_wgs84 = transformer_inverse.transform(xx, yy)
-    return [[lat, lon] for lat, lon in zip(xx_wgs84, yy_wgs84)]
-
-
-def check_coordinates_valid_for_enclosed_polygon(message, lat, lng, type, polygon):
-    if polygon == "UK":
-        areas = message.libraries.get_areas(
-            ["ctry19-E92000001", "ctry19-N92000002", "ctry19-S92000003", "ctry19-W92000004"]
-        )
-    elif polygon == "test":
-        areas = message.libraries.get_areas(
-            [
-                "test-santa-claus-village-rovaniemi-a",
-                "test-santa-claus-village-rovaniemi-b",
-                "test-santa-claus-village-rovaniemi-c",
-                "test-santa-claus-village-rovaniemi-d",
-            ]
-        )
-    polygons = [Polygon(area.polygons.as_coordinate_pairs_long_lat[0]) for area in areas]
-    combined_polygon = unary_union(polygons)
-    normalized_center = normalising_point(lat, lng, type)
-    return combined_polygon.contains(normalized_center)
-
-
-def normalising_point(lat, lng, type):
-    if type == "cartesian":
-        crs_4326 = pyproj.CRS("EPSG:4326")
-        crs_normalized = pyproj.CRS("EPSG:27700")
-        transformer_inverse = pyproj.Transformer.from_crs(crs_normalized, crs_4326)
-        lat, lng = transformer_inverse.transform(lat, lng)
-        normalized_center = Point(lng, lat)
-    elif type == "decimal":
-        normalized_center = Point(lng, lat)
-    return normalized_center
 
 
 @main.route(
