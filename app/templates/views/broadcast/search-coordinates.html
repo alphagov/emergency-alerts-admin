@@ -1,8 +1,8 @@
 {% extends "withoutnav_template.html" %}
+{% from "components/page-header.html" import page_header %}
 {% from "components/banner.html" import banner_wrapper %}
 {% from "components/form.html" import form_wrapper %}
 {% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
-{% from "components/page-header.html" import page_header %}
 {% from "components/page-footer.html" import page_footer %}
 {% from "views/broadcast/macros/area-map.html" import map %}
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
@@ -37,67 +37,66 @@
   {% set label2 = 'Northings' %}
 {% endif %}
 
-{% if broadcast_message.areas %}
-  {% set label = "Map of the United Kingdom, showing "+broadcast_message.areas[0].name%}
-{% else %}
-  {% set label = "Map of the United Kingdom, showing no areas" %}
-{% endif %}
-
 {% set radius = form.radius.value %}
 
+{% if bleed %}
+  {% set method = 'radius' %}
+{% else %}
+  {% set method = 'search' %}
+{% endif %}
+
 {% block maincolumn_content %}
-  {{ page_header("Choose alert area") }}
-  {{ errorSummary(form) }}
-  {% call form_wrapper() %}
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <div style="display: flex; align-items:center; justify-content:space-between">
-        {{ form.first_coordinate(param_extensions={
-          "label": {"text": label1},
-        }) }}
-        {{ form.second_coordinate(param_extensions={
-          "label": {"text": label2},
-        }) }}
-        {{ govukButton({
-          "classes": "notify-simple-search-form__button govuk-button--secondary margin",
-          "html": "Search",
-          "name": 'search_btn',
-          "value": True
-        }) }}
-        {{ form.radius}}
-        {{ govukButton({
-          "classes": "notify-simple-search-form__button govuk-button--secondary margin",
-          "html": "Add radius",
-          "name": 'radius_btn',
-          "value": True
-        }) }}
-        {% if broadcast_message.areas %}
-          {{ govukButton({
-            "element": "a",
-            "text": "Preview alert",
-            "href": url_for('.preview_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
-            "classes": "govuk-button",
-          }) }}
-        {% else %}
-          {{ govukButton({
-            "text": "Preview alert",
-            "classes": "govuk-button",
-            "disabled": true
-          }) }}
-      {% endif %}
-      </div>
-  {% endcall %}
+  <div class="{% if show_error %}form-group-error{% endif %}">
+    {{ page_header("Choose alert area") }}
 
-  {% if broadcast_message.areas %}
-    <div>
-      <ul class="area-list">
-        {% for area in broadcast_message.areas %}
-          <li class="area-list-item govuk-visually-hidden">
-            {{area.name}}
-          </li>
-        {% endfor %}
-      </ul>
-    </div>
-  {% endif %}
-  {{ map(broadcast_message, label, True) }}
+    {% if not show_error %}
+      {{ errorSummary(form) }}
+    {% else %}
+      <p id="content-error" class="govuk-error-message" data-notify-module="track-error" data-error-type="Coordinates entered are not within UK. Enter valid coordinates" data-error-label="area">
+        <span class="govuk-visually-hidden">Error:</span> Coordinates entered are not within UK. Enter valid coordinates
+      </p>
+    {% endif %}
+    {% call form_wrapper() %}
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div style="display: flex; align-items:center; justify-content:space-between">
+          {{ form.first_coordinate(param_extensions={
+            "label": {"text": label1},
+          }) }}
+          {{ form.second_coordinate(param_extensions={
+            "label": {"text": label2},
+          }) }}
+          {{ govukButton({
+            "classes": "notify-simple-search-form__button govuk-button--secondary margin",
+            "html": "Search",
+            "name": 'search_btn',
+          }) }}
+          {{ form.radius}}
+          {{ govukButton({
+            "classes": "notify-simple-search-form__button govuk-button--secondary margin",
+            "html": "Add radius",
+            "name": 'radius_btn',
+          }) }}
+          <div>
+            {% if bleed %}
+              {{ govukButton({
+                "text": "Preview alert",
+                "classes": "govuk-button search-postcode-margin-left notify-simple-search-form__button",
+                "name": "preview",
+                "value": True
+              }) }}
+            {% else %}
+              {{ govukButton({
+                "text": "Preview alert",
+                "classes": "govuk-button search-postcode-margin-left",
+                "disabled": true,
+                "name": "preview"
+              }) }}
+            {% endif %}
+          </div>
+        </div>
+    {% endcall %}
+  </div>
 
+  <ul class="area-list"></ul>
+  {{ map(estimated_area, estimated_area_with_bleed, count_of_phones, count_of_phones_likely, True, "Map of the United Kingdom, showing no areas") }}
 {% endblock %}

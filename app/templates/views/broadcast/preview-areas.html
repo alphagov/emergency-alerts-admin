@@ -62,7 +62,7 @@
       }) }}
     </div>
 
-    {{ map(broadcast_message, label, is_custom_broadcast) }}
+    {{ map(broadcast_message.simple_polygons.estimated_area, broadcast_message.simple_polygons_with_bleed.estimated_area, broadcast_message.count_of_phones, broadcast_message.count_of_phones_likely, is_custom_broadcast, label) }}
     {{ govukButton({
       "element": "a",
       "text": "Preview alert",

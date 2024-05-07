@@ -29,47 +29,49 @@
   {{ govukBackLink({ "href": back_link }) }}
 {% endblock %}
 
-{% if broadcast_message.areas %}
-  {% set label = "Map of the United Kingdom, showing "+broadcast_message.areas[0].name%}
+{% set radius = form.radius.value %}
+{% set postcode = form.postcode.value %}
+
+{% if bleed %}
+  {% set method = 'radius' %}
 {% else %}
-  {% set label = "Map of the United Kingdom, showing no areas" %}
+  {% set method = 'search' %}
 {% endif %}
 
-{% set radius = form.radius.value %}
 
 {% block maincolumn_content %}
-  {{ page_header("Choose alert area") }}
+  <h1 class="heading-large heading-large-no-margin-top">
+    Choose alert area
+  </h1>
   {{ errorSummary(form) }}
   {% call form_wrapper() %}
     <div class="search-postcode-form">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            {{ form.postcode }}
-            <div class="search-postcode-margin-left">
-              {{ govukButton({
-                "classes": "notify-simple-search-form__button search-postcode-button govuk-button--secondary",
-                "html": "Search <span class=\"govuk-visually-hidden\">for areas</span>",
-                "name": "search_btn",
-                "value": True
-              }) }}
-            </div>
-          <div class="search-postcode-margin-left">
-            {{ form.radius}}
-          </div>
-          <div class="search-postcode-margin-left">
-            {{ govukButton({
-              "classes": "notify-simple-search-form__button search-postcode-button govuk-button--secondary",
-              "html": "Add radius",
-              "name": "radius_btn",
-              "value": True
-            }) }}
-          </div>
-          {% if broadcast_message.areas %}
+      {{ form.postcode }}
+      <div class="search-postcode-margin-left">
+        {{ govukButton({
+          "classes": "notify-simple-search-form__button search-postcode-button govuk-button--secondary",
+          "html": "Search <span class=\"govuk-visually-hidden\">for areas</span>",
+          "name": "search_btn",
+        }) }}
+      </div>
+      <div class="search-postcode-margin-left">
+        {{ form.radius}}
+      </div>
+      <div class="search-postcode-margin-left">
+        {{ govukButton({
+          "classes": "notify-simple-search-form__button search-postcode-button govuk-button--secondary",
+          "html": "Add radius",
+          "name": "radius_btn",
+        }) }}
+      </div>
+      <div>
+        {% if bleed %}
           {{ govukButton({
-            "element": "a",
             "text": "Preview alert",
-            "href": url_for('.preview_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
-            "classes": "govuk-button search-postcode-margin-left",
-            "name": "preview"
+            "classes": "govuk-button search-postcode-margin-left notify-simple-search-form__button",
+            "name": "preview",
+            "value": True
           }) }}
         {% else %}
           {{ govukButton({
@@ -79,21 +81,12 @@
             "name": "preview"
           }) }}
         {% endif %}
+      </div>
     </div>
-{% endcall %}
+  {% endcall %}
 
-{% if broadcast_message.areas %}
-  <div>
-    <ul class="area-list">
-      {% for area in broadcast_message.areas %}
-        <li class="area-list-item govuk-visually-hidden">
-          {{area.name}}
-        </li>
-      {% endfor %}
-    </ul>
-  </div>
-{% endif %}
+  <ul class="area-list"></ul>
 
-{{ map(broadcast_message, label, True) }}
+  {{ map(estimated_area, estimated_area_with_bleed, count_of_phones, count_of_phones_likely, True, "Map of the United Kingdom, showing no areas") }}
 
 {% endblock %}

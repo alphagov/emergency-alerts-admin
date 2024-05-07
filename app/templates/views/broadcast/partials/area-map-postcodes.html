@@ -5,24 +5,15 @@
 
   let pinpoint
   let circle
-  let has_areas = false
-  let has_marker = false
   const markerIcon = L.icon({
     iconUrl:"{{ asset_url('images/marker-icon.png') }}",
     iconSize: [30, 30],
   });
 
-  {% if broadcast_message.areas %}
-    has_areas = true
-  {% endif %}
-
-  {% if marker %}
-    has_marker = true
-  {% endif %}
-
   let mapElement = document.getElementById('area-list-map');
   mapElement.style.height = Math.max(400, window.innerHeight - mapElement.offsetTop - 100) + 'px';
-  let radius = document.getElementById('radius');
+  let radius = document.getElementById('radius').value;
+  let area_list = document.querySelector('.area-list');
 
   function getCoordinateType() {
     const pageUrl = window.location.href;
@@ -68,13 +59,39 @@
     })
   }
 
-  let mymap = L.map(
-  'area-list-map',
-  {
-    scrollWheelZoom: false,
-    editable: true
-
+  function createCoordinateAreaLabel(coordinate_type, radius, first_coordinate, second_coordinate) {
+    radius = radius / 1000;
+    if (coordinate_type == 'decimal') {
+      label =  "Map of the United Kingdom, showing an area of "+radius+"km around the latitude "+parseFloat(first_coordinate).toFixed(2)+", longitude "+parseFloat(second_coordinate).toFixed(2)
+    } else if (coordinate_type == 'cartesian') {
+      cartesian =  latLngToEastingsNorthings(first_coordinate, second_coordinate)
+      label =  "Map of the United Kingdom, showing an area of "+radius+"km around the easting of "+ cartesian.easting.toFixed(0) + ", northing of " + cartesian.northing.toFixed(0)
+    }
+    appendAreaToAreaList(label);
+    mapElement.setAttribute('aria-label', label);
   }
+
+  function createPostcodeAreaLabel(radius) {
+    radius = radius / 1000;
+    let postcode = document.getElementById('postcode').value;
+    label =  "Map of the United Kingdom, showing an area of "+radius+"km around the postcode "+postcode.toUpperCase()
+    mapElement.setAttribute('aria-label', label);
+    appendAreaToAreaList(label);
+  }
+
+  function appendAreaToAreaList(label) {
+    let li = document.createElement("li");
+    li.classList.add("area-list-item");
+    li.classList.add("govuk-visually-hidden");
+    li.textContent = label;
+    area_list.appendChild(li);
+  }
+
+  let mymap = L.map(
+    'area-list-map',
+    {
+      scrollWheelZoom: false
+    }
   )
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -82,27 +99,31 @@
 
 
   mymap.setView(
-      [55.378052, -3.435973],
-      5
-    );
+    [55.378052, -3.435973],
+    5
+  );
 
-  if (has_areas) {
-    radius_value = radius.value * 1000;
+
+  if ("{{method}}" == 'radius') {
+    radius_value = radius * 1000;
     bleed_radius = radius_value + {{bleed}};
     type = getCoordinateType();
     if (type == 'postcode') {
-      circle = createAreaCircle({{centroid}}, radius.value * 1000);
+      circle = createAreaCircle({{centroid}}, radius_value);
       bleed_circle = createBleedCircle({{centroid}}, bleed_radius);
       pinpoint = L.marker({{centroid}}, {icon: markerIcon});
+      createPostcodeAreaLabel(radius_value);
     } else if (type == 'decimal'){
       circle = createAreaCircle([first_coordinate.value, second_coordinate.value], radius_value);
       bleed_circle = createBleedCircle([first_coordinate.value, second_coordinate.value], bleed_radius);
       pinpoint = L.marker([first_coordinate.value, second_coordinate.value], {icon: markerIcon});
+      createCoordinateAreaLabel('decimal', radius_value, first_coordinate.value, second_coordinate.value);
     } else if (type == 'cartesian'){
       latlngs = eastingsNorthingsToLatLng(parseFloat(first_coordinate.value), parseFloat(second_coordinate.value));
       circle = createAreaCircle([latlngs.lat, latlngs.lng], radius_value);
       bleed_circle = createBleedCircle([latlngs.lat, latlngs.lng], bleed_radius);
       pinpoint = L.marker([latlngs.lat, latlngs.lng], {icon: markerIcon});
+      createCoordinateAreaLabel('cartesian', radius_value, latlngs.lat, latlngs.lng);
     }
     bleed_circle.addTo(mymap);
     circle.addTo(mymap);
@@ -111,8 +132,9 @@
       bleed_circle.getBounds(),
       {padding: [1, 1]}
     );
-  } else if (has_marker) {
-    pinpoint = L.marker({{marker}}, {icon: markerIcon});
+
+  } else if ("{{method}}" == 'search') {
+    pinpoint = L.marker({{centroid}}, {icon: markerIcon});
     pinpoint.addTo(mymap);
     mymap.setView(pinpoint.getLatLng(), 13);
   }
