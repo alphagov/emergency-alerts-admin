@@ -19,7 +19,6 @@ class TemplatePreview:
             "letter_contact_block": template.get("reply_to_text", ""),
             "template": template,
             "values": values,
-            "filename": "dummy",
         }
         resp = requests.post(
             "{}/preview.{}{}".format(
