@@ -1302,7 +1302,7 @@ def test_choose_broadcast_library_page_with_custom_broadcast(
     assert [normalize_spaces(title.text) for title in page.select("main a.govuk-link")] == expected_list
 
     assert normalize_spaces(page.select(".file-list-hint-large")[0].text) == (
-        "Use coordinates to create an alert area."
+        "England, Northern Ireland, Scotland and Wales"
     )
 
     assert page.select_one("a.file-list-filename-large.govuk-link")["href"] == url_for(
@@ -1364,7 +1364,6 @@ def test_suggested_area_has_correct_link(
             "Choose test areas",
         ),
         ("postcodes", "Choose alert area"),
-        ("coordinates", "Choose coordinates type"),
     ),
 )
 def test_choose_broadcast_area_page_titles(
