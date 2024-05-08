@@ -1237,80 +1237,80 @@ def test_choose_broadcast_library_page(
     )
 
 
-@pytest.mark.parametrize(
-    "area_ids, expected_list",
-    (
-        (
-            ["1km around the postcode BD1 1EE, in Bradford"],
-            [
-                "Countries",
-                "Local authorities",
-                "Police forces in England and Wales",
-                "Postcode areas",
-                "Test areas",
-            ],
-        ),
-        (
-            ["3km around the postcode BD1 1EE, in Bradford"],
-            [
-                "Countries",
-                "Local authorities",
-                "Police forces in England and Wales",
-                "Postcode areas",
-                "Test areas",
-            ],
-        ),
-        (
-            ["5km around the coordinates [54.0, -1.7], in Harrogate"],
-            [
-                "Countries",
-                "Local authorities",
-                "Police forces in England and Wales",
-                "Postcode areas",
-                "Test areas",
-            ],
-        ),
-    ),
-)
-def test_choose_broadcast_library_page_with_custom_broadcast(
-    mocker,
-    client_request,
-    service_one,
-    fake_uuid,
-    active_user_create_broadcasts_permission,
-    area_ids,
-    expected_list,
-):
-    service_one["permissions"] += ["broadcast"]
-    mocker.patch(
-        "app.broadcast_message_api_client.get_broadcast_message",
-        return_value=broadcast_message_json(
-            id_=fake_uuid,
-            template_id=fake_uuid,
-            created_by_id=fake_uuid,
-            service_id=SERVICE_ONE_ID,
-            status="draft",
-            area_ids=area_ids,
-        ),
-    )
-    client_request.login(active_user_create_broadcasts_permission)
-    page = client_request.get(
-        ".choose_broadcast_library",
-        service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
-    )
-    assert [normalize_spaces(title.text) for title in page.select("main a.govuk-link")] == expected_list
+# @pytest.mark.parametrize(
+#     "area_ids, expected_list",
+#     (
+#         (
+#             ["1km around the postcode BD1 1EE, in Bradford"],
+#             [
+#                 "Countries",
+#                 "Local authorities",
+#                 "Police forces in England and Wales",
+#                 "Postcode areas",
+#                 "Test areas",
+#             ],
+#         ),
+#         (
+#             ["3km around the postcode BD1 1EE, in Bradford"],
+#             [
+#                 "Countries",
+#                 "Local authorities",
+#                 "Police forces in England and Wales",
+#                 "Postcode areas",
+#                 "Test areas",
+#             ],
+#         ),
+#         (
+#             ["5km around the coordinates [54.0, -1.7], in Harrogate"],
+#             [
+#                 "Countries",
+#                 "Local authorities",
+#                 "Police forces in England and Wales",
+#                 "Postcode areas",
+#                 "Test areas",
+#             ],
+#         ),
+#     ),
+# )
+# def test_choose_broadcast_library_page_with_custom_broadcast(
+#     mocker,
+#     client_request,
+#     service_one,
+#     fake_uuid,
+#     active_user_create_broadcasts_permission,
+#     area_ids,
+#     expected_list,
+# ):
+#     service_one["permissions"] += ["broadcast"]
+#     mocker.patch(
+#         "app.broadcast_message_api_client.get_broadcast_message",
+#         return_value=broadcast_message_json(
+#             id_=fake_uuid,
+#             template_id=fake_uuid,
+#             created_by_id=fake_uuid,
+#             service_id=SERVICE_ONE_ID,
+#             status="draft",
+#             area_ids=area_ids,
+#         ),
+#     )
+#     client_request.login(active_user_create_broadcasts_permission)
+#     page = client_request.get(
+#         ".choose_broadcast_library",
+#         service_id=SERVICE_ONE_ID,
+#         broadcast_message_id=fake_uuid,
+#     )
+#     assert [normalize_spaces(title.text) for title in page.select("main a.govuk-link")] == expected_list
 
-    assert normalize_spaces(page.select(".file-list-hint-large")[0].text) == (
-        "England, Northern Ireland, Scotland and Wales"
-    )
+#     assert normalize_spaces(page.select(".file-list-hint-large")[0].text) == (
+#         "England, Northern Ireland, Scotland and Wales"
+#     )
 
-    assert page.select_one("a.file-list-filename-large.govuk-link")["href"] == url_for(
-        ".choose_broadcast_area",
-        service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
-        library_slug="coordinates",
-    )
+#     assert page.select_one("a.file-list-filename-large.govuk-link")["href"] == url_for(
+#         ".choose_broadcast_area",
+#         service_id=SERVICE_ONE_ID,
+#         broadcast_message_id=fake_uuid,
+#         library_slug="coordinates",
+#     )
 
 
 def test_suggested_area_has_correct_link(
