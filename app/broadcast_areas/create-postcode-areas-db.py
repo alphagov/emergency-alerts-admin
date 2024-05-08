@@ -90,9 +90,6 @@ def clean_up_invalid_polygons(postcode, polygons, indent="    "):
             # intersection
             fixed_polygon = Polygon(buffered.exterior)
 
-            # Make sure the polygon is now valid, and that we haven’t
-            # drastically transformed the polygon by ‘fixing’ it
-
             print(f"{indent}Polygon {index + 1}/{len(polygons)} fixed!")
 
             yield fixed_polygon
@@ -132,21 +129,26 @@ def polygons_and_simplified_polygons(feature, name, postcode):
         simplified.as_coordinate_pairs_long_lat,
     ]
 
-    # Check that the simplification process hasn’t introduced bad data
+    # Checking that the process hasn`t introduced bad data by
+    # iterating through both the full resolution and simplified polygons.
+    # Firstly checks validity, and if invalid checks whether polygon is Polygon or MultiPolygon
+    # and fixes resulting polygons again by adding another buffer.
+    # Following this another assertion is made that fixed polygons are valid.
+
     for dataset in output:
         for polygon in dataset:
             if not Polygon(polygon).is_valid:
                 buffered = Polygon(polygon).buffer(0)
                 if isinstance(buffered, MultiPolygon):
                     for polygon in list(buffered.geoms):
-                        assert polygon.is_valid
+                        assert polygon.is_valid, f"Polygon in MultiPolygon for {name} is invalid"
                     multipolygons = [[[x, y] for x, y in polygon.exterior.coords] for polygon in list(buffered.geoms)]
                     polygons = Polygons(multipolygons)
                     full = polygons
                     simplified = polygons.smooth.simplify
                 else:
                     fixed_polygon = Polygon(buffered.exterior)
-                    assert fixed_polygon.is_valid
+                    assert fixed_polygon.is_valid, f"Polygon for {name} is invalid"
                     full = Polygons([[[x, y] for x, y in fixed_polygon.exterior.coords]])
                     simplified = Polygons([[[x, y] for x, y in fixed_polygon.exterior.coords]]).smooth.simplify
                 output = [full.as_coordinate_pairs_long_lat, simplified.as_coordinate_pairs_long_lat]
