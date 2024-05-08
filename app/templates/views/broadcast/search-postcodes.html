@@ -1,4 +1,4 @@
-{% extends "withoutnav_template.html" %}
+{% extends "with_template.html" %}
 {% from "components/banner.html" import banner_wrapper %}
 {% from "components/form.html" import form_wrapper %}
 {% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
@@ -40,9 +40,7 @@
 
 
 {% block maincolumn_content %}
-  <h1 class="heading-large heading-large-no-margin-top">
-    Choose alert area
-  </h1>
+  {{ page_header('Choose alert area') }}
   {{ errorSummary(form) }}
   {% call form_wrapper() %}
     <div class="search-postcode-form">
