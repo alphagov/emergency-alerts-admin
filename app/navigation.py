@@ -233,7 +233,6 @@ class MainNavigation(Navigation):
             "service_letter_contact_details",
             "service_make_blank_default_letter_contact",
             "service_name_change",
-            # "service_preview_branding",
             "service_set_auth_type",
             "service_set_channel",
             "send_files_by_email_contact_details",
