@@ -47,7 +47,7 @@
 
 {% block maincolumn_content %}
   <div class="{% if show_error %}form-group-error{% endif %}">
-    {{ page_header('Choose alert area') }}
+    {{ page_header('Choose alert area', classes="heading-no-margin-top") }}
     {% if not show_error %}
       {{ errorSummary(form) }}
     {% else %}
