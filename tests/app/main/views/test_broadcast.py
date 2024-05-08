@@ -1243,7 +1243,6 @@ def test_choose_broadcast_library_page(
         (
             ["1km around the postcode BD1 1EE, in Bradford"],
             [
-                "Coordinates",
                 "Countries",
                 "Local authorities",
                 "Police forces in England and Wales",
@@ -1254,7 +1253,6 @@ def test_choose_broadcast_library_page(
         (
             ["3km around the postcode BD1 1EE, in Bradford"],
             [
-                "Coordinates",
                 "Countries",
                 "Local authorities",
                 "Police forces in England and Wales",
@@ -1265,7 +1263,6 @@ def test_choose_broadcast_library_page(
         (
             ["5km around the coordinates [54.0, -1.7], in Harrogate"],
             [
-                "Coordinates",
                 "Countries",
                 "Local authorities",
                 "Police forces in England and Wales",
