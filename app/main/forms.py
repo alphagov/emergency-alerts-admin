@@ -82,8 +82,6 @@ from app.main.validators import (
 )
 from app.models.feedback import PROBLEM_TICKET_TYPE, QUESTION_TICKET_TYPE
 from app.models.organisation import Organisation
-
-# from app.utils import branding
 from app.utils.govuk_frontend_field import (
     GovukFrontendWidgetMixin,
     render_govuk_frontend_macro,
@@ -2210,61 +2208,6 @@ class ChangeSecurityKeyNameForm(StripWhitespaceForm):
             Length(max=255, message="Name of key must be 255 characters or fewer"),
         ],
     )
-
-
-# def markup_for_crest_or_insignia(filename):
-#     return Markup(
-#         f"""
-#         <img
-#             src="{asset_fingerprinter.get_url(f"images/branding/insignia/{filename}")}"
-#             alt=""
-#             class="email-branding-crest-or-insignia"
-#         >
-#     """
-#     )
-
-
-# def markup_for_coloured_stripe(colour):
-#     return Markup(
-#         f"""
-#         <span
-#             class="email-branding-coloured-stripe"
-#             style="background: {colour};"
-#         ></span>
-#     """
-#     )
-
-
-# class GovernmentIdentityCoatOfArmsOrInsignia(StripWhitespaceForm):
-#     coat_of_arms_or_insignia = GovukRadiosField(
-#         "Coat of arms or insignia",
-#         choices=[
-#             (name, markup_for_crest_or_insignia(f"{name}.png") + name)
-#             for name in sorted(GOVERNMENT_IDENTITY_SYSTEM_CRESTS_OR_INSIGNIA)
-#         ],
-#         thing="a coat of arms or insignia",
-#     )
-
-
-# class GovernmentIdentityColour(StripWhitespaceForm):
-#     def __init__(self, *args, crest_or_insignia_image_filename, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         self.colour.choices = [
-#             (
-#                 colour,
-#                 (
-#                     markup_for_coloured_stripe(colour)
-#                     + markup_for_crest_or_insignia(crest_or_insignia_image_filename)
-#                     + name
-#                 ),
-#             )
-#             for name, colour in GOVERNMENT_IDENTITY_SYSTEM_COLOURS.items()
-#         ]
-
-#     colour = GovukRadiosField(
-#         "Colour for stripe",
-#         thing="a colour for the stripe",
-#     )
 
 
 class FindByUuidForm(StripWhitespaceForm):
