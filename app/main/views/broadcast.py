@@ -7,10 +7,8 @@ from app.main.forms import (
     BroadcastAreaForm,
     BroadcastAreaFormWithSelectAll,
     BroadcastTemplateForm,
-    CartesianCoordinatesForm,
     ChooseCoordinateTypeForm,
     ConfirmBroadcastForm,
-    DecimalCoordinatesForm,
     NewBroadcastForm,
     PostcodeForm,
     SearchByNameForm,
@@ -18,8 +16,11 @@ from app.main.forms import (
 from app.models.broadcast_message import BroadcastMessage, BroadcastMessages
 from app.utils import service_has_permission
 from app.utils.broadcast import (
+    all_coordinate_form_fields_empty,
     all_fields_empty,
     check_coordinates_valid_for_enclosed_polygons,
+    coordinates_and_radius_entered,
+    coordinates_entered_but_no_radius,
     create_coordinate_area,
     create_coordinate_area_id,
     create_custom_area_polygon,
@@ -31,7 +32,9 @@ from app.utils.broadcast import (
     parse_coordinate_form_data,
     postcode_in_db,
     preview_button_clicked,
+    render_coordinates_page,
     render_postcode_page,
+    select_coordinate_form,
     valid_postcode_and_radius_entered,
     valid_postcode_entered,
 )
@@ -331,6 +334,7 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
         )
     elif library_slug == "postcodes":
         form = PostcodeForm()
+        # Initialising variables here that may be assigned values, to be then passed into jinja template.
         centroid, bleed, estimated_area, estimated_area_with_bleed, count_of_phones, count_of_phones_likely = (
             None,
             None,
@@ -343,6 +347,11 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
         if all_fields_empty(request, form):
             form.validate_on_submit()
         elif valid_postcode_entered(request, form):
+            """
+            Clears any areas in broadcast message, then creates the ID to search for in SQLite database,
+            if query returns IndexError, the postcode isn't in the database and thus error is appended to
+            postcode field and displayed on the page.
+            """
             broadcast_message.clear_areas()
             postcode = create_postcode_db_id(form)
             try:
@@ -351,8 +360,17 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
             except IndexError:
                 form.postcode.errors.append("Postcode not found. Enter a valid postcode.")
         elif valid_postcode_and_radius_entered(request, form):
+            """
+            If postcode and radius entered, that are validated successfully,
+            custom polygon is created using radius and centroid.
+            """
             centroid, circle_polygon = create_custom_area_polygon(broadcast_message, form)
             if postcode_in_db(form):
+                """
+                If postcode is in database, i.e. creating the Polygon didn't return IndexError,
+                then a dummy CustomBroadcastArea is created and used for the attributes that
+                are required for the Leaflet map, key, number of phones to display etc.
+                """
                 (
                     bleed,
                     estimated_area,
@@ -362,6 +380,10 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
                 ) = extract_attributes_from_custom_area(circle_polygon)
                 id = create_postcode_area_id(form)
                 if preview_button_clicked(request):
+                    """
+                    If 'Preview alert' button is clicked, area is added to Broadcast Message
+                    and message is updated.
+                    """
                     broadcast_message.add_custom_areas(circle_polygon, id=id)
                     return redirect(
                         url_for(
@@ -479,18 +501,19 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
         broadcast_message_id,
         service_id=current_service.id,
     )
-    if coordinate_type == "decimal":
-        form = DecimalCoordinatesForm()
-    elif coordinate_type == "cartesian":
-        form = CartesianCoordinatesForm()
+    form = select_coordinate_form(coordinate_type)
 
-    if (
-        request.method == "POST"
-        and form.data["radius"] is None
-        and (form.data["first_coordinate"] is None or form.data["second_coordinate"] is None)
-    ):
+    if all_coordinate_form_fields_empty(request, form):
+        # If all fields empty then form is validated to render the errors on the page.
         form.validate_on_submit()
-    elif request.method == "POST" and form.data["radius"] is None and form.pre_validate(form):
+    elif coordinates_entered_but_no_radius(request, form):
+        """
+        If only coordinates are entered then they're checked to determine if within
+        either UK or test area. If they are within test or UK, the coordinate point is created
+        and converted accordingly into latitude, longitude format to be passed into jinja
+        and displayed in Leaflet map.
+        Otherwise, an error is displayed on the page.
+        """
         first_coordinate = float(form.data["first_coordinate"])
         second_coordinate = float(form.data["second_coordinate"])
         in_enclosed_polygons = check_coordinates_valid_for_enclosed_polygons(
@@ -501,12 +524,17 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
         )
         broadcast_message.clear_areas()
         if not in_enclosed_polygons:  # if coordinate not in either UK or test area
-            form.form_errors.append("Invalid coordinates.")
             show_error = True
-        else:  # if in either test area or UK, plot the marker
+        else:  # if in either test area or UK, the coordinates are passed into the jinja to be displayed on leaflet map
             Point = normalising_point(first_coordinate, second_coordinate, coordinate_type)
             marker = [Point.y, Point.x]
-    elif request.method == "POST" and form.data["radius"] is not None and form.validate_on_submit():
+    elif coordinates_and_radius_entered(request, form):
+        """
+        If both radius and coordinates entered, then coordinates are checked to determine if within
+        either UK or test area. If they are within test or UK, polygon is created using coordinates and
+        radius. Then a CustomBroadcastArea is created and used for the attributes that
+        are required for the Leaflet map, key, number of phones to display etc.
+        """
         first_coordinate, second_coordinate, radius = parse_coordinate_form_data(form)
         if in_enclosed_polygons := check_coordinates_valid_for_enclosed_polygons(
             broadcast_message,
@@ -520,7 +548,6 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
                 radius,
                 coordinate_type,
             ):
-                form.form_errors = []
                 id = create_coordinate_area_id(coordinate_type, first_coordinate, second_coordinate, radius)
                 (
                     bleed,
@@ -531,10 +558,13 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
                 ) = extract_attributes_from_custom_area(polygon)
 
         else:
-            form.form_errors.append("Invalid coordinates.")
             show_error = True
             broadcast_message.clear_areas()
-        if request.form.get("preview"):
+        if preview_button_clicked(request):
+            """
+            If 'Preview alert' button is clicked, area is added to Broadcast Message
+            and message is updated.
+            """
             broadcast_message.add_custom_areas(polygon, id=id)
             return redirect(
                 url_for(
@@ -543,26 +573,19 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
                     broadcast_message_id=broadcast_message.id,
                 )
             )
-    return render_template(
-        "views/broadcast/search-coordinates.html",
-        page_title="Choose a coordinate area",
-        broadcast_message=broadcast_message,
-        back_link=url_for(
-            ".choose_broadcast_area",
-            service_id=service_id,
-            broadcast_message_id=broadcast_message_id,
-            library_slug="coordinates",
-        ),
-        form=form,
-        show_error=show_error,
-        coordinate_type=coordinate_type,
-        marker=marker,
-        bleed=bleed,
-        estimated_area=estimated_area,
-        estimated_area_with_bleed=estimated_area_with_bleed,
-        count_of_phones=count_of_phones,
-        count_of_phones_likely=count_of_phones_likely,
-        centroid=marker,
+    return render_coordinates_page(
+        service_id,
+        broadcast_message_id,
+        coordinate_type,
+        bleed,
+        estimated_area,
+        estimated_area_with_bleed,
+        count_of_phones,
+        count_of_phones_likely,
+        marker,
+        show_error,
+        broadcast_message,
+        form,
     )
 
 

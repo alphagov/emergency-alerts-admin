@@ -7,7 +7,11 @@ from shapely.ops import unary_union
 
 from app.broadcast_areas.models import CustomBroadcastArea
 from app.formatters import round_to_significant_figures
-from app.main.forms import PostcodeForm
+from app.main.forms import (
+    CartesianCoordinatesForm,
+    DecimalCoordinatesForm,
+    PostcodeForm,
+)
 
 
 def create_coordinate_area_id(coordinate_type, first_coordinate, second_coordinate, radius):
@@ -193,3 +197,64 @@ def render_postcode_page(
 
 def postcode_in_db(form):
     return form.post_validate()
+
+
+def select_coordinate_form(coordinate_type):
+    if coordinate_type == "decimal":
+        form = DecimalCoordinatesForm()
+    elif coordinate_type == "cartesian":
+        form = CartesianCoordinatesForm()
+    return form
+
+
+def all_coordinate_form_fields_empty(request, form):
+    return (
+        request.method == "POST"
+        and form.data["radius"] is None
+        and (form.data["first_coordinate"] is None or form.data["second_coordinate"] is None)
+    )
+
+
+def coordinates_entered_but_no_radius(request, form):
+    return request.method == "POST" and form.data["radius"] is None and form.pre_validate(form)
+
+
+def coordinates_and_radius_entered(request, form):
+    return request.method == "POST" and form.data["radius"] is not None and form.validate_on_submit()
+
+
+def render_coordinates_page(
+    service_id,
+    broadcast_message_id,
+    coordinate_type,
+    bleed,
+    estimated_area,
+    estimated_area_with_bleed,
+    count_of_phones,
+    count_of_phones_likely,
+    marker,
+    show_error,
+    broadcast_message,
+    form,
+):
+    return render_template(
+        "views/broadcast/search-coordinates.html",
+        page_title="Choose a coordinate area",
+        broadcast_message=broadcast_message,
+        back_link=url_for(
+            ".choose_broadcast_area",
+            service_id=service_id,
+            broadcast_message_id=broadcast_message_id,
+            library_slug="coordinates",
+        ),
+        form=form,
+        show_error=show_error,
+        coordinate_type=coordinate_type,
+        marker=marker,
+        bleed=bleed,
+        estimated_area=estimated_area,
+        estimated_area_with_bleed=estimated_area_with_bleed,
+        count_of_phones=count_of_phones,
+        count_of_phones_likely=count_of_phones_likely,
+        centroid=marker,
+    )
