@@ -2348,12 +2348,12 @@ def test_add_cartesian_coordinate_area_to_broadcast(
             ["Enter a value with 6 decimal places", "Enter a value with 2 decimal places"],
         ),
         (
-            {
-                "first_coordinate": "",
-                "second_coordinate": "",
-                "radius": "",
-            },
+            {"first_coordinate": "", "second_coordinate": "", "radius": "", "radius_btn": True},
             ["Enter a valid easting", "Enter a valid northing", "Enter a radius"],
+        ),
+        (
+            {"first_coordinate": "", "second_coordinate": "", "radius": "", "search_btn": True},
+            ["Enter a valid easting", "Enter a valid northing"],
         ),
         (
             {
@@ -2436,12 +2436,12 @@ def test_cartesian_coordinate_area_form_errors(
             ["Enter a value with 6 decimal places", "Enter a value with 2 decimal places"],
         ),
         (
-            {
-                "first_coordinate": "",
-                "second_coordinate": "",
-                "radius": "",
-            },
+            {"first_coordinate": "", "second_coordinate": "", "radius": "", "radius_btn": True},
             ["Enter a valid latitude", "Enter a valid longitude", "Enter a radius"],
+        ),
+        (
+            {"first_coordinate": "", "second_coordinate": "", "radius": "", "search_btn": True},
+            ["Enter a valid latitude", "Enter a valid longitude"],
         ),
         (
             {
@@ -2581,7 +2581,11 @@ def test_non_uk_coordinate_area_form_errors(
     "post_data, expected_errors",
     (
         (
-            {"postcode": "", "radius": ""},
+            {"postcode": "", "radius": "", "search_btn": True},
+            ["Enter a postcode"],
+        ),
+        (
+            {"postcode": "", "radius": "", "radius_btn": True},
             ["Enter a postcode", "Enter a radius"],
         ),
         (

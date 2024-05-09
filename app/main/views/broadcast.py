@@ -37,6 +37,7 @@ from app.utils.broadcast import (
     select_coordinate_form,
     valid_postcode_and_radius_entered,
     valid_postcode_entered,
+    validate_form_based_on_fields_entered,
 )
 from app.utils.user import user_has_permissions
 
@@ -326,7 +327,7 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
 
         return render_template(
             "views/broadcast/choose-coordinates-type.html",
-            page_title="Choose coordinates type",
+            page_title="Choose coordinate type",
             form=form,
             back_link=url_for(
                 ".choose_broadcast_library", service_id=service_id, broadcast_message_id=broadcast_message_id
@@ -345,7 +346,11 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
         )
 
         if all_fields_empty(request, form):
-            form.validate_on_submit()
+            """
+            If no input fields have values then the request will use the button clicked
+            to determine which fields to validate.
+            """
+            validate_form_based_on_fields_entered(request, form)
         elif valid_postcode_entered(request, form):
             """
             Clears any areas in broadcast message, then creates the ID to search for in SQLite database,
@@ -504,8 +509,11 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
     form = select_coordinate_form(coordinate_type)
 
     if all_coordinate_form_fields_empty(request, form):
-        # If all fields empty then form is validated to render the errors on the page.
-        form.validate_on_submit()
+        """
+        If no input fields have values then the request will use the button clicked
+        to determine which fields to validate.
+        """
+        validate_form_based_on_fields_entered(request, form)
     elif coordinates_entered_but_no_radius(request, form):
         """
         If only coordinates are entered then they're checked to determine if within

@@ -55,54 +55,57 @@
         <span class="govuk-visually-hidden">Error:</span> Coordinates entered are not within UK. Enter valid coordinates
       </p>
     {% endif %}
+
     {% call form_wrapper() %}
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <div class="search-coordinates-form">
+      <div class="search-coordinates-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div>
           {{ form.first_coordinate(param_extensions={
             "label": {"text": label1},
           }) }}
-          <div class="mapping-margin-left">
-            {{ form.second_coordinate(param_extensions={
-              "label": {"text": label2},
-            }) }}
-          </div>
-          <div class="mapping-margin-left">
-            {{ govukButton({
-              "classes": "notify-simple-search-form__button govuk-button--secondary",
-              "html": "Search",
-              "name": 'search_btn',
-            }) }}
-          </div>
-          <div class="mapping-margin-left-large">
-            {{ form.radius}}
-          </div>
-          <div class="mapping-margin-left">
-            {{ govukButton({
-              "classes": "notify-simple-search-form__button govuk-button--secondary",
-              "html": "Add radius",
-              "name": 'radius_btn',
-            }) }}
-          </div>
-          <div class="mapping-margin-left">
-            {% if bleed %}
-              {{ govukButton({
-                "text": "Preview alert",
-                "classes": "govuk-button",
-                "name": "preview",
-                "value": True
-              }) }}
-            {% else %}
-              {{ govukButton({
-                "text": "Preview alert",
-                "classes": "govuk-button",
-                "disabled": true,
-                "name": "preview"
-              }) }}
-            {% endif %}
-          </div>
         </div>
-    {% endcall %}
+        <div class="mapping-margin-left">
+          {{ form.second_coordinate(param_extensions={
+            "label": {"text": label2},
+          }) }}
+        </div>
+        <div class="mapping-margin-left">
+          {{ govukButton({
+            "classes": "notify-simple-search-form__button govuk-button--secondary search-postcode-button",
+            "html": "Search",
+            "name": 'search_btn',
+            "value": True
+          }) }}
+        </div>
+        <div class="mapping-margin-left-large">
+          {{ form.radius}}
+        </div>
+        <div class="mapping-margin-left">
+          {{ govukButton({
+            "classes": "notify-simple-search-form__button govuk-button--secondary search-postcode-button",
+            "html": "Add radius",
+            "name": 'radius_btn',
+            "value": True
+          }) }}
+        </div>
+        {% if bleed %}
+          {{ govukButton({
+            "text": "Preview alert",
+            "classes": "govuk-button mapping-margin-left notify-simple-search-form__button",
+            "name": "preview",
+            "value": True
+          }) }}
+        {% else %}
+          {{ govukButton({
+            "text": "Preview alert",
+            "classes": "govuk-button mapping-margin-left notify-simple-search-form__button",
+            "disabled": true,
+            "name": "preview"
+          }) }}
+        {% endif %}
+      </div>
   </div>
+  {% endcall %}
 
   <ul class="area-list"></ul>
   {{ map(estimated_area, estimated_area_with_bleed, count_of_phones, count_of_phones_likely, True, "Map of the United Kingdom, showing no areas") }}

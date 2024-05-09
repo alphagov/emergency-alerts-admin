@@ -258,3 +258,10 @@ def render_coordinates_page(
         count_of_phones_likely=count_of_phones_likely,
         centroid=marker,
     )
+
+
+def validate_form_based_on_fields_entered(request, form):
+    if request.form.get("radius_btn"):
+        form.validate_on_submit()
+    elif request.form.get("search_btn"):
+        form.pre_validate(form)
