@@ -8,8 +8,8 @@ from shapely.ops import unary_union
 from app.broadcast_areas.models import CustomBroadcastArea
 from app.formatters import round_to_significant_figures
 from app.main.forms import (
-    CartesianCoordinatesForm,
-    DecimalCoordinatesForm,
+    EastingNorthingCoordinatesForm,
+    LatitudeLongitudeCoordinatesForm,
     PostcodeForm,
 )
 
@@ -203,9 +203,9 @@ def postcode_in_db(form):
 
 def select_coordinate_form(coordinate_type):
     if coordinate_type == "decimal":
-        form = DecimalCoordinatesForm()
+        form = LatitudeLongitudeCoordinatesForm()
     elif coordinate_type == "cartesian":
-        form = CartesianCoordinatesForm()
+        form = EastingNorthingCoordinatesForm()
     return form
 
 

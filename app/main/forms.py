@@ -2612,9 +2612,9 @@ class PostcodeForm(StripWhitespaceForm):
         return not self.errors and not self.postcode.errors and not self.radius.errors
 
 
-class DecimalCoordinatesForm(StripWhitespaceForm):
+class LatitudeLongitudeCoordinatesForm(StripWhitespaceForm):
     """
-    This form contains the input fields for creation of areas using decimal coordinates i.e. Latitude & longitude.
+    This form contains the input fields for creation of areas using Latitude & longitude coordinates.
     For the first coordinate, latitude, to be valid the value entered must be numeric and between -90 and 90,
     hence the NumberRange validator.
     For the second coordinate, longitude, to be valid the value again must be number and between -180 and 180.
@@ -2669,9 +2669,9 @@ class DecimalCoordinatesForm(StripWhitespaceForm):
         return self.first_coordinate.validate(form) and self.second_coordinate.validate(form)
 
 
-class CartesianCoordinatesForm(StripWhitespaceForm):
+class EastingNorthingCoordinatesForm(StripWhitespaceForm):
     """
-    This form contains the input fields for creation of areas using cartesian coordinates i.e. Eastings & northings.
+    This form contains the input fields for creation of areas using Eastings & northings.
     There is additional validation post-submission of the form that checks whether the coordinate lies within
     either the UK or the test polygons in Finland, and if both are false then an error is appended to the form.
     """
