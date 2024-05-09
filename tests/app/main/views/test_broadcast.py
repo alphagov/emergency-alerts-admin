@@ -2246,9 +2246,9 @@ def test_create_cartesian_coordinate_area(
             {"first_coordinate": "419763", "second_coordinate": "456038", "radius": "5", "preview": True},
             {
                 "areas": {
-                    "ids": ["5km around the easting of 419763.0 and the northing of 456038.0 in Harrogate"],
-                    "names": ["5km around the easting of 419763.0 and the northing of 456038.0 in Harrogate"],
-                    "aggregate_names": ["5km around the easting of 419763.0 and the northing of 456038.0 in Harrogate"],
+                    "ids": ["5km around the easting of 419763 and the northing of 456038 in Harrogate"],
+                    "names": ["5km around the easting of 419763 and the northing of 456038 in Harrogate"],
+                    "aggregate_names": ["5km around the easting of 419763 and the northing of 456038 in Harrogate"],
                     "simple_polygons": [HG3_2RL],
                 }
             },
@@ -2257,9 +2257,9 @@ def test_create_cartesian_coordinate_area(
             {"first_coordinate": "416567", "second_coordinate": "432994", "radius": "3", "preview": True},
             {
                 "areas": {
-                    "ids": ["3km around the easting of 416567.0 and the northing of 432994.0 in Bradford"],
-                    "names": ["3km around the easting of 416567.0 and the northing of 432994.0 in Bradford"],
-                    "aggregate_names": ["3km around the easting of 416567.0 and the northing of 432994.0 in Bradford"],
+                    "ids": ["3km around the easting of 416567 and the northing of 432994 in Bradford"],
+                    "names": ["3km around the easting of 416567 and the northing of 432994 in Bradford"],
+                    "aggregate_names": ["3km around the easting of 416567 and the northing of 432994 in Bradford"],
                     "simple_polygons": [BD1_1EE],
                 }
             },

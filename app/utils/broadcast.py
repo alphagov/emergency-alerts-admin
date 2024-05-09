@@ -20,6 +20,8 @@ def create_coordinate_area_id(coordinate_type, first_coordinate, second_coordina
     if coordinate_type == "decimal":
         id = f"{id}{first_coordinate} latitude, {second_coordinate} longitude"
     elif coordinate_type == "cartesian":
+        first_coordinate = "{:g}".format((first_coordinate))
+        second_coordinate = "{:g}".format(second_coordinate)
         id = f"{id}the easting of {first_coordinate} and the northing of {second_coordinate}"
     return id
 
