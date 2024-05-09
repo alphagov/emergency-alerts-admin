@@ -14,17 +14,19 @@ from emergency_alerts_utils.recipients import (
     normalise_phone_number,
     validate_phone_number,
 )
-from flask import Markup, request
+from flask import request
 from flask_login import current_user
 from flask_wtf import FlaskForm as Form
 from flask_wtf.file import FileAllowed
 from flask_wtf.file import FileField as FileField_wtf
 from flask_wtf.file import FileSize
+from markupsafe import Markup
 from orderedset import OrderedSet
 from werkzeug.utils import cached_property
 from wtforms import (
     BooleanField,
     DateField,
+    DecimalField,
     EmailField,
     Field,
     FieldList,
@@ -49,6 +51,7 @@ from wtforms.validators import (
     DataRequired,
     InputRequired,
     Length,
+    NumberRange,
     Optional,
     Regexp,
 )
@@ -66,12 +69,14 @@ from app.main.validators import (
     CsvFileValidator,
     DoesNotStartWithDoubleZero,
     FileIsVirusFree,
+    IsPostcode,
     LettersNumbersSingleQuotesFullStopsAndUnderscoresOnly,
     MustContainAlphanumericCharacters,
     NoCommasInPlaceHolders,
     NoEmbeddedImagesInSVG,
     NoPlaceholders,
     NoTextInSVG,
+    Only2DecimalPlaces,
     OnlySMSCharacters,
     StringsNotAllowed,
     ValidEmail,
@@ -280,6 +285,16 @@ class GovukDateField(GovukTextInputFieldMixin, DateField):
 
 class GovukIntegerField(GovukTextInputFieldMixin, IntegerField):
     pass
+
+
+class GovukDecimalField(GovukTextInputFieldMixin, DecimalField):
+    pass
+
+
+class PostcodeSearchField(GovukTextInputFieldMixin, SearchField):
+    input_type = "Search"
+    param_extensions = {"classes": "govuk-input--width-10"}
+    validators = [DataRequired(message="Enter a postcode."), IsPostcode()]
 
 
 class SMSCode(GovukTextInputField):
@@ -640,6 +655,7 @@ class GovukCheckboxesField(GovukFrontendWidgetMixin, SelectMultipleField):
             "asList": self.render_as_list,
             "errorMessage": self.get_error_message(),
             "items": items,
+            "hint": {"text": "Select all that apply."},
         }
 
         return params
@@ -946,7 +962,7 @@ class TwoFactorForm(StripWhitespaceForm):
 
     sms_code = SMSCode("Text message code")
 
-    def validate(self):
+    def validate(self, extra_validators=None):
         if not self.sms_code.validate(self):
             return False
 
@@ -1147,7 +1163,7 @@ class ConfirmPasswordForm(StripWhitespaceForm):
 
 class NewBroadcastForm(StripWhitespaceForm):
     content = GovukRadiosField(
-        "New alert",
+        "Create new alert",
         choices=[
             ("freeform", "Write your own message"),
             ("template", "Use a template"),
@@ -1513,8 +1529,8 @@ class AdminProviderRatioForm(Form):
 
         super().__init__(data={provider["identifier"]: provider["priority"] for provider in providers})
 
-    def validate(self):
-        if not super().validate():
+    def validate(self, extra_validators=None):
+        if not super().validate(extra_validators):
             return False
 
         total = sum(getattr(self, provider["identifier"]).data for provider in self._providers)
@@ -1543,7 +1559,7 @@ class ServiceContactDetailsForm(StripWhitespaceForm):
     # This is a text field because the number provided by the user can also be a short code
     phone_number = GovukTextInputField("Phone number")
 
-    def validate(self):
+    def validate(self, extra_validators=None):
         if self.contact_details_type.data == "url":
             self.url.validators = [DataRequired(), URL(message="Must be a valid URL")]
 
@@ -1561,7 +1577,7 @@ class ServiceContactDetailsForm(StripWhitespaceForm):
 
             self.phone_number.validators = [DataRequired(), Length(min=5, max=20), valid_phone_number]
 
-        return super().validate()
+        return super().validate(extra_validators)
 
 
 class ServiceReplyToEmailForm(StripWhitespaceForm):
@@ -1687,8 +1703,8 @@ class AdminEditEmailBrandingForm(StripWhitespaceForm):
         if op == "email-branding-details" and not self.name.data:
             raise ValidationError("This field is required")
 
-    def validate(self):
-        rv = super().validate()
+    def validate(self, extra_validators=None):
+        rv = super().validate(extra_validators)
 
         op = request.form.get("operation")
         if op == "email-branding-details":
@@ -1934,8 +1950,8 @@ class CallbackForm(StripWhitespaceForm):
         validators=[DataRequired(message="Cannot be empty"), Length(min=10, message="Must be at least 10 characters")],
     )
 
-    def validate(self):
-        return super().validate() or self.url.data == ""
+    def validate(self, extra_validators=None):
+        return super().validate(extra_validators) or self.url.data == ""
 
 
 class SMSPrefixForm(StripWhitespaceForm):
@@ -2257,7 +2273,7 @@ class TemplateAndFoldersSelectionForm(Form):
     def is_selected(self, template_folder_id):
         return template_folder_id in (self.templates_and_folders.data or [])
 
-    def validate(self):
+    def validate(self, extra_validators=None):
         self.op = request.form.get("operation")
 
         self.is_move_op = self.op in {"move-to-existing-folder", "move-to-new-folder"}
@@ -2267,7 +2283,7 @@ class TemplateAndFoldersSelectionForm(Form):
         if not (self.is_add_folder_op or self.is_move_op or self.is_add_template_op):
             return False
 
-        return super().validate()
+        return super().validate(extra_validators)
 
     def get_folder_name(self):
         if self.op == "add-new-folder":
@@ -2562,3 +2578,31 @@ class PlatformAdminSearch(StripWhitespaceForm):
         param_extensions={"hint": {"text": ("Search for users, services, and organisations by name or partial name.")}},
         validators=[DataRequired()],
     )
+
+
+class PostcodeForm(StripWhitespaceForm):
+    postcode = PostcodeSearchField("Postcode")
+    """
+    Reasoning for radius field validation limits:
+    The minimum value of 100m / 0.1km was driven by MNO requirements for the most
+    effective transmission to get full penetration without risk of over subscription of
+    cell towers. Too small an area might be difficult for their (MNO) systems to calculate
+    which cell sites and towers to use, and 38km was driven by COBR as bigger
+    than a city and the max side of alerting for non country size areas.
+    """
+    radius = GovukDecimalField(
+        "Add radius",
+        param_extensions={
+            "classes": "govuk-input govuk-input--width-5",
+            "suffix": {"text": "km"},
+            "attributes": {"pattern": "^-?\\d+(\\.\\d+)?$"},
+        },
+        validators=[
+            NumberRange(min=0.099, max=38.001, message="Enter a radius between 0.1km and 38.0km."),
+            DataRequired(message="Enter a radius."),
+            Only2DecimalPlaces(),
+        ],
+    )
+
+    def post_validate(self):
+        return False if self.errors else True

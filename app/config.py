@@ -30,6 +30,8 @@ class Config(object):
     ADMIN_EXTERNAL_URL = os.environ.get("ADMIN_EXTERNAL_URL", "http://localhost:6012")
     ZENDESK_API_KEY = os.environ.get("ZENDESK_API_KEY")
 
+    GEOJSON_BUCKET = os.environ.get("POSTCODE_BUCKET_NAME")
+
     # if we're not on cloudfoundry, we can get to this app from localhost. but on cloudfoundry its different
     ADMIN_BASE_URL = os.environ.get("ADMIN_BASE_URL", "http://localhost:6012")
 
@@ -59,7 +61,7 @@ class Config(object):
     PERMANENT_SESSION_LIFETIME = 60 * 60  # 60 minutes - maximum duration for a session
     SEND_FILE_MAX_AGE_DEFAULT = 365 * 24 * 60 * 60  # 1 year
     SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_NAME = "eas_admin_session"
+    SESSION_COOKIE_NAME = "emergency_alerts_session"
     SESSION_COOKIE_SECURE = False
     SESSION_PROTECTION = None
     SESSION_COOKIE_SAMESITE = "Lax"
@@ -116,14 +118,21 @@ class Config(object):
 
 class Hosted(Config):
     HOST = "hosted"
-    API_HOST_NAME = "http://api.ecs.local:6011"
-    ADMIN_BASE_URL = "http://admin.ecs.local:6012"
+    TENANT = f"{os.environ.get('TENANT')}." if os.environ.get("TENANT") is not None else ""
+    SUBDOMAIN = (
+        "dev."
+        if os.environ.get("ENVIRONMENT") == "development"
+        else f"{os.environ.get('ENVIRONMENT')}."
+        if os.environ.get("ENVIRONMENT") != "production"
+        else ""
+    )
+    API_HOST_NAME = f"http://api.{TENANT}ecs.local:6011"
+    ADMIN_BASE_URL = f"http://admin.{TENANT}ecs.local:6012"
     HEADER_COLOUR = header_colors.get(os.environ.get("ENVIRONMENT"), "#81878b")
-    SUBDOMAIN = f"{os.environ.get('ENVIRONMENT')}." if os.environ.get("ENVIRONMENT") != "production" else ""
-    ADMIN_EXTERNAL_URL = f"https://admin.{SUBDOMAIN}emergency-alerts.service.gov.uk"
-    TEMPLATE_PREVIEW_API_HOST = "http://api.ecs.local:6013"
-    ANTIVIRUS_API_HOST = "http://admin.ecs.local:6016"
-    REDIS_URL = "redis://api.ecs.local:6379/0"
+    ADMIN_EXTERNAL_URL = f"https://{TENANT}admin.{SUBDOMAIN}emergency-alerts.service.gov.uk"
+    TEMPLATE_PREVIEW_API_HOST = f"http://api.{TENANT}ecs.local:6013"
+    ANTIVIRUS_API_HOST = f"http://admin.{TENANT}ecs.local:6016"
+    REDIS_URL = f"redis://api.{TENANT}ecs.local:6379/0"
 
     DEBUG = False
     SESSION_COOKIE_SECURE = True
@@ -147,8 +156,15 @@ class Test(Config):
     ANTIVIRUS_API_HOST = "https://test-antivirus"
     ANTIVIRUS_API_KEY = "test-antivirus-secret"
     ANTIVIRUS_ENABLED = True
-    SUBDOMAIN = f"{os.environ.get('ENVIRONMENT')}." if os.environ.get("ENVIRONMENT") != "production" else ""
-    ADMIN_EXTERNAL_URL = f"https://admin.{SUBDOMAIN}emergency-alerts.service.gov.uk"
+    TENANT = f"{os.environ.get('TENANT')}." if os.environ.get("TENANT") is not None else ""
+    SUBDOMAIN = (
+        "dev."
+        if os.environ.get("ENVIRONMENT") == "development"
+        else f"{os.environ.get('ENVIRONMENT')}."
+        if os.environ.get("ENVIRONMENT") != "production"
+        else ""
+    )
+    ADMIN_EXTERNAL_URL = f"https://{TENANT}admin.{SUBDOMAIN}emergency-alerts.service.gov.uk"
     ASSET_DOMAIN = "static.example.com"
     ASSET_PATH = "https://static.example.com/"
 

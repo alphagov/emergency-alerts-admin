@@ -226,3 +226,17 @@ details .arrow {
   font-weight: 600;
   font-size: 18.5px;
 }
+
+.search-postcode-button {
+  margin-bottom: 1%;
+  align-self: flex-start;
+}
+
+.search-postcode-form {
+  display: flex;
+  align-items:center;
+}
+
+.search-postcode-margin-left {
+  margin-left: govuk-spacing(5);
+}

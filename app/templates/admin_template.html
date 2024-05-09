@@ -114,19 +114,20 @@
 {% endif %}
 
 {{ govukHeader({
-"homepageUrl": url_for('main.show_accounts_or_dashboard'),
-"productName": "Emergency Alerts",
-"navigation": navigation,
-"navigationClasses": "govuk-header__navigation--end",
-"assetsPath": asset_path + "images"
+  "homepageUrl": url_for('main.show_accounts_or_dashboard'),
+  "useTudorCrown": true,
+  "productName": "Emergency Alerts",
+  "navigation": navigation,
+  "navigationClasses": "govuk-header__navigation--end",
+  "assetsPath": asset_path + "images"
 }) }}
 {% if live_service_notice %}
-<div class="govuk-width-container">
-  {{ govukNotificationBanner({
-  'titleText': "IMPORTANT",
-  'html': live_service_notice
-  }) }}
-</div>
+  <div class="govuk-width-container">
+    {{ govukNotificationBanner({
+      'titleText': "IMPORTANT",
+      'html': live_service_notice
+    }) }}
+  </div>
 {% endif %}
 {% endblock %}
 

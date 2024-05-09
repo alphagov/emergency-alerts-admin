@@ -38,7 +38,7 @@ def test_logged_in_user_redirects_to_choose_account(
 
 
 def test_robots(client_request):
-    client_request.get_url("/robots.txt", _expected_status=404)
+    client_request.get_url("/robots.txt", _expected_status=200, _test_page_title=False)
 
 
 @pytest.mark.parametrize(

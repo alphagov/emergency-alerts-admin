@@ -1,5 +1,14 @@
 from emergency_alerts_utils.template import HTMLEmailTemplate, LetterImageTemplate
-from flask import abort, make_response, redirect, render_template, request, url_for
+from flask import (
+    abort,
+    current_app,
+    make_response,
+    redirect,
+    render_template,
+    request,
+    send_from_directory,
+    url_for,
+)
 from flask_login import current_user
 
 from app import letter_branding_client
@@ -8,6 +17,11 @@ from app.main.forms import FieldWithNoneOption
 from app.main.views.sub_navigation_dictionaries import features_nav, using_notify_nav
 from app.models.branding import EmailBranding
 from app.utils import hide_from_search_engines
+
+
+@main.route("/robots.txt")
+def static():
+    return send_from_directory(current_app.static_folder, "metadata/" + request.path[1:])
 
 
 @main.route("/")

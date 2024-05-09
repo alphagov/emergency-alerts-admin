@@ -9,10 +9,17 @@ from app import webauthn_server
 def app_with_mock_config(mocker):
     app = mocker.Mock()
 
-    subdomain = f"{os.environ.get('ENVIRONMENT')}." if os.environ.get("ENVIRONMENT") != "production" else ""
+    tenant = f"{os.environ.get('TENANT')}." if os.environ.get("TENANT") is not None else ""
+    subdomain = (
+        "dev."
+        if os.environ.get("ENVIRONMENT") == "development"
+        else f"{os.environ.get('ENVIRONMENT')}."
+        if os.environ.get("ENVIRONMENT") != "production"
+        else ""
+    )
 
     app.config = {
-        "ADMIN_EXTERNAL_URL": f"https://admin.{subdomain}emergency-alerts.service.gov.uk",
+        "ADMIN_EXTERNAL_URL": f"https://{tenant}admin.{subdomain}emergency-alerts.service.gov.uk",
         "HOST": "local",
     }
     return app
@@ -30,6 +37,7 @@ def test_server_relying_party_id(
     mocker,
 ):
     webauthn_server.init_app(app_with_mock_config)
-    rp_id = "admin.{}emergency-alerts.service.gov.uk"
+    rp_id = "{}admin.{}emergency-alerts.service.gov.uk"
+    tenant = f"{os.environ.get('TENANT')}." if os.environ.get("TENANT") is not None else ""
     subdomain = f"{os.environ.get('ENVIRONMENT')}." if os.environ.get("ENVIRONMENT") != "production" else ""
-    assert app_with_mock_config.webauthn_server.rp.id == rp_id.format(subdomain).lower()
+    assert app_with_mock_config.webauthn_server.rp.id == rp_id.format(tenant, subdomain).lower()

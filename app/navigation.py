@@ -128,7 +128,6 @@ class MainNavigation(Navigation):
     mapping = {
         "dashboard": {
             "broadcast_tour",
-            "conversation",
             "inbox",
             "monthly",
             "returned_letter_summary",
@@ -163,7 +162,6 @@ class MainNavigation(Navigation):
             "choose_template",
             "choose_template_to_copy",
             "confirm_redact_template",
-            "conversation_reply",
             "copy_template",
             "delete_service_template",
             "edit_service_template",
@@ -190,6 +188,7 @@ class MainNavigation(Navigation):
             "approve_broadcast_message",
             "reject_broadcast_message",
             "cancel_broadcast_message",
+            "remove_postcode_area",
         },
         "uploads": {
             "upload_contact_list",

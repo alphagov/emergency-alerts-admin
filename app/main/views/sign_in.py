@@ -1,14 +1,6 @@
-from flask import (
-    Markup,
-    abort,
-    flash,
-    redirect,
-    render_template,
-    request,
-    session,
-    url_for,
-)
+from flask import abort, flash, redirect, render_template, request, session, url_for
 from flask_login import current_user
+from markupsafe import Markup
 
 from app import login_manager
 from app.main import main
