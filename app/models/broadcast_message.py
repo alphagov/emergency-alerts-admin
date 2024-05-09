@@ -292,11 +292,11 @@ class BroadcastMessage(JSONModel):
     def add_local_authority_to_id(self, id, area_to_get_params):
         if local_authority := area_to_get_params.local_authority:
             if local_authority.endswith(", City of"):
-                id = f"{id}, in City of {local_authority[:-9]}"
+                id = f"{id} in City of {local_authority[:-9]}"
             elif local_authority.endswith(", County of"):
-                id = f"{id}, in County of {local_authority[:-11]}"
+                id = f"{id} in County of {local_authority[:-11]}"
             else:
-                id = f"{id}, in {local_authority}"
+                id = f"{id} in {local_authority}"
         return id
 
     def remove_area(self, area_id):
