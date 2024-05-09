@@ -32,9 +32,9 @@
 {% set radius = form.radius.value %}
 {% set postcode = form.postcode.value %}
 
-{% if bleed %}
+{% if bleed and not centroid %}
   {% set method = 'radius' %}
-{% else %}
+{% elif not bleed and centroid %}
   {% set method = 'search' %}
 {% endif %}
 
