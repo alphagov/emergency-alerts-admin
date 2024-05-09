@@ -2725,8 +2725,8 @@ class ChooseCoordinateTypeForm(StripWhitespaceForm):
             "fieldset": {"legend": {"classes": "govuk-visually-hidden"}},
             "hint": {"text": "Select one option"},
             "items": [
-                {"hint": {"text": "For example, 51.503630, -0.126770."}},
-                {"hint": {"text": "For example, 530111, 179963."}},
+                {"hint": {"text": "For example, 51.503630, -0.126770"}},
+                {"hint": {"text": "For example, 530111, 179963"}},
             ],
         },
         validators=[DataRequired(message="Select which type of coordinates you'd like to use")],
