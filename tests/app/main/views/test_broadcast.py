@@ -135,7 +135,11 @@ sample_uuid = sample_uuid()
         ),
         (
             ".search_coordinates",
-            {"broadcast_message_id": sample_uuid, "coordinate_type": "decimal", "library_slug": "coordinates"},
+            {
+                "broadcast_message_id": sample_uuid,
+                "coordinate_type": "latitude_longitude",
+                "library_slug": "coordinates",
+            },
             403,
             403,
         ),
@@ -2020,7 +2024,7 @@ def test_add_postcode_area_to_broadcast(
         ),
     ),
 )
-def test_create_decimal_coordinate_area(
+def test_create_latitude_longitude_coordinate_area(
     client_request,
     service_one,
     mock_get_draft_broadcast_message,
@@ -2053,7 +2057,7 @@ def test_create_decimal_coordinate_area(
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug="coordinates",
-        coordinate_type="decimal",
+        coordinate_type="latitude_longitude",
         _data=post_data,
         _follow_redirects=True,
     )
@@ -2096,7 +2100,7 @@ def test_create_decimal_coordinate_area(
         ),
     ),
 )
-def test_add_decimal_coordinate_area_to_broadcast(
+def test_add_latitude_longitude_coordinate_area_to_broadcast(
     client_request,
     service_one,
     mock_get_draft_broadcast_message,
@@ -2129,7 +2133,7 @@ def test_add_decimal_coordinate_area_to_broadcast(
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug="coordinates",
-        coordinate_type="decimal",
+        coordinate_type="latitude_longitude",
         _data=post_data,
         _follow_redirects=True,
     )
@@ -2190,7 +2194,7 @@ def test_add_decimal_coordinate_area_to_broadcast(
         ),
     ),
 )
-def test_create_cartesian_coordinate_area(
+def test_create_easting_northing_coordinate_area(
     client_request,
     service_one,
     mock_get_draft_broadcast_message,
@@ -2224,7 +2228,7 @@ def test_create_cartesian_coordinate_area(
         broadcast_message_id=fake_uuid,
         service_id=SERVICE_ONE_ID,
         library_slug="coordinates",
-        coordinate_type="cartesian",
+        coordinate_type="easting_northing",
         _data=post_data,
         _follow_redirects=True,
     )
@@ -2266,7 +2270,7 @@ def test_create_cartesian_coordinate_area(
         ),
     ),
 )
-def test_add_cartesian_coordinate_area_to_broadcast(
+def test_add_easting_northing_coordinate_area_to_broadcast(
     client_request,
     service_one,
     mock_get_draft_broadcast_message,
@@ -2300,7 +2304,7 @@ def test_add_cartesian_coordinate_area_to_broadcast(
         broadcast_message_id=fake_uuid,
         service_id=SERVICE_ONE_ID,
         library_slug="coordinates",
-        coordinate_type="cartesian",
+        coordinate_type="easting_northing",
         _data=post_data,
         _follow_redirects=True,
     )
@@ -2368,7 +2372,7 @@ def test_add_cartesian_coordinate_area_to_broadcast(
         ),
     ),
 )
-def test_cartesian_coordinate_area_form_errors(
+def test_easting_northing_coordinate_area_form_errors(
     client_request,
     service_one,
     fake_uuid,
@@ -2400,7 +2404,7 @@ def test_cartesian_coordinate_area_form_errors(
         broadcast_message_id=fake_uuid,
         service_id=SERVICE_ONE_ID,
         library_slug="coordinates",
-        coordinate_type="cartesian",
+        coordinate_type="easting_northing",
         _data=post_data,
         _follow_redirects=True,
     )
@@ -2456,7 +2460,7 @@ def test_cartesian_coordinate_area_form_errors(
         ),
     ),
 )
-def test_decimal_coordinate_area_form_errors(
+def test_latitude_longitude_coordinate_area_form_errors(
     client_request,
     service_one,
     fake_uuid,
@@ -2488,7 +2492,7 @@ def test_decimal_coordinate_area_form_errors(
         broadcast_message_id=fake_uuid,
         service_id=SERVICE_ONE_ID,
         library_slug="coordinates",
-        coordinate_type="decimal",
+        coordinate_type="latitude_longitude",
         _data=post_data,
         _follow_redirects=True,
     )
@@ -2509,23 +2513,23 @@ def test_decimal_coordinate_area_form_errors(
     (
         (
             {"first_coordinate": "0", "second_coordinate": "0", "radius": "5"},
-            "decimal",
+            "latitude_longitude",
         ),
         (
             {"first_coordinate": "50", "second_coordinate": "-2", "radius": "5"},
-            "decimal",
+            "latitude_longitude",
         ),
         (
             {"first_coordinate": "50", "second_coordinate": "50", "radius": "5"},
-            "decimal",
+            "latitude_longitude",
         ),
         (
             {"first_coordinate": "0", "second_coordinate": "0", "radius": "5"},
-            "cartesian",
+            "easting_northing",
         ),
         (
             {"first_coordinate": "170000", "second_coordinate": "170000", "radius": "5"},
-            "cartesian",
+            "easting_northing",
         ),
     ),
 )

@@ -17,9 +17,9 @@ from app.main.forms import (
 def create_coordinate_area_slug(coordinate_type, first_coordinate, second_coordinate, radius):
     radius_min_sig_figs = "{:g}".format(radius)
     id = f"{radius_min_sig_figs}km around "
-    if coordinate_type == "decimal":
+    if coordinate_type == "latitude_longitude":
         id = f"{id}{first_coordinate} latitude, {second_coordinate} longitude"
-    elif coordinate_type == "cartesian":
+    elif coordinate_type == "easting_northing":
         first_coordinate = "{:g}".format((first_coordinate))
         second_coordinate = "{:g}".format(second_coordinate)
         id = f"{id}the easting of {first_coordinate} and the northing of {second_coordinate}"
@@ -28,12 +28,12 @@ def create_coordinate_area_slug(coordinate_type, first_coordinate, second_coordi
 
 def create_coordinate_area(lat, lng, radius, type):
     radius *= 1000
-    if type == "cartesian":
+    if type == "easting_northing":
         crs_4326 = pyproj.CRS("EPSG:4326")
         crs_normalized = pyproj.CRS("EPSG:27700")
         transformer_inverse = pyproj.Transformer.from_crs(crs_normalized, crs_4326)
         normalized_center = Point(lat, lng)
-    elif type == "decimal":
+    elif type == "latitude_longitude":
         crs_4326 = pyproj.CRS("EPSG:4326")
         crs_normalized = pyproj.CRS(proj="aeqd", datum="WGS84", lat_0=lat, lon_0=lng)
         transformer = pyproj.Transformer.from_crs(crs_4326, crs_normalized)
@@ -69,13 +69,13 @@ def check_coordinates_valid_for_enclosed_polygons(message, lat, lng, type):
 
 
 def normalising_point(lat, lng, type):
-    if type == "cartesian":
+    if type == "easting_northing":
         crs_4326 = pyproj.CRS("EPSG:4326")
         crs_normalized = pyproj.CRS("EPSG:27700")
         transformer_inverse = pyproj.Transformer.from_crs(crs_normalized, crs_4326)
         lat, lng = transformer_inverse.transform(lat, lng)
         normalized_center = Point(lng, lat)
-    elif type == "decimal":
+    elif type == "latitude_longitude":
         normalized_center = Point(lng, lat)
     return normalized_center
 
@@ -202,9 +202,9 @@ def postcode_in_db(form):
 
 
 def select_coordinate_form(coordinate_type):
-    if coordinate_type == "decimal":
+    if coordinate_type == "latitude_longitude":
         form = LatitudeLongitudeCoordinatesForm()
-    elif coordinate_type == "cartesian":
+    elif coordinate_type == "easting_northing":
         form = EastingNorthingCoordinatesForm()
     return form
 

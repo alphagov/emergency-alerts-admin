@@ -29,10 +29,10 @@
   {{ govukBackLink({ "href": back_link }) }}
 {% endblock %}
 
-{% if coordinate_type == 'decimal' %}
+{% if coordinate_type == 'latitude_longitude' %}
   {% set label1 = 'Latitude' %}
   {% set label2 = 'Longitude' %}
-{% elif coordinate_type == 'cartesian' %}
+{% elif coordinate_type == 'easting_northing' %}
   {% set label1 = 'Eastings' %}
   {% set label2 = 'Northings' %}
 {% endif %}
