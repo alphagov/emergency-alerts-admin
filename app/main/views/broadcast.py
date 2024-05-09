@@ -22,9 +22,9 @@ from app.utils.broadcast import (
     coordinates_and_radius_entered,
     coordinates_entered_but_no_radius,
     create_coordinate_area,
-    create_coordinate_area_id,
+    create_coordinate_area_slug,
     create_custom_area_polygon,
-    create_postcode_area_id,
+    create_postcode_area_slug,
     create_postcode_db_id,
     extract_attributes_from_custom_area,
     get_centroid,
@@ -383,7 +383,7 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
                     count_of_phones,
                     count_of_phones_likely,
                 ) = extract_attributes_from_custom_area(circle_polygon)
-                id = create_postcode_area_id(form)
+                id = create_postcode_area_slug(form)
                 if preview_button_clicked(request):
                     """
                     If 'Preview alert' button is clicked, area is added to Broadcast Message
@@ -556,7 +556,7 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
                 radius,
                 coordinate_type,
             ):
-                id = create_coordinate_area_id(coordinate_type, first_coordinate, second_coordinate, radius)
+                id = create_coordinate_area_slug(coordinate_type, first_coordinate, second_coordinate, radius)
                 (
                     bleed,
                     estimated_area,

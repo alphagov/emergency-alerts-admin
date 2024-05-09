@@ -14,7 +14,7 @@ from app.main.forms import (
 )
 
 
-def create_coordinate_area_id(coordinate_type, first_coordinate, second_coordinate, radius):
+def create_coordinate_area_slug(coordinate_type, first_coordinate, second_coordinate, radius):
     radius_min_sig_figs = "{:g}".format(radius)
     id = f"{radius_min_sig_figs}km around "
     if coordinate_type == "decimal":
@@ -113,7 +113,7 @@ def create_custom_area_polygon(BroadcastMessage, form: PostcodeForm):
     return centroid, circle_polygon
 
 
-def create_postcode_area_id(form):
+def create_postcode_area_slug(form):
     postcode_formatted = UKPostcode(form.data["postcode"]).postcode
     radius_to_min_sig_figs = "{:g}".format(float(form.data["radius"]))
     return f"{radius_to_min_sig_figs}km around the postcode {postcode_formatted}"
