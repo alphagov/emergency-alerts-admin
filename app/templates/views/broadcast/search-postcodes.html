@@ -32,12 +32,11 @@
 {% set radius = form.radius.value %}
 {% set postcode = form.postcode.value %}
 
-{% if bleed and not centroid %}
+{% if bleed %}
   {% set method = 'radius' %}
 {% elif not bleed and centroid %}
   {% set method = 'search' %}
 {% endif %}
-
 
 {% block maincolumn_content %}
   {{ page_header('Choose alert area', classes="heading-no-margin-top") }}

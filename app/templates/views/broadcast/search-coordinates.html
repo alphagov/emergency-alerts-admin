@@ -39,9 +39,9 @@
 
 {% set radius = form.radius.value %}
 
-{% if bleed and not centroid %}
+{% if bleed %}
   {% set method = 'radius' %}
-{% elif not bleed and centroid %}
+{% elif not bleed and marker %}
   {% set method = 'search' %}
 {% endif %}
 
