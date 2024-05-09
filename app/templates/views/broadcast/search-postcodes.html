@@ -45,17 +45,17 @@
     <div class="search-postcode-form">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       {{ form.postcode }}
-      <div class="search-postcode-margin-left">
+      <div class="mapping-margin-left">
         {{ govukButton({
           "classes": "notify-simple-search-form__button search-postcode-button govuk-button--secondary",
           "html": "Search <span class=\"govuk-visually-hidden\">for areas</span>",
           "name": "search_btn",
         }) }}
       </div>
-      <div class="search-postcode-margin-left">
+      <div class="mapping-margin-left">
         {{ form.radius}}
       </div>
-      <div class="search-postcode-margin-left">
+      <div class="mapping-margin-left">
         {{ govukButton({
           "classes": "notify-simple-search-form__button search-postcode-button govuk-button--secondary",
           "html": "Add radius",
@@ -66,14 +66,14 @@
         {% if bleed %}
           {{ govukButton({
             "text": "Preview alert",
-            "classes": "govuk-button search-postcode-margin-left notify-simple-search-form__button",
+            "classes": "govuk-button mapping-margin-left notify-simple-search-form__button",
             "name": "preview",
             "value": True
           }) }}
         {% else %}
           {{ govukButton({
             "text": "Preview alert",
-            "classes": "govuk-button search-postcode-margin-left",
+            "classes": "govuk-button mapping-margin-left",
             "disabled": true,
             "name": "preview"
           }) }}

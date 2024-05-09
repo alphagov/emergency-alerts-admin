@@ -57,25 +57,33 @@
     {% endif %}
     {% call form_wrapper() %}
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <div style="display: flex; align-items:center; justify-content:space-between">
+        <div class="search-coordinates-form">
           {{ form.first_coordinate(param_extensions={
             "label": {"text": label1},
           }) }}
-          {{ form.second_coordinate(param_extensions={
-            "label": {"text": label2},
-          }) }}
-          {{ govukButton({
-            "classes": "notify-simple-search-form__button govuk-button--secondary margin",
-            "html": "Search",
-            "name": 'search_btn',
-          }) }}
-          {{ form.radius}}
-          {{ govukButton({
-            "classes": "notify-simple-search-form__button govuk-button--secondary margin",
-            "html": "Add radius",
-            "name": 'radius_btn',
-          }) }}
-          <div>
+          <div class="mapping-margin-left">
+            {{ form.second_coordinate(param_extensions={
+              "label": {"text": label2},
+            }) }}
+          </div>
+          <div class="mapping-margin-left">
+            {{ govukButton({
+              "classes": "notify-simple-search-form__button govuk-button--secondary",
+              "html": "Search",
+              "name": 'search_btn',
+            }) }}
+          </div>
+          <div class="mapping-margin-left-large">
+            {{ form.radius}}
+          </div>
+          <div class="mapping-margin-left">
+            {{ govukButton({
+              "classes": "notify-simple-search-form__button govuk-button--secondary",
+              "html": "Add radius",
+              "name": 'radius_btn',
+            }) }}
+          </div>
+          <div class="mapping-margin-left">
             {% if bleed %}
               {{ govukButton({
                 "text": "Preview alert",
