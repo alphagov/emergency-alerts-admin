@@ -20,7 +20,7 @@
 {% endblock %}
 
 {% block maincolumn_content %}
-{{ page_header("Choose coordinates type") }}
+{{ page_header("Choose coordinate type") }}
   {% call form_wrapper() %}
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     {{ form.content(
