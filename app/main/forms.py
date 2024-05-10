@@ -2718,7 +2718,7 @@ class EastingNorthingCoordinatesForm(StripWhitespaceForm):
 class ChooseCoordinateTypeForm(StripWhitespaceForm):
     content = GovukRadiosField(
         choices=[
-            ("latitude_longitude", "Latitude and longitude (decimal degrees)"),
+            ("latitude_longitude", "Latitude and longitude"),
             ("easting_northing", "Eastings and northings"),
         ],
         param_extensions={
