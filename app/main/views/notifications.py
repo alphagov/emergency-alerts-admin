@@ -173,7 +173,6 @@ def view_notification(service_id, notification_id):
         estimated_letter_delivery_date=estimated_letter_delivery_date,
         notification_id=notification["id"],
         postage=notification["postage"],
-        can_receive_inbound=(current_service.has_permission("inbound_sms")),
         is_precompiled_letter=notification["template"]["is_precompiled_letter"],
         letter_print_day=letter_print_day,
         show_cancel_button=show_cancel_button,

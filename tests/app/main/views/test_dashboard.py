@@ -1,6 +1,4 @@
 import copy
-import json
-from datetime import datetime
 
 import pytest
 from flask import url_for
@@ -142,7 +140,6 @@ def test_get_started(
     mock_get_service_statistics,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_inbound_sms_summary,
     mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
     mocker.patch(
@@ -167,7 +164,6 @@ def test_get_started_is_hidden_once_templates_exist(
     mock_get_service_statistics,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_inbound_sms_summary,
     mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
     mocker.patch(
@@ -183,257 +179,6 @@ def test_get_started_is_hidden_once_templates_exist(
     assert not any("Get started" in h2.text for h2 in page.select("h2"))
 
 
-def test_inbound_messages_not_visible_to_service_without_permissions(
-    client_request,
-    mocker,
-    service_one,
-    mock_get_service_templates_when_no_templates_exist,
-    mock_has_no_jobs,
-    mock_get_service_statistics,
-    mock_get_template_statistics,
-    mock_get_annual_usage_for_service,
-    mock_get_free_sms_fragment_limit,
-    mock_get_inbound_sms_summary,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
-):
-    service_one["permissions"] = []
-
-    page = client_request.get(
-        "main.service_dashboard",
-        service_id=SERVICE_ONE_ID,
-    )
-
-    assert not page.select("#total-received")
-    assert mock_get_inbound_sms_summary.called is False
-
-
-def test_inbound_messages_shows_count_of_messages_when_there_are_messages(
-    client_request,
-    mocker,
-    service_one,
-    mock_get_service_templates_when_no_templates_exist,
-    mock_get_jobs,
-    mock_get_scheduled_job_stats,
-    mock_get_service_statistics,
-    mock_get_template_statistics,
-    mock_get_annual_usage_for_service,
-    mock_get_free_sms_fragment_limit,
-    mock_get_inbound_sms_summary,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
-):
-    service_one["permissions"] = ["inbound_sms"]
-    page = client_request.get(
-        "main.service_dashboard",
-        service_id=SERVICE_ONE_ID,
-    )
-    banner = page.select("a.banner-dashboard")[1]
-    assert normalize_spaces(banner.text) == "9,999 text messages received latest message just now"
-    assert banner["href"] == url_for("main.inbox", service_id=SERVICE_ONE_ID)
-
-
-def test_inbound_messages_shows_count_of_messages_when_there_are_no_messages(
-    client_request,
-    mocker,
-    service_one,
-    mock_get_service_templates_when_no_templates_exist,
-    mock_get_jobs,
-    mock_get_scheduled_job_stats,
-    mock_get_service_statistics,
-    mock_get_template_statistics,
-    mock_get_annual_usage_for_service,
-    mock_get_free_sms_fragment_limit,
-    mock_get_inbound_sms_summary_with_no_messages,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
-):
-    service_one["permissions"] = ["inbound_sms"]
-    page = client_request.get(
-        "main.service_dashboard",
-        service_id=SERVICE_ONE_ID,
-    )
-    banner = page.select("a.banner-dashboard")[1]
-    assert normalize_spaces(banner.text) == "0 text messages received"
-    assert banner["href"] == url_for("main.inbox", service_id=SERVICE_ONE_ID)
-
-
-def test_get_inbound_sms_shows_page_links(
-    client_request,
-    service_one,
-    mock_get_service_templates_when_no_templates_exist,
-    mock_get_jobs,
-    mock_get_service_statistics,
-    mock_get_template_statistics,
-    mock_get_annual_usage_for_service,
-    mock_get_most_recent_inbound_sms,
-    mock_get_inbound_number_for_service,
-):
-    service_one["permissions"] = ["inbound_sms"]
-
-    page = client_request.get(
-        "main.inbox",
-        service_id=SERVICE_ONE_ID,
-        page=2,
-    )
-
-    assert "Next page" in page.select_one("li.next-page").text
-    assert "Previous page" in page.select_one("li.previous-page").text
-
-
-def test_empty_inbox(
-    client_request,
-    service_one,
-    mock_get_service_templates_when_no_templates_exist,
-    mock_get_jobs,
-    mock_get_service_statistics,
-    mock_get_template_statistics,
-    mock_get_annual_usage_for_service,
-    mock_get_most_recent_inbound_sms_with_no_messages,
-    mock_get_inbound_number_for_service,
-):
-    service_one["permissions"] = ["inbound_sms"]
-
-    page = client_request.get(
-        "main.inbox",
-        service_id=SERVICE_ONE_ID,
-    )
-
-    assert normalize_spaces(page.select("tbody tr")) == (
-        "When users text your service’s phone number (0781239871) you’ll see the messages here"
-    )
-    assert not page.select("a[download]")
-    assert not page.select("li.next-page")
-    assert not page.select("li.previous-page")
-
-
-@pytest.mark.parametrize(
-    "endpoint",
-    [
-        "main.inbox",
-        "main.inbox_updates",
-    ],
-)
-def test_inbox_not_accessible_to_service_without_permissions(
-    client_request,
-    service_one,
-    endpoint,
-):
-    service_one["permissions"] = []
-    client_request.get(
-        endpoint,
-        service_id=SERVICE_ONE_ID,
-        _expected_status=403,
-    )
-
-
-def test_anyone_can_see_inbox(
-    client_request,
-    api_user_active,
-    service_one,
-    mocker,
-    mock_get_most_recent_inbound_sms_with_no_messages,
-    mock_get_inbound_number_for_service,
-):
-    service_one["permissions"] = ["inbound_sms"]
-
-    validate_route_permission_with_client(
-        mocker,
-        client_request,
-        "GET",
-        200,
-        url_for("main.inbox", service_id=service_one["id"]),
-        ["view_activity"],
-        api_user_active,
-        service_one,
-    )
-
-
-def test_view_inbox_updates(
-    client_request,
-    service_one,
-    mocker,
-    mock_get_most_recent_inbound_sms_with_no_messages,
-):
-    service_one["permissions"] += ["inbound_sms"]
-
-    mock_get_partials = mocker.patch(
-        "app.main.views.dashboard.get_inbox_partials",
-        return_value={"messages": "foo"},
-    )
-
-    response = client_request.get_response(
-        "main.inbox_updates",
-        service_id=SERVICE_ONE_ID,
-    )
-
-    assert json.loads(response.get_data(as_text=True)) == {"messages": "foo"}
-
-    mock_get_partials.assert_called_once_with(SERVICE_ONE_ID)
-
-
-@freeze_time("2016-07-01 13:00")
-def test_download_inbox(
-    client_request,
-    mock_get_inbound_sms,
-):
-    response = client_request.get_response(
-        "main.inbox_download",
-        service_id=SERVICE_ONE_ID,
-    )
-    assert response.headers["Content-Type"] == "text/csv; charset=utf-8"
-    assert response.headers["Content-Disposition"] == ("inline; " 'filename="Received text messages 2016-07-01.csv"')
-    assert response.get_data(as_text=True) == (
-        "Phone number,Message,Received\r\n"
-        "07900 900000,message-1,2016-07-01 13:00\r\n"
-        "07900 900000,message-2,2016-07-01 12:59\r\n"
-        "07900 900000,message-3,2016-07-01 12:59\r\n"
-        "07900 900002,message-4,2016-07-01 10:59\r\n"
-        "+33 1 12 34 56 78,message-5,2016-07-01 08:59\r\n"
-        "+1 202-555-0104,message-6,2016-07-01 06:59\r\n"
-        "+1 202-555-0104,message-7,2016-07-01 04:59\r\n"
-        "+682 12345,message-8,2016-07-01 04:59\r\n"
-    )
-
-
-@freeze_time("2016-07-01 13:00")
-@pytest.mark.parametrize(
-    "message_content, expected_cell",
-    [
-        ("=2+5", "2+5"),
-        ("==2+5", "2+5"),
-        ("-2+5", "2+5"),
-        ("+2+5", "2+5"),
-        ("@2+5", "2+5"),
-        ("looks safe,=2+5", '"looks safe,=2+5"'),
-    ],
-)
-def test_download_inbox_strips_formulae(
-    mocker,
-    client_request,
-    fake_uuid,
-    message_content,
-    expected_cell,
-):
-    mocker.patch(
-        "app.service_api_client.get_inbound_sms",
-        return_value={
-            "has_next": False,
-            "data": [
-                {
-                    "user_number": "elevenchars",
-                    "notify_number": "foo",
-                    "content": message_content,
-                    "created_at": datetime.utcnow().isoformat(),
-                    "id": fake_uuid,
-                }
-            ],
-        },
-    )
-    response = client_request.get_response(
-        "main.inbox_download",
-        service_id=SERVICE_ONE_ID,
-    )
-    assert expected_cell in response.get_data(as_text=True).split("\r\n")[1]
-
-
 def test_returned_letters_not_visible_if_service_has_no_returned_letters(
     client_request,
     mocker,
@@ -444,7 +189,6 @@ def test_returned_letters_not_visible_if_service_has_no_returned_letters(
     mock_get_template_statistics,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_inbound_sms_summary,
     mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
     page = client_request.get(
@@ -475,7 +219,6 @@ def test_returned_letters_shows_count_of_recently_returned_letters(
     mock_get_template_statistics,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_inbound_sms_summary,
     reporting_date,
     expected_message,
 ):
@@ -520,7 +263,6 @@ def test_returned_letters_only_counts_recently_returned_letters(
     mock_get_template_statistics,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_inbound_sms_summary_with_no_messages,
     reporting_date,
     count,
     expected_message,
@@ -549,7 +291,6 @@ def test_should_show_recent_templates_on_dashboard(
     mock_get_service_statistics,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_inbound_sms_summary,
     mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
     mock_template_stats = mocker.patch(
@@ -608,7 +349,6 @@ def test_should_not_show_recent_templates_on_dashboard_if_only_one_template_used
     mock_get_service_statistics,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_inbound_sms_summary,
     mock_get_returned_letter_statistics_with_no_returned_letters,
     stats,
 ):
@@ -755,7 +495,6 @@ def test_should_show_upcoming_jobs_on_dashboard(
     mock_get_scheduled_job_stats,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_inbound_sms_summary,
     mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
     page = client_request.get(
@@ -783,7 +522,6 @@ def test_should_not_show_upcoming_jobs_on_dashboard_if_count_is_0(
     mock_has_jobs,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_inbound_sms_summary,
     mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
     mocker.patch(
@@ -812,7 +550,6 @@ def test_should_not_show_upcoming_jobs_on_dashboard_if_service_has_no_jobs(
     mock_get_scheduled_job_stats,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_inbound_sms_summary,
     mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
     page = client_request.get(
@@ -888,7 +625,6 @@ def test_should_not_show_jobs_on_dashboard_for_users_with_uploads_page(
     mock_get_scheduled_job_stats,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_inbound_sms_summary,
     mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
     page = client_request.get(
@@ -1130,7 +866,6 @@ def test_menu_send_messages(
     mock_get_template_statistics,
     mock_get_service_statistics,
     mock_get_annual_usage_for_service,
-    mock_get_inbound_sms_summary,
     mock_get_free_sms_fragment_limit,
     mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
@@ -1169,7 +904,6 @@ def test_menu_send_messages_when_service_does_not_have_upload_letters_permission
     mock_get_template_statistics,
     mock_get_service_statistics,
     mock_get_annual_usage_for_service,
-    mock_get_inbound_sms_summary,
     mock_get_free_sms_fragment_limit,
     mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
@@ -1195,7 +929,6 @@ def test_menu_manage_service(
     mock_get_template_statistics,
     mock_get_service_statistics,
     mock_get_annual_usage_for_service,
-    mock_get_inbound_sms_summary,
     mock_get_returned_letter_statistics_with_no_returned_letters,
     mock_get_free_sms_fragment_limit,
 ):
@@ -1230,7 +963,6 @@ def test_menu_manage_api_keys(
     mock_get_template_statistics,
     mock_get_service_statistics,
     mock_get_annual_usage_for_service,
-    mock_get_inbound_sms_summary,
     mock_get_returned_letter_statistics_with_no_returned_letters,
     mock_get_free_sms_fragment_limit,
 ):
@@ -1262,7 +994,6 @@ def test_menu_all_services_for_platform_admin_user(
     mock_get_template_statistics,
     mock_get_service_statistics,
     mock_get_annual_usage_for_service,
-    mock_get_inbound_sms_summary,
     mock_get_returned_letter_statistics_with_no_returned_letters,
     mock_get_free_sms_fragment_limit,
 ):
@@ -1289,7 +1020,6 @@ def test_route_for_service_permissions(
     mock_get_service_statistics,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_inbound_sms_summary,
     mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
     with notify_admin.test_request_context():
@@ -1344,7 +1074,6 @@ def test_service_dashboard_updates_gets_dashboard_totals(
     mock_has_no_jobs,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_inbound_sms_summary,
     mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
     mocker.patch(
@@ -1376,7 +1105,6 @@ def test_service_dashboard_totals_link_to_view_notifications(
     mock_has_no_jobs,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_inbound_sms_summary,
     mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
     mocker.patch(

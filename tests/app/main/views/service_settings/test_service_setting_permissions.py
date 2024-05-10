@@ -12,7 +12,6 @@ def get_service_settings_page(
     client_request,
     platform_admin_user,
     service_one,
-    mock_get_inbound_number_for_service,
     mock_get_organisation,
     mock_get_free_sms_fragment_limit,
     no_reply_to_email_addresses,
@@ -28,7 +27,6 @@ def test_service_set_permission_requires_platform_admin(
     mocker,
     client_request,
     service_one,
-    mock_get_inbound_number_for_service,
 ):
     client_request.post(
         "main.service_set_permission",
@@ -44,7 +42,6 @@ def test_service_set_permission_does_not_exist_for_broadcast_permission(
     client_request,
     platform_admin_user,
     service_one,
-    mock_get_inbound_number_for_service,
 ):
     client_request.login(platform_admin_user)
     client_request.get(
@@ -74,7 +71,6 @@ def test_service_set_permission(
     client_request,
     platform_admin_user,
     service_one,
-    mock_get_inbound_number_for_service,
     mock_update_service_organisation,
     permission,
     initial_permissions,
@@ -166,7 +162,6 @@ def test_normal_user_doesnt_see_any_platform_admin_settings(
     no_letter_contact_blocks,
     mock_get_organisation,
     single_sms_sender,
-    mock_get_inbound_number_for_service,
     mock_get_free_sms_fragment_limit,
     mock_get_service_data_retention,
 ):
