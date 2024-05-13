@@ -33,7 +33,7 @@ from app.models.template_list import TemplateList, UserTemplateList, UserTemplat
 from app.template_previews import TemplatePreview, get_page_count_for_letter
 from app.utils import NOTIFICATION_TYPES, should_skip_template_page
 from app.utils.templates import get_template
-from app.utils.user import user_has_permissions, user_is_platform_admin
+from app.utils.user import user_has_permissions
 
 form_objects = {
     "email": EmailTemplateForm,
@@ -213,34 +213,6 @@ def view_letter_template_preview(service_id, template_id, filetype):
     db_template = current_service.get_template(template_id)
 
     return TemplatePreview.from_database_object(db_template, filetype, page=request.args.get("page"))
-
-
-@no_cookie.route("/templates/letter-preview-image/<filename>")
-@user_is_platform_admin
-def letter_branding_preview_image(filename):
-    template = {
-        "subject": "An example letter",
-        "content": (
-            "Lorem Ipsum is simply dummy text of the printing and typesetting "
-            "industry.\n\nLorem Ipsum has been the industry’s standard dummy "
-            "text ever since the 1500s, when an unknown printer took a galley "
-            "of type and scrambled it to make a type specimen book.\n\n"
-            "# History\n\nIt has survived not only\n\n"
-            "* five centuries\n"
-            "* but also the leap into electronic typesetting\n\n"
-            "It was popularised in the 1960s with the release of Letraset "
-            "sheets containing Lorem Ipsum passages, and more recently with "
-            "desktop publishing software like Aldus PageMaker including "
-            "versions of Lorem Ipsum.\n\n"
-            "The point of using Lorem Ipsum is that it has a more-or-less "
-            "normal distribution of letters, as opposed to using ‘Content "
-            "here, content here’, making it look like readable English."
-        ),
-        "template_type": "letter",
-    }
-    filename = None if filename == "no-branding" else filename
-
-    return TemplatePreview.from_example_template(template, filename)
 
 
 def _view_template_version(service_id, template_id, version, letters_as_pdf=False):

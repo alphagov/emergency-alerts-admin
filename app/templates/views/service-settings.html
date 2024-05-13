@@ -92,19 +92,6 @@
             }}
           {% endcall %}
 
-          {% set email_request_url = url_for('.email_branding_request', service_id=current_service.id) %}
-
-          {% call settings_row(if_has_permission='email') %}
-            {{ text_field('Email branding') }}
-            {{ text_field(current_service.email_branding.name) }}
-            {{ edit_field(
-              'Change',
-              email_request_url,
-              permissions=['manage_service'],
-              suffix='email branding',
-            )}}
-          {% endcall %}
-
           {% call settings_row(if_has_permission='email') %}
             {{ text_field('Send files by email') }}
             {{ optional_text_field(current_service.contact_link, default="Not set up", truncate=true) }}
@@ -254,17 +241,6 @@
             }}
           {% endcall %}
 
-          {% call settings_row(if_has_permission='letter') %}
-            {{ text_field('Letter branding') }}
-            {{ optional_text_field(current_service.letter_branding.name) }}
-            {{ edit_field(
-              'Change',
-              url_for('.letter_branding_request', service_id=current_service.id),
-              permissions=['manage_service'],
-              suffix='letter branding',
-            )}}
-          {% endcall %}
-
         {% endcall %}
       {% endif %}
     </div>
@@ -383,16 +359,6 @@
             {{ text_field('Free text message allowance')}}
             {{ text_field('{:,} per year'.format(current_service.free_sms_fragment_limit)) }}
             {{ edit_field('Change', url_for('.set_free_sms_allowance', service_id=current_service.id), suffix='free text message allowance') }}
-          {% endcall %}
-          {% call row() %}
-            {{ text_field('Email branding' )}}
-            {{ text_field(current_service.email_branding.name) }}
-            {{ edit_field('Change', url_for('.service_set_branding', service_id=current_service.id, notification_type='email'), suffix='email branding (admin view)') }}
-          {% endcall %}
-          {% call row() %}
-            {{ text_field('Letter branding')}}
-            {{ optional_text_field(current_service.letter_branding.name) }}
-            {{ edit_field('Change', url_for('.service_set_branding', service_id=current_service.id, notification_type='letter'), suffix='letter branding (admin view)') }}
           {% endcall %}
           {% call row() %}
             {{ text_field('Custom data retention')}}

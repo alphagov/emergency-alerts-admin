@@ -5,8 +5,6 @@ import requests
 from emergency_alerts_utils.pdf import extract_page_from_pdf
 from flask import current_app, json
 
-from app import current_service
-
 
 class TemplatePreview:
     @staticmethod
@@ -21,7 +19,6 @@ class TemplatePreview:
             "letter_contact_block": template.get("reply_to_text", ""),
             "template": template,
             "values": values,
-            "filename": current_service.letter_branding.filename,
         }
         resp = requests.post(
             "{}/preview.{}{}".format(

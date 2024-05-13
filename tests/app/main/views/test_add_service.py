@@ -129,7 +129,6 @@ def test_should_add_service_and_redirect_to_tour_when_no_services(
     mock_create_service_template,
     mock_get_services_with_no_services,
     api_user_active,
-    mock_get_all_email_branding,
     inherited,
     platform_admin_user_no_service_permissions,
     posted,
@@ -181,7 +180,6 @@ def test_add_service_has_to_choose_org_type(
     mock_create_service_template,
     mock_get_services_with_no_services,
     api_user_active,
-    mock_get_all_email_branding,
 ):
     mocker.patch(
         "app.organisations_client.get_organisation_by_domain",
@@ -225,7 +223,6 @@ def test_should_add_service_and_redirect_to_dashboard_when_existing_service(
     api_user_active,
     organisation_type,
     free_allowance,
-    mock_get_all_email_branding,
 ):
     client_request.login(platform_admin_user_no_service_permissions)
     client_request.post(

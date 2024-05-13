@@ -94,13 +94,11 @@ from app.notify_client.billing_api_client import billing_api_client
 from app.notify_client.broadcast_message_api_client import broadcast_message_api_client
 from app.notify_client.complaint_api_client import complaint_api_client
 from app.notify_client.contact_list_api_client import contact_list_api_client
-from app.notify_client.email_branding_client import email_branding_client
 from app.notify_client.events_api_client import events_api_client
 from app.notify_client.feature_toggle_api_client import feature_toggle_api_client
 from app.notify_client.inbound_number_client import inbound_number_client
 from app.notify_client.invite_api_client import invite_api_client
 from app.notify_client.job_api_client import job_api_client
-from app.notify_client.letter_branding_client import letter_branding_client
 from app.notify_client.letter_jobs_client import letter_jobs_client
 from app.notify_client.notification_api_client import notification_api_client
 from app.notify_client.org_invite_api_client import org_invite_api_client
@@ -172,13 +170,11 @@ def create_app(application):
         broadcast_message_api_client,
         contact_list_api_client,
         complaint_api_client,
-        email_branding_client,
         events_api_client,
         feature_toggle_api_client,
         inbound_number_client,
         invite_api_client,
         job_api_client,
-        letter_branding_client,
         letter_jobs_client,
         notification_api_client,
         org_invite_api_client,

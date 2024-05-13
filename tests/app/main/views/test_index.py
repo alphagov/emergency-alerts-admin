@@ -5,8 +5,7 @@ from bs4 import BeautifulSoup
 from flask import url_for
 from freezegun import freeze_time
 
-from app.main.forms import FieldWithNoneOption
-from tests.conftest import SERVICE_ONE_ID, normalize_spaces, sample_uuid
+from tests.conftest import SERVICE_ONE_ID, normalize_spaces
 
 
 def test_non_logged_in_user_redirects_to_sign_in(
@@ -92,7 +91,6 @@ def test_hiding_pages_from_search_engines(
         "how_to_pay",
         "get_started",
         "guidance_index",
-        "branding_and_customisation",
         "create_and_send_messages",
         "edit_and_format_messages",
         "send_files_by_email",
@@ -240,71 +238,6 @@ def test_resources_that_use_asset_path_variable_have_correct_path(client_request
     favicon = page.select_one('link[type="image/x-icon"]')
 
     assert favicon.attrs["href"].startswith("https://static.example.com/images/favicon.ico")
-
-
-@pytest.mark.parametrize(
-    "extra_args, email_branding_retrieved",
-    (
-        (
-            {},
-            False,
-        ),
-        (
-            {"branding_style": "__NONE__"},
-            False,
-        ),
-        (
-            {"branding_style": "custom", "type": "org"},
-            False,
-        ),
-        (
-            {"branding_style": sample_uuid()},
-            True,
-        ),
-    ),
-)
-def test_email_branding_preview(
-    client_request,
-    mock_get_email_branding,
-    extra_args,
-    email_branding_retrieved,
-):
-    page = client_request.get("main.email_template", _test_page_title=False, **extra_args)
-    assert page.select_one("title").text == "Email branding preview"
-    assert mock_get_email_branding.called is email_branding_retrieved
-
-
-@pytest.mark.parametrize(
-    "branding_style, filename",
-    [("hm-government", "hm-government"), (None, "no-branding"), (FieldWithNoneOption.NONE_OPTION_VALUE, "no-branding")],
-)
-def test_letter_template_preview_links_to_the_correct_image(
-    client_request,
-    mocker,
-    mock_get_letter_branding_by_id,
-    branding_style,
-    filename,
-):
-    page = client_request.get(
-        "main.letter_template",
-        _test_page_title=False,
-        # Letter HTML doesn’t use the Design System, so elements won’t have class attributes
-        _test_for_elements_without_class=False,
-        branding_style=branding_style,
-    )
-
-    image_link = page.select_one("img")["src"]
-
-    assert image_link == url_for("no_cookie.letter_branding_preview_image", filename=filename, page=1)
-
-
-def test_letter_template_preview_headers(
-    client_request,
-    mock_get_letter_branding_by_id,
-):
-    response = client_request.get_response("main.letter_template", branding_style="hm-government")
-
-    assert response.headers.get("X-Frame-Options") == "SAMEORIGIN"
 
 
 def test_letter_spec_redirect(client_request):

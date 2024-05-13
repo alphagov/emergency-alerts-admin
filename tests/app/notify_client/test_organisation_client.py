@@ -149,36 +149,6 @@ def test_deletes_domain_cache(
                 call("domains"),
             ],
         ),
-        (
-            {"letter_branding_id": "new id"},
-            [
-                call("organisation-6ce466d0-fd6a-11e5-82f5-e0accb9d11a6-letter-branding-pool"),
-                call("organisations"),
-                call("domains"),
-            ],
-        ),
-        (
-            {"letter_branding_id": None},
-            [
-                call("organisations"),
-                call("domains"),
-            ],
-        ),
-        (
-            {"email_branding_id": "new id"},
-            [
-                call("organisation-6ce466d0-fd6a-11e5-82f5-e0accb9d11a6-email-branding-pool"),
-                call("organisations"),
-                call("domains"),
-            ],
-        ),
-        (
-            {"email_branding_id": None},
-            [
-                call("organisations"),
-                call("domains"),
-            ],
-        ),
     ),
 )
 def test_update_organisation_when_not_updating_org_type(
@@ -244,25 +214,9 @@ def test_update_organisation_when_to_updating_to_an_nhs_org_type(mocker, org_typ
 
     mock_post.assert_called_with(url=f"/organisations/{fake_uuid}", data={"organisation_type": org_type})
     assert mock_redis_delete.call_args_list == [
-        call(f"organisation-{fake_uuid}-email-branding-pool"),
-        call(f"organisation-{fake_uuid}-letter-branding-pool"),
         call("organisations"),
         call("domains"),
     ]
-
-
-def test_add_brandings_to_email_branding_pool(mocker, fake_uuid):
-    mock_redis_delete = mocker.patch("app.extensions.RedisClient.delete")
-    mock_post = mocker.patch("app.notify_client.organisations_api_client.OrganisationsClient.post")
-
-    organisations_client.add_brandings_to_email_branding_pool(
-        fake_uuid,
-        branding_ids=["abcd", "efgh"],
-    )
-    mock_post.assert_called_with(
-        url=f"/organisations/{fake_uuid}/email-branding-pool", data={"branding_ids": ["abcd", "efgh"]}
-    )
-    mock_redis_delete.assert_called_once_with(f"organisation-{fake_uuid}-email-branding-pool")
 
 
 def test_update_service_organisation_deletes_cache(mocker, fake_uuid):
@@ -309,65 +263,3 @@ def test_archive_organisation(mocker):
         call("organisations"),
     ]
     mock_post.assert_called_with(url=f"/organisations/{org_id}/archive", data=None)
-
-
-def test_remove_email_branding_from_organisation_pool(mocker):
-    mock_redis_delete = mocker.patch("app.extensions.RedisClient.delete")
-    mock_delete = mocker.patch("app.notify_client.organisations_api_client.OrganisationsClient.delete")
-
-    org_id = "abcd-1234"
-    branding_id = "efgh-5678"
-
-    organisations_client.remove_email_branding_from_pool(
-        org_id=org_id,
-        branding_id=branding_id,
-    )
-
-    assert mock_redis_delete.call_args_list == [call(f"organisation-{org_id}-email-branding-pool")]
-    mock_delete.assert_called_with(f"/organisations/{org_id}/email-branding-pool/{branding_id}")
-
-
-def test_get_letter_branding_pool(mocker):
-    mock_redis_set = mocker.patch("app.extensions.RedisClient.set")
-    mock_get = mocker.patch(
-        "app.notify_client.organisations_api_client.OrganisationsClient.get",
-        return_value={"data": {"filename": "gov.svg"}},
-    )
-
-    org_id = "abcd-1234"
-    organisations_client.get_letter_branding_pool(org_id)
-
-    mock_redis_set.assert_called_once_with(
-        f"organisation-{org_id}-letter-branding-pool", '{"filename": "gov.svg"}', ex=604800
-    )
-    mock_get.assert_called_with(url=f"/organisations/{org_id}/letter-branding-pool")
-
-
-def test_add_brandings_to_letter_branding_pool(mocker, fake_uuid):
-    mock_redis_delete = mocker.patch("app.extensions.RedisClient.delete")
-    mock_post = mocker.patch("app.notify_client.organisations_api_client.OrganisationsClient.post")
-
-    organisations_client.add_brandings_to_letter_branding_pool(
-        fake_uuid,
-        branding_ids=["abcd", "efgh"],
-    )
-    mock_post.assert_called_with(
-        url=f"/organisations/{fake_uuid}/letter-branding-pool", data={"branding_ids": ["abcd", "efgh"]}
-    )
-    mock_redis_delete.assert_called_once_with(f"organisation-{fake_uuid}-letter-branding-pool")
-
-
-def test_remove_letter_branding_from_organisation_pool(mocker):
-    mock_redis_delete = mocker.patch("app.extensions.RedisClient.delete")
-    mock_delete = mocker.patch("app.notify_client.organisations_api_client.OrganisationsClient.delete")
-
-    org_id = "abcd-1234"
-    branding_id = "efgh-5678"
-
-    organisations_client.remove_letter_branding_from_pool(
-        org_id=org_id,
-        branding_id=branding_id,
-    )
-
-    assert mock_redis_delete.call_args_list == [call(f"organisation-{org_id}-letter-branding-pool")]
-    mock_delete.assert_called_with(f"/organisations/{org_id}/letter-branding-pool/{branding_id}")
