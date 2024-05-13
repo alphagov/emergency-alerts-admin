@@ -28,7 +28,6 @@ main.after_request(save_service_or_org_after_request)
 
 from app.main.views import (  # noqa isort:skip
     add_service,
-    agreement,
     api_keys,
     broadcast,
     choose_account,

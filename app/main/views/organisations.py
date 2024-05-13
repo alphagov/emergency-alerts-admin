@@ -91,12 +91,7 @@ def add_organisation_from_gp_service(service_id):
             organisation_type="nhs_gp",
             agreement_signed=False,
         ).associate_service(service_id)
-        return redirect(
-            url_for(
-                ".service_agreement",
-                service_id=service_id,
-            )
-        )
+        return redirect(url_for(".index"))
 
     return render_template("views/organisations/add-gp-organisation.html", form=form)
 
@@ -119,12 +114,7 @@ def add_organisation_from_nhs_local_service(service_id):
 
     if form.validate_on_submit():
         Organisation.from_id(form.organisations.data).associate_service(service_id)
-        return redirect(
-            url_for(
-                ".service_agreement",
-                service_id=service_id,
-            )
-        )
+        return redirect(url_for(".index"))
 
     return render_template(
         "views/organisations/add-nhs-local-organisation.html",
