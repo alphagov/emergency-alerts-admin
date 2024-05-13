@@ -16,6 +16,7 @@ from app.main.forms import (
 from app.models.broadcast_message import BroadcastMessage, BroadcastMessages
 from app.utils import service_has_permission
 from app.utils.broadcast import (
+    adding_invalid_coords_errors_to_form,
     all_coordinate_form_fields_empty,
     all_fields_empty,
     check_coordinates_valid_for_enclosed_polygons,
@@ -491,7 +492,6 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
         count_of_phones,
         count_of_phones_likely,
         marker,
-        show_error,
     ) = (
         None,
         None,
@@ -500,7 +500,6 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
         None,
         None,
         None,
-        False,
     )
     broadcast_message = BroadcastMessage.from_id(
         broadcast_message_id,
@@ -532,7 +531,7 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
         )
         broadcast_message.clear_areas()
         if not in_enclosed_polygons:  # if coordinate not in either UK or test area
-            show_error = True
+            adding_invalid_coords_errors_to_form(coordinate_type, form)
         else:  # if in either test area or UK, the coordinates are passed into the jinja to be displayed on leaflet map
             Point = normalising_point(first_coordinate, second_coordinate, coordinate_type)
             marker = [Point.y, Point.x]
@@ -566,7 +565,7 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
                 ) = extract_attributes_from_custom_area(polygon)
 
         else:
-            show_error = True
+            adding_invalid_coords_errors_to_form(coordinate_type, form)
             broadcast_message.clear_areas()
         if preview_button_clicked(request):
             """
@@ -591,7 +590,6 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
         count_of_phones,
         count_of_phones_likely,
         marker,
-        show_error,
         broadcast_message,
         form,
     )

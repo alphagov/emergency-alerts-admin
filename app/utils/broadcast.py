@@ -235,7 +235,6 @@ def render_coordinates_page(
     count_of_phones,
     count_of_phones_likely,
     marker,
-    show_error,
     broadcast_message,
     form,
 ):
@@ -250,7 +249,6 @@ def render_coordinates_page(
             library_slug="coordinates",
         ),
         form=form,
-        show_error=show_error,
         coordinate_type=coordinate_type,
         marker=marker,
         bleed=bleed,
@@ -267,3 +265,12 @@ def validate_form_based_on_fields_entered(request, form):
         form.validate_on_submit()
     elif request.form.get("search_btn"):
         form.pre_validate(form)
+
+
+def adding_invalid_coords_errors_to_form(coordinate_type, form):
+    if coordinate_type == "latitude_longitude":
+        form.first_coordinate.errors.append("The latitude and longitude must be within the UK")
+        form.second_coordinate.errors.append("The latitude and longitude must be within the UK")
+    elif coordinate_type == "easting_northing":
+        form.first_coordinate.errors.append("The easting and northing must be within the UK")
+        form.second_coordinate.errors.append("The easting and northing must be within the UK")

@@ -2353,11 +2353,13 @@ def test_add_easting_northing_coordinate_area_to_broadcast(
         ),
         (
             {"first_coordinate": "", "second_coordinate": "", "radius": "", "radius_btn": True},
-            ["Enter a valid easting", "Enter a valid northing", "Enter a radius"],
+            ["The easting and northing must be within the UK", "Enter a radius between 0.1km and 38.0km"],
         ),
         (
             {"first_coordinate": "", "second_coordinate": "", "radius": "", "search_btn": True},
-            ["Enter a valid easting", "Enter a valid northing"],
+            [
+                "The easting and northing must be within the UK",
+            ],
         ),
         (
             {
@@ -2366,8 +2368,8 @@ def test_add_easting_northing_coordinate_area_to_broadcast(
                 "radius": "0",
             },
             [
-                "Enter a valid northing",
-                "Enter a radius",
+                "The easting and northing must be within the UK",
+                "Enter a radius between 0.1km and 38.0km",
             ],  # Only this error displayed as coordinates checked in post-validation
         ),
     ),
@@ -2441,11 +2443,11 @@ def test_easting_northing_coordinate_area_form_errors(
         ),
         (
             {"first_coordinate": "", "second_coordinate": "", "radius": "", "radius_btn": True},
-            ["Enter a valid latitude", "Enter a valid longitude", "Enter a radius"],
+            ["The latitude and longitude must be within the UK", "Enter a radius between 0.1km and 38.0km"],
         ),
         (
             {"first_coordinate": "", "second_coordinate": "", "radius": "", "search_btn": True},
-            ["Enter a valid latitude", "Enter a valid longitude"],
+            ["The latitude and longitude must be within the UK"],
         ),
         (
             {
@@ -2454,8 +2456,8 @@ def test_easting_northing_coordinate_area_form_errors(
                 "radius": "0",
             },
             [
-                "Enter a valid longitude",
-                "Enter a radius",
+                "The latitude and longitude must be within the UK",
+                "Enter a radius between 0.1km and 38.0km",
             ],  # Only this error displayed as coordinates checked in post-validation
         ),
     ),
@@ -2509,27 +2511,42 @@ def test_latitude_longitude_coordinate_area_form_errors(
 
 
 @pytest.mark.parametrize(
-    "post_data, coordinate_type",
+    "post_data, coordinate_type, expected_error",
     (
         (
             {"first_coordinate": "0", "second_coordinate": "0", "radius": "5"},
             "latitude_longitude",
+            [
+                "The latitude and longitude must be within the UK",
+            ],
         ),
         (
             {"first_coordinate": "50", "second_coordinate": "-2", "radius": "5"},
             "latitude_longitude",
+            [
+                "The latitude and longitude must be within the UK",
+            ],
         ),
         (
             {"first_coordinate": "50", "second_coordinate": "50", "radius": "5"},
             "latitude_longitude",
+            [
+                "The latitude and longitude must be within the UK",
+            ],
         ),
         (
             {"first_coordinate": "0", "second_coordinate": "0", "radius": "5"},
             "easting_northing",
+            [
+                "The easting and northing must be within the UK",
+            ],
         ),
         (
             {"first_coordinate": "170000", "second_coordinate": "170000", "radius": "5"},
             "easting_northing",
+            [
+                "The easting and northing must be within the UK",
+            ],
         ),
     ),
 )
@@ -2541,6 +2558,7 @@ def test_non_uk_coordinate_area_form_errors(
     active_user_create_broadcasts_permission,
     post_data,
     coordinate_type,
+    expected_error,
     mock_update_broadcast_message,
 ):
     service_one["permissions"] += ["broadcast"]
@@ -2573,10 +2591,12 @@ def test_non_uk_coordinate_area_form_errors(
     )
     mock_update_broadcast_message.assert_called_once()
     form = page.select_one("form")
-    assert (
-        normalize_spaces(page.select(".govuk-error-message")[0])
-        == "Error: Coordinates entered are not within UK. Enter valid coordinates"
-    )
+    error_list = [
+        normalize_spaces(error)
+        for error in page.select(".govuk-error-summary__list")[0]
+        if normalize_spaces(error) != ""
+    ]
+    assert error_list == expected_error
     assert normalize_spaces(form.select_one("button").text) == "Search"
     assert mock_get_broadcast_message.call_count == 1
 
@@ -2590,7 +2610,7 @@ def test_non_uk_coordinate_area_form_errors(
         ),
         (
             {"postcode": "", "radius": "", "radius_btn": True},
-            ["Enter a postcode", "Enter a radius"],
+            ["Enter a postcode", "Enter a radius between 0.1km and 38.0km"],
         ),
         (
             {"postcode": "TEST", "radius": "10"},

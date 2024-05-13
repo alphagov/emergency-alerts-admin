@@ -7,8 +7,8 @@
 {% from "views/broadcast/macros/area-map.html" import map %}
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
 {% from "govuk_frontend_jinja/components/input/macro.html" import govukInput %}
-{% from "components/error-summary.html" import errorSummary %}
 {% from "components/input-custom-error.html" import inputWithCustomError %}
+{% from "govuk_frontend_jinja/components/error-summary/macro.html" import govukErrorSummary %}
 
 {% block per_page_title %}
 {{ page_title }} – {{ current_service.name }}
@@ -31,14 +31,34 @@
 {% endblock %}
 
 {% if coordinate_type == 'latitude_longitude' %}
-{% set label1 = 'Latitude' %}
-{% set label2 = 'Longitude' %}
+  {% set label1 = 'Latitude' %}
+  {% set label2 = 'Longitude' %}
+  {% set error = "The latitude and longitude must be within the UK" %}
 {% elif coordinate_type == 'easting_northing' %}
-{% set label1 = 'Eastings' %}
-{% set label2 = 'Northings' %}
+  {% set label1 = 'Eastings' %}
+  {% set label2 = 'Northings' %}
+  {% set error = "The easting and northing must be within the UK" %}
 {% endif %}
 
 {% set radius = form.radius.value %}
+
+{% if form.errors %}
+  {% set errors = [] %}
+  {% set errors_to_display = [] %}
+  {% for field_name, error_list in form.errors.items() %}
+    {% if field_name %}
+      {% if error_list[0] == error %}
+        {% if error_list[0] not in errors_to_display %}
+          {% set _ = errors.append({"href": "#" + form[field_name].id, "text": error_list[0]}) %}
+          {% do errors_to_display.append(error_list[0]) %}
+        {% endif %}
+      {% else %}
+        {% set _ = errors.append({"href": "#" + form[field_name].id, "text": error_list[0]}) %}
+        {% do errors_to_display.append(error_list[0]) %}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
 
 {% if bleed %}
   {% set method = 'radius' %}
@@ -48,64 +68,61 @@
 
 
 {% block maincolumn_content %}
-<div class="{% if show_error %}form-group-error{% endif %}">
-  {{ page_header('Choose alert area', classes="heading-no-margin-top") }}
-  {% if not show_error %}
-  {{ errorSummary(form) }}
-  {% else %}
-  <p id="content-error" class="govuk-error-message" data-notify-module="track-error"
-    data-error-type="Coordinates entered are not within UK. Enter valid coordinates" data-error-label="area">
-    <span class="govuk-visually-hidden">Error:</span> Coordinates entered are not within UK. Enter valid coordinates
-  </p>
-  {% endif %}
+{{ page_header('Choose alert area', classes="heading-no-margin-top") }}
 
-  {% call form_wrapper() %}
-  <div class="mapping-form">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <div class="govuk-form-group">
-      {{inputWithCustomError(form.first_coordinate, label1, 'Enter a valid value')}}
-    </div>
-    <div class="mapping-margin-left govuk-form-group">
-      {{inputWithCustomError(form.second_coordinate, label2, 'Enter a valid value')}}
-    </div>
-    <div class="mapping-margin-left govuk-form-group">
-      {{ govukButton({
-      "classes": "notify-simple-search-form__button govuk-button--secondary search-postcode-button",
-      "html": "Search",
-      "name": 'search_btn',
-      "value": True
-      }) }}
-    </div>
-    <div class="mapping-margin-left">
-      {{inputWithCustomError(form.radius, "Radius", 'Enter a valid value')}}
-    </div>
-    <div class="mapping-margin-left govuk-form-group">
-      {{ govukButton({
-      "classes": "notify-simple-search-form__button govuk-button--secondary search-postcode-button",
-      "html": "Add radius",
-      "name": 'radius_btn',
-      "value": True
-      }) }}
-    </div>
-    <div class="preview-button govuk-form-group">
-      {% if bleed %}
-        {{ govukButton({
-        "text": "Preview alert",
-        "classes": "govuk-button notify-simple-search-form__button search-postcode-button",
-        "name": "preview",
-        "value": True
-        }) }}
-      {% else %}
-        {{ govukButton({
-        "text": "Preview alert",
-        "classes": "govuk-button notify-simple-search-form__button search-postcode-button",
-        "disabled": true,
-        "name": "preview"
-        }) }}
-      {% endif %}
-    </div>
+{% if form.errors %}
+  {{ govukErrorSummary({
+    "titleText": "There is a problem",
+    "errorList": errors
+  }) }}
+{% endif %}
+
+{% call form_wrapper() %}
+<div class="mapping-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="govuk-form-group">
+    {{inputWithCustomError(form.first_coordinate, label1, 'Enter a valid value')}}
   </div>
-</div>
+  <div class="mapping-margin-left govuk-form-group">
+    {{inputWithCustomError(form.second_coordinate, label2, 'Enter a valid value')}}
+  </div>
+  <div class="mapping-margin-left govuk-form-group">
+    {{ govukButton({
+    "classes": "notify-simple-search-form__button govuk-button--secondary search-postcode-button",
+    "html": "Search",
+    "name": 'search_btn',
+    "value": True
+    }) }}
+  </div>
+  <div class="mapping-margin-left">
+    {{inputWithCustomError(form.radius, "Radius", 'Enter a valid value')}}
+  </div>
+  <div class="mapping-margin-left govuk-form-group">
+    {{ govukButton({
+    "classes": "notify-simple-search-form__button govuk-button--secondary search-postcode-button",
+    "html": "Add radius",
+    "name": 'radius_btn',
+    "value": True
+    }) }}
+  </div>
+  <div class="preview-button govuk-form-group">
+    {% if bleed %}
+      {{ govukButton({
+      "text": "Preview alert",
+      "classes": "govuk-button notify-simple-search-form__button search-postcode-button",
+      "name": "preview",
+      "value": True
+      }) }}
+    {% else %}
+      {{ govukButton({
+      "text": "Preview alert",
+      "classes": "govuk-button notify-simple-search-form__button search-postcode-button",
+      "disabled": true,
+      "name": "preview"
+      }) }}
+    {% endif %}
+  </div>
+  </div>
 {% endcall %}
 
 <ul class="area-list"></ul>

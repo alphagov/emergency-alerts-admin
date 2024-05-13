@@ -2600,7 +2600,7 @@ class PostcodeForm(StripWhitespaceForm):
         },
         validators=[
             NumberRange(min=0.099, max=38.001, message="Enter a radius between 0.1km and 38.0km"),
-            DataRequired(message="Enter a radius"),
+            DataRequired(message="Enter a radius between 0.1km and 38.0km"),
             Only2DecimalPlaces(),
         ],
     )
@@ -2622,7 +2622,7 @@ class LatitudeLongitudeCoordinatesForm(StripWhitespaceForm):
     first_coordinate = GovukDecimalField(
         "Latitude",
         validators=[
-            InputRequired("Enter a valid latitude"),
+            InputRequired("The latitude and longitude must be within the UK"),
             Only6DecimalPlaces(),
         ],
         param_extensions={
@@ -2633,7 +2633,7 @@ class LatitudeLongitudeCoordinatesForm(StripWhitespaceForm):
     second_coordinate = GovukDecimalField(
         "Longitude",
         validators=[
-            InputRequired("Enter a valid longitude"),
+            InputRequired("The latitude and longitude must be within the UK"),
             Only6DecimalPlaces(),
         ],
         param_extensions={
@@ -2650,7 +2650,7 @@ class LatitudeLongitudeCoordinatesForm(StripWhitespaceForm):
         },
         validators=[
             NumberRange(min=0.099, max=38.001, message="Enter a radius between 0.1km and 38.0km"),
-            DataRequired(message="Enter a radius"),
+            DataRequired(message="Enter a radius between 0.1km and 38.0km"),
             Only2DecimalPlaces(),
         ],
     )
@@ -2677,7 +2677,7 @@ class EastingNorthingCoordinatesForm(StripWhitespaceForm):
             "classes": "govuk-input govuk-input--width-6",
             "attributes": {"pattern": "^-?\\d+(\\.\\d+)?$"},
         },
-        validators=[InputRequired("Enter a valid easting"), Only6DecimalPlaces()],
+        validators=[InputRequired("The easting and northing must be within the UK"), Only6DecimalPlaces()],
     )
     second_coordinate = GovukDecimalField(
         "Northings",
@@ -2685,7 +2685,7 @@ class EastingNorthingCoordinatesForm(StripWhitespaceForm):
             "classes": "govuk-input govuk-input--width-6",
             "attributes": {"pattern": "^-?\\d+(\\.\\d+)?$"},
         },
-        validators=[InputRequired("Enter a valid northing"), Only6DecimalPlaces()],
+        validators=[InputRequired("The easting and northing must be within the UK"), Only6DecimalPlaces()],
     )
     radius = GovukDecimalField(
         "Radius",
@@ -2696,7 +2696,7 @@ class EastingNorthingCoordinatesForm(StripWhitespaceForm):
         },
         validators=[
             NumberRange(min=0.099, max=38.001, message="Enter a radius between 0.1km and 38.0km"),
-            DataRequired(message="Enter a radius"),
+            DataRequired(message="Enter a radius between 0.1km and 38.0km"),
             Only2DecimalPlaces(),
         ],
     )
