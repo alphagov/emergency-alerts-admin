@@ -2615,9 +2615,6 @@ class PostcodeForm(StripWhitespaceForm):
 class LatitudeLongitudeCoordinatesForm(StripWhitespaceForm):
     """
     This form contains the input fields for creation of areas using Latitude & longitude coordinates.
-    For the first coordinate, latitude, to be valid the value entered must be numeric and between -90 and 90,
-    hence the NumberRange validator.
-    For the second coordinate, longitude, to be valid the value again must be number and between -180 and 180.
     There is additional validation post-submission of the form that checks whether the coordinate lies within
     either the UK or the test polygons in Finland, and if both are false then an error is appended to the form.
     """
@@ -2626,7 +2623,6 @@ class LatitudeLongitudeCoordinatesForm(StripWhitespaceForm):
         "Latitude",
         validators=[
             InputRequired("Enter a valid latitude"),
-            NumberRange(min=-90.0099, max=90.001, message="Enter a latitude between -90 and 90"),
             Only6DecimalPlaces(),
         ],
         param_extensions={
@@ -2639,7 +2635,6 @@ class LatitudeLongitudeCoordinatesForm(StripWhitespaceForm):
         validators=[
             InputRequired("Enter a valid longitude"),
             Only6DecimalPlaces(),
-            NumberRange(min=-180.0099, max=180.001, message="Enter a longitude between -180 and 180"),
         ],
         param_extensions={
             "classes": "govuk-input govuk-input--width-6",

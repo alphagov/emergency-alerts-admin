@@ -232,25 +232,25 @@ details .arrow {
   align-self: flex-start;
 }
 
-.search-postcode-form {
-  display: flex;
-  align-items:center;
-}
-
 .mapping-margin-left {
-  margin-left: govuk-spacing(5);
+  margin-left: govuk-spacing(4);
 }
 
 .heading-no-margin-top {
   margin-top: 15px;
 }
 
-.search-coordinates-form{
+.mapping-form {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: flex-start;
 }
 
-.mapping-margin-left-large {
-  margin-left: govuk-spacing(9);
+.mapping-form button {
+  margin-right: govuk-spacing(1);
+}
+
+.preview-button {
+  margin-left: auto;
+  margin-right: govuk-spacing(1);
 }
