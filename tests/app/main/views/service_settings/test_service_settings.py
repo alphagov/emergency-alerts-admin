@@ -1,5 +1,4 @@
 from datetime import datetime
-from functools import partial
 from unittest.mock import ANY, Mock, PropertyMock, call
 from uuid import uuid4
 
@@ -22,16 +21,13 @@ from tests.conftest import (
     ORGANISATION_ID,
     SERVICE_ONE_ID,
     TEMPLATE_ONE_ID,
-    create_active_user_no_api_key_permission,
     create_active_user_no_settings_permission,
     create_active_user_with_permissions,
     create_letter_contact_block,
     create_multiple_email_reply_to_addresses,
     create_multiple_letter_contact_blocks,
-    create_multiple_sms_senders,
     create_platform_admin_user,
     create_reply_to_email_address,
-    create_sms_sender,
     create_template,
     normalize_spaces,
 )
@@ -41,7 +37,6 @@ FAKE_TEMPLATE_ID = uuid4()
 
 @pytest.fixture
 def mock_get_service_settings_page_common(
-    mock_get_inbound_number_for_service,
     mock_get_free_sms_fragment_limit,
     mock_get_service_data_retention,
     mock_get_organisation,
@@ -64,10 +59,8 @@ def mock_get_service_settings_page_common(
                 "Send files by email contact_us@gov.uk Manage sending files by email",
                 "Label Value Action",
                 "Send text messages On Change your settings for sending text messages",
-                "Text message senders GOVUK Manage text message senders",
                 "Start text messages with service name On Change your settings for starting text messages with service name",  # noqa
                 "Send international text messages Off Change your settings for sending international text messages",
-                "Receive text messages Off Change your settings for receiving text messages",
                 "Label Value Action",
                 "Send letters Off Change your settings for sending letters",
             ],
@@ -84,10 +77,8 @@ def mock_get_service_settings_page_common(
                 "Send files by email contact_us@gov.uk Manage sending files by email",
                 "Label Value Action",
                 "Send text messages On Change your settings for sending text messages",
-                "Text message senders GOVUK Manage text message senders",
                 "Start text messages with service name On Change your settings for starting text messages with service name",  # noqa
                 "Send international text messages Off Change your settings for sending international text messages",
-                "Receive text messages Off Change your settings for receiving text messages",
                 "Label Value Action",
                 "Send letters Off Change your settings for sending letters",
                 "Label Value Action",
@@ -513,9 +504,7 @@ def test_broadcast_service_in_training_mode_doesnt_show_trial_mode_content(
 
 
 @freeze_time("2017-04-01 11:09:00.061258")
-def test_switch_service_to_live(
-    client_request, platform_admin_user, mock_update_service, mock_get_inbound_number_for_service
-):
+def test_switch_service_to_live(client_request, platform_admin_user, mock_update_service):
     client_request.login(platform_admin_user)
     client_request.post(
         "main.service_switch_live",
@@ -553,7 +542,6 @@ def test_switch_service_to_restricted(
     platform_admin_user,
     mock_get_live_service,
     mock_update_service,
-    mock_get_inbound_number_for_service,
 ):
     client_request.login(platform_admin_user)
     client_request.post(
@@ -926,134 +914,6 @@ def test_request_to_go_live_redirects_if_service_already_live(
 
     assert page.select_one("h1").text == "Your service is already live"
     assert normalize_spaces(page.select_one("main p").text) == message
-
-
-@pytest.mark.parametrize(
-    (
-        "estimated_sms_volume,"
-        "organisation_type,"
-        "count_of_sms_templates,"
-        "sms_senders,"
-        "expected_sms_sender_checklist_item"
-    ),
-    [
-        pytest.param(0, "local", 0, [], "", marks=pytest.mark.xfail(raises=IndexError)),
-        pytest.param(
-            None,
-            "local",
-            0,
-            [{"is_default": True, "sms_sender": "GOVUK"}],
-            "",
-            marks=pytest.mark.xfail(raises=IndexError),
-        ),
-        pytest.param(
-            1,
-            "central",
-            99,
-            [{"is_default": True, "sms_sender": "GOVUK"}],
-            "",
-            marks=pytest.mark.xfail(raises=IndexError),
-        ),
-        pytest.param(
-            None,
-            "central",
-            99,
-            [{"is_default": True, "sms_sender": "GOVUK"}],
-            "",
-            marks=pytest.mark.xfail(raises=IndexError),
-        ),
-        pytest.param(
-            1,
-            "central",
-            99,
-            [{"is_default": True, "sms_sender": "GOVUK"}],
-            "",
-            marks=pytest.mark.xfail(raises=IndexError),
-        ),
-        (
-            None,
-            "local",
-            1,
-            [],
-            "Change your text message sender name Not completed",
-        ),
-        (
-            1,
-            "nhs_local",
-            0,
-            [],
-            "Change your text message sender name Not completed",
-        ),
-        (
-            None,
-            "school_or_college",
-            1,
-            [{"is_default": True, "sms_sender": "GOVUK"}],
-            "Change your text message sender name Not completed",
-        ),
-        (
-            None,
-            "local",
-            1,
-            [
-                {"is_default": False, "sms_sender": "GOVUK"},
-                {"is_default": True, "sms_sender": "KUVOG"},
-            ],
-            "Change your text message sender name Completed",
-        ),
-        (
-            None,
-            "nhs_local",
-            1,
-            [{"is_default": True, "sms_sender": "KUVOG"}],
-            "Change your text message sender name Completed",
-        ),
-    ],
-)
-def test_should_check_for_sms_sender_on_go_live(
-    client_request,
-    service_one,
-    mocker,
-    mock_get_organisation,
-    mock_get_invites_for_service,
-    organisation_type,
-    count_of_sms_templates,
-    sms_senders,
-    expected_sms_sender_checklist_item,
-    estimated_sms_volume,
-):
-    service_one["organisation_type"] = organisation_type
-
-    mocker.patch(
-        "app.service_api_client.get_service_templates",
-        return_value={"data": [create_template(template_type="sms") for _ in range(0, count_of_sms_templates)]},
-    )
-
-    mocker.patch(
-        "app.models.service.Service.has_team_members",
-        return_value=True,
-    )
-
-    mock_get_sms_senders = mocker.patch(
-        "app.main.views.service_settings.service_api_client.get_sms_senders",
-        return_value=sms_senders,
-    )
-
-    for channel, volume in (("email", 0), ("sms", estimated_sms_volume)):
-        mocker.patch(
-            "app.models.service.Service.volume_{}".format(channel),
-            create=True,
-            new_callable=PropertyMock,
-            return_value=volume,
-        )
-
-    page = client_request.get("main.request_to_go_live", service_id=SERVICE_ONE_ID)
-    assert page.select_one("h1").text == "Before you request to go live"
-
-    checklist_items = page.select(".task-list .task-list-item")
-    assert normalize_spaces(checklist_items[3].text) == expected_sms_sender_checklist_item
-
-    mock_get_sms_senders.assert_called_once_with(SERVICE_ONE_ID)
 
 
 @pytest.mark.parametrize(
@@ -1924,55 +1784,6 @@ def test_route_for_platform_admin(
     )
 
 
-def test_and_more_hint_appears_on_settings_with_more_than_just_a_single_sender(
-    client_request,
-    service_one,
-    multiple_reply_to_email_addresses,
-    multiple_letter_contact_blocks,
-    multiple_sms_senders,
-    mock_get_service_settings_page_common,
-):
-    service_one["permissions"] = ["email", "sms", "letter"]
-
-    page = client_request.get("main.service_settings", service_id=service_one["id"])
-
-    def get_row(page, label):
-        return normalize_spaces(find_element_by_tag_and_partial_text(page, tag="tr", string=label).text)
-
-    assert (
-        get_row(page, "Reply-to email addresses")
-        == "Reply-to email addresses test@example.com …and 2 more Manage reply-to email addresses"
-    )
-    assert (
-        get_row(page, "Text message senders") == "Text message senders Example …and 2 more Manage text message senders"
-    )
-    assert get_row(page, "Sender addresses") == "Sender addresses 1 Example Street …and 2 more Manage sender addresses"
-
-
-@pytest.mark.parametrize(
-    "sender_list_page, index, expected_output",
-    [
-        ("main.service_email_reply_to", 0, "test@example.com (default) Change test@example.com"),
-        ("main.service_letter_contact_details", 1, "1 Example Street (default) Change 1 Example Street"),
-        ("main.service_sms_senders", 0, "GOVUK (default) Change GOVUK"),
-    ],
-)
-def test_api_ids_dont_show_on_option_pages_with_a_single_sender(
-    client_request,
-    single_reply_to_email_address,
-    single_letter_contact_block,
-    mock_get_organisation,
-    single_sms_sender,
-    sender_list_page,
-    index,
-    expected_output,
-):
-    rows = client_request.get(sender_list_page, service_id=SERVICE_ONE_ID).select(".user-list-item")
-
-    assert normalize_spaces(rows[index].text) == expected_output
-    assert len(rows) == index + 1
-
-
 @pytest.mark.parametrize(
     "sender_list_page,endpoint_to_mock,sample_data,expected_items,",
     [
@@ -1995,16 +1806,6 @@ def test_api_ids_dont_show_on_option_pages_with_a_single_sender(
                 "1 Example Street (default) Change 1 Example Street ID: 1234",
                 "2 Example Street Change 2 Example Street ID: 5678",
                 "foo<bar>baz Change foo <bar> baz ID: 9457",
-            ],
-        ),
-        (
-            "main.service_sms_senders",
-            "app.service_api_client.get_sms_senders",
-            create_multiple_sms_senders(),
-            [
-                "Example (default and receives replies) Change Example ID: 1234",
-                "Example 2 Change Example 2 ID: 5678",
-                "Example 3 Change Example 3 ID: 9457",
             ],
         ),
     ],
@@ -2057,31 +1858,6 @@ def test_remove_default_from_default_letter_contact_block(
 
 
 @pytest.mark.parametrize(
-    "sender_list_page, endpoint_to_mock, expected_output",
-    [
-        (
-            "main.service_email_reply_to",
-            "app.service_api_client.get_reply_to_email_addresses",
-            "You have not added any reply-to email addresses yet",
-        ),
-        ("main.service_letter_contact_details", "app.service_api_client.get_letter_contacts", "Blank (default)"),
-        (
-            "main.service_sms_senders",
-            "app.service_api_client.get_sms_senders",
-            "You have not added any text message senders yet",
-        ),
-    ],
-)
-def test_no_senders_message_shows(client_request, sender_list_page, endpoint_to_mock, expected_output, mocker):
-    mocker.patch(endpoint_to_mock, return_value=[])
-
-    rows = client_request.get(sender_list_page, service_id=SERVICE_ONE_ID).select(".user-list-item")
-
-    assert normalize_spaces(rows[0].text) == expected_output
-    assert len(rows) == 1
-
-
-@pytest.mark.parametrize(
     "reply_to_input, expected_error",
     [
         ("", "Cannot be empty"),
@@ -2119,61 +1895,6 @@ def test_incorrect_letter_contact_block_input(
     )
 
     assert normalize_spaces(page.select_one(".error-message").text) == expected_error
-
-
-@pytest.mark.parametrize(
-    "sms_sender_input, expected_error",
-    [
-        ("elevenchars", None),
-        ("11 chars", None),
-        ("", "Cannot be empty"),
-        ("abcdefghijkhgkg", "Enter 11 characters or fewer"),
-        (r" ¯\_(ツ)_/¯ ", "Use letters and numbers only"),
-        ("blood.co.uk", None),
-        ("00123", "Cannot start with 00"),
-    ],
-)
-def test_incorrect_sms_sender_input(
-    sms_sender_input,
-    expected_error,
-    client_request,
-    no_sms_senders,
-    mock_add_sms_sender,
-):
-    page = client_request.post(
-        "main.service_add_sms_sender",
-        service_id=SERVICE_ONE_ID,
-        _data={"sms_sender": sms_sender_input},
-        _expected_status=(200 if expected_error else 302),
-    )
-
-    error_message = page.select_one(".govuk-error-message")
-    count_of_api_calls = len(mock_add_sms_sender.call_args_list)
-
-    if not expected_error:
-        assert not error_message
-        assert count_of_api_calls == 1
-    else:
-        assert expected_error in error_message.text
-        assert count_of_api_calls == 0
-
-
-def test_incorrect_sms_sender_input_with_multiple_errors_only_shows_the_first(
-    client_request,
-    no_sms_senders,
-    mock_add_sms_sender,
-):
-    # There are two errors with the SMS sender - the length and characters used. Only one
-    # should be displayed on the page.
-    page = client_request.post(
-        "main.service_add_sms_sender", service_id=SERVICE_ONE_ID, _data={"sms_sender": "{}"}, _expected_status=200
-    )
-
-    error_message = page.select_one(".govuk-error-message")
-    count_of_api_calls = len(mock_add_sms_sender.call_args_list)
-
-    assert normalize_spaces(error_message.text) == "Error: Enter 3 characters or more"
-    assert count_of_api_calls == 0
 
 
 @pytest.mark.parametrize(
@@ -2391,22 +2112,6 @@ def test_add_letter_contact_when_coming_from_template(
         fake_uuid,
         "1234",
     )
-
-
-@pytest.mark.parametrize(
-    "sms_senders, data, api_default_args",
-    [
-        ([], {}, True),
-        (create_multiple_sms_senders(), {}, False),
-        (create_multiple_sms_senders(), {"is_default": "y"}, True),
-    ],
-)
-def test_add_sms_sender(sms_senders, data, api_default_args, mocker, client_request, mock_add_sms_sender):
-    mocker.patch("app.service_api_client.get_sms_senders", return_value=sms_senders)
-    data["sms_sender"] = "Example"
-    client_request.post("main.service_add_sms_sender", service_id=SERVICE_ONE_ID, _data=data)
-
-    mock_add_sms_sender.assert_called_once_with(SERVICE_ONE_ID, sms_sender="Example", is_default=api_default_args)
 
 
 @pytest.mark.parametrize(
@@ -2749,25 +2454,6 @@ def test_delete_letter_contact_block(
 
 
 @pytest.mark.parametrize(
-    "sms_sender, data, api_default_args",
-    [
-        (create_sms_sender(), {"is_default": "y", "sms_sender": "test"}, True),
-        (create_sms_sender(), {"sms_sender": "test"}, True),
-        (create_sms_sender(is_default=False), {"sms_sender": "test"}, False),
-        (create_sms_sender(is_default=False), {"is_default": "y", "sms_sender": "test"}, True),
-    ],
-)
-def test_edit_sms_sender(sms_sender, data, api_default_args, mocker, fake_uuid, client_request, mock_update_sms_sender):
-    mocker.patch("app.service_api_client.get_sms_sender", return_value=sms_sender)
-
-    client_request.post("main.service_edit_sms_sender", service_id=SERVICE_ONE_ID, sms_sender_id=fake_uuid, _data=data)
-
-    mock_update_sms_sender.assert_called_once_with(
-        SERVICE_ONE_ID, sms_sender_id=fake_uuid, sms_sender="test", is_default=api_default_args
-    )
-
-
-@pytest.mark.parametrize(
     "sender_page, endpoint_to_mock, sender_details, default_message, params, checkbox_present",
     [
         (
@@ -2800,22 +2486,6 @@ def test_edit_sms_sender(sms_sender, data, api_default_args, mocker, fake_uuid, 
             create_letter_contact_block(is_default=False),
             "THIS TEXT WONT BE TESTED",
             "letter_contact_id",
-            True,
-        ),
-        (
-            "main.service_edit_sms_sender",
-            "app.service_api_client.get_sms_sender",
-            create_sms_sender(is_default=True),
-            "This is the default text message sender.",
-            "sms_sender_id",
-            False,
-        ),
-        (
-            "main.service_edit_sms_sender",
-            "app.service_api_client.get_sms_sender",
-            create_sms_sender(is_default=False),
-            "This is the default text message sender.",
-            "sms_sender_id",
             True,
         ),
     ],
@@ -2855,145 +2525,6 @@ def test_sender_details_are_escaped(client_request, mocker, fake_uuid):
 
     # get the second row (first is the default Blank sender)
     assert "foo<br>bar" in normalize_spaces(page.select(".user-list-item")[1].text)
-
-
-@pytest.mark.parametrize(
-    "sms_sender, expected_link_text, partial_href",
-    [
-        (
-            create_sms_sender(is_default=False),
-            "Delete",
-            partial(url_for, "main.service_confirm_delete_sms_sender", sms_sender_id=sample_uuid()),
-        ),
-        (
-            create_sms_sender(is_default=True),
-            None,
-            None,
-        ),
-    ],
-)
-def test_shows_delete_link_for_sms_sender(
-    mocker,
-    sms_sender,
-    expected_link_text,
-    partial_href,
-    fake_uuid,
-    client_request,
-):
-    mocker.patch("app.service_api_client.get_sms_sender", return_value=sms_sender)
-
-    page = client_request.get(
-        "main.service_edit_sms_sender",
-        service_id=SERVICE_ONE_ID,
-        sms_sender_id=sample_uuid(),
-    )
-
-    link = page.select_one(".page-footer a")
-    back_link = page.select_one(".govuk-back-link")
-
-    assert back_link.text.strip() == "Back"
-    assert back_link["href"] == url_for(
-        ".service_sms_senders",
-        service_id=SERVICE_ONE_ID,
-    )
-
-    if expected_link_text:
-        assert normalize_spaces(link.text) == expected_link_text
-        assert link["href"] == partial_href(service_id=SERVICE_ONE_ID)
-    else:
-        assert not link
-
-
-def test_confirm_delete_sms_sender(
-    fake_uuid,
-    client_request,
-    get_non_default_sms_sender,
-):
-    page = client_request.get(
-        "main.service_confirm_delete_sms_sender",
-        service_id=SERVICE_ONE_ID,
-        sms_sender_id=fake_uuid,
-        _test_page_title=False,
-    )
-
-    assert normalize_spaces(page.select_one(".banner-dangerous").text) == (
-        "Are you sure you want to delete this text message sender? Yes, delete"
-    )
-    assert "action" not in page.select_one(".banner-dangerous form")
-    assert page.select_one(".banner-dangerous form")["method"] == "post"
-
-
-@pytest.mark.parametrize(
-    "sms_sender, expected_link_text",
-    [
-        (create_sms_sender(is_default=False, inbound_number_id="1234"), None),
-        (create_sms_sender(is_default=True), None),
-        (create_sms_sender(is_default=False), "Delete"),
-    ],
-)
-def test_inbound_sms_sender_is_not_deleteable(
-    client_request, service_one, fake_uuid, sms_sender, expected_link_text, mocker
-):
-    mocker.patch("app.service_api_client.get_sms_sender", return_value=sms_sender)
-
-    page = client_request.get(
-        ".service_edit_sms_sender",
-        service_id=SERVICE_ONE_ID,
-        sms_sender_id=fake_uuid,
-    )
-
-    back_link = page.select_one(".govuk-back-link")
-    footer_link = page.select_one(".page-footer a")
-    assert normalize_spaces(back_link.text) == "Back"
-
-    if expected_link_text:
-        assert normalize_spaces(footer_link.text) == expected_link_text
-    else:
-        assert not footer_link
-
-
-def test_delete_sms_sender(
-    client_request,
-    service_one,
-    fake_uuid,
-    get_non_default_sms_sender,
-    mocker,
-):
-    mock_delete = mocker.patch("app.service_api_client.delete_sms_sender")
-    client_request.post(
-        ".service_delete_sms_sender",
-        service_id=SERVICE_ONE_ID,
-        sms_sender_id=fake_uuid,
-        _expected_redirect=url_for(
-            "main.service_sms_senders",
-            service_id=SERVICE_ONE_ID,
-        ),
-    )
-    mock_delete.assert_called_once_with(service_id=SERVICE_ONE_ID, sms_sender_id=fake_uuid)
-
-
-@pytest.mark.parametrize(
-    "sms_sender, hide_textbox",
-    [
-        (create_sms_sender(is_default=False, inbound_number_id="1234"), True),
-        (create_sms_sender(is_default=True), False),
-    ],
-)
-def test_inbound_sms_sender_is_not_editable(client_request, service_one, fake_uuid, sms_sender, hide_textbox, mocker):
-    mocker.patch("app.service_api_client.get_sms_sender", return_value=sms_sender)
-
-    page = client_request.get(
-        ".service_edit_sms_sender",
-        service_id=SERVICE_ONE_ID,
-        sms_sender_id=fake_uuid,
-    )
-
-    assert bool(page.select_one("input[name=sms_sender]")) != hide_textbox
-    if hide_textbox:
-        assert (
-            normalize_spaces(page.select_one('form[method="post"] p').text)
-            == "GOVUK This phone number receives replies and cannot be changed"
-        )
 
 
 def test_shows_research_mode_indicator(
@@ -3646,16 +3177,6 @@ def test_send_files_by_email_contact_details_does_not_update_invalid_contact_det
 @pytest.mark.parametrize(
     "endpoint, permissions, expected_p",
     [
-        (
-            "main.service_set_inbound_sms",
-            ["sms"],
-            "Contact us if you want to be able to receive text messages from your users.",
-        ),
-        (
-            "main.service_set_inbound_sms",
-            ["sms", "inbound_sms"],
-            "Your service can receive text messages sent to 0781239871.",
-        ),
         ("main.service_set_auth_type", [], "Text message code"),
         ("main.service_set_auth_type", ["email_auth"], "Email link or text message code"),
     ],
@@ -3663,7 +3184,6 @@ def test_send_files_by_email_contact_details_does_not_update_invalid_contact_det
 def test_invitation_pages(
     client_request,
     service_one,
-    mock_get_inbound_number_for_service,
     single_sms_sender,
     endpoint,
     permissions,
@@ -3676,87 +3196,6 @@ def test_invitation_pages(
     )
 
     assert normalize_spaces(page.select("main p")[0].text) == expected_p
-
-
-def test_service_settings_when_inbound_number_is_not_set(
-    client_request,
-    service_one,
-    single_reply_to_email_address,
-    single_letter_contact_block,
-    mock_get_organisation,
-    single_sms_sender,
-    mocker,
-    mock_get_free_sms_fragment_limit,
-    mock_get_service_data_retention,
-):
-    mocker.patch("app.inbound_number_client.get_inbound_sms_number_for_service", return_value={"data": {}})
-    client_request.get(
-        "main.service_settings",
-        service_id=SERVICE_ONE_ID,
-    )
-
-
-def test_set_inbound_sms_when_inbound_number_is_not_set(
-    client_request,
-    service_one,
-    single_reply_to_email_address,
-    single_letter_contact_block,
-    single_sms_sender,
-    mocker,
-):
-    mocker.patch("app.inbound_number_client.get_inbound_sms_number_for_service", return_value={"data": {}})
-    client_request.get(
-        "main.service_set_inbound_sms",
-        service_id=SERVICE_ONE_ID,
-    )
-
-
-@pytest.mark.parametrize(
-    "user, expected_paragraphs",
-    [
-        (
-            create_active_user_with_permissions(),
-            [
-                "Your service can receive text messages sent to 07700900123.",
-                "You can still send text messages from a sender name if you "
-                "need to, but users will not be able to reply to those messages.",
-                "Contact us if you want to switch this feature off.",
-                "You can set up callbacks for received text messages on the API integration page.",
-            ],
-        ),
-        (
-            create_active_user_no_api_key_permission(),
-            [
-                "Your service can receive text messages sent to 07700900123.",
-                "You can still send text messages from a sender name if you "
-                "need to, but users will not be able to reply to those messages.",
-                "Contact us if you want to switch this feature off.",
-            ],
-        ),
-    ],
-)
-def test_set_inbound_sms_when_inbound_number_is_set(
-    client_request,
-    service_one,
-    mocker,
-    user,
-    expected_paragraphs,
-):
-    service_one["permissions"] = ["inbound_sms"]
-    mocker.patch(
-        "app.inbound_number_client.get_inbound_sms_number_for_service", return_value={"data": {"number": "07700900123"}}
-    )
-    client_request.login(user)
-    page = client_request.get(
-        "main.service_set_inbound_sms",
-        service_id=SERVICE_ONE_ID,
-    )
-    paragraphs = page.select("main p")
-
-    assert len(paragraphs) == len(expected_paragraphs)
-
-    for index, p in enumerate(expected_paragraphs):
-        assert normalize_spaces(paragraphs[index].text) == p
 
 
 def test_show_sms_prefixing_setting_page(

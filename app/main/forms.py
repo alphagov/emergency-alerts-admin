@@ -65,10 +65,8 @@ from app.main.validators import (
     CharactersNotAllowed,
     CommonlyUsedPassword,
     CsvFileValidator,
-    DoesNotStartWithDoubleZero,
     FileIsVirusFree,
     IsPostcode,
-    LettersNumbersSingleQuotesFullStopsAndUnderscoresOnly,
     MustContainAlphanumericCharacters,
     NoCommasInPlaceHolders,
     NoEmbeddedImagesInSVG,
@@ -1577,24 +1575,6 @@ class ServiceReplyToEmailForm(StripWhitespaceForm):
     is_default = GovukCheckboxField("Make this email address the default")
 
 
-class ServiceSmsSenderForm(StripWhitespaceForm):
-    sms_sender = GovukTextInputField(
-        "Text message sender",
-        validators=[
-            DataRequired(message="Cannot be empty"),
-            Length(max=11, message="Enter 11 characters or fewer"),
-            Length(min=3, message="Enter 3 characters or more"),
-            LettersNumbersSingleQuotesFullStopsAndUnderscoresOnly(),
-            DoesNotStartWithDoubleZero(),
-        ],
-    )
-    is_default = GovukCheckboxField("Make this text message sender the default")
-
-
-class ServiceEditInboundNumberForm(StripWhitespaceForm):
-    is_default = GovukCheckboxField("Make this text message sender the default")
-
-
 class AdminNotesForm(StripWhitespaceForm):
     notes = TextAreaField(validators=[])
 
@@ -1756,17 +1736,6 @@ class SearchTemplatesForm(StripWhitespaceForm):
 
 class PlaceholderForm(StripWhitespaceForm):
     pass
-
-
-class AdminServiceInboundNumberForm(StripWhitespaceForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.inbound_number.choices = kwargs["inbound_number_choices"]
-
-    inbound_number = GovukRadiosField(
-        "Set inbound number",
-        thing="an inbound number",
-    )
 
 
 class CallbackForm(StripWhitespaceForm):

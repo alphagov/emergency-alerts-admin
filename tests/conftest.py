@@ -22,7 +22,6 @@ from . import (
     broadcast_message_json,
     contact_list_json,
     generate_uuid,
-    inbound_sms_json,
     invite_json,
     job_json,
     notification_json,
@@ -301,7 +300,6 @@ def multiple_sms_senders(mocker):
                 "sms_sender": "Example",
                 "is_default": True,
                 "created_at": datetime.utcnow(),
-                "inbound_number_id": "1234",
                 "updated_at": None,
             },
             {
@@ -310,7 +308,6 @@ def multiple_sms_senders(mocker):
                 "sms_sender": "Example 2",
                 "is_default": False,
                 "created_at": datetime.utcnow(),
-                "inbound_number_id": None,
                 "updated_at": None,
             },
             {
@@ -319,7 +316,6 @@ def multiple_sms_senders(mocker):
                 "sms_sender": "Example 3",
                 "is_default": False,
                 "created_at": datetime.utcnow(),
-                "inbound_number_id": None,
                 "updated_at": None,
             },
         ]
@@ -337,7 +333,6 @@ def multiple_sms_senders_with_diff_default(mocker):
                 "sms_sender": "Example",
                 "is_default": True,
                 "created_at": datetime.utcnow(),
-                "inbound_number_id": None,
                 "updated_at": None,
             },
             {
@@ -346,7 +341,6 @@ def multiple_sms_senders_with_diff_default(mocker):
                 "sms_sender": "Example 2",
                 "is_default": False,
                 "created_at": datetime.utcnow(),
-                "inbound_number_id": None,
                 "updated_at": None,
             },
             {
@@ -355,7 +349,6 @@ def multiple_sms_senders_with_diff_default(mocker):
                 "sms_sender": "Example 3",
                 "is_default": False,
                 "created_at": datetime.utcnow(),
-                "inbound_number_id": "12354",
                 "updated_at": None,
             },
         ]
@@ -373,7 +366,6 @@ def multiple_sms_senders_no_inbound(mocker):
                 "sms_sender": "Example",
                 "is_default": True,
                 "created_at": datetime.utcnow(),
-                "inbound_number_id": None,
                 "updated_at": None,
             },
             {
@@ -382,7 +374,6 @@ def multiple_sms_senders_no_inbound(mocker):
                 "sms_sender": "Example 2",
                 "is_default": False,
                 "created_at": datetime.utcnow(),
-                "inbound_number_id": None,
                 "updated_at": None,
             },
         ]
@@ -408,28 +399,11 @@ def single_sms_sender(mocker):
                 "sms_sender": "GOVUK",
                 "is_default": True,
                 "created_at": datetime.utcnow(),
-                "inbound_number_id": None,
                 "updated_at": None,
             }
         ]
 
     return mocker.patch("app.service_api_client.get_sms_senders", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
-def get_default_sms_sender(mocker):
-    def _get(service_id, sms_sender_id):
-        return {
-            "id": "1234",
-            "service_id": service_id,
-            "sms_sender": "GOVUK",
-            "is_default": True,
-            "created_at": datetime.utcnow(),
-            "inbound_number_id": None,
-            "updated_at": None,
-        }
-
-    return mocker.patch("app.service_api_client.get_sms_sender", side_effect=_get)
 
 
 @pytest.fixture(scope="function")
@@ -441,7 +415,6 @@ def get_non_default_sms_sender(mocker):
             "sms_sender": "GOVUK",
             "is_default": False,
             "created_at": datetime.utcnow(),
-            "inbound_number_id": None,
             "updated_at": None,
         }
 
@@ -450,7 +423,7 @@ def get_non_default_sms_sender(mocker):
 
 @pytest.fixture(scope="function")
 def mock_add_sms_sender(mocker):
-    def _add_sms_sender(service_id, sms_sender, is_default=False, inbound_number_id=None):
+    def _add_sms_sender(service_id, sms_sender, is_default=False):
         return
 
     return mocker.patch("app.service_api_client.add_sms_sender", side_effect=_add_sms_sender)
@@ -462,52 +435,6 @@ def mock_update_sms_sender(mocker):
         return
 
     return mocker.patch("app.service_api_client.update_sms_sender", side_effect=_update_sms_sender)
-
-
-@pytest.fixture(scope="function")
-def multiple_available_inbound_numbers(mocker):
-    def _get():
-        return {
-            "data": [
-                {
-                    "active": True,
-                    "created_at": "2017-10-18T16:57:14.154185Z",
-                    "id": "781d9c60-7a7e-46b7-9896-7b045b992fa7",
-                    "number": "0712121214",
-                    "provider": "mmg",
-                    "service": None,
-                    "updated_at": None,
-                },
-                {
-                    "active": True,
-                    "created_at": "2017-10-18T16:57:22.585806Z",
-                    "id": "781d9c60-7a7e-46b7-9896-7b045b992fa5",
-                    "number": "0712121215",
-                    "provider": "mmg",
-                    "service": None,
-                    "updated_at": None,
-                },
-                {
-                    "active": True,
-                    "created_at": "2017-10-18T16:57:38.585806Z",
-                    "id": "781d9c61-7a7e-46b7-9896-7b045b992fa5",
-                    "number": "0712121216",
-                    "provider": "mmg",
-                    "service": None,
-                    "updated_at": None,
-                },
-            ]
-        }
-
-    return mocker.patch("app.inbound_number_client.get_available_inbound_sms_numbers", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
-def no_available_inbound_numbers(mocker):
-    def _get():
-        return {"data": []}
-
-    return mocker.patch("app.inbound_number_client.get_available_inbound_sms_numbers", side_effect=_get)
 
 
 @pytest.fixture(scope="function")
@@ -1903,88 +1830,6 @@ def mock_get_notifications_with_no_notifications(mocker):
         return notification_json(service_id, rows=0)
 
     return mocker.patch("app.notification_api_client.get_notifications_for_service", side_effect=_get_notifications)
-
-
-@pytest.fixture(scope="function")
-def mock_get_inbound_sms(mocker):
-    def _get_inbound_sms(service_id, user_number=None, page=1):
-        return inbound_sms_json()
-
-    return mocker.patch(
-        "app.service_api_client.get_inbound_sms",
-        side_effect=_get_inbound_sms,
-    )
-
-
-@pytest.fixture
-def mock_get_inbound_sms_by_id_with_no_messages(mocker):
-    def _get_inbound_sms_by_id(service_id, notification_id):
-        raise HTTPError(response=Mock(status_code=404))
-
-    return mocker.patch(
-        "app.service_api_client.get_inbound_sms_by_id",
-        side_effect=_get_inbound_sms_by_id,
-    )
-
-
-@pytest.fixture(scope="function")
-def mock_get_most_recent_inbound_sms(mocker):
-    def _get_most_recent_inbound_sms(service_id, user_number=None, page=1):
-        return inbound_sms_json()
-
-    return mocker.patch(
-        "app.service_api_client.get_most_recent_inbound_sms",
-        side_effect=_get_most_recent_inbound_sms,
-    )
-
-
-@pytest.fixture(scope="function")
-def mock_get_most_recent_inbound_sms_with_no_messages(mocker):
-    def _get_most_recent_inbound_sms(service_id, user_number=None, page=1):
-        return {"has_next": False, "data": []}
-
-    return mocker.patch(
-        "app.service_api_client.get_most_recent_inbound_sms",
-        side_effect=_get_most_recent_inbound_sms,
-    )
-
-
-@pytest.fixture(scope="function")
-def mock_get_inbound_sms_summary(mocker):
-    def _get_inbound_sms_summary(
-        service_id,
-    ):
-        return {"count": 9999, "most_recent": datetime.utcnow().isoformat()}
-
-    return mocker.patch(
-        "app.service_api_client.get_inbound_sms_summary",
-        side_effect=_get_inbound_sms_summary,
-    )
-
-
-@pytest.fixture(scope="function")
-def mock_get_inbound_sms_summary_with_no_messages(mocker):
-    def _get_inbound_sms_summary(
-        service_id,
-    ):
-        return {"count": 0, "latest_message": None}
-
-    return mocker.patch(
-        "app.service_api_client.get_inbound_sms_summary",
-        side_effect=_get_inbound_sms_summary,
-    )
-
-
-@pytest.fixture(scope="function")
-def mock_get_inbound_number_for_service(mocker):
-    return mocker.patch(
-        "app.inbound_number_client.get_inbound_sms_number_for_service", return_value={"data": {"number": "0781239871"}}
-    )
-
-
-@pytest.fixture(scope="function")
-def mock_no_inbound_number_for_service(mocker):
-    return mocker.patch("app.inbound_number_client.get_inbound_sms_number_for_service", return_value={"data": {}})
 
 
 @pytest.fixture(scope="function")
@@ -3477,7 +3322,6 @@ def create_sms_sender(
     sms_sender="GOVUK",
     is_default=True,
     created_at=None,
-    inbound_number_id=None,
     updated_at=None,
 ):
     return {
@@ -3486,7 +3330,6 @@ def create_sms_sender(
         "sms_sender": sms_sender,
         "is_default": is_default,
         "created_at": created_at,
-        "inbound_number_id": inbound_number_id,
         "updated_at": updated_at,
     }
 
@@ -3499,7 +3342,6 @@ def create_multiple_sms_senders(service_id="abcd"):
             "sms_sender": "Example",
             "is_default": True,
             "created_at": datetime.utcnow(),
-            "inbound_number_id": "1234",
             "updated_at": None,
         },
         {
@@ -3508,7 +3350,6 @@ def create_multiple_sms_senders(service_id="abcd"):
             "sms_sender": "Example 2",
             "is_default": False,
             "created_at": datetime.utcnow(),
-            "inbound_number_id": None,
             "updated_at": None,
         },
         {
@@ -3517,7 +3358,6 @@ def create_multiple_sms_senders(service_id="abcd"):
             "sms_sender": "Example 3",
             "is_default": False,
             "created_at": datetime.utcnow(),
-            "inbound_number_id": None,
             "updated_at": None,
         },
     ]
