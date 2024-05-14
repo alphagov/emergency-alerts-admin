@@ -295,7 +295,7 @@ class GovukDecimalField(GovukTextInputFieldMixin, DecimalField):
 class PostcodeSearchField(GovukTextInputFieldMixin, SearchField):
     input_type = "Search"
     param_extensions = {"classes": "govuk-input--width-10"}
-    validators = [DataRequired(message="Enter a postcode"), IsPostcode()]
+    validators = [DataRequired(message="Enter a postcode within the UK"), IsPostcode()]
 
 
 class SMSCode(GovukTextInputField):
@@ -2608,9 +2608,6 @@ class PostcodeForm(StripWhitespaceForm):
     def pre_validate(self, form):
         return self.postcode.validate(form)
 
-    def post_validate(self):
-        return not self.errors and not self.postcode.errors and not self.radius.errors
-
 
 class LatitudeLongitudeCoordinatesForm(StripWhitespaceForm):
     """
@@ -2655,9 +2652,6 @@ class LatitudeLongitudeCoordinatesForm(StripWhitespaceForm):
         ],
     )
 
-    def post_validate(self):
-        return not self.errors
-
     def pre_validate(self, form):
         self.first_coordinate.validate(form)
         self.second_coordinate.validate(form)
@@ -2700,9 +2694,6 @@ class EastingNorthingCoordinatesForm(StripWhitespaceForm):
             Only2DecimalPlaces(),
         ],
     )
-
-    def post_validate(self):
-        return not self.errors
 
     def pre_validate(self, form):
         self.first_coordinate.validate(form)

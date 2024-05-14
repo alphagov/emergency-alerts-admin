@@ -12,6 +12,7 @@ from app.main.forms import (
     LatitudeLongitudeCoordinatesForm,
     PostcodeForm,
 )
+from app.models.broadcast_message import BroadcastMessage
 
 
 def create_coordinate_area_slug(coordinate_type, first_coordinate, second_coordinate, radius):
@@ -94,22 +95,22 @@ def extract_attributes_from_custom_area(polygons):
 
 
 def create_postcode_db_id(form):
-    postcode_formatted = UKPostcode(form.data["postcode"]).postcode
-    postcode = f"postcodes-{postcode_formatted}"
-    return postcode
+    if form.pre_validate(form):
+        postcode_formatted = UKPostcode(form.data["postcode"]).postcode
+        postcode = f"postcodes-{postcode_formatted}"
+        return postcode
 
 
-def create_custom_area_polygon(BroadcastMessage, form: PostcodeForm):
+def create_custom_area_polygon(BroadcastMessage, form: PostcodeForm, postcode):
     centroid = None
     circle_polygon = None
-    postcode_formatted = UKPostcode(form.data["postcode"]).postcode
-    postcode = f"postcodes-{postcode_formatted}"
+    radius = float(form.data["radius"]) if form.data["radius"] else 0
     try:
         area = BroadcastMessage.libraries.get_areas([postcode])[0]
         centroid = get_centroid(area)
-        circle_polygon = create_circle(centroid, float(form.data["radius"]) * 1000)
+        circle_polygon = create_circle(centroid, radius * 1000)
     except IndexError:
-        form.postcode.errors.append("Postcode not found. Enter a valid postcode.")
+        form.postcode.process_errors.append("Enter a postcode within the UK")
     return centroid, circle_polygon
 
 
@@ -139,9 +140,9 @@ def create_circle(center, radius):
 
 
 def parse_coordinate_form_data(form):
-    first_coordinate = float(form.data["first_coordinate"])
-    second_coordinate = float(form.data["second_coordinate"])
-    radius = float(form.data["radius"])
+    first_coordinate = float(form.data["first_coordinate"] or 0)
+    second_coordinate = float(form.data["second_coordinate"] or 0)
+    radius = float(form.data["radius"]) if form.data["radius"] else 0
     return first_coordinate, second_coordinate, radius
 
 
@@ -149,18 +150,18 @@ def all_fields_empty(request, form):
     return request.method == "POST" and not form.data["postcode"] and form.data["radius"] is None
 
 
-def valid_postcode_entered(request, form):
+def postcode_entered(request, form):
     return (
-        request.method == "POST" and form.data["radius"] is None and form.data["postcode"] and form.pre_validate(form)
+        request.method == "POST"
+        and form.data["postcode"]
+        and form.data["radius"] is None
+        and form.radius.raw_data == [""]
     )
 
 
-def valid_postcode_and_radius_entered(request, form):
+def postcode_and_radius_entered(request, form):
     return (
-        request.method == "POST"
-        and form.data["radius"] is not None
-        and form.pre_validate(form)
-        and form.validate_on_submit()
+        request.method == "POST" and form.postcode and (form.data["radius"] is not None or form.radius.raw_data != [""])
     )
 
 
@@ -197,10 +198,6 @@ def render_postcode_page(
     )
 
 
-def postcode_in_db(form):
-    return form.post_validate()
-
-
 def select_coordinate_form(coordinate_type):
     if coordinate_type == "latitude_longitude":
         form = LatitudeLongitudeCoordinatesForm()
@@ -218,11 +215,16 @@ def all_coordinate_form_fields_empty(request, form):
 
 
 def coordinates_entered_but_no_radius(request, form):
-    return request.method == "POST" and form.data["radius"] is None and form.pre_validate(form)
+    return request.method == "POST" and form.data["radius"] is None and form.radius.raw_data == [""]
 
 
 def coordinates_and_radius_entered(request, form):
-    return request.method == "POST" and form.data["radius"] is not None and form.validate_on_submit()
+    return (
+        request.method == "POST"
+        and (form.data["radius"] is not None or form.radius.raw_data != [""])
+        and form.first_coordinate is not None
+        and form.second_coordinate is not None
+    )
 
 
 def render_coordinates_page(
@@ -269,8 +271,17 @@ def validate_form_based_on_fields_entered(request, form):
 
 def adding_invalid_coords_errors_to_form(coordinate_type, form):
     if coordinate_type == "latitude_longitude":
-        form.first_coordinate.errors.append("The latitude and longitude must be within the UK")
-        form.second_coordinate.errors.append("The latitude and longitude must be within the UK")
+        form.first_coordinate.process_errors.append("The latitude and longitude must be within the UK")
+        form.second_coordinate.process_errors.append("The latitude and longitude must be within the UK")
     elif coordinate_type == "easting_northing":
-        form.first_coordinate.errors.append("The easting and northing must be within the UK")
-        form.second_coordinate.errors.append("The easting and northing must be within the UK")
+        form.first_coordinate.process_errors.append("The easting and northing must be within the UK")
+        form.second_coordinate.process_errors.append("The easting and northing must be within the UK")
+
+
+def get_centroid_if_postcode_in_db(postcode, form):
+    try:
+        area = BroadcastMessage.libraries.get_areas([postcode])[0]
+    except IndexError:
+        form.postcode.process_errors.append("Enter a postcode within the UK")
+    else:
+        return get_centroid(area)

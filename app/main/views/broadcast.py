@@ -28,16 +28,15 @@ from app.utils.broadcast import (
     create_postcode_area_slug,
     create_postcode_db_id,
     extract_attributes_from_custom_area,
-    get_centroid,
+    get_centroid_if_postcode_in_db,
     normalising_point,
     parse_coordinate_form_data,
-    postcode_in_db,
+    postcode_and_radius_entered,
+    postcode_entered,
     preview_button_clicked,
     render_coordinates_page,
     render_postcode_page,
     select_coordinate_form,
-    valid_postcode_and_radius_entered,
-    valid_postcode_entered,
     validate_form_based_on_fields_entered,
 )
 from app.utils.user import user_has_permissions
@@ -352,7 +351,7 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
             to determine which fields to validate.
             """
             validate_form_based_on_fields_entered(request, form)
-        elif valid_postcode_entered(request, form):
+        elif postcode_entered(request, form):
             """
             Clears any areas in broadcast message, then creates the ID to search for in SQLite database,
             if query returns IndexError, the postcode isn't in the database and thus error is appended to
@@ -360,18 +359,17 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
             """
             broadcast_message.clear_areas()
             postcode = create_postcode_db_id(form)
-            try:
-                area = BroadcastMessage.libraries.get_areas([postcode])[0]
-                centroid = get_centroid(area)
-            except IndexError:
-                form.postcode.errors.append("Postcode not found. Enter a valid postcode.")
-        elif valid_postcode_and_radius_entered(request, form):
+            centroid = get_centroid_if_postcode_in_db(postcode, form)
+            form.pre_validate(form)  # Validating the postcode field
+        elif postcode_and_radius_entered(request, form):
             """
             If postcode and radius entered, that are validated successfully,
             custom polygon is created using radius and centroid.
             """
-            centroid, circle_polygon = create_custom_area_polygon(broadcast_message, form)
-            if postcode_in_db(form):
+            postcode = create_postcode_db_id(form)
+            form.pre_validate(form)
+            centroid, circle_polygon = create_custom_area_polygon(broadcast_message, form, postcode)
+            if form.validate_on_submit():
                 """
                 If postcode is in database, i.e. creating the Polygon didn't return IndexError,
                 then a dummy CustomBroadcastArea is created and used for the attributes that
@@ -535,6 +533,7 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
         else:  # if in either test area or UK, the coordinates are passed into the jinja to be displayed on leaflet map
             Point = normalising_point(first_coordinate, second_coordinate, coordinate_type)
             marker = [Point.y, Point.x]
+        form.pre_validate(form)  # To validate the fields don't have any errors
     elif coordinates_and_radius_entered(request, form):
         """
         If both radius and coordinates entered, then coordinates are checked to determine if within
@@ -549,23 +548,25 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
             second_coordinate,
             coordinate_type,
         ):
-            if polygon := create_coordinate_area(
-                first_coordinate,
-                second_coordinate,
-                radius,
-                coordinate_type,
-            ):
-                id = create_coordinate_area_slug(coordinate_type, first_coordinate, second_coordinate, radius)
-                (
-                    bleed,
-                    estimated_area,
-                    estimated_area_with_bleed,
-                    count_of_phones,
-                    count_of_phones_likely,
-                ) = extract_attributes_from_custom_area(polygon)
+            if form.validate_on_submit():
+                if polygon := create_coordinate_area(
+                    first_coordinate,
+                    second_coordinate,
+                    radius,
+                    coordinate_type,
+                ):
+                    id = create_coordinate_area_slug(coordinate_type, first_coordinate, second_coordinate, radius)
+                    (
+                        bleed,
+                        estimated_area,
+                        estimated_area_with_bleed,
+                        count_of_phones,
+                        count_of_phones_likely,
+                    ) = extract_attributes_from_custom_area(polygon)
 
         else:
             adding_invalid_coords_errors_to_form(coordinate_type, form)
+            form.validate_on_submit()
             broadcast_message.clear_areas()
         if preview_button_clicked(request):
             """

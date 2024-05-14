@@ -2361,17 +2361,6 @@ def test_add_easting_northing_coordinate_area_to_broadcast(
                 "The easting and northing must be within the UK",
             ],
         ),
-        (
-            {
-                "first_coordinate": "0",
-                "second_coordinate": "",
-                "radius": "0",
-            },
-            [
-                "The easting and northing must be within the UK",
-                "Enter a radius between 0.1km and 38.0km",
-            ],  # Only this error displayed as coordinates checked in post-validation
-        ),
     ),
 )
 def test_easting_northing_coordinate_area_form_errors(
@@ -2449,17 +2438,6 @@ def test_easting_northing_coordinate_area_form_errors(
             {"first_coordinate": "", "second_coordinate": "", "radius": "", "search_btn": True},
             ["The latitude and longitude must be within the UK"],
         ),
-        (
-            {
-                "first_coordinate": "0",
-                "second_coordinate": "",
-                "radius": "0",
-            },
-            [
-                "The latitude and longitude must be within the UK",
-                "Enter a radius between 0.1km and 38.0km",
-            ],  # Only this error displayed as coordinates checked in post-validation
-        ),
     ),
 )
 def test_latitude_longitude_coordinate_area_form_errors(
@@ -2495,6 +2473,82 @@ def test_latitude_longitude_coordinate_area_form_errors(
         service_id=SERVICE_ONE_ID,
         library_slug="coordinates",
         coordinate_type="latitude_longitude",
+        _data=post_data,
+        _follow_redirects=True,
+    )
+
+    form = page.select_one("form")
+    error_list = [
+        normalize_spaces(error)
+        for error in page.select(".govuk-error-summary__list")[0]
+        if normalize_spaces(error) != ""
+    ]
+    assert error_list == expected_error
+    assert normalize_spaces(form.select_one("button").text) == "Search"
+    assert mock_get_broadcast_message.call_count == 1
+
+
+@pytest.mark.parametrize(
+    "post_data, coordinate_type, expected_error",
+    (
+        (
+            {"first_coordinate": "0", "second_coordinate": "", "radius": "0"},
+            "latitude_longitude",
+            ["The latitude and longitude must be within the UK", "Enter a radius between 0.1km and 38.0km"],
+        ),
+        (
+            {"first_coordinate": "0", "second_coordinate": "-10", "radius": "0"},
+            "latitude_longitude",
+            ["The latitude and longitude must be within the UK", "Enter a radius between 0.1km and 38.0km"],
+        ),
+        (
+            {"first_coordinate": "0", "second_coordinate": "-10", "radius": "/"},
+            "latitude_longitude",
+            ["The latitude and longitude must be within the UK", "Enter a radius between 0.1km and 38.0km"],
+        ),
+        (
+            {"first_coordinate": "0", "second_coordinate": "-10", "radius": "/"},
+            "easting_northing",
+            ["The easting and northing must be within the UK", "Enter a radius between 0.1km and 38.0km"],
+        ),
+    ),
+)
+def test_latitude_longitude_coordinate_area_form_error_with_invalid_coords(
+    client_request,
+    service_one,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
+    post_data,
+    coordinate_type,
+    expected_error,
+    mock_update_broadcast_message,
+):
+    service_one["permissions"] += ["broadcast"]
+    mock_get_broadcast_message = mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            areas={
+                "ids": [],
+                "simple_polygons": [],
+                "names": [],
+            },
+        ),
+    )
+
+    client_request.login(active_user_create_broadcasts_permission)
+
+    page = client_request.post(
+        ".search_coordinates",
+        broadcast_message_id=fake_uuid,
+        service_id=SERVICE_ONE_ID,
+        library_slug="coordinates",
+        coordinate_type=coordinate_type,
         _data=post_data,
         _follow_redirects=True,
     )
@@ -2606,23 +2660,23 @@ def test_non_uk_coordinate_area_form_errors(
     (
         (
             {"postcode": "", "radius": "", "search_btn": True},
-            ["Enter a postcode"],
+            ["Enter a postcode within the UK"],
         ),
         (
             {"postcode": "", "radius": "", "radius_btn": True},
-            ["Enter a postcode", "Enter a radius between 0.1km and 38.0km"],
+            ["Enter a postcode within the UK", "Enter a radius between 0.1km and 38.0km"],
         ),
         (
             {"postcode": "TEST", "radius": "10"},
-            ["Enter a valid postcode"],
+            ["Enter a postcode within the UK"],
         ),
         (
             {"postcode": "", "radius": "10"},
-            ["Enter a postcode"],
+            ["Enter a postcode within the UK"],
         ),
         (
             {"postcode": "BD1 1EP", "radius": ""},
-            ["Postcode not found. Enter a valid postcode."],
+            ["Enter a postcode within the UK"],
         ),
     ),
 )
@@ -2679,11 +2733,11 @@ def test_incorrect_input_postcode_form_errors(
     (
         (
             {"postcode": "RG12 8SP", "radius": "5", "radius_btn": True},
-            ["Postcode not found. Enter a valid postcode."],
+            ["Enter a postcode within the UK"],
         ),
         (
             {"postcode": "BD1 1EP", "radius": "1", "radius_btn": True},
-            ["Postcode not found. Enter a valid postcode."],
+            ["Enter a postcode within the UK"],
         ),
     ),
 )

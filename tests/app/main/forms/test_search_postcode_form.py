@@ -4,7 +4,7 @@ from app.main.forms import PostcodeForm
 
 
 def check_postcode_exists(form):
-    form.form_errors.append("Postcode not found. Enter a valid postcode.")
+    form.form_errors.append("Enter a postcode within the UK")
 
 
 @pytest.mark.parametrize(
@@ -12,7 +12,7 @@ def check_postcode_exists(form):
     (
         (
             ["", 2],
-            {"postcode": ["Enter a postcode"]},
+            {"postcode": ["Enter a postcode within the UK"]},
         ),
         (
             ["BD1 1EE", 0],
@@ -20,7 +20,7 @@ def check_postcode_exists(form):
         ),
         (
             ["", 0],
-            {"postcode": ["Enter a postcode"], "radius": ["Enter a radius between 0.1km and 38.0km"]},
+            {"postcode": ["Enter a postcode within the UK"], "radius": ["Enter a radius between 0.1km and 38.0km"]},
         ),
         (
             ["BD1 1EE", 38.2],
@@ -32,7 +32,7 @@ def check_postcode_exists(form):
         ),
         (
             ["", 0.05],
-            {"postcode": ["Enter a postcode"], "radius": ["Enter a radius between 0.1km and 38.0km"]},
+            {"postcode": ["Enter a postcode within the UK"], "radius": ["Enter a radius between 0.1km and 38.0km"]},
         ),
         (
             ["BD1 1EE", 12.345],
@@ -50,4 +50,4 @@ def test_nonexistent_postcode_message():
     form = PostcodeForm(postcode="TE10 1TE", radius=2)
     check_postcode_exists(form)
     assert form.validate()
-    assert not form.post_validate()
+    assert form.errors

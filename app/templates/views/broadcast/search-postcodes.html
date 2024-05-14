@@ -48,7 +48,11 @@
   <div class="mapping-form">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="govuk-form-group">
-      {{inputWithCustomError(form.postcode, "Postcode", "Enter a valid postcode")}}
+      {% if form.postcode.errors[0] == 'Enter a postcode within the UK' and form.postcode.data == "" %}
+        {{inputWithCustomError(form.postcode, "Postcode", "Enter a postcode")}}
+      {% else %}
+        {{inputWithCustomError(form.postcode, "Postcode", "Enter a valid postcode")}}
+      {% endif %}
     </div>
     <div class="mapping-margin-left govuk-form-group">
       {{ govukButton({
@@ -59,7 +63,11 @@
       }) }}
     </div>
     <div class="mapping-margin-left govuk-form-group">
-      {{inputWithCustomError(form.radius, "Radius", "Enter a valid value")}}
+      {% if form.radius.errors[0] == 'Enter a radius between 0.1km and 38.0km' and form.radius.data == None %}
+        {{inputWithCustomError(form.radius, "Radius", "Enter a radius")}}
+      {% else %}
+        {{inputWithCustomError(form.radius, "Radius", "Enter a valid radius")}}
+      {% endif %}
     </div>
     <div class="mapping-margin-left govuk-form-group">
       {{ govukButton({
