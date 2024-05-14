@@ -22,7 +22,6 @@ from . import (
     broadcast_message_json,
     contact_list_json,
     generate_uuid,
-    inbound_sms_json,
     invite_json,
     job_json,
     notification_json,
@@ -301,7 +300,6 @@ def multiple_sms_senders(mocker):
                 "sms_sender": "Example",
                 "is_default": True,
                 "created_at": datetime.utcnow(),
-                "inbound_number_id": "1234",
                 "updated_at": None,
             },
             {
@@ -310,7 +308,6 @@ def multiple_sms_senders(mocker):
                 "sms_sender": "Example 2",
                 "is_default": False,
                 "created_at": datetime.utcnow(),
-                "inbound_number_id": None,
                 "updated_at": None,
             },
             {
@@ -319,7 +316,6 @@ def multiple_sms_senders(mocker):
                 "sms_sender": "Example 3",
                 "is_default": False,
                 "created_at": datetime.utcnow(),
-                "inbound_number_id": None,
                 "updated_at": None,
             },
         ]
@@ -337,7 +333,6 @@ def multiple_sms_senders_with_diff_default(mocker):
                 "sms_sender": "Example",
                 "is_default": True,
                 "created_at": datetime.utcnow(),
-                "inbound_number_id": None,
                 "updated_at": None,
             },
             {
@@ -346,7 +341,6 @@ def multiple_sms_senders_with_diff_default(mocker):
                 "sms_sender": "Example 2",
                 "is_default": False,
                 "created_at": datetime.utcnow(),
-                "inbound_number_id": None,
                 "updated_at": None,
             },
             {
@@ -355,7 +349,6 @@ def multiple_sms_senders_with_diff_default(mocker):
                 "sms_sender": "Example 3",
                 "is_default": False,
                 "created_at": datetime.utcnow(),
-                "inbound_number_id": "12354",
                 "updated_at": None,
             },
         ]
@@ -373,7 +366,6 @@ def multiple_sms_senders_no_inbound(mocker):
                 "sms_sender": "Example",
                 "is_default": True,
                 "created_at": datetime.utcnow(),
-                "inbound_number_id": None,
                 "updated_at": None,
             },
             {
@@ -382,7 +374,6 @@ def multiple_sms_senders_no_inbound(mocker):
                 "sms_sender": "Example 2",
                 "is_default": False,
                 "created_at": datetime.utcnow(),
-                "inbound_number_id": None,
                 "updated_at": None,
             },
         ]
@@ -408,28 +399,11 @@ def single_sms_sender(mocker):
                 "sms_sender": "GOVUK",
                 "is_default": True,
                 "created_at": datetime.utcnow(),
-                "inbound_number_id": None,
                 "updated_at": None,
             }
         ]
 
     return mocker.patch("app.service_api_client.get_sms_senders", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
-def get_default_sms_sender(mocker):
-    def _get(service_id, sms_sender_id):
-        return {
-            "id": "1234",
-            "service_id": service_id,
-            "sms_sender": "GOVUK",
-            "is_default": True,
-            "created_at": datetime.utcnow(),
-            "inbound_number_id": None,
-            "updated_at": None,
-        }
-
-    return mocker.patch("app.service_api_client.get_sms_sender", side_effect=_get)
 
 
 @pytest.fixture(scope="function")
@@ -441,7 +415,6 @@ def get_non_default_sms_sender(mocker):
             "sms_sender": "GOVUK",
             "is_default": False,
             "created_at": datetime.utcnow(),
-            "inbound_number_id": None,
             "updated_at": None,
         }
 
@@ -450,7 +423,7 @@ def get_non_default_sms_sender(mocker):
 
 @pytest.fixture(scope="function")
 def mock_add_sms_sender(mocker):
-    def _add_sms_sender(service_id, sms_sender, is_default=False, inbound_number_id=None):
+    def _add_sms_sender(service_id, sms_sender, is_default=False):
         return
 
     return mocker.patch("app.service_api_client.add_sms_sender", side_effect=_add_sms_sender)
@@ -462,52 +435,6 @@ def mock_update_sms_sender(mocker):
         return
 
     return mocker.patch("app.service_api_client.update_sms_sender", side_effect=_update_sms_sender)
-
-
-@pytest.fixture(scope="function")
-def multiple_available_inbound_numbers(mocker):
-    def _get():
-        return {
-            "data": [
-                {
-                    "active": True,
-                    "created_at": "2017-10-18T16:57:14.154185Z",
-                    "id": "781d9c60-7a7e-46b7-9896-7b045b992fa7",
-                    "number": "0712121214",
-                    "provider": "mmg",
-                    "service": None,
-                    "updated_at": None,
-                },
-                {
-                    "active": True,
-                    "created_at": "2017-10-18T16:57:22.585806Z",
-                    "id": "781d9c60-7a7e-46b7-9896-7b045b992fa5",
-                    "number": "0712121215",
-                    "provider": "mmg",
-                    "service": None,
-                    "updated_at": None,
-                },
-                {
-                    "active": True,
-                    "created_at": "2017-10-18T16:57:38.585806Z",
-                    "id": "781d9c61-7a7e-46b7-9896-7b045b992fa5",
-                    "number": "0712121216",
-                    "provider": "mmg",
-                    "service": None,
-                    "updated_at": None,
-                },
-            ]
-        }
-
-    return mocker.patch("app.inbound_number_client.get_available_inbound_sms_numbers", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
-def no_available_inbound_numbers(mocker):
-    def _get():
-        return {"data": []}
-
-    return mocker.patch("app.inbound_number_client.get_available_inbound_sms_numbers", side_effect=_get)
 
 
 @pytest.fixture(scope="function")
@@ -1906,88 +1833,6 @@ def mock_get_notifications_with_no_notifications(mocker):
 
 
 @pytest.fixture(scope="function")
-def mock_get_inbound_sms(mocker):
-    def _get_inbound_sms(service_id, user_number=None, page=1):
-        return inbound_sms_json()
-
-    return mocker.patch(
-        "app.service_api_client.get_inbound_sms",
-        side_effect=_get_inbound_sms,
-    )
-
-
-@pytest.fixture
-def mock_get_inbound_sms_by_id_with_no_messages(mocker):
-    def _get_inbound_sms_by_id(service_id, notification_id):
-        raise HTTPError(response=Mock(status_code=404))
-
-    return mocker.patch(
-        "app.service_api_client.get_inbound_sms_by_id",
-        side_effect=_get_inbound_sms_by_id,
-    )
-
-
-@pytest.fixture(scope="function")
-def mock_get_most_recent_inbound_sms(mocker):
-    def _get_most_recent_inbound_sms(service_id, user_number=None, page=1):
-        return inbound_sms_json()
-
-    return mocker.patch(
-        "app.service_api_client.get_most_recent_inbound_sms",
-        side_effect=_get_most_recent_inbound_sms,
-    )
-
-
-@pytest.fixture(scope="function")
-def mock_get_most_recent_inbound_sms_with_no_messages(mocker):
-    def _get_most_recent_inbound_sms(service_id, user_number=None, page=1):
-        return {"has_next": False, "data": []}
-
-    return mocker.patch(
-        "app.service_api_client.get_most_recent_inbound_sms",
-        side_effect=_get_most_recent_inbound_sms,
-    )
-
-
-@pytest.fixture(scope="function")
-def mock_get_inbound_sms_summary(mocker):
-    def _get_inbound_sms_summary(
-        service_id,
-    ):
-        return {"count": 9999, "most_recent": datetime.utcnow().isoformat()}
-
-    return mocker.patch(
-        "app.service_api_client.get_inbound_sms_summary",
-        side_effect=_get_inbound_sms_summary,
-    )
-
-
-@pytest.fixture(scope="function")
-def mock_get_inbound_sms_summary_with_no_messages(mocker):
-    def _get_inbound_sms_summary(
-        service_id,
-    ):
-        return {"count": 0, "latest_message": None}
-
-    return mocker.patch(
-        "app.service_api_client.get_inbound_sms_summary",
-        side_effect=_get_inbound_sms_summary,
-    )
-
-
-@pytest.fixture(scope="function")
-def mock_get_inbound_number_for_service(mocker):
-    return mocker.patch(
-        "app.inbound_number_client.get_inbound_sms_number_for_service", return_value={"data": {"number": "0781239871"}}
-    )
-
-
-@pytest.fixture(scope="function")
-def mock_no_inbound_number_for_service(mocker):
-    return mocker.patch("app.inbound_number_client.get_inbound_sms_number_for_service", return_value={"data": {}})
-
-
-@pytest.fixture(scope="function")
 def mock_has_permissions(mocker):
     def _has_permission(*permissions, restrict_admin_usage=False, allow_org_user=False):
         return True
@@ -2369,263 +2214,6 @@ def mock_events(mocker):
 @pytest.fixture(scope="function")
 def mock_send_already_registered_email(mocker):
     return mocker.patch("app.user_api_client.send_already_registered_email")
-
-
-def create_email_brandings(number_of_brandings, non_standard_values=None, shuffle=False):
-    brandings = [
-        {
-            "id": str(idx),
-            "name": "org {}".format(idx),
-            "text": "org {}".format(idx),
-            "colour": None,
-            "logo": "logo{}.png".format(idx),
-            "brand_type": "org",
-        }
-        for idx in range(1, number_of_brandings + 1)
-    ]
-
-    for idx, row in enumerate(non_standard_values or {}):
-        brandings[row["idx"]].update(non_standard_values[idx])
-        brandings[row["idx"]].pop("idx")
-
-    if shuffle:
-        brandings.insert(3, brandings.pop(4))
-
-    return brandings
-
-
-@pytest.fixture(scope="function")
-def mock_get_all_email_branding(mocker):
-    def _get_all_email_branding(sort_key=None):
-        non_standard_values = [
-            {"idx": 1, "colour": "red"},
-            {"idx": 2, "colour": "orange"},
-            {"idx": 3, "text": None},
-            {"idx": 4, "colour": "blue"},
-        ]
-        shuffle = sort_key is None
-        return create_email_brandings(5, non_standard_values=non_standard_values, shuffle=shuffle)
-
-    return mocker.patch(
-        "app.models.branding.AllEmailBranding.client_method",
-        side_effect=_get_all_email_branding,
-    )
-
-
-@pytest.fixture(scope="function")
-def mock_get_all_letter_branding(mocker):
-    def _get_letter_branding():
-        return [
-            {
-                "id": str(UUID(int=0)),
-                "name": "HM Government",
-                "filename": "hm-government",
-            },
-            {
-                "id": str(UUID(int=1)),
-                "name": "Land Registry",
-                "filename": "land-registry",
-            },
-            {
-                "id": str(UUID(int=2)),
-                "name": "Animal and Plant Health Agency",
-                "filename": "animal",
-            },
-        ]
-
-    return mocker.patch("app.models.branding.AllLetterBranding.client_method", side_effect=_get_letter_branding)
-
-
-@pytest.fixture
-def mock_get_letter_branding_by_id(mocker):
-    def _get_branding_by_id(_id):
-        return {
-            "id": _id,
-            "name": "HM Government",
-            "filename": "hm-government",
-        }
-
-    return mocker.patch("app.letter_branding_client.get_letter_branding", side_effect=_get_branding_by_id)
-
-
-@pytest.fixture(scope="function")
-def mock_get_letter_branding_pool(mocker):
-    def _get_branding_pool(org_id):
-        return [
-            {
-                "id": "1234",
-                "name": "Cabinet Office",
-                "filename": "co",
-            },
-            {
-                "id": "5678",
-                "name": "Department for Education",
-                "filename": "dfe",
-            },
-            {
-                "id": "9abc",
-                "name": "Government Digital Service",
-                "filename": "gds",
-            },
-        ]
-
-    return mocker.patch("app.models.branding.LetterBrandingPool.client_method", side_effect=_get_branding_pool)
-
-
-@pytest.fixture(scope="function")
-def mock_get_empty_letter_branding_pool(mocker):
-    def _get_branding_pool(org_id):
-        return []
-
-    return mocker.patch("app.models.branding.LetterBrandingPool.client_method", side_effect=_get_branding_pool)
-
-
-@pytest.fixture(scope="function")
-def mock_no_email_branding(mocker):
-    def _get_email_branding():
-        return []
-
-    return mocker.patch("app.email_branding_client.get_all_email_branding", side_effect=_get_email_branding)
-
-
-def create_email_branding(id, non_standard_values=None):
-    branding = {
-        "logo": "example.png",
-        "name": "Organisation name",
-        "alt_text": "Alt text",
-        "text": "Organisation text",
-        "id": id,
-        "colour": "#f00",
-        "brand_type": "org",
-    }
-
-    if non_standard_values:
-        branding.update(non_standard_values)
-
-    return {"email_branding": branding}
-
-
-def create_email_branding_pool(additional_values=None):
-    branding_pool = [
-        {
-            "logo": "example_1.png",
-            "name": "Email branding name 1",
-            "alt_text": "Alt text",
-            "text": "Email branding text 1",
-            "id": "email-branding-1-id",
-            "colour": "#f00",
-            "brand_type": "org",
-        },
-        {
-            "logo": "example_2.png",
-            "name": "Email branding name 2",
-            "alt_text": "Alt text",
-            "text": "Email branding text 2",
-            "id": "email-branding-2-id",
-            "colour": "#f00",
-            "brand_type": "org",
-        },
-    ]
-
-    if additional_values:
-        branding_pool.append(additional_values)
-
-    return branding_pool
-
-
-@pytest.fixture(scope="function")
-def mock_get_email_branding_pool(mocker):
-    def _get_email_branding_pool(org_id):
-        return create_email_branding_pool()
-
-    return mocker.patch("app.models.branding.EmailBrandingPool.client_method", side_effect=_get_email_branding_pool)
-
-
-@pytest.fixture(scope="function")
-def mock_get_empty_email_branding_pool(mocker):
-    def _get_email_branding_pool(org_id):
-        return []
-
-    return mocker.patch("app.models.branding.EmailBrandingPool.client_method", side_effect=_get_email_branding_pool)
-
-
-@pytest.fixture(scope="function")
-def mock_get_email_branding(mocker, fake_uuid):
-    def _get_email_branding(id):
-        return create_email_branding(id)
-
-    return mocker.patch("app.models.branding.email_branding_client.get_email_branding", side_effect=_get_email_branding)
-
-
-@pytest.fixture(scope="function")
-def mock_get_email_branding_with_govuk_brand_type(mocker, fake_uuid):
-    def _get_email_branding(id):
-        return create_email_branding(fake_uuid, {"brand_type": "govuk"})
-
-    return mocker.patch("app.email_branding_client.get_email_branding", side_effect=_get_email_branding)
-
-
-@pytest.fixture(scope="function")
-def mock_get_email_branding_with_both_brand_type(mocker, fake_uuid):
-    def _get_email_branding(id):
-        return create_email_branding(fake_uuid, {"brand_type": "both"})
-
-    return mocker.patch("app.email_branding_client.get_email_branding", side_effect=_get_email_branding)
-
-
-@pytest.fixture(scope="function")
-def mock_get_email_branding_with_org_banner_brand_type(mocker, fake_uuid):
-    def _get_email_branding(id):
-        return create_email_branding(fake_uuid, {"brand_type": "org_banner"})
-
-    return mocker.patch("app.email_branding_client.get_email_branding", side_effect=_get_email_branding)
-
-
-@pytest.fixture(scope="function")
-def mock_get_email_branding_without_brand_text(mocker, fake_uuid):
-    def _get_email_branding_without_brand_text(id):
-        return create_email_branding(fake_uuid, {"text": "", "brand_type": "org_banner"})
-
-    return mocker.patch(
-        "app.email_branding_client.get_email_branding", side_effect=_get_email_branding_without_brand_text
-    )
-
-
-@pytest.fixture(scope="function")
-def mock_create_email_branding(mocker, fake_uuid):
-    def _create_email_branding(logo, name, alt_text, text, colour, brand_type, created_by_id):
-        return create_email_branding(
-            fake_uuid,
-            {
-                "name": name,
-                "alt_text": alt_text,
-                "text": text,
-                "colour": colour,
-                "brand_type": brand_type,
-                "created_by_id": created_by_id,
-            },
-        )["email_branding"]
-
-    return mocker.patch("app.email_branding_client.create_email_branding", side_effect=_create_email_branding)
-
-
-@pytest.fixture(scope="function")
-def mock_get_email_branding_name_for_alt_text(mocker):
-    def _get_email_branding_name_for_alt_text(alt_text):
-        return alt_text
-
-    return mocker.patch(
-        "app.email_branding_client.get_email_branding_name_for_alt_text",
-        side_effect=_get_email_branding_name_for_alt_text,
-    )
-
-
-@pytest.fixture(scope="function")
-def mock_update_email_branding(mocker):
-    def _update_email_branding(branding_id, logo, name, alt_text, text, colour, brand_type, updated_by_id):
-        return
-
-    return mocker.patch("app.email_branding_client.update_email_branding", side_effect=_update_email_branding)
 
 
 @pytest.fixture(scope="function")
@@ -3734,7 +3322,6 @@ def create_sms_sender(
     sms_sender="GOVUK",
     is_default=True,
     created_at=None,
-    inbound_number_id=None,
     updated_at=None,
 ):
     return {
@@ -3743,7 +3330,6 @@ def create_sms_sender(
         "sms_sender": sms_sender,
         "is_default": is_default,
         "created_at": created_at,
-        "inbound_number_id": inbound_number_id,
         "updated_at": updated_at,
     }
 
@@ -3756,7 +3342,6 @@ def create_multiple_sms_senders(service_id="abcd"):
             "sms_sender": "Example",
             "is_default": True,
             "created_at": datetime.utcnow(),
-            "inbound_number_id": "1234",
             "updated_at": None,
         },
         {
@@ -3765,7 +3350,6 @@ def create_multiple_sms_senders(service_id="abcd"):
             "sms_sender": "Example 2",
             "is_default": False,
             "created_at": datetime.utcnow(),
-            "inbound_number_id": None,
             "updated_at": None,
         },
         {
@@ -3774,7 +3358,6 @@ def create_multiple_sms_senders(service_id="abcd"):
             "sms_sender": "Example 3",
             "is_default": False,
             "created_at": datetime.utcnow(),
-            "inbound_number_id": None,
             "updated_at": None,
         },
     ]

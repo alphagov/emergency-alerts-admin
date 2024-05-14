@@ -591,7 +591,7 @@ def test_clear_cache_shows_form(
     assert not redis.delete_by_pattern.called
     radios = {el["value"] for el in page.select("input[type=checkbox]")}
 
-    assert radios == {"user", "service", "template", "email_branding", "letter_branding", "organisation", "broadcast"}
+    assert radios == {"user", "service", "template", "organisation", "broadcast"}
 
 
 @pytest.mark.parametrize(
@@ -624,10 +624,8 @@ def test_clear_cache_shows_form(
                 call("domains"),
                 call("live-service-and-organisation-counts"),
                 call("organisation-????????-????-????-????-????????????-name"),
-                call("organisation-????????-????-????-????-????????????-email-branding-pool"),
-                call("organisation-????????-????-????-????-????????????-letter-branding-pool"),
             ],
-            "Removed 26 objects across 13 key formats for service, organisation",
+            "Removed 22 objects across 11 key formats for service, organisation",
         ),
         (
             "broadcast",

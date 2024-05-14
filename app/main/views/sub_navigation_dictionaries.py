@@ -77,10 +77,6 @@ def using_notify_nav():
                     "link": "main.edit_and_format_messages",
                 },
                 {
-                    "name": "Branding",
-                    "link": "main.branding_and_customisation",
-                },
-                {
                     "name": "Send files by email",
                     "link": "main.send_files_by_email",
                 },
