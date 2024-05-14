@@ -214,7 +214,12 @@ def all_coordinate_form_fields_empty(request, form):
 
 
 def coordinates_entered_but_no_radius(request, form):
-    return request.method == "POST" and form.data["radius"] is None and form.radius.raw_data == [""]
+    return (
+        request.method == "POST"
+        and form.data["radius"] is None
+        and form.radius.raw_data == [""]
+        and form.pre_validate(form)
+    )
 
 
 def coordinates_and_radius_entered(request, form):
