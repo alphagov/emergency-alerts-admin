@@ -19,7 +19,6 @@ from notifications_python_client.errors import HTTPError
 from app import (
     billing_api_client,
     current_service,
-    inbound_number_client,
     notification_api_client,
     organisations_client,
     service_api_client,
@@ -36,7 +35,6 @@ from app.main.forms import (
     AdminNotesForm,
     AdminServiceAddDataRetentionForm,
     AdminServiceEditDataRetentionForm,
-    AdminServiceInboundNumberForm,
     AdminServiceMessageLimitForm,
     AdminServiceRateLimitForm,
     AdminServiceSMSAllowanceForm,
@@ -48,11 +46,9 @@ from app.main.forms import (
     ServiceBroadcastChannelForm,
     ServiceBroadcastNetworkForm,
     ServiceContactDetailsForm,
-    ServiceEditInboundNumberForm,
     ServiceLetterContactBlockForm,
     ServiceOnOffSettingForm,
     ServiceReplyToEmailForm,
-    ServiceSmsSenderForm,
     ServiceSwitchChannelForm,
     SMSPrefixForm,
 )
@@ -587,31 +583,6 @@ def service_delete_email_reply_to(service_id, reply_to_email_id):
     return redirect(url_for(".service_email_reply_to", service_id=service_id))
 
 
-@main.route("/services/<uuid:service_id>/service-settings/set-inbound-number", methods=["GET", "POST"])
-@user_has_permissions("manage_service")
-def service_set_inbound_number(service_id):
-    available_inbound_numbers = inbound_number_client.get_available_inbound_sms_numbers()
-    inbound_numbers_value_and_label = [(number["id"], number["number"]) for number in available_inbound_numbers["data"]]
-    no_available_numbers = available_inbound_numbers["data"] == []
-    form = AdminServiceInboundNumberForm(inbound_number_choices=inbound_numbers_value_and_label)
-
-    if form.validate_on_submit():
-        service_api_client.add_sms_sender(
-            current_service.id,
-            sms_sender=form.inbound_number.data,
-            is_default=True,
-            inbound_number_id=form.inbound_number.data,
-        )
-        current_service.force_permission("inbound_sms", on=True)
-        return redirect(url_for(".service_settings", service_id=service_id))
-
-    return render_template(
-        "views/service-settings/set-inbound-number.html",
-        form=form,
-        no_available_numbers=no_available_numbers,
-    )
-
-
 @main.route("/services/<uuid:service_id>/service-settings/sms-prefix", methods=["GET", "POST"])
 @user_has_permissions("manage_service")
 def service_set_sms_prefix(service_id):
@@ -661,14 +632,6 @@ def service_set_international_letters(service_id):
     return render_template(
         "views/service-settings/set-international-letters.html",
         form=form,
-    )
-
-
-@main.route("/services/<uuid:service_id>/service-settings/set-inbound-sms", methods=["GET"])
-@user_has_permissions("manage_service")
-def service_set_inbound_sms(service_id):
-    return render_template(
-        "views/service-settings/set-inbound-sms.html",
     )
 
 
@@ -808,82 +771,6 @@ def service_delete_letter_contact(service_id, letter_contact_id):
         letter_contact_id=letter_contact_id,
     )
     return redirect(url_for(".service_letter_contact_details", service_id=current_service.id))
-
-
-@main.route("/services/<uuid:service_id>/service-settings/sms-sender", methods=["GET"])
-@user_has_permissions("manage_service", "manage_api_keys")
-def service_sms_senders(service_id):
-    return render_template(
-        "views/service-settings/sms-senders.html",
-    )
-
-
-@main.route("/services/<uuid:service_id>/service-settings/sms-sender/add", methods=["GET", "POST"])
-@user_has_permissions("manage_service")
-def service_add_sms_sender(service_id):
-    form = ServiceSmsSenderForm()
-    first_sms_sender = current_service.count_sms_senders == 0
-    if form.validate_on_submit():
-        service_api_client.add_sms_sender(
-            current_service.id,
-            sms_sender=form.sms_sender.data.replace("\r", "") or None,
-            is_default=first_sms_sender if first_sms_sender else form.is_default.data,
-        )
-        return redirect(url_for(".service_sms_senders", service_id=service_id))
-    return render_template("views/service-settings/sms-sender/add.html", form=form, first_sms_sender=first_sms_sender)
-
-
-@main.route(
-    "/services/<uuid:service_id>/service-settings/sms-sender/<uuid:sms_sender_id>/edit",
-    methods=["GET", "POST"],
-    endpoint="service_edit_sms_sender",
-)
-@main.route(
-    "/services/<uuid:service_id>/service-settings/sms-sender/<uuid:sms_sender_id>/delete",
-    methods=["GET"],
-    endpoint="service_confirm_delete_sms_sender",
-)
-@user_has_permissions("manage_service")
-def service_edit_sms_sender(service_id, sms_sender_id):
-    sms_sender = current_service.get_sms_sender(sms_sender_id)
-    is_inbound_number = sms_sender["inbound_number_id"]
-    if is_inbound_number:
-        form = ServiceEditInboundNumberForm(is_default=sms_sender["is_default"])
-    else:
-        form = ServiceSmsSenderForm(**sms_sender)
-
-    if form.validate_on_submit():
-        service_api_client.update_sms_sender(
-            current_service.id,
-            sms_sender_id=sms_sender_id,
-            sms_sender=sms_sender["sms_sender"] if is_inbound_number else form.sms_sender.data.replace("\r", ""),
-            is_default=True if sms_sender["is_default"] else form.is_default.data,
-        )
-        return redirect(url_for(".service_sms_senders", service_id=service_id))
-
-    form.is_default.data = sms_sender["is_default"]
-    if request.endpoint == "main.service_confirm_delete_sms_sender":
-        flash("Are you sure you want to delete this text message sender?", "delete")
-    return render_template(
-        "views/service-settings/sms-sender/edit.html",
-        form=form,
-        sms_sender=sms_sender,
-        inbound_number=is_inbound_number,
-        sms_sender_id=sms_sender_id,
-    )
-
-
-@main.route(
-    "/services/<uuid:service_id>/service-settings/sms-sender/<uuid:sms_sender_id>/delete",
-    methods=["POST"],
-)
-@user_has_permissions("manage_service")
-def service_delete_sms_sender(service_id, sms_sender_id):
-    service_api_client.delete_sms_sender(
-        service_id=current_service.id,
-        sms_sender_id=sms_sender_id,
-    )
-    return redirect(url_for(".service_sms_senders", service_id=service_id))
 
 
 @main.route("/services/<uuid:service_id>/service-settings/set-free-sms-allowance", methods=["GET", "POST"])

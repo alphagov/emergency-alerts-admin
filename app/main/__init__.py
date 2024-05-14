@@ -39,7 +39,6 @@ from app.main.views import (  # noqa isort:skip
     find_users,
     forgot_password,
     history,
-    inbound_number,
     index,
     invites,
     jobs,

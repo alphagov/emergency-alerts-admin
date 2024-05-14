@@ -66,9 +66,6 @@ class ServiceEvent(Event):
     def format_contact_link(self):
         return "Set the contact details for this service to ‘{}’".format(self.value_to)
 
-    def format_inbound_api(self):
-        return "Updated the callback for received text messages"
-
     def format_letter_contact_block(self):
         return "Updated the default letter contact block for this service"
 

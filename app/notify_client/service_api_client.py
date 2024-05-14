@@ -280,34 +280,6 @@ class ServiceAPIClient(NotifyAdminAPIClient):
     def update_guest_list(self, service_id, data):
         return self.put(url="/service/{}/guest-list".format(service_id), data=data)
 
-    def get_inbound_sms(self, service_id, user_number=""):
-        # POST prevents the user phone number leaking into our logs
-        return self.post(
-            "/service/{}/inbound-sms".format(
-                service_id,
-            ),
-            data={"phone_number": user_number},
-        )
-
-    def get_most_recent_inbound_sms(self, service_id, page=None):
-        return self.get(
-            "/service/{}/inbound-sms/most-recent".format(
-                service_id,
-            ),
-            params={"page": page},
-        )
-
-    def get_inbound_sms_by_id(self, service_id, notification_id):
-        return self.get(
-            "/service/{}/inbound-sms/{}".format(
-                service_id,
-                notification_id,
-            )
-        )
-
-    def get_inbound_sms_summary(self, service_id):
-        return self.get("/service/{}/inbound-sms/summary".format(service_id))
-
     @cache.delete("service-{service_id}")
     def create_service_inbound_api(self, service_id, url, bearer_token, user_id):
         data = {"url": url, "bearer_token": bearer_token, "updated_by_id": user_id}
@@ -398,10 +370,8 @@ class ServiceAPIClient(NotifyAdminAPIClient):
 
     @cache.delete("service-{service_id}")
     @cache.delete_by_pattern("service-{service_id}-template-*")
-    def add_sms_sender(self, service_id, sms_sender, is_default=False, inbound_number_id=None):
+    def add_sms_sender(self, service_id, sms_sender, is_default=False):
         data = {"sms_sender": sms_sender, "is_default": is_default}
-        if inbound_number_id:
-            data["inbound_number_id"] = inbound_number_id
         return self.post("/service/{}/sms-sender".format(service_id), data=data)
 
     @cache.delete("service-{service_id}")

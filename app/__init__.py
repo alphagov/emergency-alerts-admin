@@ -96,7 +96,6 @@ from app.notify_client.complaint_api_client import complaint_api_client
 from app.notify_client.contact_list_api_client import contact_list_api_client
 from app.notify_client.events_api_client import events_api_client
 from app.notify_client.feature_toggle_api_client import feature_toggle_api_client
-from app.notify_client.inbound_number_client import inbound_number_client
 from app.notify_client.invite_api_client import invite_api_client
 from app.notify_client.job_api_client import job_api_client
 from app.notify_client.letter_jobs_client import letter_jobs_client
@@ -172,7 +171,6 @@ def create_app(application):
         complaint_api_client,
         events_api_client,
         feature_toggle_api_client,
-        inbound_number_client,
         invite_api_client,
         job_api_client,
         letter_jobs_client,

@@ -265,9 +265,6 @@ def get_sender_context(sender_details, template_type):
 
     context["default_id"] = next(sender["id"] for sender in sender_details if sender["is_default"])
     if template_type == "sms":
-        inbound = [sender["id"] for sender in sender_details if sender["inbound_number_id"]]
-        if inbound:
-            context["receives_text_message"] = next(iter(inbound))
         if context["default_id"] == context.get("receives_text_message", None):
             context["default_and_receives"] = context["default_id"]
 
