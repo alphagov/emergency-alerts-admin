@@ -56,7 +56,6 @@ from app.main.views import (  # noqa isort:skip
     sign_in,
     sign_out,
     templates,
-    tour,
     two_factor,
     uploads,
     user_profile,

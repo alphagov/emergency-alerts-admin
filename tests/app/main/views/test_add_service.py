@@ -122,7 +122,7 @@ def test_show_different_page_if_user_org_type_is_local(
     ),
 )
 @freeze_time("2021-01-01")
-def test_should_add_service_and_redirect_to_tour_when_no_services(
+def test_should_add_service_and_redirect_to_index_when_no_services(
     mocker,
     client_request,
     mock_create_service,
@@ -147,11 +147,7 @@ def test_should_add_service_and_redirect_to_tour_when_no_services(
             "organisation_type": posted,
         },
         _expected_status=302,
-        _expected_redirect=url_for(
-            "main.begin_tour",
-            service_id=101,
-            template_id="Example%20text%20message%20template",
-        ),
+        _expected_redirect=url_for(".index"),
     )
     assert mock_get_services_with_no_services.called
     mock_create_service.assert_called_once_with(
@@ -161,12 +157,6 @@ def test_should_add_service_and_redirect_to_tour_when_no_services(
         restricted=True,
         user_id=api_user_active["id"],
         email_from="testing.the.post",
-    )
-    mock_create_service_template.assert_called_once_with(
-        "Example text message template",
-        "sms",
-        ("Hey ((name)), I’m trying out Notify. Today is " "((day of week)) and my favourite colour is ((colour))."),
-        101,
     )
     with client_request.session_transaction() as session:
         assert session["service_id"] == 101

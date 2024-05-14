@@ -72,11 +72,7 @@ def add_service():
 
                 return redirect(url_for("main.service_set_broadcast_channel", service_id=service_id))
 
-            example_sms_template = _create_example_template(service_id)
-
-            return redirect(
-                url_for("main.begin_tour", service_id=service_id, template_id=example_sms_template["data"]["id"])
-            )
+            return redirect(url_for(".index"))
         else:
             return _render_add_service_page(form, default_organisation_type)
     else:
