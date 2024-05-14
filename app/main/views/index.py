@@ -1,8 +1,6 @@
-from emergency_alerts_utils.template import HTMLEmailTemplate, LetterImageTemplate
 from flask import (
     abort,
     current_app,
-    make_response,
     redirect,
     render_template,
     request,
@@ -11,11 +9,8 @@ from flask import (
 )
 from flask_login import current_user
 
-from app import letter_branding_client
 from app.main import main
-from app.main.forms import FieldWithNoneOption
 from app.main.views.sub_navigation_dictionaries import features_nav, using_notify_nav
-from app.models.branding import EmailBranding
 from app.utils import hide_from_search_engines
 
 
@@ -63,72 +58,6 @@ def delivery_and_failure():
 @main.route("/design-patterns-content-guidance")
 def design_content():
     return redirect("https://www.gov.uk/service-manual/design/sending-emails-and-text-messages", 301)
-
-
-@main.route("/_email")
-def email_template():
-    branding_style = request.args.get("branding_style")
-
-    if not branding_style or branding_style in {"govuk", FieldWithNoneOption.NONE_OPTION_VALUE}:
-        branding = EmailBranding.govuk_branding()
-
-    elif branding_style == "custom":
-        branding = EmailBranding.with_default_values(**request.args)
-
-    else:
-        branding = EmailBranding.from_id(branding_style)
-
-    template = {
-        "template_type": "email",
-        "subject": "Email branding preview",
-        "content": render_template("example-email.md"),
-    }
-
-    resp = make_response(
-        str(
-            HTMLEmailTemplate(
-                template,
-                govuk_banner=branding.has_govuk_banner,
-                brand_text=branding.text,
-                brand_colour=branding.colour,
-                brand_logo=branding.logo_url,
-                brand_banner=branding.has_brand_banner,
-                brand_alt_text=branding.alt_text,
-            )
-        )
-    )
-
-    resp.headers["X-Frame-Options"] = "SAMEORIGIN"
-    return resp
-
-
-@main.route("/_letter")
-def letter_template():
-    branding_style = request.args.get("branding_style")
-
-    if branding_style == FieldWithNoneOption.NONE_OPTION_VALUE:
-        branding_style = None
-
-    if branding_style:
-        filename = letter_branding_client.get_letter_branding(branding_style)["filename"]
-    else:
-        filename = "no-branding"
-
-    template = {"subject": "", "content": "", "template_type": "letter"}
-    image_url = url_for(".letter_branding_preview_image", filename=filename)
-
-    template_image = str(
-        LetterImageTemplate(
-            template,
-            image_url=image_url,
-            page_count=1,
-        )
-    )
-
-    resp = make_response(render_template("views/service-settings/letter-preview.html", template=template_image))
-
-    resp.headers["X-Frame-Options"] = "SAMEORIGIN"
-    return resp
 
 
 @main.route("/documentation")
@@ -248,14 +177,6 @@ def trial_mode_new():
 def guidance_index():
     return render_template(
         "views/guidance/index.html",
-        navigation_links=using_notify_nav(),
-    )
-
-
-@main.route("/using-emergency-alerts/guidance/branding-and-customisation")
-def branding_and_customisation():
-    return render_template(
-        "views/guidance/branding-and-customisation.html",
         navigation_links=using_notify_nav(),
     )
 

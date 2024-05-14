@@ -1,7 +1,6 @@
 from functools import wraps
 from itertools import chain
 
-from emergency_alerts_utils.field import Field
 from flask import abort, g, make_response, request
 from flask_login import current_user
 from orderedset._orderedset import OrderedSet
@@ -94,10 +93,6 @@ def should_skip_template_page(db_template):
         and db_template["template_type"] != "letter"
         and not db_template["archived"]
     )
-
-
-def get_default_sms_sender(sms_senders):
-    return str(next((Field(x["sms_sender"], html="escape") for x in sms_senders if x["is_default"]), "None"))
 
 
 class PermanentRedirect(RequestRedirect):

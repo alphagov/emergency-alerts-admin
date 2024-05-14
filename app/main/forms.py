@@ -21,7 +21,6 @@ from flask_wtf.file import FileAllowed
 from flask_wtf.file import FileField as FileField_wtf
 from flask_wtf.file import FileSize
 from markupsafe import Markup
-from orderedset import OrderedSet
 from werkzeug.utils import cached_property
 from wtforms import (
     BooleanField,
@@ -56,7 +55,6 @@ from wtforms.validators import (
     Regexp,
 )
 
-from app import asset_fingerprinter
 from app.formatters import (
     format_auth_type,
     format_thousands,
@@ -67,10 +65,8 @@ from app.main.validators import (
     CharactersNotAllowed,
     CommonlyUsedPassword,
     CsvFileValidator,
-    DoesNotStartWithDoubleZero,
     FileIsVirusFree,
     IsPostcode,
-    LettersNumbersSingleQuotesFullStopsAndUnderscoresOnly,
     MustContainAlphanumericCharacters,
     NoCommasInPlaceHolders,
     NoEmbeddedImagesInSVG,
@@ -82,18 +78,12 @@ from app.main.validators import (
     ValidEmail,
     ValidGovEmail,
 )
-from app.models.branding import (
-    GOVERNMENT_IDENTITY_SYSTEM_COLOURS,
-    GOVERNMENT_IDENTITY_SYSTEM_CRESTS_OR_INSIGNIA,
-)
 from app.models.feedback import PROBLEM_TICKET_TYPE, QUESTION_TICKET_TYPE
 from app.models.organisation import Organisation
-from app.utils import branding
 from app.utils.govuk_frontend_field import (
     GovukFrontendWidgetMixin,
     render_govuk_frontend_macro,
 )
-from app.utils.image_processing import CorruptImage, ImageProcessor, WrongImageFormat
 from app.utils.user import distinct_email_addresses
 from app.utils.user_permissions import (
     all_ui_permissions,
@@ -1585,24 +1575,6 @@ class ServiceReplyToEmailForm(StripWhitespaceForm):
     is_default = GovukCheckboxField("Make this email address the default")
 
 
-class ServiceSmsSenderForm(StripWhitespaceForm):
-    sms_sender = GovukTextInputField(
-        "Text message sender",
-        validators=[
-            DataRequired(message="Cannot be empty"),
-            Length(max=11, message="Enter 11 characters or fewer"),
-            Length(min=3, message="Enter 3 characters or more"),
-            LettersNumbersSingleQuotesFullStopsAndUnderscoresOnly(),
-            DoesNotStartWithDoubleZero(),
-        ],
-    )
-    is_default = GovukCheckboxField("Make this text message sender the default")
-
-
-class ServiceEditInboundNumberForm(StripWhitespaceForm):
-    is_default = GovukCheckboxField("Make this text message sender the default")
-
-
 class AdminNotesForm(StripWhitespaceForm):
     notes = TextAreaField(validators=[])
 
@@ -1650,127 +1622,6 @@ class ServiceSwitchChannelForm(ServiceOnOffSettingForm):
         super().__init__(name, *args, **kwargs)
 
 
-class AdminSetEmailBrandingForm(StripWhitespaceForm):
-    branding_style = GovukRadiosFieldWithNoneOption(
-        "Branding style",
-        param_extensions={"fieldset": {"legend": {"classes": "govuk-visually-hidden"}}},
-        thing="a branding style",
-    )
-
-    DEFAULT = (FieldWithNoneOption.NONE_OPTION_VALUE, "GOV.UK")
-
-    def __init__(self, all_branding_options, current_branding):
-        super().__init__(branding_style=current_branding)
-
-        self.branding_style.choices = sorted(
-            all_branding_options + [self.DEFAULT],
-            key=lambda branding: (
-                branding[0] != current_branding,
-                branding[0] is not self.DEFAULT[0],
-                branding[1].lower(),
-            ),
-        )
-
-
-class AdminSetLetterBrandingForm(AdminSetEmailBrandingForm):
-    # form is the same, but instead of GOV.UK we have None as a valid option
-    DEFAULT = (FieldWithNoneOption.NONE_OPTION_VALUE, "None")
-
-
-class AdminPreviewBrandingForm(StripWhitespaceForm):
-    branding_style = HiddenFieldWithNoneOption("branding_style")
-
-
-class AdminEditEmailBrandingForm(StripWhitespaceForm):
-    name = GovukTextInputField("Name of brand")
-    text = GovukTextInputField("Logo text", param_extensions={"hint": {"text": "Text that appears beside the logo"}})
-    alt_text = GovukTextInputField(
-        "Alt text", param_extensions={"hint": {"text": "Text for people who cannot see the logo"}}
-    )
-    colour = HexColourCodeField("Colour")
-    file = VirusScannedFileField("Upload a PNG logo", validators=[FileAllowed(["png"], "PNG Images only!")])
-    brand_type = GovukRadiosField(
-        "Brand type",
-        choices=[
-            ("both", "GOV.UK and branding"),
-            ("org", "Branding only"),
-            ("org_banner", "Branding banner"),
-        ],
-    )
-
-    def validate_name(self, name):
-        op = request.form.get("operation")
-        if op == "email-branding-details" and not self.name.data:
-            raise ValidationError("This field is required")
-
-    def validate(self, extra_validators=None):
-        rv = super().validate(extra_validators)
-
-        op = request.form.get("operation")
-        if op == "email-branding-details":
-            # we only want to validate alt_text/text if we're editing the fields, not the file
-
-            if self.alt_text.data and self.text.data:
-                self.alt_text.errors.append("Must be empty if you enter logo text")
-                return False
-
-            if not (self.alt_text.data or self.text.data):
-                self.alt_text.errors.append("Cannot be empty if you do not have logo text")
-                return False
-
-        return rv
-
-
-class AdminChangeOrganisationDefaultEmailBrandingForm(StripWhitespaceForm):
-    email_branding_id = HiddenField(
-        "Email branding id",
-        validators=[DataRequired()],
-    )
-
-
-class AdminChangeOrganisationDefaultLetterBrandingForm(StripWhitespaceForm):
-    letter_branding_id = HiddenField(
-        "Letter branding id",
-        validators=[DataRequired()],
-    )
-
-
-class AddEmailBrandingOptionsForm(StripWhitespaceForm):
-    branding_field = GovukCheckboxesField(
-        "Branding options",
-        validators=[DataRequired(message="Select at least 1 email branding option")],
-        param_extensions={"fieldset": {"legend": {"classes": "govuk-visually-hidden"}}},
-    )
-
-
-class AddLetterBrandingOptionsForm(StripWhitespaceForm):
-    branding_field = GovukCheckboxesField(
-        "Branding options",
-        validators=[DataRequired(message="Select at least 1 letter branding option")],
-        param_extensions={"fieldset": {"legend": {"classes": "govuk-visually-hidden"}}},
-    )
-
-
-class AdminSetBrandingAddToBrandingPoolStepForm(StripWhitespaceForm):
-    add_to_pool = GovukRadiosField(
-        choices=[("yes", "Yes"), ("no", "No")],
-        thing="yes or no",
-        param_extensions={
-            "fieldset": {
-                "legend": {
-                    # This removes the `govuk-fieldset__legend--s` class, thereby
-                    # making the form label font regular weight, not bold
-                    "classes": "",
-                },
-            }
-        },
-    )
-
-
-class AdminEditLetterBrandingForm(StripWhitespaceForm):
-    name = GovukTextInputField("Name of brand", validators=[DataRequired()])
-
-
 class SVGFileUpload(StripWhitespaceForm):
     file = VirusScannedFileField(
         "Upload an SVG logo",
@@ -1781,45 +1632,6 @@ class SVGFileUpload(StripWhitespaceForm):
             NoTextInSVG(),
         ],
     )
-
-
-class EmailBrandingLogoUpload(StripWhitespaceForm):
-    EXPECTED_LOGO_FORMAT = "png"
-
-    logo = VirusScannedFileField(
-        "Upload a logo",
-        validators=[
-            DataRequired(message="You need to upload a file to submit"),
-            FileSize(max_size=(2 * 1024 * 1024), message="File must be smaller than 2MB"),
-        ],
-    )
-
-    def validate_logo(self, field):
-        from flask import current_app
-
-        try:
-            image_processor = ImageProcessor(field.data, img_format=self.EXPECTED_LOGO_FORMAT)
-        except WrongImageFormat:
-            raise ValidationError(f"Logo must be a {self.EXPECTED_LOGO_FORMAT.upper()} file")
-        except CorruptImage:
-            raise ValidationError("Notify cannot read this file")
-
-        min_height_px = current_app.config["EMAIL_BRANDING_MIN_LOGO_HEIGHT_PX"]
-        max_width_px = current_app.config["EMAIL_BRANDING_MAX_LOGO_WIDTH_PX"]
-
-        # If it's not tall enough, it's probably not high quality enough to look good if we scale it up.
-        if image_processor.height < min_height_px:
-            raise ValidationError(f"Logo must be at least {min_height_px} pixels high")
-
-        # If it's too wide, let's scale it down a bit.
-        if image_processor.width > max_width_px:
-            image_processor.resize(new_width=max_width_px)
-
-        # If after scaling it down, it's not tall enough, let's pad the height as this will probably still look OK.
-        if image_processor.height < min_height_px:
-            image_processor.pad(to_height=min_height_px)
-
-        field.data = image_processor.get_data()
 
 
 class PDFUploadForm(StripWhitespaceForm):
@@ -1926,17 +1738,6 @@ class PlaceholderForm(StripWhitespaceForm):
     pass
 
 
-class AdminServiceInboundNumberForm(StripWhitespaceForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.inbound_number.choices = kwargs["inbound_number_choices"]
-
-    inbound_number = GovukRadiosField(
-        "Set inbound number",
-        thing="an inbound number",
-    )
-
-
 class CallbackForm(StripWhitespaceForm):
     url = GovukTextInputField(
         "URL",
@@ -2005,143 +1806,11 @@ class AdminSetOrganisationForm(StripWhitespaceForm):
     organisations = GovukRadiosField("Select an organisation", validators=[DataRequired()])
 
 
-class ChooseBrandingForm(StripWhitespaceForm):
-    FALLBACK_OPTION_VALUE = "something_else"
-    FALLBACK_OPTION = (FALLBACK_OPTION_VALUE, "Something else")
-
-    @property
-    def something_else_is_only_option(self):
-        return self.options.choices == (self.FALLBACK_OPTION,)
-
-
-class ChooseEmailBrandingForm(ChooseBrandingForm):
-    options = GovukRadiosField(
-        "Choose your new email branding",
-        param_extensions={
-            "fieldset": {
-                "legend": {
-                    # This removes the `govuk-fieldset__legend--s` class, thereby
-                    # making the form label font regular weight, not bold
-                    "classes": "",
-                },
-            },
-        },
-    )
-
-    def __init__(self, service):
-        super().__init__()
-        choices = OrderedSet(branding.get_email_choices(service))
-        if len(choices) > 2:
-            choices = choices | {GovukRadiosField.Divider("or")}
-        self.options.choices = tuple(choices | {self.FALLBACK_OPTION})
-
-
-class ChooseLetterBrandingForm(ChooseBrandingForm):
-    options = RadioField("Choose your new letter branding")
-    something_else = TextAreaField("Describe the branding you want")
-
-    def __init__(self, service):
-        super().__init__()
-
-        self.options.choices = tuple(OrderedSet(list(branding.get_letter_choices(service)) + [self.FALLBACK_OPTION]))
-
-        if self.something_else_is_only_option:
-            self.options.data = self.FALLBACK_OPTION_VALUE
-
-    def validate_something_else(self, field):
-        if (self.something_else_is_only_option or self.options.data == self.FALLBACK_OPTION_VALUE) and not field.data:
-            raise ValidationError("Cannot be empty")
-
-        if self.options.data != self.FALLBACK_OPTION_VALUE:
-            field.data = ""
-
-
-class SomethingElseBrandingForm(StripWhitespaceForm):
-    something_else = GovukTextareaField(
-        "Describe the branding you want",
-        validators=[DataRequired("Cannot be empty")],
-        param_extensions={
-            "label": {
-                "isPageHeading": True,
-                "classes": "govuk-label--l",
-            },
-            "hint": {"text": "Include links to your brand guidelines or examples of how to use your branding."},
-        },
-    )
-
-
 class GovernmentIdentityLogoForm(StripWhitespaceForm):
     logo_text = GovukTextInputField(
         "Enter the text that will appear in your logo",
         validators=[DataRequired("Cannot be empty")],
     )
-
-
-class EmailBrandingChooseLogoForm(StripWhitespaceForm):
-    BRANDING_OPTIONS_DATA = {
-        "single_identity": {
-            "label": "Create a government identity logo",
-            "image": {
-                "url": asset_fingerprinter.get_url("images/branding/single_identity.png"),
-                "alt_text": "An example of an email with a government identity logo,"
-                " including a blue stripe, a crest and department's name",
-                "dimensions": {"width": 606, "height": 404},
-            },
-        },
-        "org": {
-            "label": "Upload a logo",
-            "image": {
-                "url": asset_fingerprinter.get_url("images/branding/org.png"),
-                "alt_text": 'An example of an email with the heading "Your logo" in blue text on a white background.',
-                "dimensions": {"width": 606, "height": 404},
-            },
-        },
-    }
-
-    branding_options = GovukRadiosWithImagesField(
-        "Choose a logo for your emails",
-        choices=tuple((key, value["label"]) for key, value in BRANDING_OPTIONS_DATA.items()),
-        image_data={key: value["image"] for key, value in BRANDING_OPTIONS_DATA.items()},
-    )
-
-
-class EmailBrandingChooseBanner(Form):
-    BANNER_CHOICES_DATA = {
-        "org": {
-            "label": "No banner",
-            "image": {
-                "url": asset_fingerprinter.get_url("images/branding/org.png"),
-                "alt_text": 'An example of an email with the heading "Your logo" in blue text on a white background.',
-                "dimensions": {"width": 404, "height": 454},
-            },
-        },
-        "org_banner": {
-            "label": "Coloured banner",
-            "image": {
-                "url": asset_fingerprinter.get_url("images/branding/org_banner.png"),
-                "alt_text": "An example of an email with a logo on a blue banner.",
-                "dimensions": {"width": 404, "height": 454},
-            },
-        },
-    }
-
-    banner = GovukRadiosWithImagesField(
-        "Add a banner to your logo",
-        choices=tuple((key, value["label"]) for key, value in BANNER_CHOICES_DATA.items()),
-        image_data={key: value["image"] for key, value in BANNER_CHOICES_DATA.items()},
-    )
-
-
-class EmailBrandingChooseBannerColour(StripWhitespaceForm):
-    hex_colour = HexColourCodeField("Choose a colour for your banner", validators=[DataRequired()])
-
-
-class EmailBrandingAltTextForm(StripWhitespaceForm):
-    alt_text = GovukTextInputField("Alt text", validators=[DataRequired(message="Cannot be empty")])
-
-    def validate_alt_text(self, field):
-        if "logo" in field.data.lower():
-            raise ValidationError("Do not include the word ‘logo’ in your alt text")
 
 
 class AdminServiceAddDataRetentionForm(StripWhitespaceForm):
@@ -2507,61 +2176,6 @@ class ChangeSecurityKeyNameForm(StripWhitespaceForm):
             MustContainAlphanumericCharacters(),
             Length(max=255, message="Name of key must be 255 characters or fewer"),
         ],
-    )
-
-
-def markup_for_crest_or_insignia(filename):
-    return Markup(
-        f"""
-        <img
-            src="{asset_fingerprinter.get_url(f"images/branding/insignia/{filename}")}"
-            alt=""
-            class="email-branding-crest-or-insignia"
-        >
-    """
-    )
-
-
-def markup_for_coloured_stripe(colour):
-    return Markup(
-        f"""
-        <span
-            class="email-branding-coloured-stripe"
-            style="background: {colour};"
-        ></span>
-    """
-    )
-
-
-class GovernmentIdentityCoatOfArmsOrInsignia(StripWhitespaceForm):
-    coat_of_arms_or_insignia = GovukRadiosField(
-        "Coat of arms or insignia",
-        choices=[
-            (name, markup_for_crest_or_insignia(f"{name}.png") + name)
-            for name in sorted(GOVERNMENT_IDENTITY_SYSTEM_CRESTS_OR_INSIGNIA)
-        ],
-        thing="a coat of arms or insignia",
-    )
-
-
-class GovernmentIdentityColour(StripWhitespaceForm):
-    def __init__(self, *args, crest_or_insignia_image_filename, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.colour.choices = [
-            (
-                colour,
-                (
-                    markup_for_coloured_stripe(colour)
-                    + markup_for_crest_or_insignia(crest_or_insignia_image_filename)
-                    + name
-                ),
-            )
-            for name, colour in GOVERNMENT_IDENTITY_SYSTEM_COLOURS.items()
-        ]
-
-    colour = GovukRadiosField(
-        "Colour for stripe",
-        thing="a colour for the stripe",
     )
 
 

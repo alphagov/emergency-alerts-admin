@@ -85,54 +85,6 @@ def test_default_email_sender_is_checked_and_has_hint(
     assert not page.select(".govuk-radios input")[1].has_attr("checked")
 
 
-def test_default_sms_sender_is_checked_and_has_hint(
-    client_request,
-    fake_uuid,
-    mock_get_service_template,
-    multiple_sms_senders_with_diff_default,
-):
-    page = client_request.get(".set_sender", service_id=SERVICE_ONE_ID, template_id=fake_uuid)
-
-    assert page.select(".govuk-radios input")[0].has_attr("checked")
-    assert normalize_spaces(page.select_one(".govuk-radios .govuk-hint").text) == "(Default)"
-    assert not page.select(".govuk-radios input")[1].has_attr("checked")
-
-
-def test_default_sms_sender_is_checked_and_has_hint_when_there_are_no_inbound_numbers(
-    client_request,
-    fake_uuid,
-    mock_get_service_template,
-    multiple_sms_senders_no_inbound,
-):
-    page = client_request.get(".set_sender", service_id=SERVICE_ONE_ID, template_id=fake_uuid)
-
-    assert page.select(".govuk-radios input")[0].has_attr("checked")
-    assert normalize_spaces(page.select_one(".govuk-radios .govuk-hint").text) == "(Default)"
-    assert not page.select(".govuk-radios input")[1].has_attr("checked")
-
-
-def test_default_inbound_sender_is_checked_and_has_hint_with_default_and_receives_text(
-    client_request, service_one, fake_uuid, mock_get_service_template, multiple_sms_senders
-):
-    page = client_request.get(".set_sender", service_id=service_one["id"], template_id=fake_uuid)
-
-    assert page.select(".govuk-radios input")[0].has_attr("checked")
-    assert normalize_spaces(page.select_one(".govuk-radios .govuk-hint").text) == "(Default and receives replies)"
-    assert not page.select(".govuk-radios input")[1].has_attr("checked")
-    assert not page.select(".govuk-radios input")[2].has_attr("checked")
-
-
-def test_sms_sender_has_receives_replies_hint(
-    client_request, service_one, fake_uuid, mock_get_service_template, multiple_sms_senders
-):
-    page = client_request.get(".set_sender", service_id=service_one["id"], template_id=fake_uuid)
-
-    assert page.select(".govuk-radios input")[0].has_attr("checked")
-    assert normalize_spaces(page.select_one(".govuk-radios .govuk-hint").text) == "(Default and receives replies)"
-    assert not page.select(".govuk-radios input")[1].has_attr("checked")
-    assert not page.select(".govuk-radios input")[2].has_attr("checked")
-
-
 @pytest.mark.parametrize(
     "template_type, sender_data",
     [
@@ -3929,62 +3881,6 @@ def test_reply_to_is_previewed_if_chosen(
         assert "test@example.com" in email_meta
     else:
         assert "test@example.com" not in email_meta
-
-
-@pytest.mark.parametrize(
-    "endpoint, extra_args",
-    [
-        ("main.check_messages", {"template_id": uuid4(), "upload_id": uuid4()}),
-        ("main.send_one_off_step", {"template_id": uuid4(), "step_index": 0}),
-    ],
-)
-@pytest.mark.parametrize(
-    "sms_sender",
-    [
-        None,
-        uuid4(),
-    ],
-)
-def test_sms_sender_is_previewed(
-    client_request,
-    mocker,
-    mock_get_service_template,
-    mock_s3_download,
-    mock_s3_get_metadata,
-    mock_s3_set_metadata,
-    mock_get_users_by_service,
-    mock_get_service_statistics,
-    mock_get_job_doesnt_exist,
-    mock_get_jobs,
-    mock_get_no_contact_lists,
-    get_default_sms_sender,
-    fake_uuid,
-    endpoint,
-    extra_args,
-    sms_sender,
-):
-    mocker.patch(
-        "app.main.views.send.s3download",
-        return_value="""
-        phone number,date,thing
-        7700900986,foo,bar
-    """,
-    )
-
-    with client_request.session_transaction() as session:
-        session["recipient"] = "7700900986"
-        session["placeholders"] = {}
-        session["file_uploads"] = {fake_uuid: {"template_id": fake_uuid, "notification_count": 1, "valid": True}}
-        session["sender_id"] = sms_sender
-
-    page = client_request.get(endpoint, service_id=SERVICE_ONE_ID, **extra_args)
-
-    sms_sender_on_page = page.select_one(".sms-message-sender")
-
-    if sms_sender:
-        assert sms_sender_on_page.text.strip() == "From: GOVUK"
-    else:
-        assert not sms_sender_on_page
 
 
 def test_redirects_to_template_if_job_exists_already(
