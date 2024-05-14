@@ -234,7 +234,6 @@ def format_notification_status(status, template_type):
             "sent": "",
             "pending-virus-check": "",
             "virus-scan-failed": "Virus detected",
-            "returned-letter": "",
             "cancelled": "",
             "validation-failed": "Validation failed",
         },
@@ -260,7 +259,6 @@ def format_notification_status_as_field_status(status, notification_type):
                 "accepted": None,
                 "pending-virus-check": None,
                 "virus-scan-failed": "error",
-                "returned-letter": None,
                 "cancelled": "error",
             },
         }

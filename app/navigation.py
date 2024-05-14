@@ -94,7 +94,6 @@ class HeaderNavigation(Navigation):
             "platform_admin",
             "platform_admin_list_complaints",
             "platform_admin_reports",
-            "platform_admin_returned_letters",
             "platform_admin_search",
             "trial_services",
             "user_information",
@@ -124,8 +123,6 @@ class MainNavigation(Navigation):
         "dashboard": {
             "broadcast_tour",
             "monthly",
-            "returned_letter_summary",
-            "returned_letters",
             "service_dashboard",
             "template_usage",
             "view_notification",

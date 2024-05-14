@@ -140,7 +140,6 @@ def test_get_started(
     mock_get_service_statistics,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
     mocker.patch(
         "app.template_statistics_client.get_template_statistics_for_service",
@@ -164,7 +163,6 @@ def test_get_started_is_hidden_once_templates_exist(
     mock_get_service_statistics,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
     mocker.patch(
         "app.template_statistics_client.get_template_statistics_for_service",
@@ -179,110 +177,6 @@ def test_get_started_is_hidden_once_templates_exist(
     assert not any("Get started" in h2.text for h2 in page.select("h2"))
 
 
-def test_returned_letters_not_visible_if_service_has_no_returned_letters(
-    client_request,
-    mocker,
-    service_one,
-    mock_get_service_templates_when_no_templates_exist,
-    mock_has_no_jobs,
-    mock_get_service_statistics,
-    mock_get_template_statistics,
-    mock_get_annual_usage_for_service,
-    mock_get_free_sms_fragment_limit,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
-):
-    page = client_request.get(
-        "main.service_dashboard",
-        service_id=SERVICE_ONE_ID,
-    )
-    assert not page.select("#total-returned-letters")
-
-
-@pytest.mark.parametrize(
-    "reporting_date, expected_message",
-    (
-        ("2020-01-10 00:00:00.000000", "4,000 returned letters latest report today"),
-        ("2020-01-09 23:59:59.000000", "4,000 returned letters latest report yesterday"),
-        ("2020-01-08 12:12:12.000000", "4,000 returned letters latest report 2 days ago"),
-        ("2019-12-10 00:00:00.000000", "4,000 returned letters latest report 1 month ago"),
-    ),
-)
-@freeze_time("2020-01-10 12:34:00.000000")
-def test_returned_letters_shows_count_of_recently_returned_letters(
-    client_request,
-    mocker,
-    service_one,
-    mock_get_service_templates_when_no_templates_exist,
-    mock_get_jobs,
-    mock_get_scheduled_job_stats,
-    mock_get_service_statistics,
-    mock_get_template_statistics,
-    mock_get_annual_usage_for_service,
-    mock_get_free_sms_fragment_limit,
-    reporting_date,
-    expected_message,
-):
-    mocker.patch(
-        "app.service_api_client.get_returned_letter_statistics",
-        return_value={
-            "returned_letter_count": 4000,
-            "most_recent_report": reporting_date,
-        },
-    )
-    page = client_request.get(
-        "main.service_dashboard",
-        service_id=SERVICE_ONE_ID,
-    )
-    banner = page.select_one("#total-returned-letters")
-    assert normalize_spaces(banner.text) == expected_message
-    assert banner["href"] == url_for("main.returned_letter_summary", service_id=SERVICE_ONE_ID)
-
-
-@pytest.mark.parametrize(
-    "reporting_date, count, expected_message",
-    (
-        ("2020-02-02", 1, "1 returned letter latest report today"),
-        ("2020-02-01", 1, "1 returned letter latest report yesterday"),
-        ("2020-01-31", 1, "1 returned letter latest report 2 days ago"),
-        ("2020-01-26", 1, "1 returned letter latest report 7 days ago"),
-        ("2020-01-25", 0, "0 returned letters latest report 8 days ago"),
-        ("2020-01-01", 0, "0 returned letters latest report 1 month ago"),
-        ("2019-09-09", 0, "0 returned letters latest report 4 months ago"),
-        ("2010-10-10", 0, "0 returned letters latest report 9 years ago"),
-    ),
-)
-@freeze_time("2020-02-02")
-def test_returned_letters_only_counts_recently_returned_letters(
-    client_request,
-    mocker,
-    service_one,
-    mock_get_service_templates_when_no_templates_exist,
-    mock_get_jobs,
-    mock_get_scheduled_job_stats,
-    mock_get_service_statistics,
-    mock_get_template_statistics,
-    mock_get_annual_usage_for_service,
-    mock_get_free_sms_fragment_limit,
-    reporting_date,
-    count,
-    expected_message,
-):
-    mocker.patch(
-        "app.service_api_client.get_returned_letter_statistics",
-        return_value={
-            "returned_letter_count": count,
-            "most_recent_report": reporting_date,
-        },
-    )
-    page = client_request.get(
-        "main.service_dashboard",
-        service_id=SERVICE_ONE_ID,
-    )
-    banner = page.select_one("#total-returned-letters")
-    assert normalize_spaces(banner.text) == expected_message
-    assert banner["href"] == url_for("main.returned_letter_summary", service_id=SERVICE_ONE_ID)
-
-
 def test_should_show_recent_templates_on_dashboard(
     client_request,
     mocker,
@@ -291,7 +185,6 @@ def test_should_show_recent_templates_on_dashboard(
     mock_get_service_statistics,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
     mock_template_stats = mocker.patch(
         "app.template_statistics_client.get_template_statistics_for_service",
@@ -349,7 +242,6 @@ def test_should_not_show_recent_templates_on_dashboard_if_only_one_template_used
     mock_get_service_statistics,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
     stats,
 ):
     mock_template_stats = mocker.patch(
@@ -495,7 +387,6 @@ def test_should_show_upcoming_jobs_on_dashboard(
     mock_get_scheduled_job_stats,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
     page = client_request.get(
         "main.service_dashboard",
@@ -522,7 +413,6 @@ def test_should_not_show_upcoming_jobs_on_dashboard_if_count_is_0(
     mock_has_jobs,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
     mocker.patch(
         "app.job_api_client.get_scheduled_job_stats",
@@ -550,7 +440,6 @@ def test_should_not_show_upcoming_jobs_on_dashboard_if_service_has_no_jobs(
     mock_get_scheduled_job_stats,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
     page = client_request.get(
         "main.service_dashboard",
@@ -593,7 +482,6 @@ def test_correct_font_size_for_big_numbers(
     mock_has_no_jobs,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
     service_one,
     permissions,
     totals,
@@ -625,7 +513,6 @@ def test_should_not_show_jobs_on_dashboard_for_users_with_uploads_page(
     mock_get_scheduled_job_stats,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
     page = client_request.get(
         "main.service_dashboard",
@@ -867,7 +754,6 @@ def test_menu_send_messages(
     mock_get_service_statistics,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
     service_one["permissions"] = ["email", "sms", "letter", "upload_letters"]
 
@@ -905,7 +791,6 @@ def test_menu_send_messages_when_service_does_not_have_upload_letters_permission
     mock_get_service_statistics,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
     page = _test_dashboard_menu(
         client_request,
@@ -929,7 +814,6 @@ def test_menu_manage_service(
     mock_get_template_statistics,
     mock_get_service_statistics,
     mock_get_annual_usage_for_service,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
     mock_get_free_sms_fragment_limit,
 ):
     page = _test_dashboard_menu(
@@ -963,7 +847,6 @@ def test_menu_manage_api_keys(
     mock_get_template_statistics,
     mock_get_service_statistics,
     mock_get_annual_usage_for_service,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
     mock_get_free_sms_fragment_limit,
 ):
     page = _test_dashboard_menu(
@@ -994,7 +877,6 @@ def test_menu_all_services_for_platform_admin_user(
     mock_get_template_statistics,
     mock_get_service_statistics,
     mock_get_annual_usage_for_service,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
     mock_get_free_sms_fragment_limit,
 ):
     page = _test_dashboard_menu(client_request, mocker, platform_admin_user, service_one, [])
@@ -1020,7 +902,6 @@ def test_route_for_service_permissions(
     mock_get_service_statistics,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
     with notify_admin.test_request_context():
         validate_route_permission(
@@ -1074,7 +955,6 @@ def test_service_dashboard_updates_gets_dashboard_totals(
     mock_has_no_jobs,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
     mocker.patch(
         "app.main.views.dashboard.get_dashboard_totals",
@@ -1105,7 +985,6 @@ def test_service_dashboard_totals_link_to_view_notifications(
     mock_has_no_jobs,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
     mocker.patch(
         "app.main.views.dashboard.get_dashboard_totals",
@@ -1257,7 +1136,6 @@ def test_org_breadcrumbs_do_not_show_if_service_has_no_org(
     mock_has_no_jobs,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
     page = client_request.get("main.service_dashboard", service_id=SERVICE_ONE_ID)
 
@@ -1271,7 +1149,6 @@ def test_org_breadcrumbs_do_not_show_if_user_is_not_an_org_member(
     active_caseworking_user,
     client_request,
     mock_get_template_folders,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
     mock_get_api_keys,
 ):
     # active_caseworking_user is not an org member
@@ -1294,7 +1171,6 @@ def test_org_breadcrumbs_do_not_show_if_user_is_a_member_of_the_services_org_but
     mock_has_no_jobs,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
     active_user_with_permissions,
     client_request,
 ):
@@ -1319,7 +1195,6 @@ def test_breadcrumb_shows_if_service_is_suspended(
     mock_has_no_jobs,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
     active_user_with_permissions,
     client_request,
 ):
@@ -1350,7 +1225,6 @@ def test_service_dashboard_shows_usage(
     mock_has_no_jobs,
     mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
     permissions,
 ):
     service_one["permissions"] = permissions
@@ -1369,7 +1243,6 @@ def test_service_dashboard_shows_free_allowance(
     mock_get_template_statistics,
     mock_has_no_jobs,
     mock_get_free_sms_fragment_limit,
-    mock_get_returned_letter_statistics_with_no_returned_letters,
 ):
     mocker.patch(
         "app.billing_api_client.get_annual_usage_for_service",

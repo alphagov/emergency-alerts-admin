@@ -1,6 +1,5 @@
 import dataclasses
 import itertools
-import re
 import uuid
 from collections import OrderedDict
 from datetime import datetime
@@ -13,7 +12,6 @@ from app import (
     billing_api_client,
     complaint_api_client,
     format_date_numeric,
-    letter_jobs_client,
     notification_api_client,
     platform_stats_api_client,
     service_api_client,
@@ -23,7 +21,6 @@ from app.extensions import redis_client
 from app.main import main
 from app.main.forms import (
     AdminClearCacheForm,
-    AdminReturnedLettersForm,
     BillingReportDateFilterForm,
     DateFilterForm,
     PlatformAdminSearch,
@@ -536,35 +533,6 @@ def platform_admin_list_complaints():
     )
 
 
-@main.route("/platform-admin/returned-letters", methods=["GET", "POST"])
-@user_is_platform_admin
-def platform_admin_returned_letters():
-    form = AdminReturnedLettersForm()
-
-    if form.validate_on_submit():
-        references = [re.sub("NOTIFY00[0-9]", "", r.strip()) for r in form.references.data.split("\n") if r.strip()]
-
-        try:
-            letter_jobs_client.submit_returned_letters(references)
-            redis_client.delete_by_pattern("service-????????-????-????-????-????????????-returned-letters-statistics")
-            redis_client.delete_by_pattern("service-????????-????-????-????-????????????-returned-letters-summary")
-        except HTTPError as error:
-            if error.status_code == 400:
-                error_references = [
-                    re.match("references (.*) does not match", e["message"]).group(1) for e in error.message
-                ]
-                form.references.errors.append(f"Invalid references: {', '.join(error_references)}")
-            else:
-                raise error
-        else:
-            flash(f"Submitted {len(references)} letter references", "default")
-            return redirect(url_for(".platform_admin_returned_letters"))
-    return render_template(
-        "views/platform-admin/returned-letters.html",
-        form=form,
-    )
-
-
 @main.route("/platform-admin/clear-cache", methods=["GET", "POST"])
 @user_is_platform_admin
 def clear_cache():
@@ -585,8 +553,6 @@ def clear_cache():
                     "service-????????-????-????-????-????????????-templates",
                     "service-????????-????-????-????-????????????-data-retention",
                     "service-????????-????-????-????-????????????-template-folders",
-                    "service-????????-????-????-????-????????????-returned-letters-statistics",
-                    "service-????????-????-????-????-????????????-returned-letters-summary",
                 ],
             ),
             (
