@@ -545,6 +545,7 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
             second_coordinate,
             coordinate_type,
         ):
+            marker = [first_coordinate, second_coordinate]
             if form.validate_on_submit():
                 if polygon := create_coordinate_area(
                     first_coordinate,
@@ -560,7 +561,6 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
                         count_of_phones,
                         count_of_phones_likely,
                     ) = extract_attributes_from_custom_area(polygon)
-
         else:
             adding_invalid_coords_errors_to_form(coordinate_type, form)
             form.validate_on_submit()
