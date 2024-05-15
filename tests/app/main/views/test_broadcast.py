@@ -2643,7 +2643,6 @@ def test_non_uk_coordinate_area_form_errors(
         _data=post_data,
         _follow_redirects=True,
     )
-    mock_update_broadcast_message.assert_called_once()
     form = page.select_one("form")
     error_list = [
         normalize_spaces(error)

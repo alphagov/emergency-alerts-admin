@@ -357,7 +357,6 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
             if query returns IndexError, the postcode isn't in the database and thus error is appended to
             postcode field and displayed on the page.
             """
-            broadcast_message.clear_areas()
             postcode = create_postcode_db_id(form)
             centroid = get_centroid_if_postcode_in_db(postcode, form)
             form.pre_validate(form)  # Validating the postcode field
@@ -527,7 +526,6 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
             second_coordinate,
             coordinate_type,
         )
-        broadcast_message.clear_areas()
         if not in_enclosed_polygons:  # if coordinate not in either UK or test area
             adding_invalid_coords_errors_to_form(coordinate_type, form)
         else:  # if in either test area or UK, the coordinates are passed into the jinja to be displayed on leaflet map
@@ -567,7 +565,6 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
         else:
             adding_invalid_coords_errors_to_form(coordinate_type, form)
             form.validate_on_submit()
-            broadcast_message.clear_areas()
         if preview_button_clicked(request):
             """
             If 'Preview alert' button is clicked, area is added to Broadcast Message
