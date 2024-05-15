@@ -4,7 +4,6 @@ from freezegun import freeze_time
 from notifications_python_client.errors import HTTPError
 
 from tests import organisation_json, service_json
-from tests.app.main.views.test_agreement import MockS3Object
 from tests.conftest import (
     ORGANISATION_ID,
     SERVICE_ONE_ID,
@@ -331,10 +330,7 @@ def test_gps_can_name_their_organisation(
         service_id=SERVICE_ONE_ID,
         _data=data,
         _expected_status=302,
-        _expected_redirect=url_for(
-            "main.service_agreement",
-            service_id=SERVICE_ONE_ID,
-        ),
+        _expected_redirect=url_for(".index"),
     )
 
     mock_create_organisation.assert_called_once_with(
@@ -403,10 +399,7 @@ def test_nhs_local_assigns_to_selected_organisation(
             "organisations": ORGANISATION_ID,
         },
         _expected_status=302,
-        _expected_redirect=url_for(
-            "main.service_agreement",
-            service_id=SERVICE_ONE_ID,
-        ),
+        _expected_redirect=url_for(".index"),
     )
     mock_update_service_organisation.assert_called_once_with(SERVICE_ONE_ID, ORGANISATION_ID)
 
@@ -1884,57 +1877,3 @@ def test_organisation_billing_page_when_the_agreement_is_not_signed(
 
     assert page.select_one("h1").string == "Billing"
     assert f'{organisation_one["name"]} {expected_content}' in page.text
-
-
-@pytest.mark.parametrize(
-    "crown, expected_status, expected_file_fetched, expected_file_served",
-    (
-        (
-            True,
-            200,
-            "crown.pdf",
-            "GOV.UK Notify data sharing and financial agreement.pdf",
-        ),
-        (
-            False,
-            200,
-            "non-crown.pdf",
-            "GOV.UK Notify data sharing and financial agreement (non-crown).pdf",
-        ),
-        (
-            None,
-            404,
-            None,
-            None,
-        ),
-    ),
-)
-def test_download_organisation_agreement(
-    client_request,
-    platform_admin_user,
-    mocker,
-    crown,
-    expected_status,
-    expected_file_fetched,
-    expected_file_served,
-):
-    mocker.patch(
-        "app.models.organisation.organisations_client.get_organisation", return_value=organisation_json(crown=crown)
-    )
-    mock_get_s3_object = mocker.patch("app.s3_client.s3_mou_client.get_s3_object", return_value=MockS3Object(b"foo"))
-
-    client_request.login(platform_admin_user)
-    response = client_request.get_response(
-        "main.organisation_download_agreement",
-        org_id=ORGANISATION_ID,
-        _expected_status=expected_status,
-    )
-
-    if expected_file_served:
-        assert response.get_data() == b"foo"
-        assert response.headers["Content-Type"] == "application/pdf"
-        assert response.headers["Content-Disposition"] == (f'attachment; filename="{expected_file_served}"')
-        mock_get_s3_object.assert_called_once_with("test-mou", expected_file_fetched)
-    else:
-        assert not expected_file_fetched
-        assert mock_get_s3_object.called is False
