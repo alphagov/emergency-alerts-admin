@@ -520,17 +520,16 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
         """
         first_coordinate = float(form.data["first_coordinate"])
         second_coordinate = float(form.data["second_coordinate"])
-        in_enclosed_polygons = check_coordinates_valid_for_enclosed_polygons(
+        if check_coordinates_valid_for_enclosed_polygons(
             broadcast_message,
             first_coordinate,
             second_coordinate,
             coordinate_type,
-        )
-        if not in_enclosed_polygons:  # if coordinate not in either UK or test area
-            adding_invalid_coords_errors_to_form(coordinate_type, form)
-        else:  # if in either test area or UK, the coordinates are passed into the jinja to be displayed on leaflet map
+        ):
             Point = normalising_point(first_coordinate, second_coordinate, coordinate_type)
             marker = [Point.y, Point.x]
+        else:
+            adding_invalid_coords_errors_to_form(coordinate_type, form)
         form.pre_validate(form)  # To validate the fields don't have any errors
     elif coordinates_and_radius_entered(request, form):
         """
@@ -540,7 +539,7 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
         are required for the Leaflet map, key, number of phones to display etc.
         """
         first_coordinate, second_coordinate, radius = parse_coordinate_form_data(form)
-        if in_enclosed_polygons := check_coordinates_valid_for_enclosed_polygons(
+        if check_coordinates_valid_for_enclosed_polygons(
             broadcast_message,
             first_coordinate,
             second_coordinate,
