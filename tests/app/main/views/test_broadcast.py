@@ -1390,6 +1390,7 @@ def test_choose_broadcast_area_page_titles(
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug=library_slug,
+        _follow_redirects=True,
     )
     assert normalize_spaces(page.select_one("h1").text) == expected_page_title
 
@@ -1892,7 +1893,7 @@ def test_create_postcode_area(
 
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.post(
-        ".choose_broadcast_area",
+        ".search_postcodes",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug="postcodes",
@@ -1966,7 +1967,7 @@ def test_add_postcode_area_to_broadcast(
 
     client_request.login(active_user_create_broadcasts_permission)
     client_request.post(
-        ".choose_broadcast_area",
+        ".search_postcodes",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug="postcodes",
@@ -2709,7 +2710,7 @@ def test_incorrect_input_postcode_form_errors(
     client_request.login(active_user_create_broadcasts_permission)
 
     page = client_request.post(
-        ".choose_broadcast_area",
+        ".search_postcodes",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug="postcodes",
@@ -2770,7 +2771,7 @@ def test_valid_format_postcode_not_in_db_form_error(
     client_request.login(active_user_create_broadcasts_permission)
 
     page = client_request.post(
-        ".choose_broadcast_area",
+        ".search_postcodes",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug="postcodes",
