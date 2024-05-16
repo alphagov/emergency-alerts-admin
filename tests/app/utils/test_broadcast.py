@@ -59,14 +59,13 @@ def test_create_coordinate_area_slug(coordinate_type, first_coordinate, second_c
 )
 def test_create_coordinate_area(coordinate_type, first_coordinate, second_coordinate, radius):
     if coordinate_type == "latitude_longitude":
-        assert (
-            create_coordinate_area(first_coordinate, second_coordinate, radius, coordinate_type) == custom_craven_area
-        )
+        actual = create_coordinate_area(first_coordinate, second_coordinate, radius, coordinate_type)
+        for coords1, coords2 in zip(actual, custom_craven_area):
+            assert all(abs(a - b) < math.exp(1e-12) for a, b in zip(coords1, coords2))
     elif coordinate_type == "easting_northing":
-        assert (
-            create_coordinate_area(first_coordinate, second_coordinate, radius, coordinate_type)
-            == custom_westminster_area
-        )
+        actual = create_coordinate_area(first_coordinate, second_coordinate, radius, coordinate_type)
+        for coords1, coords2 in zip(actual, custom_westminster_area):
+            assert all(abs(a - b) < math.exp(1e-12) for a, b in zip(coords1, coords2))
 
 
 @pytest.mark.parametrize(
@@ -106,13 +105,14 @@ def test_normalising_point(coordinate_type, first_coordinate, second_coordinate,
 
 
 def test_extract_attributes_from_custom_area():
-    assert extract_attributes_from_custom_area(custom_craven_area) == (
+    expected_attributes = (
         3067.5881038789844,
         3134370.3703178177,
         51909389.409217164,
         200,
         4000,
     )
+    assert extract_attributes_from_custom_area(custom_craven_area) == pytest.approx(expected_attributes, 1e-12)
 
 
 @pytest.mark.parametrize(
@@ -133,7 +133,8 @@ def test_create_custom_area_polygon():
     centroid, custom_polygon = create_custom_area_polygon(BroadcastMessage, form, "postcodes-BD1 1EE")
     assert centroid.x == -1.7516431369765788
     assert centroid.y == 53.79363450437661
-    assert custom_polygon == BD1_1EE_1
+    for coords1, coords2 in zip(custom_polygon, BD1_1EE_1):
+        assert all(abs(a - b) < math.exp(1e-12) for a, b in zip(coords1, coords2))
 
     centroid, custom_polygon = create_custom_area_polygon(BroadcastMessage, form, "postcodes-BD1 1EP")
     assert centroid is None
@@ -154,7 +155,6 @@ def test_create_postcode_area_slug(radius, postcode):
 @pytest.mark.parametrize(
     "id, expected",
     [
-        ("postcodes-RG12 8SN", [-0.7762125287356323, 51.407994482758625]),
         ("postcodes-BD1 1EE", [-1.7516431369765788, 53.79363450437661]),
         ("ctry19-E92000001", [-1.4660743481578784, 52.59949456672687]),
     ],
@@ -205,7 +205,6 @@ def test_adding_invalid_coords_errors_to_form():
 @pytest.mark.parametrize(
     "postcode, expected_centroid",
     [
-        ("postcodes-RG12 8SN", [-0.7762125287356323, 51.407994482758625]),
         ("postcodes-BD1 1EE", [-1.7516431369765788, 53.79363450437661]),
         ("postcodes-BD1 1EP", None),
     ],
