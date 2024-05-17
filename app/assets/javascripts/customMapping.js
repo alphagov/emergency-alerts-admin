@@ -1,7 +1,7 @@
 // Function to create a Leaflet Circle using latitude and longitude coordinates,
 // radius and estimated bleed that is then added to the map
 function createLatitudelongitudeArea(first_coordinate, second_coordinate, radius, bleed, mapElement) {
-  let coordinates = [first_coordinate, second_coordinate]
+  let coordinates = [first_coordinate, second_coordinate];
   circle = createAreaCircle(coordinates, radius);
   bleed_circle = createBleedCircle(coordinates, bleed);
   pinpoint = L.marker(coordinates, {icon: markerIcon});
