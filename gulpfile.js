@@ -61,6 +61,12 @@ const copy = {
         .pipe(dest(paths.dist + 'javascripts/'))
     }
   },
+  customMapping: {
+    js: () => {
+      return src(paths.src + 'javascripts/customMapping.js',)
+        .pipe(dest(paths.dist + 'javascripts/'))
+    }
+  },
   static: () => {
     return src(paths.src + 'metadata/*')
       .pipe(dest(paths.dist + 'metadata/'))
@@ -233,6 +239,7 @@ const defaultTask = parallel(
     images,
     copy.leaflet.js,
     copy.proj4.js,
+    copy.customMapping.js,
     copy.static
   ),
   series(
