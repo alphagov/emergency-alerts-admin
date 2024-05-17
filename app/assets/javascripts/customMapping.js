@@ -1,20 +1,27 @@
+// Function to create a Leaflet Circle using latitude and longitude coordinates,
+// radius and estimated bleed that is then added to the map
 function createLatitudelongitudeArea(first_coordinate, second_coordinate, radius, bleed, mapElement) {
-  circle = createAreaCircle([first_coordinate, second_coordinate], radius);
-  bleed_circle = createBleedCircle([first_coordinate, second_coordinate], bleed);
-  pinpoint = L.marker([first_coordinate, second_coordinate], {icon: markerIcon});
+  let coordinates = [first_coordinate, second_coordinate]
+  circle = createAreaCircle(coordinates, radius);
+  bleed_circle = createBleedCircle(coordinates, bleed);
+  pinpoint = L.marker(coordinates, {icon: markerIcon});
   createCoordinateAreaLabel('latitude_longitude', radius, first_coordinate, second_coordinate, mapElement);
   return circle, bleed_circle, pinpoint;
 }
 
+// Function to create a Leaflet Circle using easting and northing coordinates,
+// radius and estimated bleed that is then added to the map
 function createEastingNorthingArea(first_coordinate, second_coordinate, radius, bleed, mapElement) {
-  latlngs = eastingsNorthingsToLatLng(parseFloat(first_coordinate), parseFloat(second_coordinate));
-  circle = createAreaCircle([latlngs.lat, latlngs.lng], radius);
-  bleed_circle = createBleedCircle([latlngs.lat, latlngs.lng], bleed);
-  pinpoint = L.marker([latlngs.lat, latlngs.lng], {icon: markerIcon});
+  latlng = eastingsNorthingsToLatLng(parseFloat(first_coordinate), parseFloat(second_coordinate));
+  circle = createAreaCircle(latlng, radius);
+  bleed_circle = createBleedCircle(latlng, bleed);
+  pinpoint = L.marker(latlng, {icon: markerIcon});
   createCoordinateAreaLabel('easting_northing', radius, parseFloat(first_coordinate).toFixed(0), parseFloat(second_coordinate).toFixed(0), mapElement);
   return circle, bleed_circle, pinpoint;
 }
 
+// Function to create a Leaflet Circle using postcode centroid,
+// radius and estimated bleed that is then added to the map
 function createPostcodeArea(centroid, radius, bleed, postcode) {
   circle = createAreaCircle(centroid, radius);
   bleed_circle = createBleedCircle(centroid, bleed);
@@ -23,6 +30,7 @@ function createPostcodeArea(centroid, radius, bleed, postcode) {
   return circle, bleed_circle, pinpoint;
 }
 
+// Function that adds the Custom area features to the Leaflet map
 function addingFeaturesToMap(mymap, bleed_circle, circle, pinpoint) {
   bleed_circle.addTo(mymap);
   circle.addTo(mymap);
@@ -33,22 +41,26 @@ function addingFeaturesToMap(mymap, bleed_circle, circle, pinpoint) {
   );
 }
 
+// Function that plots the centroid on the Leaflet map with custom marker and then adjusts the zoom level of the map
 function addingPostcodeCentroidMarkerToMap(mymap, centroid) {
   pinpoint = L.marker(centroid, {icon: markerIcon});
   pinpoint.addTo(mymap);
   mymap.setView(pinpoint.getLatLng(), 13);
 }
 
+// Function that converts easting and northing coordinates to latitude and longitude, using proj4 library
 function eastingsNorthingsToLatLng(easting, northing) {
     let latlng = proj4('EPSG:27700', 'EPSG:4326', [easting, northing]);
-    return {lat: latlng[1], lng: latlng[0]};
+    return [latlng[1], latlng[0]];
 }
 
+// Function that converts latitude and longitude coordinates to easting and northing, using proj4 library
 function latLngToEastingsNorthings(lat, lng) {
     let eastingnorthing = proj4('EPSG:4326', 'EPSG:27700',[lng, lat]);
-    return {easting: eastingnorthing[0], northing: eastingnorthing[1]};
+    return [eastingnorthing[0], eastingnorthing[1]];
 }
 
+// Function to create Leaflet circle for the alert area
 function createAreaCircle(coordinates, radius) {
     return L.circle(coordinates, radius, {
       color: '#0201FE',
@@ -58,6 +70,7 @@ function createAreaCircle(coordinates, radius) {
     });
 }
 
+// Function to create Leaflet circle for the estimated bleed area
 function createBleedCircle(coordinates, bleed_radius) {
     return L.circle(coordinates, bleed_radius, {
       color: '#0201FE',
@@ -68,6 +81,7 @@ function createBleedCircle(coordinates, bleed_radius) {
     });
   }
 
+// Function to create a label for the coordinate area plotted on the Leaflet map, that is then added as an aria-label to the map
 function createCoordinateAreaLabel(coordinate_type, radius, first_coordinate, second_coordinate, mapElement) {
     radius = radius / 1000;
     let label;
@@ -80,14 +94,15 @@ function createCoordinateAreaLabel(coordinate_type, radius, first_coordinate, se
     mapElement.setAttribute('aria-label', label);
   }
 
+// Function to create a label for the postcode area plotted on the Leaflet map, that is then added as an aria-label to the map
 function createPostcodeAreaLabel(radius, mapElement, postcode) {
     radius = radius / 1000;
-    let label;
-    label =  "Map of the United Kingdom, showing an area of "+radius+"km around the postcode "+postcode;
+    let label =  "Map of the United Kingdom, showing an area of "+radius+"km around the postcode "+postcode;
     mapElement.setAttribute('aria-label', label);
     appendAreaToAreaList(label);
   }
 
+// Function to add the area description to the visually hidden area list
 function appendAreaToAreaList(label) {
     let area_list = document.querySelector('.area-list');
     let li = document.createElement("li");
