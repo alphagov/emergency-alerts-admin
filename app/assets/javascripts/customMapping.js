@@ -1,4 +1,4 @@
-function createLatitudelongitudeArea(first_coordinate, second_coordinate, radius, bleed, mapElement, markerIcon) {
+function createLatitudelongitudeArea(first_coordinate, second_coordinate, radius, bleed, mapElement) {
   circle = createAreaCircle([first_coordinate, second_coordinate], radius);
   bleed_circle = createBleedCircle([first_coordinate, second_coordinate], bleed);
   pinpoint = L.marker([first_coordinate, second_coordinate], {icon: markerIcon});
@@ -6,7 +6,7 @@ function createLatitudelongitudeArea(first_coordinate, second_coordinate, radius
   return circle, bleed_circle, pinpoint;
 }
 
-function createEastingNorthingArea(first_coordinate, second_coordinate, radius, bleed, mapElement, markerIcon) {
+function createEastingNorthingArea(first_coordinate, second_coordinate, radius, bleed, mapElement) {
   latlngs = eastingsNorthingsToLatLng(parseFloat(first_coordinate), parseFloat(second_coordinate));
   circle = createAreaCircle([latlngs.lat, latlngs.lng], radius);
   bleed_circle = createBleedCircle([latlngs.lat, latlngs.lng], bleed);
@@ -15,7 +15,7 @@ function createEastingNorthingArea(first_coordinate, second_coordinate, radius, 
   return circle, bleed_circle, pinpoint;
 }
 
-function createPostcodeArea(centroid, radius, bleed, postcode, markerIcon, mapElement) {
+function createPostcodeArea(centroid, radius, bleed, postcode) {
   circle = createAreaCircle(centroid, radius);
   bleed_circle = createBleedCircle(centroid, bleed);
   pinpoint = L.marker(centroid, {icon: markerIcon});
@@ -33,7 +33,7 @@ function addingFeaturesToMap(mymap, bleed_circle, circle, pinpoint) {
   );
 }
 
-function addingPostcodeCentroidMarkerToMap(mymap, centroid, markerIcon) {
+function addingPostcodeCentroidMarkerToMap(mymap, centroid) {
   pinpoint = L.marker(centroid, {icon: markerIcon});
   pinpoint.addTo(mymap);
   mymap.setView(pinpoint.getLatLng(), 13);
@@ -96,9 +96,3 @@ function appendAreaToAreaList(label) {
     li.textContent = label;
     area_list.appendChild(li);
 }
-
-module.exports = {createLatitudelongitudeArea, createEastingNorthingArea, createPostcodeArea, addingFeaturesToMap,
-  addingPostcodeCentroidMarkerToMap, eastingsNorthingsToLatLng,
-  latLngToEastingsNorthings, createAreaCircle,
-  createBleedCircle, createCoordinateAreaLabel, createPostcodeAreaLabel, appendAreaToAreaList
-};
