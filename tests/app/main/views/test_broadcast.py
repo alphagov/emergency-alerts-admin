@@ -10,10 +10,12 @@ from freezegun import freeze_time
 
 from tests import NotifyBeautifulSoup, broadcast_message_json, sample_uuid, user_json
 from tests.app.broadcast_areas.custom_polygons import (
+    BD1_1EE,
     BD1_1EE_1,
     BD1_1EE_2,
     BD1_1EE_3,
     BRISTOL,
+    HG3_2RL,
     SKYE,
 )
 from tests.conftest import (
@@ -94,7 +96,10 @@ sample_uuid = sample_uuid()
         ),
         (
             ".remove_postcode_area",
-            {"broadcast_message_id": sample_uuid, "postcode_slug": "BD1 1EE-1"},
+            {
+                "broadcast_message_id": sample_uuid,
+                "postcode_slug": "1km around the postcode BD1 1EE in Bradford",
+            },
             403,
             405,
         ),
@@ -125,6 +130,16 @@ sample_uuid = sample_uuid()
         (
             ".cancel_broadcast_message",
             {"broadcast_message_id": sample_uuid},
+            403,
+            403,
+        ),
+        (
+            ".search_coordinates",
+            {
+                "broadcast_message_id": sample_uuid,
+                "coordinate_type": "latitude_longitude",
+                "library_slug": "coordinates",
+            },
             403,
             403,
         ),
@@ -189,7 +204,10 @@ def test_broadcast_pages_403_without_permission(
         ),
         (
             ".remove_postcode_area",
-            {"broadcast_message_id": sample_uuid, "postcode_slug": "BD1 1EE-1"},
+            {
+                "broadcast_message_id": sample_uuid,
+                "postcode_slug": "1km around the postcode BD1 1EE in Bradford",
+            },
             403,
             405,
         ),
@@ -1069,6 +1087,22 @@ def test_preview_broadcast_areas_page(
                 "100,000 to 200,000 phones",
             ],
         ),
+        (
+            [BD1_1EE],
+            [
+                "An area of 10 square miles Will get the alert",
+                "An extra area of 7 square miles is Likely to get the alert",
+                "100,000 to 200,000 phones",
+            ],
+        ),
+        (
+            [HG3_2RL],
+            [
+                "An area of 30 square miles Will get the alert",
+                "An extra area of 60 square miles is Likely to get the alert",
+                "2,000 to 10,000 phones",
+            ],
+        ),
     ),
 )
 def test_preview_broadcast_areas_page_with_custom_polygons(
@@ -1117,15 +1151,6 @@ def test_preview_broadcast_areas_page_with_custom_polygons(
     "area_ids, expected_list",
     (
         (
-            [],
-            [
-                "Countries",
-                "Local authorities",
-                "Police forces in England and Wales",
-                "Test areas",
-            ],
-        ),
-        (
             [
                 # Countries have no parent areas
                 "ctry19-E92000001",
@@ -1173,26 +1198,6 @@ def test_preview_broadcast_areas_page_with_custom_polygons(
                 "Test areas",
             ],
         ),
-        (
-            ["BD1 1EE-1"],
-            [
-                "Countries",
-                "Local authorities",
-                "Police forces in England and Wales",
-                "Postcode areas",
-                "Test areas",
-            ],
-        ),
-        (
-            ["BD1 1EE-3"],
-            [
-                "Countries",
-                "Local authorities",
-                "Police forces in England and Wales",
-                "Postcode areas",
-                "Test areas",
-            ],
-        ),
     ),
 )
 def test_choose_broadcast_library_page(
@@ -1233,6 +1238,85 @@ def test_choose_broadcast_library_page(
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug="ctry19",
+    )
+
+
+@pytest.mark.parametrize(
+    "area_ids, expected_list",
+    (
+        (
+            ["1km around the postcode BD1 1EE in Bradford"],
+            [
+                "Coordinates",
+                "Countries",
+                "Local authorities",
+                "Police forces in England and Wales",
+                "Postcode areas",
+                "Test areas",
+            ],
+        ),
+        (
+            ["3km around the postcode BD1 1EE in Bradford"],
+            [
+                "Coordinates",
+                "Countries",
+                "Local authorities",
+                "Police forces in England and Wales",
+                "Postcode areas",
+                "Test areas",
+            ],
+        ),
+        (
+            ["5km around the coordinates [54.0, -1.7] in Harrogate"],
+            [
+                "Coordinates",
+                "Countries",
+                "Local authorities",
+                "Police forces in England and Wales",
+                "Postcode areas",
+                "Test areas",
+            ],
+        ),
+    ),
+)
+def test_choose_broadcast_library_page_with_custom_broadcast(
+    mocker,
+    client_request,
+    service_one,
+    fake_uuid,
+    active_user_create_broadcasts_permission,
+    area_ids,
+    expected_list,
+):
+    service_one["permissions"] += ["broadcast"]
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            area_ids=area_ids,
+        ),
+    )
+    client_request.login(active_user_create_broadcasts_permission)
+    page = client_request.get(
+        ".choose_broadcast_library",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+    )
+    assert [normalize_spaces(title.text) for title in page.select("main a.govuk-link")] == expected_list
+
+    assert normalize_spaces(page.select(".file-list-hint-large")[0].text) == (
+        "Use coordinates to create an alert area."
+    )
+
+    assert page.select_one("a.file-list-filename-large.govuk-link")["href"] == url_for(
+        ".choose_broadcast_area",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        library_slug="coordinates",
     )
 
 
@@ -1286,7 +1370,8 @@ def test_suggested_area_has_correct_link(
             "test",
             "Choose test areas",
         ),
-        ("postcodes", "Alert area"),
+        ("postcodes", "Choose alert area"),
+        ("coordinates", "Choose coordinate type"),
     ),
 )
 def test_choose_broadcast_area_page_titles(
@@ -1305,6 +1390,7 @@ def test_choose_broadcast_area_page_titles(
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug=library_slug,
+        _follow_redirects=True,
     )
     assert normalize_spaces(page.select_one("h1").text) == expected_page_title
 
@@ -1754,30 +1840,30 @@ def test_add_broadcast_area(
     "post_data, update_broadcast_data",
     (
         (
-            {"postcode": "BD1 1EE", "radius": "2"},
+            {"postcode": "BD1 1EE", "radius": "2", "radius_btn": True},
             {
                 "areas": {
-                    "ids": ["an area of 2km around the postcode BD1 1EE, in Bradford"],
-                    "names": ["an area of 2km around the postcode BD1 1EE, in Bradford"],
-                    "aggregate_names": ["an area of 2km around the postcode BD1 1EE, in Bradford"],
+                    "ids": ["2km around the postcode BD1 1EE in Bradford"],
+                    "names": ["2km around the postcode BD1 1EE in Bradford"],
+                    "aggregate_names": ["2km around the postcode BD1 1EE in Bradford"],
                     "simple_polygons": [BD1_1EE_2],
                 }
             },
         ),
         (
-            {"postcode": "BD1 1EE", "radius": "3"},
+            {"postcode": "BD1 1EE", "radius": "3", "radius_btn": True},
             {
                 "areas": {
-                    "ids": ["an area of 3km around the postcode BD1 1EE, in Bradford"],
-                    "names": ["an area of 3km around the postcode BD1 1EE, in Bradford"],
-                    "aggregate_names": ["an area of 3km around the postcode BD1 1EE, in Bradford"],
+                    "ids": ["3km around the postcode BD1 1EE in Bradford"],
+                    "names": ["3km around the postcode BD1 1EE in Bradford"],
+                    "aggregate_names": ["3km around the postcode BD1 1EE in Bradford"],
                     "simple_polygons": [BD1_1EE_3],
                 }
             },
         ),
     ),
 )
-def test_add_custom_area(
+def test_create_postcode_area(
     client_request,
     service_one,
     mock_get_draft_broadcast_message,
@@ -1798,19 +1884,257 @@ def test_add_custom_area(
             service_id=SERVICE_ONE_ID,
             status="draft",
             areas={
-                "ids": ["an area of 1km around the postcode BD1 1EE, in Bradford"],
+                "ids": ["1km around the postcode BD1 1EE in Bradford"],
                 "simple_polygons": [BD1_1EE_1],
-                "names": ["an area of 1km around the postcode BD1 1EE, in Bradford"],
+                "names": ["1km around the postcode BD1 1EE in Bradford"],
             },
         ),
     )
 
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.post(
-        ".choose_broadcast_area",
+        ".search_postcodes",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug="postcodes",
+        _data=post_data,
+        _follow_redirects=True,
+    )
+
+    form = page.select_one("form")
+    postcode_value = form.select_one("#postcode")["value"]
+    radius_value = form.select_one("#radius")["value"]
+    assert normalize_spaces(form.select_one("button").text) == "Search for areas"
+    assert postcode_value == post_data["postcode"]
+    assert radius_value == post_data["radius"]
+    assert mock_get_broadcast_message.call_count == 1
+
+
+@pytest.mark.parametrize(
+    "post_data, update_broadcast_data",
+    (
+        (
+            {"postcode": "BD1 1EE", "radius": "2", "preview": True},
+            {
+                "areas": {
+                    "ids": ["2km around the postcode BD1 1EE in Bradford"],
+                    "names": ["2km around the postcode BD1 1EE in Bradford"],
+                    "aggregate_names": ["2km around the postcode BD1 1EE in Bradford"],
+                    "simple_polygons": [BD1_1EE_2],
+                }
+            },
+        ),
+        (
+            {"postcode": "BD1 1EE", "radius": "3", "preview": True},
+            {
+                "areas": {
+                    "ids": ["3km around the postcode BD1 1EE in Bradford"],
+                    "names": ["3km around the postcode BD1 1EE in Bradford"],
+                    "aggregate_names": ["3km around the postcode BD1 1EE in Bradford"],
+                    "simple_polygons": [BD1_1EE_3],
+                }
+            },
+        ),
+    ),
+)
+def test_add_postcode_area_to_broadcast(
+    client_request,
+    service_one,
+    mock_get_draft_broadcast_message,
+    mock_update_broadcast_message,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
+    post_data,
+    update_broadcast_data,
+):
+    service_one["permissions"] += ["broadcast"]
+    mock_get_broadcast_message = mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            areas={
+                "ids": ["1km around the postcode BD1 1EE in Bradford"],
+                "simple_polygons": [BD1_1EE_1],
+                "names": ["1km around the postcode BD1 1EE in Bradford"],
+            },
+        ),
+    )
+
+    client_request.login(active_user_create_broadcasts_permission)
+    client_request.post(
+        ".search_postcodes",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        library_slug="postcodes",
+        _data=post_data,
+        _follow_redirects=True,
+    )
+    mock_update_broadcast_message.assert_called_once()
+    assert (
+        mock_update_broadcast_message._mock_call_args[1]["data"]["areas"]["names"]
+        == update_broadcast_data["areas"]["names"]
+    )
+    assert (
+        mock_update_broadcast_message._mock_call_args[1]["data"]["areas"]["ids"]
+        == update_broadcast_data["areas"]["ids"]
+    )
+    assert (
+        mock_update_broadcast_message._mock_call_args[1]["data"]["areas"]["aggregate_names"]
+        == update_broadcast_data["areas"]["aggregate_names"]
+    )
+
+    actual_polygons = mock_update_broadcast_message._mock_call_args[1]["data"]["areas"]["simple_polygons"]
+    expected_polygons = update_broadcast_data["areas"]["simple_polygons"]
+
+    for coords1, coords2 in zip(actual_polygons, expected_polygons):
+        for coord1, coord2 in zip(coords1, coords2):
+            assert all(abs(a - b) < math.exp(1e-12) for a, b in zip(coord1, coord2))
+
+    assert mock_get_broadcast_message.call_count == 2
+
+
+@pytest.mark.parametrize(
+    "post_data, update_broadcast_data",
+    (
+        (
+            {"first_coordinate": "54", "second_coordinate": "-1.7", "radius": "5", "radius_btn": True},
+            {
+                "areas": {
+                    "ids": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
+                    "names": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
+                    "aggregate_names": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
+                    "simple_polygons": [HG3_2RL],
+                }
+            },
+        ),
+        (
+            {"first_coordinate": "53.793", "second_coordinate": "-1.75", "radius": "3", "radius_btn": True},
+            {
+                "areas": {
+                    "ids": ["3km around 53.793 latitude, -1.75 longitude, in Bradford"],
+                    "names": ["3km around 53.793 latitude, -1.75 longitude, in Bradford"],
+                    "aggregate_names": ["3km around 53.793 latitude, -1.75 longitude, in Bradford"],
+                    "simple_polygons": [BD1_1EE],
+                }
+            },
+        ),
+    ),
+)
+def test_create_latitude_longitude_coordinate_area(
+    client_request,
+    service_one,
+    mock_get_draft_broadcast_message,
+    mock_update_broadcast_message,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
+    post_data,
+    update_broadcast_data,
+):
+    service_one["permissions"] += ["broadcast"]
+    mock_get_broadcast_message = mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            areas={
+                "ids": [],
+                "simple_polygons": [],
+                "names": [],
+            },
+        ),
+    )
+    client_request.login(active_user_create_broadcasts_permission)
+    page = client_request.post(
+        ".search_coordinates",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        library_slug="coordinates",
+        coordinate_type="latitude_longitude",
+        _data=post_data,
+        _follow_redirects=True,
+    )
+
+    form = page.select_one("form")
+    first_coordinate = form.select_one("#first_coordinate")["value"]
+    second_coordinate = form.select_one("#second_coordinate")["value"]
+    radius_value = form.select_one("#radius")["value"]
+    assert normalize_spaces(form.select_one("button").text) == "Search"
+    assert first_coordinate == post_data["first_coordinate"]
+    assert second_coordinate == post_data["second_coordinate"]
+    assert radius_value == post_data["radius"]
+    assert mock_get_broadcast_message.call_count == 1
+
+
+@pytest.mark.parametrize(
+    "post_data, update_broadcast_data",
+    (
+        (
+            {"first_coordinate": "54", "second_coordinate": "-1.7", "radius": "5", "preview": True},
+            {
+                "areas": {
+                    "ids": ["5km around 54.0 latitude, -1.7 longitude in Harrogate"],
+                    "names": ["5km around 54.0 latitude, -1.7 longitude in Harrogate"],
+                    "aggregate_names": ["5km around 54.0 latitude, -1.7 longitude in Harrogate"],
+                    "simple_polygons": [HG3_2RL],
+                }
+            },
+        ),
+        (
+            {"first_coordinate": "53.793", "second_coordinate": "-1.75", "radius": "3", "preview": True},
+            {
+                "areas": {
+                    "ids": ["3km around 53.793 latitude, -1.75 longitude in Bradford"],
+                    "names": ["3km around 53.793 latitude, -1.75 longitude in Bradford"],
+                    "aggregate_names": ["3km around 53.793 latitude, -1.75 longitude in Bradford"],
+                    "simple_polygons": [BD1_1EE],
+                }
+            },
+        ),
+    ),
+)
+def test_add_latitude_longitude_coordinate_area_to_broadcast(
+    client_request,
+    service_one,
+    mock_get_draft_broadcast_message,
+    mock_update_broadcast_message,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
+    post_data,
+    update_broadcast_data,
+):
+    service_one["permissions"] += ["broadcast"]
+    mock_get_broadcast_message = mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            areas={
+                "ids": [],
+                "simple_polygons": [],
+                "names": [],
+            },
+        ),
+    )
+    client_request.login(active_user_create_broadcasts_permission)
+    client_request.post(
+        ".search_coordinates",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        library_slug="coordinates",
+        coordinate_type="latitude_longitude",
         _data=post_data,
         _follow_redirects=True,
     )
@@ -1836,13 +2160,633 @@ def test_add_custom_area(
         for coord1, coord2 in zip(coords1, coords2):
             assert all(abs(a - b) < math.exp(1e-12) for a, b in zip(coord1, coord2))
 
+    assert mock_get_broadcast_message.call_count == 2
+
+
+@pytest.mark.parametrize(
+    "post_data, update_broadcast_data",
+    (
+        (
+            {
+                "first_coordinate": "419763",
+                "second_coordinate": "456038",
+                "radius": "5",
+                "radius_btn": True,
+            },
+            {
+                "areas": {
+                    "ids": ["5km around the easting of 419763.0 and the northing of 456038.0 in Harrogate"],
+                    "names": ["5km around the easting of 419763.0 and the northing of 456038.0 in Harrogate"],
+                    "aggregate_names": ["5km around the easting of 419763.0 and the northing of 456038.0 in Harrogate"],
+                    "simple_polygons": [HG3_2RL],
+                }
+            },
+        ),
+        (
+            {"first_coordinate": "416567", "second_coordinate": "432994", "radius": "3", "radius_btn": True},
+            {
+                "areas": {
+                    "ids": ["3km around the easting of 416567.0 and the northing of 432994.0 in Bradford"],
+                    "names": ["3km around the easting of 416567.0 and the northing of 432994.0 in Bradford"],
+                    "aggregate_names": ["3km around the easting of 416567.0 and the northing of 432994.0 in Bradford"],
+                    "simple_polygons": [BD1_1EE],
+                }
+            },
+        ),
+    ),
+)
+def test_create_easting_northing_coordinate_area(
+    client_request,
+    service_one,
+    mock_get_draft_broadcast_message,
+    mock_update_broadcast_message,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
+    post_data,
+    update_broadcast_data,
+):
+    service_one["permissions"] += ["broadcast"]
+    mock_get_broadcast_message = mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            areas={
+                "ids": [],
+                "simple_polygons": [],
+                "names": [],
+            },
+        ),
+    )
+
+    client_request.login(active_user_create_broadcasts_permission)
+    page = client_request.post(
+        ".search_coordinates",
+        broadcast_message_id=fake_uuid,
+        service_id=SERVICE_ONE_ID,
+        library_slug="coordinates",
+        coordinate_type="easting_northing",
+        _data=post_data,
+        _follow_redirects=True,
+    )
     form = page.select_one("form")
-    postcode_value = form.select_one("#postcode")["value"]
+    first_coordinate = form.select_one("#first_coordinate")["value"]
+    second_coordinate = form.select_one("#second_coordinate")["value"]
     radius_value = form.select_one("#radius")["value"]
-    assert normalize_spaces(form.select_one("button").text) == "Search for areas"
-    assert postcode_value == post_data["postcode"]
+    assert normalize_spaces(form.select_one("button").text) == "Search"
+    assert first_coordinate == post_data["first_coordinate"]
+    assert second_coordinate == post_data["second_coordinate"]
     assert radius_value == post_data["radius"]
-    assert mock_get_broadcast_message.call_count == 3
+    assert mock_get_broadcast_message.call_count == 1
+
+
+@pytest.mark.parametrize(
+    "post_data, update_broadcast_data",
+    (
+        (
+            {"first_coordinate": "419763", "second_coordinate": "456038", "radius": "5", "preview": True},
+            {
+                "areas": {
+                    "ids": ["5km around the easting of 419763 and the northing of 456038 in Harrogate"],
+                    "names": ["5km around the easting of 419763 and the northing of 456038 in Harrogate"],
+                    "aggregate_names": ["5km around the easting of 419763 and the northing of 456038 in Harrogate"],
+                    "simple_polygons": [HG3_2RL],
+                }
+            },
+        ),
+        (
+            {"first_coordinate": "416567", "second_coordinate": "432994", "radius": "3", "preview": True},
+            {
+                "areas": {
+                    "ids": ["3km around the easting of 416567 and the northing of 432994 in Bradford"],
+                    "names": ["3km around the easting of 416567 and the northing of 432994 in Bradford"],
+                    "aggregate_names": ["3km around the easting of 416567 and the northing of 432994 in Bradford"],
+                    "simple_polygons": [BD1_1EE],
+                }
+            },
+        ),
+    ),
+)
+def test_add_easting_northing_coordinate_area_to_broadcast(
+    client_request,
+    service_one,
+    mock_get_draft_broadcast_message,
+    mock_update_broadcast_message,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
+    post_data,
+    update_broadcast_data,
+):
+    service_one["permissions"] += ["broadcast"]
+    mock_get_broadcast_message = mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            areas={
+                "ids": [],
+                "simple_polygons": [],
+                "names": [],
+            },
+        ),
+    )
+
+    client_request.login(active_user_create_broadcasts_permission)
+    client_request.post(
+        ".search_coordinates",
+        broadcast_message_id=fake_uuid,
+        service_id=SERVICE_ONE_ID,
+        library_slug="coordinates",
+        coordinate_type="easting_northing",
+        _data=post_data,
+        _follow_redirects=True,
+    )
+    mock_update_broadcast_message.assert_called_once()
+
+    assert (
+        mock_update_broadcast_message._mock_call_args[1]["data"]["areas"]["names"]
+        == update_broadcast_data["areas"]["names"]
+    )
+    assert (
+        mock_update_broadcast_message._mock_call_args[1]["data"]["areas"]["ids"]
+        == update_broadcast_data["areas"]["ids"]
+    )
+    assert (
+        mock_update_broadcast_message._mock_call_args[1]["data"]["areas"]["aggregate_names"]
+        == update_broadcast_data["areas"]["aggregate_names"]
+    )
+
+    actual_polygons = mock_update_broadcast_message._mock_call_args[1]["data"]["areas"]["simple_polygons"]
+    expected_polygons = update_broadcast_data["areas"]["simple_polygons"]
+
+    for coords1, coords2 in zip(actual_polygons, expected_polygons):
+        for coord1, coord2 in zip(coords1, coords2):
+            assert all(abs(a - b) < math.exp(1e-12) for a, b in zip(coord1, coord2))
+    assert mock_get_broadcast_message.call_count == 2
+
+
+@pytest.mark.parametrize(
+    "post_data, expected_error",
+    (
+        (
+            {"first_coordinate": "419763.0000000", "second_coordinate": "456038", "radius": "5"},
+            ["Enter a value with 6 decimal places"],
+        ),
+        (
+            {"first_coordinate": "419763", "second_coordinate": "456038", "radius": "5.555"},
+            ["Enter a value with 2 decimal places"],
+        ),
+        (
+            {
+                "first_coordinate": "419763.0000000",
+                "second_coordinate": "456038",
+                "radius": "5.555",
+            },
+            ["Enter a value with 6 decimal places", "Enter a value with 2 decimal places"],
+        ),
+        (
+            {"first_coordinate": "", "second_coordinate": "", "radius": "", "radius_btn": True},
+            ["The easting and northing must be within the UK", "Enter a radius between 0.1km and 38.0km"],
+        ),
+        (
+            {"first_coordinate": "", "second_coordinate": "", "radius": "", "search_btn": True},
+            [
+                "The easting and northing must be within the UK",
+            ],
+        ),
+    ),
+)
+def test_easting_northing_coordinate_area_form_errors(
+    client_request,
+    service_one,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
+    post_data,
+    expected_error,
+):
+    service_one["permissions"] += ["broadcast"]
+    mock_get_broadcast_message = mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            areas={
+                "ids": [],
+                "simple_polygons": [],
+                "names": [],
+            },
+        ),
+    )
+
+    client_request.login(active_user_create_broadcasts_permission)
+    page = client_request.post(
+        ".search_coordinates",
+        broadcast_message_id=fake_uuid,
+        service_id=SERVICE_ONE_ID,
+        library_slug="coordinates",
+        coordinate_type="easting_northing",
+        _data=post_data,
+        _follow_redirects=True,
+    )
+
+    form = page.select_one("form")
+    error_list = [
+        normalize_spaces(error)
+        for error in page.select(".govuk-error-summary__list")[0]
+        if normalize_spaces(error) != ""
+    ]
+    assert error_list == expected_error
+    assert normalize_spaces(form.select_one("button").text) == "Search"
+    assert mock_get_broadcast_message.call_count == 1
+
+
+@pytest.mark.parametrize(
+    "post_data, expected_error",
+    (
+        (
+            {"first_coordinate": "54.0000000", "second_coordinate": "-2", "radius": "5"},
+            ["Enter a value with 6 decimal places"],
+        ),
+        (
+            {"first_coordinate": "54", "second_coordinate": "-2", "radius": "5.555"},
+            ["Enter a value with 2 decimal places"],
+        ),
+        (
+            {
+                "first_coordinate": "54.0000000",
+                "second_coordinate": "-2",
+                "radius": "5.555",
+            },
+            ["Enter a value with 6 decimal places", "Enter a value with 2 decimal places"],
+        ),
+        (
+            {"first_coordinate": "", "second_coordinate": "", "radius": "", "radius_btn": True},
+            ["The latitude and longitude must be within the UK", "Enter a radius between 0.1km and 38.0km"],
+        ),
+        (
+            {"first_coordinate": "", "second_coordinate": "", "radius": "", "search_btn": True},
+            ["The latitude and longitude must be within the UK"],
+        ),
+    ),
+)
+def test_latitude_longitude_coordinate_area_form_errors(
+    client_request,
+    service_one,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
+    post_data,
+    expected_error,
+):
+    service_one["permissions"] += ["broadcast"]
+    mock_get_broadcast_message = mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            areas={
+                "ids": [],
+                "simple_polygons": [],
+                "names": [],
+            },
+        ),
+    )
+
+    client_request.login(active_user_create_broadcasts_permission)
+    page = client_request.post(
+        ".search_coordinates",
+        broadcast_message_id=fake_uuid,
+        service_id=SERVICE_ONE_ID,
+        library_slug="coordinates",
+        coordinate_type="latitude_longitude",
+        _data=post_data,
+        _follow_redirects=True,
+    )
+
+    form = page.select_one("form")
+    error_list = [
+        normalize_spaces(error)
+        for error in page.select(".govuk-error-summary__list")[0]
+        if normalize_spaces(error) != ""
+    ]
+    assert error_list == expected_error
+    assert normalize_spaces(form.select_one("button").text) == "Search"
+    assert mock_get_broadcast_message.call_count == 1
+
+
+@pytest.mark.parametrize(
+    "post_data, coordinate_type, expected_error",
+    (
+        (
+            {"first_coordinate": "0", "second_coordinate": "", "radius": "0"},
+            "latitude_longitude",
+            ["The latitude and longitude must be within the UK", "Enter a radius between 0.1km and 38.0km"],
+        ),
+        (
+            {"first_coordinate": "0", "second_coordinate": "-10", "radius": "0"},
+            "latitude_longitude",
+            ["The latitude and longitude must be within the UK", "Enter a radius between 0.1km and 38.0km"],
+        ),
+        (
+            {"first_coordinate": "0", "second_coordinate": "-10", "radius": "/"},
+            "latitude_longitude",
+            ["The latitude and longitude must be within the UK", "Enter a radius between 0.1km and 38.0km"],
+        ),
+        (
+            {"first_coordinate": "0", "second_coordinate": "-10", "radius": "/"},
+            "easting_northing",
+            ["The easting and northing must be within the UK", "Enter a radius between 0.1km and 38.0km"],
+        ),
+    ),
+)
+def test_latitude_longitude_coordinate_area_form_error_with_invalid_coords(
+    client_request,
+    service_one,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
+    post_data,
+    coordinate_type,
+    expected_error,
+    mock_update_broadcast_message,
+):
+    service_one["permissions"] += ["broadcast"]
+    mock_get_broadcast_message = mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            areas={
+                "ids": [],
+                "simple_polygons": [],
+                "names": [],
+            },
+        ),
+    )
+
+    client_request.login(active_user_create_broadcasts_permission)
+
+    page = client_request.post(
+        ".search_coordinates",
+        broadcast_message_id=fake_uuid,
+        service_id=SERVICE_ONE_ID,
+        library_slug="coordinates",
+        coordinate_type=coordinate_type,
+        _data=post_data,
+        _follow_redirects=True,
+    )
+
+    form = page.select_one("form")
+    error_list = [
+        normalize_spaces(error)
+        for error in page.select(".govuk-error-summary__list")[0]
+        if normalize_spaces(error) != ""
+    ]
+    assert error_list == expected_error
+    assert normalize_spaces(form.select_one("button").text) == "Search"
+    assert mock_get_broadcast_message.call_count == 1
+
+
+@pytest.mark.parametrize(
+    "post_data, coordinate_type, expected_error",
+    (
+        (
+            {"first_coordinate": "0", "second_coordinate": "0", "radius": "5"},
+            "latitude_longitude",
+            [
+                "The latitude and longitude must be within the UK",
+            ],
+        ),
+        (
+            {"first_coordinate": "50", "second_coordinate": "-2", "radius": "5"},
+            "latitude_longitude",
+            [
+                "The latitude and longitude must be within the UK",
+            ],
+        ),
+        (
+            {"first_coordinate": "50", "second_coordinate": "50", "radius": "5"},
+            "latitude_longitude",
+            [
+                "The latitude and longitude must be within the UK",
+            ],
+        ),
+        (
+            {"first_coordinate": "0", "second_coordinate": "0", "radius": "5"},
+            "easting_northing",
+            [
+                "The easting and northing must be within the UK",
+            ],
+        ),
+        (
+            {"first_coordinate": "170000", "second_coordinate": "170000", "radius": "5"},
+            "easting_northing",
+            [
+                "The easting and northing must be within the UK",
+            ],
+        ),
+    ),
+)
+def test_non_uk_coordinate_area_form_errors(
+    client_request,
+    service_one,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
+    post_data,
+    coordinate_type,
+    expected_error,
+    mock_update_broadcast_message,
+):
+    service_one["permissions"] += ["broadcast"]
+    mock_get_broadcast_message = mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            areas={
+                "ids": [],
+                "simple_polygons": [],
+                "names": [],
+            },
+        ),
+    )
+
+    client_request.login(active_user_create_broadcasts_permission)
+
+    page = client_request.post(
+        ".search_coordinates",
+        broadcast_message_id=fake_uuid,
+        service_id=SERVICE_ONE_ID,
+        library_slug="coordinates",
+        coordinate_type=coordinate_type,
+        _data=post_data,
+        _follow_redirects=True,
+    )
+    form = page.select_one("form")
+    error_list = [
+        normalize_spaces(error)
+        for error in page.select(".govuk-error-summary__list")[0]
+        if normalize_spaces(error) != ""
+    ]
+    assert error_list == expected_error
+    assert normalize_spaces(form.select_one("button").text) == "Search"
+    assert mock_get_broadcast_message.call_count == 1
+
+
+@pytest.mark.parametrize(
+    "post_data, expected_errors",
+    (
+        (
+            {"postcode": "", "radius": "", "search_btn": True},
+            ["Enter a postcode within the UK"],
+        ),
+        (
+            {"postcode": "", "radius": "", "radius_btn": True},
+            ["Enter a postcode within the UK", "Enter a radius between 0.1km and 38.0km"],
+        ),
+        (
+            {"postcode": "TEST", "radius": "10"},
+            ["Enter a postcode within the UK"],
+        ),
+        (
+            {"postcode": "", "radius": "10"},
+            ["Enter a postcode within the UK"],
+        ),
+        (
+            {"postcode": "BD1 1EP", "radius": ""},
+            ["Enter a postcode within the UK"],
+        ),
+    ),
+)
+def test_incorrect_input_postcode_form_errors(
+    client_request,
+    service_one,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
+    post_data,
+    expected_errors,
+    mock_update_broadcast_message,
+):
+    service_one["permissions"] += ["broadcast"]
+    mock_get_broadcast_message = mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            areas={
+                "ids": [],
+                "simple_polygons": [],
+                "names": [],
+            },
+        ),
+    )
+
+    client_request.login(active_user_create_broadcasts_permission)
+
+    page = client_request.post(
+        ".search_postcodes",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        library_slug="postcodes",
+        _data=post_data,
+        _follow_redirects=True,
+    )
+    form = page.select_one("form")
+    error_list = [
+        normalize_spaces(error)
+        for error in page.select(".govuk-error-summary__list")[0]
+        if normalize_spaces(error) != ""
+    ]
+    assert error_list == expected_errors
+    assert normalize_spaces(form.select_one("button").text) == "Search for areas"
+    assert mock_get_broadcast_message.call_count == 1
+
+
+@pytest.mark.parametrize(
+    "post_data, expected_errors",
+    (
+        (
+            {"postcode": "RG12 8SP", "radius": "5", "radius_btn": True},
+            ["Enter a postcode within the UK"],
+        ),
+        (
+            {"postcode": "BD1 1EP", "radius": "1", "radius_btn": True},
+            ["Enter a postcode within the UK"],
+        ),
+    ),
+)
+def test_valid_format_postcode_not_in_db_form_error(
+    client_request,
+    service_one,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
+    post_data,
+    expected_errors,
+    mock_update_broadcast_message,
+):
+    service_one["permissions"] += ["broadcast"]
+    mock_get_broadcast_message = mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            areas={
+                "ids": [],
+                "simple_polygons": [],
+                "names": [],
+            },
+        ),
+    )
+
+    client_request.login(active_user_create_broadcasts_permission)
+
+    page = client_request.post(
+        ".search_postcodes",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        library_slug="postcodes",
+        _data=post_data,
+        _follow_redirects=True,
+    )
+    form = page.select_one("form")
+    error_list = [
+        normalize_spaces(error)
+        for error in page.select(".govuk-error-summary__list")[0]
+        if normalize_spaces(error) != ""
+    ]
+    assert error_list == expected_errors
+    assert normalize_spaces(form.select_one("button").text) == "Search for areas"
+    assert mock_get_broadcast_message.call_count == 1
 
 
 @pytest.mark.parametrize(
@@ -2007,7 +2951,7 @@ def test_remove_broadcast_area_page(
     )
 
 
-def test_remove_custom_area(
+def test_remove_postcode_area(
     client_request,
     service_one,
     mock_get_draft_broadcast_message,
@@ -2026,7 +2970,7 @@ def test_remove_custom_area(
             service_id=SERVICE_ONE_ID,
             status="draft",
             areas={
-                "ids": ["BD1 1EE-1"],
+                "ids": ["1km around the postcode BD1 1EE in Bradford"],
                 "names": ["BDE 1EE-1"],
                 "simple_polygons": [BD1_1EE_1],
             },
@@ -2038,7 +2982,7 @@ def test_remove_custom_area(
         ".remove_postcode_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
-        postcode_slug="BD1 1EE-1",
+        postcode_slug="1km around the postcode BD1 1EE in Bradford",
         _expected_redirect=url_for(
             ".choose_broadcast_area",
             service_id=SERVICE_ONE_ID,

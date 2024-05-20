@@ -36,7 +36,7 @@
         <p class="govuk-!-margin-right-2 area-list">Area: </p>
         <ul class="area-list">
           {% for area in item.areas %}
-            <li class="area-list-item area-list-item--unremoveable area-list-item--smaller">{{area.name[0].upper()+area.name[1:]}}</li>
+            <li class="area-list-item area-list-item--unremoveable area-list-item--smaller">{{area.name}}</li>
           {% endfor %}
         </ul>
         <!-- {% if item.duration|format_seconds_duration_as_time != "0 seconds" %}

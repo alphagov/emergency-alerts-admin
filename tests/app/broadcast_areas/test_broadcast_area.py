@@ -21,6 +21,11 @@ def close_enough(a, b):
 def test_loads_libraries():
     assert [(library.id, library.name, library.is_group) for library in sorted(broadcast_area_libraries)] == [
         (
+            "coordinates",
+            "Coordinates",
+            False,
+        ),
+        (
             "ctry19",
             "Countries",
             False,
@@ -165,7 +170,9 @@ def test_every_area_has_count_of_phones(library):
         if library.id == "test":
             assert area.count_of_phones == 0
         elif library.id == "postcodes":
-            pass  # Takes ages to verify for this library
+            assert area.count_of_phones == 0
+        elif library.id == "coordinates":
+            assert area.count_of_phones == 0
         else:
             assert area.count_of_phones > 0
 
