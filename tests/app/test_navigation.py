@@ -193,6 +193,8 @@ EXCLUDED_ENDPOINTS = tuple(
             "revoke_api_key",
             "roadmap",
             "save_contact_list",
+            "search_coordinates",
+            "search_postcodes",
             "security",
             "security_policy",
             "send_files_by_email",

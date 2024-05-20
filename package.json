@@ -22,10 +22,12 @@
   "dependencies": {
     "cbor-js": "0.1.0",
     "govuk-frontend": "4.8.0",
+    "gulp-sourcemaps": "^3.0.0",
     "hogan": "1.0.2",
     "jquery": "3.5.0",
     "leaflet": "1.6.0",
     "morphdom": "2.6.1",
+    "proj4": "^2.11.0",
     "query-command-supported": "1.0.0",
     "textarea-caret": "3.1.0",
     "timeago": "1.6.5"
