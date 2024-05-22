@@ -32,6 +32,7 @@ const paths = {
   npm: 'node_modules/',
   govuk_frontend: 'node_modules/govuk-frontend/',
   proj4: 'node_modules/proj4/',
+  leaflet_editable: 'node_modules/leaflet-editable/',
 };
 
 // 3. TASKS
@@ -53,6 +54,12 @@ const copy = {
   leaflet: {
     js: () => {
       return src(paths.npm + 'leaflet/dist/leaflet.js')
+        .pipe(dest(paths.dist + 'javascripts/'))
+    }
+  },
+  leaflet_editable: {
+    js: () => {
+      return src(paths.npm + 'leaflet-editable/src/Leaflet.Editable.js')
         .pipe(dest(paths.dist + 'javascripts/'))
     }
   },
@@ -243,6 +250,7 @@ const defaultTask = parallel(
     copy.leaflet.js,
     copy.proj4.js,
     copy.customMapping.js,
+    copy.leaflet_editable.js,
     copy.static
   ),
   series(
