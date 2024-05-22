@@ -198,9 +198,6 @@ def get_dashboard_partials(service_id):
         "upcoming": render_template(
             "views/dashboard/_upcoming.html",
         ),
-        "inbox": render_template(
-            "views/dashboard/_inbox.html",
-        ),
         "totals": render_template(
             "views/dashboard/_totals.html",
             service_id=service_id,

@@ -421,17 +421,6 @@ class ServiceAPIClient(NotifyAdminAPIClient):
     def get_service_data_retention(self, service_id):
         return self.get("/service/{}/data-retention".format(service_id))
 
-    @cache.set("service-{service_id}-returned-letters-statistics")
-    def get_returned_letter_statistics(self, service_id):
-        return self.get("service/{}/returned-letter-statistics".format(service_id))
-
-    @cache.set("service-{service_id}-returned-letters-summary")
-    def get_returned_letter_summary(self, service_id):
-        return self.get("service/{}/returned-letter-summary".format(service_id))
-
-    def get_returned_letters(self, service_id, reported_at):
-        return self.get("service/{}/returned-letters?reported_at={}".format(service_id, reported_at))
-
     @cache.delete("service-{service_id}")
     def set_service_broadcast_settings(
         self, service_id, service_mode, broadcast_channel, provider_restriction, cached_service_user_ids

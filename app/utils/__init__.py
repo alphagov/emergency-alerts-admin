@@ -8,7 +8,7 @@ from werkzeug.datastructures import MultiDict
 from werkzeug.routing import RequestRedirect
 
 SENDING_STATUSES = ["created", "pending", "sending", "pending-virus-check"]
-DELIVERED_STATUSES = ["delivered", "sent", "returned-letter"]
+DELIVERED_STATUSES = ["delivered", "sent"]
 FAILURE_STATUSES = [
     "failed",
     "temporary-failure",
