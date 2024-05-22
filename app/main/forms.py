@@ -73,6 +73,7 @@ from app.main.validators import (
     NoPlaceholders,
     NoTextInSVG,
     Only2DecimalPlaces,
+    Only6DecimalPlaces,
     OnlySMSCharacters,
     StringsNotAllowed,
     ValidEmail,
@@ -284,7 +285,7 @@ class GovukDecimalField(GovukTextInputFieldMixin, DecimalField):
 class PostcodeSearchField(GovukTextInputFieldMixin, SearchField):
     input_type = "Search"
     param_extensions = {"classes": "govuk-input--width-10"}
-    validators = [DataRequired(message="Enter a postcode."), IsPostcode()]
+    validators = [DataRequired(message="Enter a postcode within the UK"), IsPostcode()]
 
 
 class SMSCode(GovukTextInputField):
@@ -2196,18 +2197,128 @@ class PostcodeForm(StripWhitespaceForm):
     than a city and the max side of alerting for non country size areas.
     """
     radius = GovukDecimalField(
-        "Add radius",
+        "Radius",
         param_extensions={
             "classes": "govuk-input govuk-input--width-5",
             "suffix": {"text": "km"},
             "attributes": {"pattern": "^-?\\d+(\\.\\d+)?$"},
         },
         validators=[
-            NumberRange(min=0.099, max=38.001, message="Enter a radius between 0.1km and 38.0km."),
-            DataRequired(message="Enter a radius."),
+            NumberRange(min=0.099, max=38.001, message="Enter a radius between 0.1km and 38.0km"),
+            DataRequired(message="Enter a radius between 0.1km and 38.0km"),
             Only2DecimalPlaces(),
         ],
     )
 
-    def post_validate(self):
-        return False if self.errors else True
+    def pre_validate(self, form):
+        return self.postcode.validate(form)
+
+
+class LatitudeLongitudeCoordinatesForm(StripWhitespaceForm):
+    """
+    This form contains the input fields for creation of areas using Latitude & longitude coordinates.
+    There is additional validation post-submission of the form that checks whether the coordinate lies within
+    either the UK or the test polygons in Finland, and if both are false then an error is appended to the form.
+    """
+
+    first_coordinate = GovukDecimalField(
+        "Latitude",
+        validators=[
+            InputRequired("The latitude and longitude must be within the UK"),
+            Only6DecimalPlaces(),
+        ],
+        param_extensions={
+            "classes": "govuk-input govuk-input--width-6",
+            "attributes": {"pattern": "^-?\\d+(\\.\\d+)?$"},
+        },
+    )
+    second_coordinate = GovukDecimalField(
+        "Longitude",
+        validators=[
+            InputRequired("The latitude and longitude must be within the UK"),
+            Only6DecimalPlaces(),
+        ],
+        param_extensions={
+            "classes": "govuk-input govuk-input--width-6",
+            "attributes": {"pattern": "^-?\\d+(\\.\\d+)?$"},
+        },
+    )
+    radius = GovukDecimalField(
+        "Radius",
+        param_extensions={
+            "classes": "govuk-input govuk-input--width-5",
+            "suffix": {"text": "km"},
+            "attributes": {"pattern": "^-?\\d+(\\.\\d+)?$"},
+        },
+        validators=[
+            NumberRange(min=0.099, max=38.001, message="Enter a radius between 0.1km and 38.0km"),
+            DataRequired(message="Enter a radius between 0.1km and 38.0km"),
+            Only2DecimalPlaces(),
+        ],
+    )
+
+    def pre_validate(self, form):
+        self.first_coordinate.validate(form)
+        self.second_coordinate.validate(form)
+        return self.first_coordinate.validate(form) and self.second_coordinate.validate(form)
+
+
+class EastingNorthingCoordinatesForm(StripWhitespaceForm):
+    """
+    This form contains the input fields for creation of areas using Eastings & northings.
+    There is additional validation post-submission of the form that checks whether the coordinate lies within
+    either the UK or the test polygons in Finland, and if both are false then an error is appended to the form.
+    """
+
+    first_coordinate = GovukDecimalField(
+        "Eastings",
+        param_extensions={
+            "classes": "govuk-input govuk-input--width-6",
+            "attributes": {"pattern": "^-?\\d+(\\.\\d+)?$"},
+        },
+        validators=[InputRequired("The easting and northing must be within the UK"), Only6DecimalPlaces()],
+    )
+    second_coordinate = GovukDecimalField(
+        "Northings",
+        param_extensions={
+            "classes": "govuk-input govuk-input--width-6",
+            "attributes": {"pattern": "^-?\\d+(\\.\\d+)?$"},
+        },
+        validators=[InputRequired("The easting and northing must be within the UK"), Only6DecimalPlaces()],
+    )
+    radius = GovukDecimalField(
+        "Radius",
+        param_extensions={
+            "classes": "govuk-input govuk-input--width-5",
+            "suffix": {"text": "km"},
+            "attributes": {"pattern": "^-?\\d+(\\.\\d+)?$"},
+        },
+        validators=[
+            NumberRange(min=0.099, max=38.001, message="Enter a radius between 0.1km and 38.0km"),
+            DataRequired(message="Enter a radius between 0.1km and 38.0km"),
+            Only2DecimalPlaces(),
+        ],
+    )
+
+    def pre_validate(self, form):
+        self.first_coordinate.validate(form)
+        self.second_coordinate.validate(form)
+        return self.first_coordinate.validate(form) and self.second_coordinate.validate(form)
+
+
+class ChooseCoordinateTypeForm(StripWhitespaceForm):
+    content = GovukRadiosField(
+        choices=[
+            ("latitude_longitude", "Latitude and longitude"),
+            ("easting_northing", "Eastings and northings"),
+        ],
+        param_extensions={
+            "fieldset": {"legend": {"classes": "govuk-visually-hidden"}},
+            "hint": {"text": "Select one option"},
+            "items": [
+                {"hint": {"text": "For example, 51.503630, -0.126770"}},
+                {"hint": {"text": "For example, 530111, 179963"}},
+            ],
+        },
+        validators=[DataRequired(message="Select which type of coordinates you'd like to use")],
+    )

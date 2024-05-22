@@ -273,21 +273,31 @@ class BroadcastMessage(JSONModel):
 
     def add_custom_areas(self, *circle_polygon, id):
         simple_polygons = list(circle_polygon)
-        local_authority = CustomBroadcastArea(name="", polygons=simple_polygons).local_authority
-        if local_authority:
-            id = f"{id}, in {local_authority}"
+        area_to_get_params = CustomBroadcastArea(name="", polygons=simple_polygons)
+        id = self.add_local_authority_to_slug(id, area_to_get_params)
         if id not in self.area_ids:
-            areas = {}
-            areas["ids"] = [id]
-            areas["names"] = [id]
-            areas["aggregate_names"] = [id]
-            areas["simple_polygons"] = simple_polygons
+            areas = {
+                "ids": [id],
+                "names": [id],
+                "aggregate_names": [id],
+                "simple_polygons": simple_polygons,
+            }
             data = {"areas": areas}
 
             self.area_ids = [id]
             broadcast_message_api_client.update_broadcast_message(
                 broadcast_message_id=self.id, service_id=self.service_id, data=data
             )
+
+    def add_local_authority_to_slug(self, id, area_to_get_params):
+        if not (local_authority := area_to_get_params.local_authority):
+            return id
+        if local_authority.endswith(", City of"):
+            return f"{id} in City of {local_authority[:-9]}"
+        elif local_authority.endswith(", County of"):
+            return f"{id} in County of {local_authority[:-11]}"
+        else:
+            return f"{id} in {local_authority}"
 
     def remove_area(self, area_id):
         self.area_ids = list(set(self._dict["areas"]["ids"]) - {area_id})
