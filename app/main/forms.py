@@ -1837,15 +1837,6 @@ class AdminServiceEditDataRetentionForm(StripWhitespaceForm):
     )
 
 
-class AdminReturnedLettersForm(StripWhitespaceForm):
-    references = TextAreaField(
-        "Letter references",
-        validators=[
-            DataRequired(message="Cannot be empty"),
-        ],
-    )
-
-
 class TemplateFolderForm(StripWhitespaceForm):
     def __init__(self, all_service_users=None, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -77,7 +77,7 @@ class NotificationApiClient(NotifyAdminAPIClient):
                 if notification["status"] in ("created", "sending"):
                     notification["status"] = "accepted"
 
-                if notification["status"] in ("delivered", "returned-letter"):
+                if notification["status"] in ("delivered"):
                     notification["status"] = "received"
         return notifications
 

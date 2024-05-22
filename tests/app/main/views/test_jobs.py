@@ -51,7 +51,6 @@ def test_old_jobs_hub_redirects(
                 "pending-virus-check",
                 "delivered",
                 "sent",
-                "returned-letter",
                 "failed",
                 "temporary-failure",
                 "permanent-failure",
@@ -61,7 +60,7 @@ def test_old_jobs_hub_redirects(
             ],
         ),
         ("sending", ["sending", "created", "pending", "pending-virus-check"]),
-        ("delivered", ["delivered", "sent", "returned-letter"]),
+        ("delivered", ["delivered", "sent"]),
         (
             "failed",
             [
@@ -349,7 +348,6 @@ def test_should_show_letter_job(
             "pending-virus-check",
             "delivered",
             "sent",
-            "returned-letter",
             "failed",
             "temporary-failure",
             "permanent-failure",

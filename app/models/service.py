@@ -510,26 +510,6 @@ class Service(JSONModel):
             Organisation.TYPE_NHS_LOCAL,
         }
 
-    @cached_property
-    def returned_letter_statistics(self):
-        return service_api_client.get_returned_letter_statistics(self.id)
-
-    @cached_property
-    def returned_letter_summary(self):
-        return service_api_client.get_returned_letter_summary(self.id)
-
-    @property
-    def count_of_returned_letters_in_last_7_days(self):
-        return self.returned_letter_statistics["returned_letter_count"]
-
-    @property
-    def date_of_most_recent_returned_letter_report(self):
-        return self.returned_letter_statistics["most_recent_report"]
-
-    @property
-    def has_returned_letters(self):
-        return bool(self.date_of_most_recent_returned_letter_report)
-
     @property
     def contact_lists(self):
         return ContactLists(self.id)
