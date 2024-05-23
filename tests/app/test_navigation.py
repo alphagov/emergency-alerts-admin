@@ -122,6 +122,7 @@ EXCLUDED_ENDPOINTS = tuple(
             "get_daily_sms_provider_volumes",
             "get_volumes_by_service",
             "get_example_csv",
+            "get_custom_area_params",
             "get_notifications_as_json",
             "get_started",
             "get_started_old",
