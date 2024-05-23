@@ -2,6 +2,7 @@ from flask import abort, flash, jsonify, redirect, render_template, request, url
 
 from app import current_service
 from app.broadcast_areas.models import CustomBroadcastAreas
+from app.formatters import format_estimated_area
 from app.main import main
 from app.main.forms import (
     BroadcastAreaForm,
@@ -588,8 +589,8 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
                     ) = extract_attributes_from_custom_area(polygon)
         else:
             adding_invalid_coords_errors_to_form(coordinate_type, form)
-        form.validate_on_submit()
-        if preview_button_clicked(request):
+            form.validate_on_submit()
+        if preview_button_clicked(request) and form.validate_on_submit():
             """
             If 'Preview alert' button is clicked, area is added to Broadcast Message
             and message is updated.
@@ -615,6 +616,37 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
         broadcast_message,
         form,
     )
+
+
+@main.route(
+    "/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/libraries/<library_slug>/<coordinate_type>/get_custom_area_params",  # noqa: E501
+    methods=["POST"],
+)
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+@service_has_permission("broadcast")
+def get_custom_area_params(service_id, broadcast_message_id, library_slug, coordinate_type):
+    radius = float(request.form.get("radius"))
+    first_coordinate = float(request.form.get("first_coordinate"))
+    second_coordinate = float(request.form.get("second_coordinate"))
+
+    if polygon := create_coordinate_area(first_coordinate, second_coordinate, radius, coordinate_type):
+        (
+            bleed,
+            estimated_area,
+            estimated_area_with_bleed,
+            count_of_phones,
+            count_of_phones_likely,
+        ) = extract_attributes_from_custom_area(polygon)
+    estimated_area = format_estimated_area(estimated_area)
+    estimated_area_with_bleed = format_estimated_area(estimated_area)
+    data = {
+        "bleed": bleed,
+        "estimated_area": estimated_area,
+        "estimated_area_with_bleed": estimated_area_with_bleed,
+        "count_of_phones": count_of_phones,
+        "count_of_phones_likely": count_of_phones_likely,
+    }
+    return jsonify(data)
 
 
 @main.route(

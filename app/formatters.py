@@ -503,3 +503,7 @@ def format_auth_type(auth_type, with_indefinite_article=False):
         return f"{indefinite_article} {auth_type.lower()}"
 
     return auth_type
+
+
+def format_estimated_area(value):
+    return format_thousands(round_to_significant_figures(square_metres_to_square_miles(float(value)), 1))
