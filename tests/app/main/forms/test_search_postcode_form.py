@@ -7,6 +7,10 @@ def check_postcode_exists(form):
     form.form_errors.append("Enter a postcode within the UK")
 
 
+def no_local_authority_found(form):
+    form.postcode.process_errors.append("No local authority found for the postcode entered. Enter a different postcode")
+
+
 @pytest.mark.parametrize(
     "post_data, expected_error",
     (
@@ -50,4 +54,11 @@ def test_nonexistent_postcode_message():
     form = PostcodeForm(postcode="TE10 1TE", radius=2)
     check_postcode_exists(form)
     assert form.validate()
+    assert form.errors
+
+
+def test_no_local_authority_found_error():
+    form = PostcodeForm(postcode="TE10 1TE", radius=2)
+    no_local_authority_found(form)
+    assert not form.validate()
     assert form.errors

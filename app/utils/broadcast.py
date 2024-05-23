@@ -93,6 +93,39 @@ def extract_attributes_from_custom_area(polygons):
     return bleed, estimated_area, estimated_area_with_bleed, count_of_phones, count_of_phones_likely
 
 
+def add_local_authority_to_slug(id, area, form):
+    local_authority = None
+    try:
+        local_authority = CustomBroadcastArea(name="", polygons=[area]).local_authority
+    except Exception:
+        if type(form) is PostcodeForm:
+            form.postcode.process_errors.append(
+                "No local authority found for the postcode entered. Enter a different postcode"
+            )
+        elif type(form) is LatitudeLongitudeCoordinatesForm:
+            form.first_coordinate.process_errors.append(
+                "No local authority found for the latitude, longitude entered. Enter a different latitude, longitude"
+            )
+            form.second_coordinate.process_errors.append(
+                "No local authority found for the latitude, longitude entered. Enter a different latitude, longitude"
+            )
+        elif type(form) is EastingNorthingCoordinatesForm:
+            form.first_coordinate.process_errors.append(
+                "No local authority found for the easting, northing entered. Enter a different easting, northing"
+            )
+            form.second_coordinate.process_errors.append(
+                "No local authority found for the easting, northing entered. Enter a different easting, northing"
+            )
+    if not local_authority:
+        return id
+    if local_authority.endswith(", City of"):
+        return f"{id} in City of {local_authority[:-9]}"
+    elif local_authority.endswith(", County of"):
+        return f"{id} in County of {local_authority[:-11]}"
+    else:
+        return f"{id} in {local_authority}"
+
+
 def create_postcode_db_id(form):
     if form.pre_validate(form):
         postcode_formatted = UKPostcode(form.data["postcode"]).postcode

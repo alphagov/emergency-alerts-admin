@@ -16,6 +16,7 @@ from app.main.forms import (
 from app.models.broadcast_message import BroadcastMessage, BroadcastMessages
 from app.utils import service_has_permission
 from app.utils.broadcast import (
+    add_local_authority_to_slug,
     adding_invalid_coords_errors_to_form,
     all_coordinate_form_fields_empty,
     all_fields_empty,
@@ -468,6 +469,8 @@ def search_postcodes(service_id, broadcast_message_id, library_slug):
                 count_of_phones_likely,
             ) = extract_attributes_from_custom_area(circle_polygon)
             id = create_postcode_area_slug(form)
+            id = add_local_authority_to_slug(id, circle_polygon, form)
+            form.validate_on_submit()
             if preview_button_clicked(request):
                 """
                 If 'Preview alert' button is clicked, area is added to Broadcast Message
@@ -575,6 +578,7 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
                     coordinate_type,
                 ):
                     id = create_coordinate_area_slug(coordinate_type, first_coordinate, second_coordinate, radius)
+                    id = add_local_authority_to_slug(id, polygon, form)
                     (
                         bleed,
                         estimated_area,
@@ -584,7 +588,7 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
                     ) = extract_attributes_from_custom_area(polygon)
         else:
             adding_invalid_coords_errors_to_form(coordinate_type, form)
-            form.validate_on_submit()
+        form.validate_on_submit()
         if preview_button_clicked(request):
             """
             If 'Preview alert' button is clicked, area is added to Broadcast Message
