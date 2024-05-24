@@ -31,10 +31,14 @@ function createPostcodeArea(L, centroid, radius, bleed, postcode) {
 }
 
 // Function that adds the Custom area features to the Leaflet map
-function addingFeaturesToMap(L, mymap, bleed_circle, circle, pinpoint) {
+function addingFeaturesToMap(L, editable, mymap, bleed_circle, circle, pinpoint) {
   bleed_circle.addTo(mymap);
   circle.addTo(mymap);
   pinpoint.addTo(mymap);
+  circle.enableEdit();
+  circle.on("editable:editing", function (e) {
+    limitingRadius(e, circle, bleed_circle);
+  });
   mymap.fitBounds(
     bleed_circle.getBounds(),
     {padding: [1, 1]}
@@ -42,10 +46,15 @@ function addingFeaturesToMap(L, mymap, bleed_circle, circle, pinpoint) {
 }
 
 // Function that plots the centroid on the Leaflet map with custom marker and then adjusts the zoom level of the map
-function addingPostcodeCentroidMarkerToMap(L, mymap, centroid) {
+function addingPostcodeCentroidMarkerToMap(L, editable, mymap, centroid) {
   pinpoint = L.marker(centroid, {icon: markerIcon});
   pinpoint.addTo(mymap);
+  pinpoint.enableEdit();
   mymap.setView(pinpoint.getLatLng(), 13);
+  pinpoint.on('drag',  function (e) {
+    document.getElementById('first_coordinate').value = e.latlng.lat.toFixed(2);
+    document.getElementById('second_coordinate').value = e.latlng.lng.toFixed(2);
+  });
 }
 
 // Function that converts easting and northing coordinates to latitude and longitude, using proj4 library
@@ -112,10 +121,77 @@ function appendAreaToAreaList(label) {
     area_list.appendChild(li);
 }
 
+function editingLatitudeLongitudeArea(e) {
+  document.getElementById('first_coordinate').value = e.latlng.lat.toFixed(2);
+  document.getElementById('second_coordinate').value = e.latlng.lng.toFixed(2);
+}
+
+function editingEastingNorthingArea(e, proj4) {
+  eastingsnorthings = latLngToEastingsNorthings(proj4, e.latlng.lat, e.latlng.lng);
+  document.getElementById('first_coordinate').value = eastingsnorthings[0].toFixed(2);
+  document.getElementById('second_coordinate').value = eastingsnorthings[1].toFixed(2);
+}
+
+function editingPostcodeArea() {
+  document.getElementById('postcode').value = 'moving';
+}
+
+function updateBleedArea(bleed_circle, radius){
+  bleed_circle.setRadius(radius);
+}
+
+function updateCenter(circle, bleed_circle, pinpoint, latlng){
+  circle.setLatLng(latlng);
+  bleed_circle.setLatLng(latlng);
+  pinpoint.setLatLng(latlng);
+}
+
+function updateCountOfPhones(text){
+  document.querySelector(".area-list-key.area-list-key--phone-estimate").textContent = text;
+}
+
+function updateEstimatedAreaText(text){
+  document.getElementById('estimated-area-text').textContent = text;
+}
+
+function updateEstimatedBleedAreaText(text){
+  document.getElementById('estimated-area-with-bleed-text').textContent = text;
+}
+
+function limitingRadius(e, circle, bleed_circle) {
+  if (e.layer._mRadius > 38000){
+    circle.disableEdit();
+    circle.setRadius(38000);
+  } else if (e.layer._mRadius < 100) {
+    circle.disableEdit();
+    circle.setRadius(100);
+  }
+  circle.enableEdit();
+  updateBleedArea(bleed_circle, e.layer._mRadius+bleed);
+}
+
+function onDragUpdates(event) {
+  if (event.vertex.getIndex() == 0) {
+    if (coordinate_type == 'latitude_longitude'){
+      editingLatitudeLongitudeArea(event);
+    } else if (coordinate_type == 'easting_northing'){
+      editingEastingNorthingArea(event, proj4);
+    } else if (is_postcode) {
+      editingPostcodeArea();
+    }
+    updateCenter(circle, bleed_circle, pinpoint, event.latlng)
+  }
+  document.getElementById('radius').value = (event.layer._mRadius / 1000).toFixed(2);
+  updateCountOfPhones('Unknown number of phones');
+};
+
+
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
   module.exports =  {createLatitudelongitudeArea, createEastingNorthingArea, createPostcodeArea, addingFeaturesToMap,
     addingPostcodeCentroidMarkerToMap, eastingsNorthingsToLatLng,
     latLngToEastingsNorthings, createAreaCircle,
-    createBleedCircle, createCoordinateAreaLabel, createPostcodeAreaLabel, appendAreaToAreaList
+    createBleedCircle, createCoordinateAreaLabel, createPostcodeAreaLabel, appendAreaToAreaList, editingLatitudeLongitudeArea,
+    editingEastingNorthingArea, editingPostcodeArea, updateBleedArea, updateCenter, updateCountOfPhones, updateEstimatedAreaText, updateEstimatedBleedAreaText,
+    limitingRadius, onDragUpdates
   };
 }

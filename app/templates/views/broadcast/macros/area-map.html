@@ -19,7 +19,7 @@
         <rect x="0" y="0" width="100%" height="100%" fill="#FFFFFF" />
         <polygon points="25 5, 45 25, 25 45, 5 25" stroke={{area_color}} stroke-width="2" fill="none" />
       </svg>
-      <span class="govuk-visually-hidden">
+      <span id="estimated-area-text" class="govuk-visually-hidden">
         An area of {{ (estimated_area)|square_metres_to_square_miles|round_to_significant_figures(1)|format_thousands }} square miles&nbsp;
       </span>
       Will get
@@ -33,7 +33,7 @@
         <rect x="0" y="0" width="100%" height="100%" fill="#FFFFFF" />
         <polygon points="25 5, 45 25, 25 45, 5 25" stroke={{bleed_color}} stroke-opacity="1" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" stroke-dasharray="4,7.5,5,7.5,8,8,5,8,7.5,8,5,8,7,8,5,8,4" fill={{fill}} fill-opacity="0.15" />
       </svg>
-      <span class="govuk-visually-hidden">
+      <span id="estimated-area-with-bleed-text" class="govuk-visually-hidden">
         An extra area of {{ (estimated_area_with_bleed - estimated_area)|square_metres_to_square_miles|round_to_significant_figures(1)|format_thousands }} square miles is&nbsp;
       </span>
       Likely to get

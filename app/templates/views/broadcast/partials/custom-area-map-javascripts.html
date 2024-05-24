@@ -1,4 +1,5 @@
 <script src="{{ asset_url('javascripts/leaflet.js') }}"></script>
+<script src="{{ asset_url('javascripts/Leaflet.Editable.js') }}"></script>
 <script src="{{ asset_url('javascripts/proj4.js') }}"></script>
 <script src="{{ asset_url('javascripts/customMapping.js') }}"></script>
 
@@ -11,9 +12,9 @@
     iconSize: [30, 30],
   });
   mapElement.style.height = Math.max(400, window.innerHeight - mapElement.offsetTop - 100) + 'px';
-  let radius = document.getElementById('radius').value;
+  let radius = document.getElementById('radius');
   let area_list = document.querySelector('.area-list');
-  let radius_value = radius * 1000;
+  let radius_value = radius.value * 1000;
   let method;
   let coordinate_type;
   let centroid;
@@ -21,6 +22,7 @@
   let bleed;
   let bleed_radius;
   let postcode;
+  let circle;
 
   {% if bleed %}
     bleed = parseFloat({{bleed}});
@@ -45,14 +47,15 @@
     method = "{{method}}";
   {% endif %}
 
-  {% if method %}
+  {% if coordinate_type %}
     coordinate_type = "{{coordinate_type}}";
   {% endif %}
 
   let mymap = L.map(
     'area-list-map',
     {
-      scrollWheelZoom: false
+      editable: true,
+      scrollWheelZoom: false,
     }
   )
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -64,6 +67,38 @@
     5
   );
 
+  mymap.on("editable:vertex:drag", onDragUpdates);
+
+  mymap.on("editable:vertex:dragend", function (e) {
+    mymap.fitBounds(
+      bleed_circle.getBounds(),
+      {padding: [1, 1]}
+    );
+    updateCountOfPhones('Calculating...');
+    $.ajax({
+      method: "POST",
+      url: "get_custom_area_params",
+      headers: { 'X-CSRFToken': "{{ csrf_token() }}" },
+      data: { radius: circle.getRadius()/1000, first_coordinate: document.getElementById('first_coordinate').value,
+        second_coordinate: document.getElementById('second_coordinate').value},
+      error: function parseError(errorThrown) {
+        console.log('Error: ', errorThrown.statusText);
+        updateCountOfPhones('Unknown number of phones');
+      },
+      success: function updateParams(response) {
+        bleed_circle.setRadius(e.layer._mRadius+response.bleed);
+        phones_label = response.count_of_phones.toLocaleString('en-GB')+" to "+response.count_of_phones_likely.toLocaleString('en-GB')+" phones";
+        updateCountOfPhones(phones_label);
+        updateEstimatedAreaText('An area of '+response.estimated_area+' square miles&nbsp;');
+        updateEstimatedBleedAreaText('An extra area of '+response.estimated_area_with_bleed+' square miles is&nbsp;');
+      }
+    })
+  });
+
+  // mymap.on("editable:editing", function (e) {
+  //  limitingRadius(e, circle, bleed_circle);
+  // });
+
   if (method == 'radius') {
     if (coordinate_type == 'latitude_longitude'){
       createLatitudelongitudeArea(L, first_coordinate.value, second_coordinate.value, radius_value, bleed_radius, mapElement);
@@ -72,8 +107,8 @@
     } else if (is_postcode) {
       createPostcodeArea(L, centroid, radius_value, bleed_radius, mapElement, postcode);
     }
-    addingFeaturesToMap(L, mymap, bleed_circle, circle, pinpoint);
+    addingFeaturesToMap(L, L.Editable, mymap, bleed_circle, circle, pinpoint);
   } else if (method == 'search') {
-    addingPostcodeCentroidMarkerToMap(L, mymap, centroid);
+    addingPostcodeCentroidMarkerToMap(L, L.Editable, mymap, centroid);
   }
 </script>

@@ -9,7 +9,7 @@ const L = require('leaflet');
 const proj4 = require('proj4');
 proj4.defs("EPSG:27700",
   "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +towgs84=446.448,-125.157,542.06,0.15,0.247,0.842,-20.489 +units=m +no_defs +type=crs");
-
+const editable = require('leaflet-editable');
 let latitude = 51.503630;
 let longitude = -0.126770;
 let easting = 530111;
@@ -107,11 +107,11 @@ describe('Postcode Area label is created when area is created using postcode and
 
 describe('Latitude and longitude area is created on the map when latitude and longitude searched and radius entered', () => {
     let bleed_circle = {addTo: jest.fn(), getBounds: jest.fn().mockReturnValue({extend: jest.fn()})};
-    let circle = {addTo: jest.fn(), getBounds: jest.fn().mockReturnValue({extend: jest.fn()})};
+    let circle = {addTo: jest.fn(), getBounds: jest.fn().mockReturnValue({extend: jest.fn()}), enableEdit: jest.fn()};
     let pinpoint = {addTo: jest.fn(), getLatLng: jest.fn().mockReturnValue([0,0])};
     test("User has entered the postcode and radius and then searched to generate the leaflet circle and marker on the map", () => {
         createLatitudelongitudeArea(L, latitude, longitude, radius, bleed, mapElement);
-        addingFeaturesToMap(L, mymap, bleed_circle, circle, pinpoint);
+        addingFeaturesToMap(L, editable, mymap, bleed_circle, circle, pinpoint);
         expect(bleed_circle.addTo).toHaveBeenCalledWith(mymap);
         expect(circle.addTo).toHaveBeenCalledWith(mymap);
         expect(pinpoint.addTo).toHaveBeenCalledWith(mymap);
@@ -125,12 +125,12 @@ describe('Latitude and longitude area is created on the map when latitude and lo
 
 describe('Easting and northing area is created on the map when easting and northing searched and radius entered', () => {
     let bleed_circle = {addTo: jest.fn(), getBounds: jest.fn().mockReturnValue({extend: jest.fn()})};
-    let circle = {addTo: jest.fn(), getBounds: jest.fn().mockReturnValue({extend: jest.fn()})};
+    let circle = {addTo: jest.fn(), getBounds: jest.fn().mockReturnValue({extend: jest.fn()}), enableEdit: jest.fn()};
     let pinpoint = {addTo: jest.fn(), getLatLng: jest.fn().mockReturnValue([0,0])};
     test("User has entered the easting, northing and radius and then searched to generate the leaflet circle and marker on the map", () => {
 
         createEastingNorthingArea(L, proj4, easting, northing, radius, bleed, mapElement);
-        addingFeaturesToMap(L, mymap, bleed_circle, circle, pinpoint);
+        addingFeaturesToMap(L, editable, mymap, bleed_circle, circle, pinpoint);
         expect(bleed_circle.addTo).toHaveBeenCalledWith(mymap);
         expect(circle.addTo).toHaveBeenCalledWith(mymap);
         expect(pinpoint.addTo).toHaveBeenCalledWith(mymap);
@@ -144,11 +144,11 @@ describe('Easting and northing area is created on the map when easting and north
 describe('Postcode area is created on the map when postcode searched and radius entered', () => {
     let centroid = [54, -2];
     let bleed_circle = {addTo: jest.fn(), getBounds: jest.fn().mockReturnValue({extend: jest.fn()})};
-    let circle = {addTo: jest.fn(), getBounds: jest.fn().mockReturnValue({extend: jest.fn()})};
+    let circle = {addTo: jest.fn(), getBounds: jest.fn().mockReturnValue({extend: jest.fn()}), enableEdit: jest.fn()};
     let pinpoint = {addTo: jest.fn(), getLatLng: jest.fn().mockReturnValue([0,0])};
     test("User has entered the postcode and radius and then searched to generate the leaflet circle and marker on the map", () => {
         createPostcodeArea(L, centroid, radius, bleed, postcode);
-        addingFeaturesToMap(L, mymap, bleed_circle, circle, pinpoint);
+        addingFeaturesToMap(L, editable, mymap, bleed_circle, circle, pinpoint);
         expect(bleed_circle.addTo).toHaveBeenCalledWith(mymap);
         expect(circle.addTo).toHaveBeenCalledWith(mymap);
         expect(pinpoint.addTo).toHaveBeenCalledWith(mymap);
@@ -162,7 +162,7 @@ describe('Postcode area is created on the map when postcode searched and radius 
 describe('Pinpoint marker is added to leaflet map for postcode centroid', () => {
     centroid = [54, -2];
     test("User has entered the postcode then searched to generate the marker on the map", () => {
-        addingPostcodeCentroidMarkerToMap(L, mymap, centroid);
+        addingPostcodeCentroidMarkerToMap(L, editable, mymap, centroid);
         expect(mymap.setView).toHaveBeenCalledWith({"lat": centroid[0], "lng": centroid[1]}, 13);
         expect(mymap.addLayer).toHaveBeenCalledWith(pinpoint);
     });
