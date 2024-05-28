@@ -36,9 +36,6 @@ function addingFeaturesToMap(L, editable, mymap, bleed_circle, circle, pinpoint)
   circle.addTo(mymap);
   pinpoint.addTo(mymap);
   circle.enableEdit();
-  circle.on("editable:editing", function (e) {
-    limitingRadius(e, circle, bleed_circle);
-  });
   mymap.fitBounds(
     bleed_circle.getBounds(),
     {padding: [1, 1]}
@@ -46,15 +43,10 @@ function addingFeaturesToMap(L, editable, mymap, bleed_circle, circle, pinpoint)
 }
 
 // Function that plots the centroid on the Leaflet map with custom marker and then adjusts the zoom level of the map
-function addingPostcodeCentroidMarkerToMap(L, editable, mymap, centroid) {
+function addingPostcodeCentroidMarkerToMap(L, mymap, centroid) {
   pinpoint = L.marker(centroid, {icon: markerIcon});
   pinpoint.addTo(mymap);
-  pinpoint.enableEdit();
   mymap.setView(pinpoint.getLatLng(), 13);
-  pinpoint.on('drag',  function (e) {
-    document.getElementById('first_coordinate').value = e.latlng.lat.toFixed(2);
-    document.getElementById('second_coordinate').value = e.latlng.lng.toFixed(2);
-  });
 }
 
 // Function that converts easting and northing coordinates to latitude and longitude, using proj4 library
@@ -158,18 +150,6 @@ function updateEstimatedBleedAreaText(text){
   document.getElementById('estimated-area-with-bleed-text').textContent = text;
 }
 
-function limitingRadius(e, circle, bleed_circle) {
-  if (e.layer._mRadius > 38000){
-    circle.disableEdit();
-    circle.setRadius(38000);
-  } else if (e.layer._mRadius < 100) {
-    circle.disableEdit();
-    circle.setRadius(100);
-  }
-  circle.enableEdit();
-  updateBleedArea(bleed_circle, e.layer._mRadius+bleed);
-}
-
 function onDragUpdates(event) {
   if (event.vertex.getIndex() == 0) {
     if (coordinate_type == 'latitude_longitude'){
@@ -179,11 +159,12 @@ function onDragUpdates(event) {
     } else if (is_postcode) {
       editingPostcodeArea();
     }
-    updateCenter(circle, bleed_circle, pinpoint, event.latlng)
+    updateCenter(circle, bleed_circle, pinpoint, event.latlng);
   }
   document.getElementById('radius').value = (event.layer._mRadius / 1000).toFixed(2);
   updateCountOfPhones('Unknown number of phones');
-};
+  updateBleedArea(bleed_circle, event.layer._mRadius+bleed);
+}
 
 
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
@@ -192,6 +173,6 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     latLngToEastingsNorthings, createAreaCircle,
     createBleedCircle, createCoordinateAreaLabel, createPostcodeAreaLabel, appendAreaToAreaList, editingLatitudeLongitudeArea,
     editingEastingNorthingArea, editingPostcodeArea, updateBleedArea, updateCenter, updateCountOfPhones, updateEstimatedAreaText, updateEstimatedBleedAreaText,
-    limitingRadius, onDragUpdates
+    onDragUpdates
   };
 }

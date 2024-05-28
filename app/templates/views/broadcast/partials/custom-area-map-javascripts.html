@@ -95,10 +95,6 @@
     })
   });
 
-  // mymap.on("editable:editing", function (e) {
-  //  limitingRadius(e, circle, bleed_circle);
-  // });
-
   if (method == 'radius') {
     if (coordinate_type == 'latitude_longitude'){
       createLatitudelongitudeArea(L, first_coordinate.value, second_coordinate.value, radius_value, bleed_radius, mapElement);
@@ -109,6 +105,6 @@
     }
     addingFeaturesToMap(L, L.Editable, mymap, bleed_circle, circle, pinpoint);
   } else if (method == 'search') {
-    addingPostcodeCentroidMarkerToMap(L, L.Editable, mymap, centroid);
+    addingPostcodeCentroidMarkerToMap(L, mymap, centroid);
   }
 </script>
