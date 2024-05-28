@@ -27,7 +27,6 @@ main.after_request(save_service_or_org_after_request)
 
 from app.main.views import (  # noqa isort:skip
     add_service,
-    agreement,
     api_keys,
     broadcast,
     choose_account,
@@ -50,14 +49,12 @@ from app.main.views import (  # noqa isort:skip
     pricing,
     providers,
     register,
-    returned_letters,
     security_policy,
     send,
     service_settings,
     sign_in,
     sign_out,
     templates,
-    tour,
     two_factor,
     uploads,
     user_profile,

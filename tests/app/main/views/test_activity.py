@@ -57,7 +57,6 @@ from tests.conftest import (
                 "pending-virus-check",
                 "delivered",
                 "sent",
-                "returned-letter",
                 "failed",
                 "temporary-failure",
                 "permanent-failure",
@@ -67,7 +66,7 @@ from tests.conftest import (
             ],
         ),
         ("sending", ["sending", "created", "pending", "pending-virus-check"]),
-        ("delivered", ["delivered", "sent", "returned-letter"]),
+        ("delivered", ["delivered", "sent"]),
         (
             "failed",
             [

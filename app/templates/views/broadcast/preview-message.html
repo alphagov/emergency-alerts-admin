@@ -12,11 +12,16 @@
 
 {% block backLink %}
   {% if custom_broadcast %}
-    {% set route = '.choose_broadcast_library' %}
+    {% if 'postcode' in broadcast_message.areas[0].name %}
+      {{ govukBackLink({ "href": url_for('.choose_broadcast_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug='postcodes') }) }}
+    {% elif 'latitude' in broadcast_message.areas[0].name%}
+      {{ govukBackLink({ "href": url_for('.search_coordinates', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug='coordinates', coordinate_type='latitude_longitude') }) }}
+    {% elif 'easting' in broadcast_message.areas[0].name%}
+      {{ govukBackLink({ "href": url_for('.search_coordinates', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug='coordinates', coordinate_type='easting_northing') }) }}
+    {% endif %}
   {% else %}
-    {% set route = '.preview_broadcast_areas' %}
+    {{ govukBackLink({ "href": url_for('.preview_broadcast_areas', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }) }}
   {% endif %}
-  {{ govukBackLink({ "href": url_for(route, service_id=current_service.id, broadcast_message_id=broadcast_message.id) }) }}
 {% endblock %}
 
 {% block maincolumn_content %}
@@ -31,7 +36,7 @@
     <ul class="area-list">
       {% for area in broadcast_message.areas %}
         <li class="area-list-item area-list-item--unremoveable">
-          {{area.name[0].upper()+area.name[1:]}}
+          {{area.name}}
         </li>
       {% endfor %}
     </ul>

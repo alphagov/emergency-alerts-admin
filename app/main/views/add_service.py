@@ -34,16 +34,6 @@ def _create_service(service_name, organisation_type, email_from, form):
             return None, e
 
 
-def _create_example_template(service_id):
-    example_sms_template = service_api_client.create_service_template(
-        "Example text message template",
-        "sms",
-        "Hey ((name)), I’m trying out Notify. Today is ((day of week)) and my favourite colour is ((colour)).",
-        service_id,
-    )
-    return example_sms_template
-
-
 @main.route("/add-service", methods=["GET", "POST"])
 @user_is_logged_in
 @user_is_gov_user
@@ -72,11 +62,7 @@ def add_service():
 
                 return redirect(url_for("main.service_set_broadcast_channel", service_id=service_id))
 
-            example_sms_template = _create_example_template(service_id)
-
-            return redirect(
-                url_for("main.begin_tour", service_id=service_id, template_id=example_sms_template["data"]["id"])
-            )
+            return redirect(url_for(".index"))
         else:
             return _render_add_service_page(form, default_organisation_type)
     else:

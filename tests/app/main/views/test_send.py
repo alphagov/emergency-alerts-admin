@@ -1208,8 +1208,6 @@ def test_send_one_off_has_correct_page_title(
     )
     assert page.select_one("h1").text.strip() == "Send ‘Two week reminder’"
 
-    assert len(page.select(".banner-tour")) == 0
-
 
 @pytest.mark.parametrize(
     "step_index, prefilled, expected_field_label",
@@ -3547,9 +3545,6 @@ def test_check_notification_shows_preview(client_request, service_one, fake_uuid
         template_id=fake_uuid,
         step_index=0,
     )
-
-    # assert tour not visible
-    assert not page.select(".banner-tour")
 
     # post to send_notification with help=0 to ensure no back link is then shown
     assert page.select_one("form")["action"] == url_for(

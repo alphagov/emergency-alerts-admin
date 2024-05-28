@@ -1,0 +1,12 @@
+{% macro inputWithCustomError(field, label, error_message) %}
+    {% if field.errors %}
+        {{ field(param_extensions={
+            "label": {"text": label},
+            "errorMessage": {
+                "text" : error_message
+            }
+        }) }}
+    {% else %}
+        {{ field }}
+    {% endif %}
+{% endmacro %}
