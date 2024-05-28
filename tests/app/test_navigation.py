@@ -163,7 +163,6 @@ EXCLUDED_ENDPOINTS = tuple(
             "organisation_settings",
             "organisation_trial_mode_services",
             "organisations",
-            "performance",
             "platform_admin",
             "platform_admin_search",
             "platform_admin_list_complaints",
