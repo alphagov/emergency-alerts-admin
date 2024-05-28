@@ -193,7 +193,6 @@ EXCLUDED_ENDPOINTS = tuple(
             "search_coordinates",
             "search_postcodes",
             "security",
-            "security_policy",
             "send_files_by_email",
             "send_files_by_email_contact_details",
             "send_from_contact_list",

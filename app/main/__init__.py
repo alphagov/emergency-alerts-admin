@@ -50,7 +50,6 @@ from app.main.views import (  # noqa isort:skip
     pricing,
     providers,
     register,
-    security_policy,
     send,
     service_settings,
     sign_in,
