@@ -16,23 +16,27 @@
   <div class="govuk-grid-column-two-thirds">
 
     {% if again %}
-      <h1 class="heading-large">You need to sign in again</h1>
-      {% if other_device %}
+      {% if status == 'expired' %}
+        <h1 class="heading-large">You’ve been signed out</h1>
         <p class="govuk-body">
-          We signed you out because you logged in to Emergency Alerts on another device.
+          We do this every hour to keep your information secure. Sign back in to start a new session.
         </p>
-      {% elif expired %}
+      {% elif status == 'inactive' %}
+        <h1 class="heading-large">You’ve been signed out due to inactivity</h1>
         <p class="govuk-body">
-          Your session has closed due to security. Sign back in to continue where you left off.
-        </p>
-      {% elif inactive %}
-        <p class="govuk-body">
-          You've been signed out due to inactivity. Sign back in to continue where you left off.
+          We do this to keep your information secure. Sign back in to continue where you left off.
         </p>
       {% else %}
-        <p class="govuk-body">
-          We signed you out because you have not used Emergency Alerts for a while.
-        </p>
+        <h1 class="heading-large">You need to sign in again</h1>
+        {% if other_device %}
+          <p class="govuk-body">
+            We signed you out because you logged in to Emergency Alerts on another device.
+          </p>
+        {% else %}
+          <p class="govuk-body">
+            We signed you out because you have not used Emergency Alerts for a while.
+          </p>
+        {% endif %}
       {% endif %}
     {% else %}
       <h1 class="heading-large">Sign in</h1>
