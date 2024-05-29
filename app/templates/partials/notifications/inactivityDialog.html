@@ -1,38 +1,37 @@
 {% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
 {% macro inactivityDialog(params) %}
 
-<html>
-
-<body>
-    <dialog id="activity" tabindex="-1" aria-modal="true" class="hmrc-timeout-dialog"
-        aria-labelledby="hmrc-timeout-heading hmrc-timeout-message">
-        <div>
-            <h2 id="hmrc-timeout-heading" class="govuk-heading-m push--top">You're about to be signed out</h1>
-            <p class="govuk-body hmrc-timeout-dialog__message" aria-hidden="true">For your security, we will sign you out in 2 minutes.
-            </p>
-            <p id="hmrc-timeout-message" class="govuk-visually-hidden screenreader-content" aria-live="assertive">For your
-                security, we will sign you out in 2 minutes.</p><button id="hmrc-timeout-keep-signin-btn"
-                class="govuk-button">Stay signed in</button>
-            <div class="hmrc-timeout-dialog__link-wrapper"><a id="hmrc-timeout-sign-out-link"
-                    class="govuk-link hmrc-timeout-dialog__link" href="/sign-out">Sign out</a></div>
-        </div>
-    </dialog>
-
-    <dialog id="expiry" tabindex="-1" aria-modal="true" class="hmrc-timeout-dialog"
+<dialog id="activity" tabindex="-1" aria-modal="true" class="hmrc-timeout-dialog"
     aria-labelledby="hmrc-timeout-heading hmrc-timeout-message">
     <div>
-        <h2 id="hmrc-timeout-heading" class="govuk-heading-m push--top">You can no longer extend your session</h1>
-        <p class="govuk-body hmrc-timeout-dialog__message" aria-hidden="true">For your security, we will sign you out in 2 minutes.
-        </p>
-        <p id="hmrc-timeout-message" class="govuk-visually-hidden screenreader-content" aria-live="assertive">For your
-            security, we will sign you out in 2 minutes.</p><button id="hmrc-timeout-sign-in-again-btn"
-            class="govuk-button">Sign in again</button>
-        <div class="hmrc-timeout-dialog__link-wrapper"><a id="hmrc-timeout-sign-out-link"
-                class="govuk-link hmrc-timeout-dialog__link" href="/sign-out">Sign out</a></div>
+        <h2 id="hmrc-timeout-heading" class="govuk-heading-m push--top">You're about to be signed out</h2>
+        <h2 class="govuk-body hmrc-timeout-dialog__message" aria-hidden="true">For your security, we will sign you out in 2 minutes.</h2>
+        <h2 id="hmrc-timeout-message" class="govuk-visually-hidden screenreader-content" aria-live="assertive">For your security, we will sign you out in 2 minutes.</h2>
+        {{ govukButton({
+            "text": "Stay signed in",
+            "classes": "govuk-button",
+            "id": "hmrc-timeout-keep-signin-btn"
+        }) }}
+        <div class="hmrc-timeout-dialog__link-wrapper">
+            <a id="hmrc-timeout-sign-out-link" class="govuk-link hmrc-timeout-dialog__link" href="/sign-out">Sign out</a>
+        </div>
     </div>
 </dialog>
-</body>
 
-</html>
+<dialog id="expiry" tabindex="-1" aria-modal="true" class="hmrc-timeout-dialog" aria-labelledby="hmrc-timeout-heading hmrc-timeout-message">
+    <div>
+        <h2 id="hmrc-timeout-heading" class="govuk-heading-m push--top">You can no longer extend your session</h2>
+        <h2 class="govuk-body hmrc-timeout-dialog__message" aria-hidden="true">For your security, we will sign you out in 2 minutes.</h2>
+        <h2 id="hmrc-timeout-message" class="govuk-visually-hidden screenreader-content" aria-live="assertive">For your security, we will sign you out in 2 minutes.</h2>
+        {{ govukButton({
+            "text": "Sign in again",
+            "classes": "govuk-button",
+            "id": "hmrc-timeout-sign-in-again-btn"
+        }) }}
+        <div class="hmrc-timeout-dialog__link-wrapper">
+            <a id="hmrc-timeout-sign-out-link" class="govuk-link hmrc-timeout-dialog__link" href="/sign-out">Sign out</a>
+        </div>
+    </div>
+</dialog>
 
 {% endmacro %}
