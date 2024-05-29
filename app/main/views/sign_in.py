@@ -68,8 +68,7 @@ def sign_in():
         again=bool(redirect_url),
         other_device=other_device,
         password_reset_url=password_reset_url,
-        expired="expired" in request.full_path,
-        inactive="inactive" in request.full_path,
+        status=request.args.get("status"),
     )
 
 
