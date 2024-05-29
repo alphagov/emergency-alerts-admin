@@ -2,15 +2,15 @@ let initial_logout;
 let initial_popup;
 let timeLeft;
 
-const inactivity_mins = 0.2; // to display first popup
-const initial_warning_mins = 0.5; // to logout if no response after popup displayed
-const timeout_warning_mins = 2; // // to display final popup before logged out by flask
-
+const inactivity_mins = 0.2; // Minutes until first popup displayed
+const initial_warning_mins = 0.5; // Minutes until logout if no response after popup displayed
+const timeout_warning_mins = 2; // Minutes until popup displayed warning user of end of session
 
 (function (window) {
   "use strict";
 
   function isLoggedIn() {
+    // Checking whether user logged in or not based on whether logged_in_at exists
     let timestamp;
     if (typeof logged_in_at == 'undefined' || logged_in_at == 'None') {
       timestamp =  'Test';
@@ -21,14 +21,14 @@ const timeout_warning_mins = 2; // // to display final popup before logged out b
   }
   function loggedInAt() {
     if (typeof logged_in_at == 'undefined') {
-      return new Date(); // for tests
+      return new Date(); // This needs to be created for the tests
     } else {
       return new Date(logged_in_at);
     }
   }
 
   function getTimeLeftUntilExpiry() {
-    // calculates how long left in session before final timeout after each request
+    // calculates how long left in session, before final timeout, after each request
     let expiry_time = new Date();
     expiry_time.setMinutes(
       loggedInAt().getMinutes() + timeout_warning_mins
@@ -39,7 +39,7 @@ const timeout_warning_mins = 2; // // to display final popup before logged out b
   }
 
   function displayInactivityPopup() {
-    // check if user logged in and there is enough time left before session expires
+    // Check if user logged in and there is enough time left before session expires
     timeLeft = getTimeLeftUntilExpiry();
     return (
       isLoggedIn() &
@@ -48,7 +48,7 @@ const timeout_warning_mins = 2; // // to display final popup before logged out b
   }
 
   function startInactivityTimeout() {
-    // initial timeout that is restarted by request activity
+    // Initial timeout that is restarted by request activity
     if (displayInactivityPopup()) {
       initial_popup = setTimeout(function () {
         if (checkLocalStorage()) {
@@ -56,7 +56,6 @@ const timeout_warning_mins = 2; // // to display final popup before logged out b
         } else {
           const inactivity_popup = document.getElementById("activity");
           inactivity_popup.setAttribute('open', 'true');
-          console.log(inactivity_popup);
           startInactivityPopupTimeout();
         }
       }, 1000 * 60 * inactivity_mins);
@@ -64,7 +63,7 @@ const timeout_warning_mins = 2; // // to display final popup before logged out b
   }
 
   function resetTimeouts() {
-    // if stay signed in button is clicked then activity timeout is restarted
+    // If stay signed in button is clicked then activity timeout is restarted
     const staySignedInButton = document.getElementById(
       "hmrc-timeout-keep-signin-btn"
     );
@@ -74,7 +73,6 @@ const timeout_warning_mins = 2; // // to display final popup before logged out b
         clearTimeout(initial_popup);
         clearTimeout(initial_logout);
         inactivity_popup.removeAttribute('open');
-        console.log(inactivity_popup);
         startInactivityTimeout();
       });
     }
@@ -82,7 +80,7 @@ const timeout_warning_mins = 2; // // to display final popup before logged out b
 
   function startInactivityPopupTimeout() {
     const inactivity_popup = document.getElementById("activity");
-    // logs user out if no response when the inactivity popup shows
+    // Logs user out if no response when the inactivity popup shows
     initial_logout = setTimeout(function () {
       inactivity_popup.removeAttribute('open');
       signOutRedirect('inactive');
@@ -95,7 +93,8 @@ const timeout_warning_mins = 2; // // to display final popup before logged out b
     if (isLoggedIn()) {
       initial_logout = setTimeout(function () {
         if (session_expiry_popup)
-        {session_expiry_popup.setAttribute('open', true);}
+        {session_expiry_popup.setAttribute('open', true);
+        }
       }, getTimeLeftUntilExpiry());
     }
   }
