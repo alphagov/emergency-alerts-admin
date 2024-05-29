@@ -1,7 +1,8 @@
 {% extends "govuk_frontend_jinja/template.html"%}
 {% from "components/banner.html" import banner %}
 {%- from "govuk_frontend_jinja/components/notification-banner/macro.html" import govukNotificationBanner -%}
-{%- from "partials/notifications/inactivityDialog.html" import inactivityDialog -%}
+{%- from "partials/notifications/sessionInactivityDialog.html" import sessionInactivityDialog -%}
+{%- from "partials/notifications/sessionExpiryDialog.html" import sessionExpiryDialog -%}
 {% from "components/cookie-banner.html" import cookie_banner %}
 
 {% block headIcons %}
@@ -57,7 +58,8 @@
 
 {% block header %}
 {% if current_user.is_authenticated %}
-{{ inactivityDialog() }}
+  {{ sessionInactivityDialog() }}
+  {{ sessionExpiryDialog(request.path) }}
 {% if current_user.platform_admin %}
 {% set navigation = [
 {
@@ -199,7 +201,7 @@
 {% endblock %}
 <!--[if gt IE 8]><!-->
 <script>
-  let logged_in_at = "{{session.get('session_start_utc')}}"
+  let logged_in_at = "{{session.get('session_start_utc')}}" // Created for inactivity and expiry dialogs
 </script>
 <script type="text/javascript" src="{{ asset_url('javascripts/all.js') }}"></script>
 
