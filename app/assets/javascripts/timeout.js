@@ -18,9 +18,8 @@ const timeout_warning_mins = 58; // Minutes until popup displayed warning user o
   function loggedInAt() {
     if (typeof logged_in_at == 'undefined') {
       return new Date(); // This needs to be created for the tests
-    } else {
-      return new Date(logged_in_at);
     }
+    return new Date(logged_in_at);
   }
 
   function getTimeLeftUntilExpiry() {
