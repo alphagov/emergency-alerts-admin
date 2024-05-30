@@ -78,7 +78,6 @@ def test_hiding_pages_from_search_engines(
     [
         "cookies",
         "privacy",
-        "pricing",
         "terms",
         "roadmap",
         "features",
@@ -88,7 +87,6 @@ def test_hiding_pages_from_search_engines(
         "features_email",
         "features_sms",
         "features_letters",
-        "how_to_pay",
         "get_started",
         "guidance_index",
         "create_and_send_messages",
@@ -96,7 +94,6 @@ def test_hiding_pages_from_search_engines(
         "send_files_by_email",
         "upload_a_letter",
         "who_can_use_notify",
-        "billing_details",
     ],
 )
 def test_static_pages(
