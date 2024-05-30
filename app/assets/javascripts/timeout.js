@@ -83,7 +83,7 @@ const timeout_warning_mins = 58; // Minutes until popup displayed warning user o
 
   function sessionExpiryPopup() {
     // displays session expiry popup after timeout
-    const session_expiry_popup = document.querySelector("#expiry");
+    const session_expiry_popup = document.getElementById("expiry");
     if (isLoggedIn()) {
       inactivity_logout = setTimeout(function () {
         if (session_expiry_popup)
