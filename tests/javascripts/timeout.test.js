@@ -48,8 +48,8 @@ aria-labelledby="hmrc-timeout-heading hmrc-timeout-message">
 describe("Inactivity dialog appears and components within it function correctly", () => {
   beforeEach(() => {
     document.body.innerHTML = html_content;
-    inactivity_popup = document.querySelector("#activity");
-    expiry_popup = document.querySelector("#expiry");
+    inactivity_dialog = document.getElementById("activity");
+    session_expiry_dialog = document.getElementById("expiry");
     inactivity_button = document.getElementById("hmrc-timeout-keep-signin-btn");
     link = document.getElementById("hmrc-timeout-sign-out-link");
 
@@ -64,12 +64,12 @@ describe("Inactivity dialog appears and components within it function correctly"
   });
 
   test("Dialog opens after timeout", () => {
-    expect(inactivity_popup.open).toEqual(false);
+    expect(inactivity_dialog.open).toEqual(false);
     jest.advanceTimersByTime(60 * inactivity_period * 1000);
     if (window.GOVUK.isLoggedIn()) {
-      expect(isDialogOpen(inactivity_popup)).toEqual(true); // displays after period of inactivity
+      expect(isDialogOpen(inactivity_dialog)).toEqual(true); // displays after period of inactivity
     } else {
-      expect(isDialogOpen(inactivity_popup)).toEqual(false);
+      expect(isDialogOpen(inactivity_dialog)).toEqual(false);
     }
   });
 
@@ -77,28 +77,28 @@ describe("Inactivity dialog appears and components within it function correctly"
     jest.advanceTimersByTime(60 * inactivity_period * 1000);
 
     if (window.GOVUK.isLoggedIn()) {
-      expect(isDialogOpen(inactivity_popup)).toEqual(true);
-      expect(inactivity_popup.querySelector("h1").textContent).toBe(
+      expect(isDialogOpen(inactivity_dialog)).toEqual(true);
+      expect(inactivity_dialog.getElementsByTagName("h1")[0].textContent).toBe(
         "You're about to be signed out"
       );
-      expect(inactivity_popup.querySelector("p").textContent).toBe(
+      expect(inactivity_dialog.getElementsByTagName("p")[0].textContent).toBe(
         "For your security, we will sign you out in 2 minutes."
       );
     } else {
-      expect(isDialogOpen(inactivity_popup)).toEqual(false);
+      expect(isDialogOpen(inactivity_dialog)).toEqual(false);
     }
   });
 
   test("Stay signed in button should close dialog and reset timeout ", () => {
     jest.advanceTimersByTime(60 * inactivity_period * 1000);
     if (window.GOVUK.isLoggedIn()) {
-      expect(isDialogOpen(inactivity_popup)).toEqual(true);
+      expect(isDialogOpen(inactivity_dialog)).toEqual(true);
 
       helpers.triggerEvent(inactivity_button, "click");
 
-      expect(isDialogOpen(inactivity_popup)).toEqual(false);
+      expect(isDialogOpen(inactivity_dialog)).toEqual(false);
     } else {
-      expect(isDialogOpen(inactivity_popup)).toEqual(false);
+      expect(isDialogOpen(inactivity_dialog)).toEqual(false);
     }
   });
 
@@ -109,13 +109,13 @@ describe("Inactivity dialog appears and components within it function correctly"
 
     jest.advanceTimersByTime(60 * inactivity_period * 1000);
     if (window.GOVUK.isLoggedIn()) {
-      expect(isDialogOpen(inactivity_popup)).toEqual(true);
+      expect(isDialogOpen(inactivity_dialog)).toEqual(true);
 
       helpers.triggerEvent(link, "click");
 
       expect(hasBeenClicked).toHaveBeenCalled();
     } else {
-      expect(isDialogOpen(inactivity_popup)).toEqual(false);
+      expect(isDialogOpen(inactivity_dialog)).toEqual(false);
     }
   });
 });
@@ -132,26 +132,26 @@ describe("Timeout dialog appears", () => {
   });
 
   test("Dialog opens after timeout", () => {
-    const expiry_popup = document.querySelector("#expiry");
+    let session_expiry_dialog = document.getElementById("expiry");
     jest.advanceTimersByTime(60 * timeout_period * 1000);
     if (window.GOVUK.isLoggedIn()) {
-      expect(isDialogOpen(expiry_popup)).toEqual(true);
+      expect(isDialogOpen(session_expiry_dialog)).toEqual(true);
 
       helpers.triggerEvent(link, "click");
 
       expect(hasBeenClicked).toHaveBeenCalled();
     } else {
-      expect(isDialogOpen(expiry_popup)).toEqual(false);
+      expect(isDialogOpen(session_expiry_dialog)).toEqual(false);
     }
   });
 
   test("Expiry dialog text appears in dialog", () => {
     if (window.GOVUK.isLoggedIn()) {
-      expect(expiry_popup.querySelector("h1").textContent).toBe(
+      expect(session_expiry_dialog.getElementsByTagName("h1")[0].textContent).toBe(
         "You can no longer extend your session"
       );
     } else {
-      expect(isDialogOpen(expiry_popup)).toEqual(false);
+      expect(isDialogOpen(session_expiry_dialog)).toEqual(false);
       // not to be visible
     }
   });
@@ -160,20 +160,19 @@ describe("Timeout dialog appears", () => {
     const expiry_button = document.getElementById(
       "hmrc-timeout-keep-signin-btn"
     );
-    const expiry_popup = document.querySelector("#expiry");
+    let session_expiry_dialog = document.getElementById("expiry");
     const hasBeenClicked = jest.fn();
     jest.advanceTimersByTime(60 * timeout_period * 1000);
 
     if (window.GOVUK.isLoggedIn()) {
       expiry_button.addEventListener("click", hasBeenClicked);
-
       helpers.triggerEvent(expiry_button, "click");
 
       window.GOVUK.signOutRedirect();
-      expect(isDialogOpen(expiry_popup)).toEqual(false);
+      expect(isDialogOpen(session_expiry_dialog)).toEqual(false);
       expect(hasBeenClicked).toHaveBeenCalled();
     } else {
-      expect(isDialogOpen(expiry_popup)).toEqual(false);
+      expect(isDialogOpen(session_expiry_dialog)).toEqual(false);
     }
   });
 });
@@ -183,7 +182,7 @@ describe("Activity in another tab delays inactivity timeout", () => {
     document.body.innerHTML = html_content;
     jest.useFakeTimers();
     window.GOVUK.startInactivityTimeout();
-    inactivity_popup = document.querySelector("#activity");
+    inactivity_dialog = document.getElementById("activity");
   });
 
   afterEach(() => {
@@ -196,11 +195,11 @@ describe("Activity in another tab delays inactivity timeout", () => {
     localStorage.setItem("lastActivity", later);
     jest.advanceTimersByTime(60 * inactivity_period * 1000);
     if (window.GOVUK.isLoggedIn()) {
-      expect(isDialogOpen(inactivity_popup)).toEqual(false);
+      expect(isDialogOpen(inactivity_dialog)).toEqual(false);
       jest.advanceTimersByTime(60 * 0.3 * 1000);
-      expect(isDialogOpen(inactivity_popup)).toEqual(true);
+      expect(isDialogOpen(inactivity_dialog)).toEqual(true);
     } else {
-      expect(isDialogOpen(inactivity_popup)).toEqual(false);
+      expect(isDialogOpen(inactivity_dialog)).toEqual(false);
     }
   });
 });
