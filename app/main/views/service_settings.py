@@ -52,7 +52,6 @@ from app.main.forms import (
     ServiceSwitchChannelForm,
     SMSPrefixForm,
 )
-from app.main.views.pricing import CURRENT_SMS_RATE
 from app.utils import DELIVERED_STATUSES, FAILURE_STATUSES, SENDING_STATUSES
 from app.utils.user import (
     user_has_permissions,
@@ -669,7 +668,6 @@ def service_set_channel(service_id, channel):
     return render_template(
         "views/service-settings/set-{}.html".format(channel),
         form=form,
-        sms_rate=CURRENT_SMS_RATE,
     )
 
 

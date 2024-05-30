@@ -53,11 +53,6 @@ class HeaderNavigation(Navigation):
             "trial_mode_new",
             "using_emergency_alerts",
         },
-        "pricing": {
-            "pricing",
-            "how_to_pay",
-            "billing_details",
-        },
         "documentation": {
             "documentation",
             "integration_testing",

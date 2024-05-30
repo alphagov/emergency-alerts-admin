@@ -1,4 +1,3 @@
-import json
 import os
 
 header_colors = {
@@ -98,17 +97,6 @@ class Config(object):
     BROADCAST_ORGANISATION_ID = "38e4bf69-93b0-445d-acee-53ea53fe02df"
 
     NOTIFY_SERVICE_ID = "d6aa2c68-a2d9-4437-ab19-3ae8eb202553"
-
-    NOTIFY_BILLING_DETAILS = json.loads(os.environ.get("NOTIFY_BILLING_DETAILS") or "null") or {
-        "account_number": "98765432",
-        "sort_code": "01-23-45",
-        "IBAN": "GB33BUKB20201555555555",
-        "swift": "ABCDEF12",
-        "notify_billing_email_addresses": [
-            "generic@digital.cabinet-office.gov.uk",
-            "first.last@digital.cabinet-office.gov.uk",
-        ],
-    }
 
     NOTIFY_RUNTIME_PLATFORM = os.environ.get("NOTIFY_RUNTIME_PLATFORM", "paas")
 
