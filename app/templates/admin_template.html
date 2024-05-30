@@ -6,114 +6,114 @@
 {% from "components/cookie-banner.html" import cookie_banner %}
 
 {% block headIcons %}
-<link rel="shortcut icon" sizes="16x16 32x32 48x48" href="{{ asset_url('images/favicon.ico') }}" type="image/x-icon" />
-<link rel="mask-icon" href="{{ asset_url('images/govuk-mask-icon.svg') }}"
-  color="{{ themeColor | default('#0b0c0c') }}"> {# Hardcoded value of $govuk-black #}
-<link rel="apple-touch-icon" sizes="180x180" href="{{ asset_url('images/govuk-apple-touch-icon-180x180.png') }}">
-<link rel="apple-touch-icon" sizes="167x167" href="{{ asset_url('images/govuk-apple-touch-icon-167x167.png') }}">
-<link rel="apple-touch-icon" sizes="152x152" href="{{ asset_url('images/govuk-apple-touch-icon-152x152.png') }}">
-<link rel="apple-touch-icon" href="{{ asset_url('images/govuk-apple-touch-icon.png') }}">
+  <link rel="shortcut icon" sizes="16x16 32x32 48x48" href="{{ asset_url('images/favicon.ico') }}" type="image/x-icon" />
+  <link rel="mask-icon" href="{{ asset_url('images/govuk-mask-icon.svg') }}"
+    color="{{ themeColor | default('#0b0c0c') }}"> {# Hardcoded value of $govuk-black #}
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ asset_url('images/govuk-apple-touch-icon-180x180.png') }}">
+  <link rel="apple-touch-icon" sizes="167x167" href="{{ asset_url('images/govuk-apple-touch-icon-167x167.png') }}">
+  <link rel="apple-touch-icon" sizes="152x152" href="{{ asset_url('images/govuk-apple-touch-icon-152x152.png') }}">
+  <link rel="apple-touch-icon" href="{{ asset_url('images/govuk-apple-touch-icon.png') }}">
 {% endblock %}
 
 {% block head %}
 {%- for font in font_paths %}
-<link rel="preload" href="{{ asset_url(font, with_querystring_hash=False) }}" as="font" type="font/woff2" crossorigin>
-{%- endfor %}
-<link rel="stylesheet" media="screen" href="{{ asset_url('stylesheets/main.css') }}" />
-<link rel="stylesheet" media="print" href="{{ asset_url('stylesheets/print.css') }}" />
-{% block extra_stylesheets %}
-{% endblock %}
-<style>
-  .govuk-header__container {
-    border-color: {
-        {
-        header_colour
+  <link rel="preload" href="{{ asset_url(font, with_querystring_hash=False) }}" as="font" type="font/woff2" crossorigin>
+  {%- endfor %}
+  <link rel="stylesheet" media="screen" href="{{ asset_url('stylesheets/main.css') }}" />
+  <link rel="stylesheet" media="print" href="{{ asset_url('stylesheets/print.css') }}" />
+  {% block extra_stylesheets %}
+  {% endblock %}
+  <style>
+    .govuk-header__container {
+      border-color: {
+          {
+          header_colour
+        }
       }
     }
-  }
-</style>
-{% if g.hide_from_search_engines %}
-<meta name="robots" content="noindex" />
-{% endif %}
-<meta name="google-site-verification" content="niWnSqImOWz6mVQTYqNb5tFK8HaKSB4b3ED4Z9gtUQ0" />
-{% block meta_format_detection %}
-<meta name="format-detection" content="telephone=no">
-{% endblock %}
-{% block meta %}
-{% endblock %}
+  </style>
+  {% if g.hide_from_search_engines %}
+  <meta name="robots" content="noindex" />
+  {% endif %}
+  <meta name="google-site-verification" content="niWnSqImOWz6mVQTYqNb5tFK8HaKSB4b3ED4Z9gtUQ0" />
+  {% block meta_format_detection %}
+  <meta name="format-detection" content="telephone=no">
+  {% endblock %}
+  {% block meta %}
+  {% endblock %}
 {% endblock %}
 
 {% block pageTitle %}
-{% block per_page_title %}{% endblock %} – GOV.UK Emergency Alerts
+  {% block per_page_title %}{% endblock %} – GOV.UK Emergency Alerts
 {% endblock %}
 
 {% block bodyStart %}
-{% block extra_javascripts_before_body %}
+  {% block extra_javascripts_before_body %}
 {% endblock %}
 
 {% block cookie_message %}
-{{ cookie_banner() }}
-{% endblock %}
+    {{ cookie_banner() }}
+  {% endblock %}
 {% endblock %}
 
 {% block header %}
 {% if current_user.is_authenticated %}
   {{ sessionInactivityDialog() }}
   {{ sessionExpiryDialog(request.path) }}
-{% if current_user.platform_admin %}
-{% set navigation = [
-{
-"href": url_for('main.support'),
-"text": "Support",
-"active": header_navigation.is_selected('support')
-},
-{
-"href": url_for('main.user_profile'),
-"text": "Profile",
-"active": header_navigation.is_selected('user-profile')
-},
-{
-"href": url_for('main.platform_admin_search'),
-"text": "Platform admin",
-"active": header_navigation.is_selected('platform-admin')
-},
-{
-"href": url_for('main.sign_out'),
-"text": "Sign out"
-}
-] %}
-{% else %}
-{% set navigation = [
-{
-"href": url_for('main.support'),
-"text": "Support",
-"active": header_navigation.is_selected('support')
-},
-{
-"href": url_for('main.user_profile'),
-"text": "Profile",
-"active": header_navigation.is_selected('user-profile')
-},
-{
-"href": url_for('main.sign_out'),
-"text": "Sign out"
-}
-] %}
-{% endif %}
-{% else %}
-{% set navigation = [
-{
-"href": url_for('main.support'),
-"text": "Support",
-"active": header_navigation.is_selected('support')
-},
-{
-"href": url_for('main.sign_in'),
-"text": "Sign in",
-"active": header_navigation.is_selected('sign-in')
-}
-] %}
-{% endif %}
+  {% if current_user.platform_admin %}
+    {% set navigation = [
+      {
+        "href": url_for('main.support'),
+        "text": "Support",
+        "active": header_navigation.is_selected('support')
+      },
+      {
+        "href": url_for('main.user_profile'),
+        "text": "Profile",
+        "active": header_navigation.is_selected('user-profile')
+      },
+      {
+        "href": url_for('main.platform_admin_search'),
+        "text": "Platform admin",
+        "active": header_navigation.is_selected('platform-admin')
+      },
+      {
+        "href": url_for('main.sign_out'),
+        "text": "Sign out"
+      }
+    ] %}
+  {% else %}
+    {% set navigation = [
+      {
+        "href": url_for('main.support'),
+        "text": "Support",
+        "active": header_navigation.is_selected('support')
+      },
+      {
+        "href": url_for('main.user_profile'),
+        "text": "Profile",
+        "active": header_navigation.is_selected('user-profile')
+      },
+      {
+        "href": url_for('main.sign_out'),
+        "text": "Sign out"
+      }
+    ] %}
+  {% endif %}
+  {% else %}
+  {% set navigation = [
+    {
+      "href": url_for('main.support'),
+      "text": "Support",
+      "active": header_navigation.is_selected('support')
+    },
+    {
+      "href": url_for('main.sign_in'),
+      "text": "Sign in",
+      "active": header_navigation.is_selected('sign-in')
+    }
+  ] %}
+  {% endif %}
 
   {{ govukHeader({
     "homepageUrl": url_for('main.show_accounts_or_dashboard'),
@@ -134,76 +134,73 @@
 {% endblock %}
 
 {% block footer %}
-{% if current_user.is_authenticated %}
-{% set meta_items = [
-{
-"href": url_for("main.privacy"),
-"text": "Privacy"
-},
-{
-"href": url_for("main.accessibility_statement"),
-"text": "Accessibility statement"
-},
-{
-"href": url_for("main.terms"),
-"text": "Terms of use"
-},
-{
-"href": url_for("main.cookies"),
-"text": "Cookies"
-},
-{
-"href": url_for('main.security'),
-"text": "Security"
-}
-] %}
-{% else %}
-{% set meta_items = [
-{
-"href": url_for("main.privacy"),
-"text": "Privacy"
-},
-{
-"href": url_for("main.accessibility_statement"),
-"text": "Accessibility statement"
-},
-{
-"href": url_for("main.terms"),
-"text": "Terms of use"
-},
-{
-"href": url_for("main.cookies"),
-"text": "Cookies"
-},
-] %}
-{% endif %}
+  {% if current_user.is_authenticated %}
+  {% set meta_items = [
+    {
+      "href": url_for("main.privacy"),
+      "text": "Privacy"
+    },
+    {
+      "href": url_for("main.accessibility_statement"),
+      "text": "Accessibility statement"
+    },
+    {
+      "href": url_for("main.terms"),
+      "text": "Terms of use"
+    },
+    {
+      "href": url_for("main.cookies"),
+      "text": "Cookies"
+    },
+    {
+      "href": url_for('main.security'),
+      "text": "Security"
+    }
+  ] %}
+  {% else %}
+  {% set meta_items = [
+    {
+      "href": url_for("main.privacy"),
+      "text": "Privacy"
+    },
+    {
+      "href": url_for("main.accessibility_statement"),
+      "text": "Accessibility statement"
+    },
+    {
+      "href": url_for("main.terms"),
+      "text": "Terms of use"
+    },
+    {
+      "href": url_for("main.cookies"),
+      "text": "Cookies"
+    },
+  ] %}
+  {% endif %}
 
-{% if current_service and current_service.research_mode %}
-{% set meta_suffix = 'Built by the <a href="https://www.gov.uk/government/organisations/government-digital-service"
-  class="govuk-footer__link">Government Digital Service</a><span id="research-mode" class="research-mode">research mode</span>' %}
-{% else %}
-{% set meta_suffix = 'Built by the <a href="https://www.gov.uk/government/organisations/government-digital-service"
-  class="govuk-footer__link">Government Digital Service</a>' %}
-{% endif %}
+  {% if current_service and current_service.research_mode %}
+    {% set meta_suffix = 'Built by the <a href="https://www.gov.uk/government/organisations/government-digital-service" class="govuk-footer__link">Government Digital Service</a><span id="research-mode" class="research-mode">research mode</span>' %}
+  {% else %}
+    {% set meta_suffix = 'Built by the <a href="https://www.gov.uk/government/organisations/government-digital-service" class="govuk-footer__link">Government Digital Service</a>' %}
+  {% endif %}
 
-{{ govukFooter({
-"classes": "js-footer",
-"navigation": navigation,
-"meta": {
-"items": meta_items,
-"html": meta_suffix
-}
-}) }}
+  {{ govukFooter({
+    "classes": "js-footer",
+    "navigation": navigation,
+    "meta": {
+      "items": meta_items,
+      "html": meta_suffix
+    }
+  }) }}
 {% endblock %}
 
 {% block bodyEnd %}
-{% block extra_javascripts %}
-{% endblock %}
-<!--[if gt IE 8]><!-->
-<script>
-  let logged_in_at = "{{session.get('session_start_utc')}}" // Created for inactivity and expiry dialogs
-</script>
-<script type="text/javascript" src="{{ asset_url('javascripts/all.js') }}"></script>
-
-<!--<![endif]-->
+  {% block extra_javascripts %}
+  {% endblock %}
+  <!--[if gt IE 8]><!-->
+  <script>
+    let logged_in_at = "{{session.get('session_start_utc')}}" // Created for inactivity and expiry dialogs
+  </script>
+  <script type="text/javascript" src="{{ asset_url('javascripts/all.js') }}"></script>
+  <!--<![endif]-->
 {% endblock %}
