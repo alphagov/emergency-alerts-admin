@@ -119,16 +119,16 @@ const timeout_warning_mins = 58; // Minutes until popup displayed warning user o
 
   function signOutRedirect() {
     // send logout request and redirect to previous page upon relogging in
-    let current_page = window.location.pathname;
+    let current_page = encodeURIComponent(window.location.pathname);
     $.ajax("/sign-out", {
       method: "GET",
       success: function() {
         window.location.href = "/sign-in?next="+current_page+"&status=inactive";
-      }
-    })
-      .fail((response) => {
-        console.log(response);
-      });
+      },
+      error: function(error) {
+        console.log(error);
+      },
+    });
   }
 
   updateLocalStorage();
