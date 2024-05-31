@@ -176,16 +176,16 @@ test_filepath = source_files_path / "Test.geojson"
 ctry19_filepath = source_files_path / "Countries.geojson"
 
 # https://geoportal.statistics.gov.uk/datasets/ons::wards-december-2021-uk-bgc
-wd21_filepath = source_files_path / "Wards_(December_2021)_UK_BGC.geojson"
+wd23_filepath = source_files_path / "Wards_(December_2023)_UK_BGC.geojson"
 
 # https://geoportal.statistics.gov.uk/datasets/ons::local-authority-districts-december-2021-uk-bgc
-lad21_filepath = source_files_path / "Local_Authority_Districts_(December_2021)_UK_BGC.geojson"
+lad23_filepath = source_files_path / "Local_Authority_Districts_(December_2023)_UK_BGC.geojson"
 
 # https://geoportal.statistics.gov.uk/datasets/ons::counties-and-unitary-authorities-december-2021-uk-bgc
-ctyua21_filepath = source_files_path / "Counties_and_Unitary_Authorities_(December_2021)_UK_BGC.geojson"
+ctyua23_filepath = source_files_path / "Counties_and_Unitary_Authorities_(December_2023)_UK_BGC.geojson"
 
 # https://geoportal.statistics.gov.uk/datasets/ons::police-force-areas-december-2020-ew-bgc
-pfa20_filepath = source_files_path / "Police_Force_Areas_(December_2020)_EW_BGC.geojson"
+pfa23_filepath = source_files_path / "Police_Force_Areas_(December_2023)_EW_BGC.geojson"
 
 # https://geoportal.statistics.gov.uk/documents/ward-to-local-authority-district-december-2021-lookup-in-the-united-kingdom/about
 wd_lad_map_filepath = source_files_path / "WD21_LAD21_UK_LU.csv"
@@ -193,27 +193,27 @@ wd_lad_map_filepath = source_files_path / "WD21_LAD21_UK_LU.csv"
 # https://geoportal.statistics.gov.uk/datasets/ons::lower-tier-local-authority-to-upper-tier-local-authority-april-2021-lookup-in-england-and-wales/explore
 ltla_utla_map_filepath = (
     source_files_path
-    / "Lower_Tier_Local_Authority_to_Upper_Tier_Local_Authority__April_2021__Lookup_in_England_and_Wales.csv"
+    / "Lower_Tier_Local_Authority_to_Upper_Tier_Local_Authority__April_2023__Lookup_in_England_and_Wales.csv"
 )  # noqa: E501
 
 # https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/populationandmigration/populationestimates/datasets/wardlevelmidyearpopulationestimatesexperimental/mid2020sape23dt8a/wards210120popest.zip
 # Munged using https://docs.google.com/spreadsheets/d/1gR50P0l02Fz7ZH7EwZI87F3axDbNp6oIDDnkKYgWEpA/edit#gid=2092678703
-population_filepath_england_wales = source_files_path / "Mid-2020_Persons_England_Wales_(2021_wards).csv"
+population_filepath_england_wales = source_files_path / "Mid-2020_Persons_England_Wales_(2023_wards).csv"
 
 # https://www.nrscotland.gov.uk/statistics-and-data/statistics/statistics-by-theme/population/population-estimates/2011-based-special-area-population-estimates/electoral-ward-population-estimates
-population_filepath_scotland = source_files_path / "Mid-2019_Persons_Scotland.csv"
+population_filepath_scotland = source_files_path / "Mid-2021_Persons_Scotland_(2022_wards).csv"
 population_filepath_northern_ireland = source_files_path / "Ward-2014_Northern_Ireland.csv"
-population_filepath_uk = source_files_path / "MYE1-2019.csv"
+population_filepath_uk = source_files_path / "MYE1-2023.csv"
 
 
-ward_code_to_la_mapping = {row["WD21CD"]: row["LAD21NM"] for row in csv.DictReader(wd_lad_map_filepath.open())}
-ward_code_to_la_id_mapping = {row["WD21CD"]: row["LAD21CD"] for row in csv.DictReader(wd_lad_map_filepath.open())}
+ward_code_to_la_mapping = {row["WD23CD"]: row["LAD23NM"] for row in csv.DictReader(wd_lad_map_filepath.open())}
+ward_code_to_la_id_mapping = {row["WD23CD"]: row["LAD23CD"] for row in csv.DictReader(wd_lad_map_filepath.open())}
 
 
 # the mapping dict is empty for lower tier local authorities that are also upper tier (unitary authorities, etc)
 ltla_utla_mapping_csv = csv.DictReader(ltla_utla_map_filepath.open())
 la_code_to_cty_id_mapping = {
-    row["LTLA21CD"]: row["UTLA21CD"] for row in ltla_utla_mapping_csv if row["LTLA21CD"] != row["UTLA21CD"]
+    row["LTLA23CD"]: row["UTLA23CD"] for row in ltla_utla_mapping_csv if row["LTLA23CD"] != row["UTLA23CD"]
 }
 
 area_to_population_mapping = {}
@@ -303,8 +303,8 @@ def add_countries():
 
 
 def add_police_force_areas():
-    dataset_id = "pfa20"
-    dataset_geojson = geojson.loads(pfa20_filepath.read_text())
+    dataset_id = "pfa23"
+    dataset_geojson = geojson.loads(pfa23_filepath.read_text())
     repo.insert_broadcast_area_library(
         dataset_id,
         name="Police forces in England and Wales",
@@ -320,8 +320,8 @@ def add_police_force_areas():
     }
 
     for feature in dataset_geojson["features"]:
-        f_id = feature["properties"]["PFA20CD"]
-        f_name = feature["properties"]["PFA20NM"]
+        f_id = feature["properties"]["PFA23CD"]
+        f_name = feature["properties"]["PFA23NM"]
 
         if f_id in ("E23000001", "E23000034"):
             # Skip the Metropolitan Police and City of London for now
@@ -352,14 +352,14 @@ def add_police_force_areas():
 
     areas_to_add.append(
         [
-            "pfa20-LONDON",
+            "pfa23-LONDON",
             "London (Metropolitan & City of London)",
             dataset_id,
             None,
             feature,
             simple_feature,
             utm_crs,
-            POLICE_FORCE_AREAS["pfa20-E23000001"] + POLICE_FORCE_AREAS["pfa20-E23000034"],
+            POLICE_FORCE_AREAS["pfa23-E23000001"] + POLICE_FORCE_AREAS["pfa23-E23000034"],
         ]
     )
 
@@ -384,15 +384,15 @@ def add_wards_local_authorities_and_counties():
 def _add_electoral_wards(dataset_id):
     areas_to_add = []
 
-    for feature in geojson.loads(wd21_filepath.read_text())["features"]:
-        ward_code = feature["properties"]["WD21CD"]
-        ward_name = feature["properties"]["WD21NM"]
-        ward_id = "wd21-" + ward_code
+    for feature in geojson.loads(wd23_filepath.read_text())["features"]:
+        ward_code = feature["properties"]["WD23CD"]
+        ward_name = feature["properties"]["WD23NM"]
+        ward_id = "wd23-" + ward_code
 
         print()
         print(ward_name)
 
-        la_id = "lad21-" + ward_code_to_la_id_mapping[ward_code]
+        la_id = "lad23-" + ward_code_to_la_id_mapping[ward_code]
 
         feature, simple_feature, utm_crs = polygons_and_simplified_polygons(feature["geometry"])
 
@@ -419,14 +419,14 @@ def _add_electoral_wards(dataset_id):
 def _add_local_authorities(dataset_id):
     areas_to_add = []
 
-    for feature in geojson.loads(lad21_filepath.read_text())["features"]:
-        la_id = feature["properties"]["LAD21CD"]
-        group_name = feature["properties"]["LAD21NM"]
+    for feature in geojson.loads(lad23_filepath.read_text())["features"]:
+        la_id = feature["properties"]["LAD23CD"]
+        group_name = feature["properties"]["LAD23NM"]
 
         print()
         print(group_name)
 
-        group_id = "lad21-" + la_id
+        group_id = "lad23-" + la_id
 
         feature, simple_feature, utm_crs = polygons_and_simplified_polygons(feature["geometry"])
 
@@ -436,7 +436,7 @@ def _add_local_authorities(dataset_id):
                 group_id,
                 group_name,
                 dataset_id,
-                "ctyua21-" + ctyua_id if ctyua_id else None,
+                "ctyua23-" + ctyua_id if ctyua_id else None,
                 feature,
                 simple_feature,
                 utm_crs,
@@ -449,15 +449,15 @@ def _add_local_authorities(dataset_id):
 # counties and unitary authorities
 def _add_counties_and_unitary_authorities(dataset_id):
     areas_to_add = []
-    for feature in geojson.loads(ctyua21_filepath.read_text())["features"]:
-        ctyua_id = feature["properties"]["CTYUA21CD"]
-        group_name = feature["properties"]["CTYUA21NM"]
+    for feature in geojson.loads(ctyua23_filepath.read_text())["features"]:
+        ctyua_id = feature["properties"]["CTYUA23CD"]
+        group_name = feature["properties"]["CTYUA23NM"]
 
-        la_id = "lad21-" + ctyua_id
+        la_id = "lad23-" + ctyua_id
         if repo.get_areas([la_id]):
             continue
 
-        group_id = "ctyua21-" + ctyua_id
+        group_id = "ctyua23-" + ctyua_id
 
         feature, simple_feature, utm_crs = polygons_and_simplified_polygons(feature["geometry"])
 
