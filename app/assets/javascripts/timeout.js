@@ -1,32 +1,25 @@
 const inactivity_mins = 28; // Minutes until first popup displayed
 const initial_warning_mins = 2; // Minutes until logout if no response after popup displayed
 const timeout_warning_mins = 58; // Minutes until popup displayed warning user of end of session
+let inactivity_logout;
+let inactivity_dialog = document.getElementById("activity");
+let session_expiry_dialog = document.getElementById("expiry");
+let inactivity_dialog_displayed;
+const loginTimestamp = new Date(logged_in_at);
 
 (function (window) {
   "use strict";
 
   function isLoggedIn() {
-    // Checking whether user logged in or not based on whether logged_in_at exists
-    let timestamp;
-    if (typeof logged_in_at == 'undefined' || logged_in_at == 'None') {
-      timestamp =  'Test';
-    } else {
-      timestamp = new Date(logged_in_at);
-    }
-    return (timestamp instanceof Date) & !isNaN(timestamp);
-  }
-  function loggedInAt() {
-    if (typeof logged_in_at == 'undefined') {
-      return new Date(); // This needs to be created for the tests
-    }
-    return new Date(logged_in_at);
+    // Checking whether user logged in or not based on whether loginTimestamp exists and is a date
+    return (loginTimestamp && !isNaN(new Date(loginTimestamp)));
   }
 
   function getTimeLeftUntilExpiry() {
     // calculates how long left in session, before final timeout, after each request
     let expiry_time = new Date();
     expiry_time.setMinutes(
-      loggedInAt().getMinutes() + timeout_warning_mins
+      loginTimestamp.getMinutes() + timeout_warning_mins
     );
     let current_time = new Date();
     return expiry_time - current_time;
@@ -41,54 +34,50 @@ const timeout_warning_mins = 58; // Minutes until popup displayed warning user o
     );
   }
 
-  function startInactivityTimeout() {
+  function startInactivityTimeout(inactivity_dialog) {
     // Initial timeout that is restarted by request activity
-    if (displayInactivityPopup()) {
-      inactivity_dialog = setTimeout(function () {
-        if (checkLocalStorage()) {
-          lastActiveTimeout();
+    if (displayInactivityPopup(inactivity_dialog)) {
+      inactivity_dialog_displayed = setTimeout(function () {
+        if (checkLocalStorage()) { // if last activity was less than set time ago,
+          lastActiveTimeout(inactivity_dialog);
         } else {
-          const inactivity_popup = document.getElementById("activity");
-          inactivity_popup.showModal();
-          startInactivityPopupTimeout();
+          inactivity_dialog.showModal();
+          startInactivityPopupTimeout(inactivity_dialog);
         }
       }, 1000 * 60 * inactivity_mins);
     }
   }
 
-  function resetTimeouts() {
+  function resetTimeouts(inactivity_dialog) {
     // If stay signed in button is clicked then activity timeout is restarted
     const staySignedInButton = document.getElementById(
       "hmrc-timeout-keep-signin-btn"
     );
-    const inactivity_popup = document.getElementById("activity");
     if (staySignedInButton) {
       staySignedInButton.addEventListener("click", function () {
-        clearTimeout(inactivity_dialog);
+        clearTimeout(inactivity_dialog_displayed);
         clearTimeout(inactivity_logout);
-        inactivity_popup.close();
-        startInactivityTimeout();
+        inactivity_dialog.close();
+        startInactivityTimeout(inactivity_dialog);
       });
     }
   }
 
-  function startInactivityPopupTimeout() {
-    const inactivity_popup = document.getElementById("activity");
+  function startInactivityPopupTimeout(inactivity_dialog) {
     // Logs user out if no response when the inactivity popup shows
     inactivity_logout = setTimeout(function () {
-      inactivity_popup.close();
+      inactivity_dialog.close();
       signOutRedirect();
     }, 1000 * 60 * initial_warning_mins);
   }
 
-  function sessionExpiryPopup() {
+  function sessionExpiryPopup(session_expiry_dialog) {
     // displays session expiry popup after timeout
-    const session_expiry_popup = document.getElementById("expiry");
     if (isLoggedIn()) {
       inactivity_logout = setTimeout(function () {
-        if (session_expiry_popup)
+        if (session_expiry_dialog)
         {
-          session_expiry_popup.showModal();
+          session_expiry_dialog.showModal();
         }
       }, getTimeLeftUntilExpiry());
     }
@@ -103,18 +92,17 @@ const timeout_warning_mins = 58; // Minutes until popup displayed warning user o
     // Checking local storage for any activity in other tabs
     let lastActive = new Date(localStorage.getItem("lastActivity"));
     let time = new Date();
-    return (time - lastActive) < (inactivity_mins * 60 * 1000);
+    return ((time - lastActive) < (inactivity_mins * 60 * 1000));
   }
 
-  function lastActiveTimeout() {
+  function lastActiveTimeout(inactivity_dialog) {
     // If activity in another tab, inactivity timeout period adjusted
-    const inactivity_popup = document.getElementById("activity");
     let time = new Date();
     let lastActive = new Date(localStorage.getItem("lastActivity"));
     setTimeout(() => {
-      inactivity_popup.showModal();
-      startInactivityPopupTimeout();
-    }, inactivity_mins * 60 * 1000 - (time - lastActive));
+      inactivity_dialog.showModal();
+      startInactivityPopupTimeout(inactivity_dialog);
+    }, (inactivity_mins * 60 * 1000) - (time - lastActive));
   }
 
   function signOutRedirect() {
@@ -132,9 +120,9 @@ const timeout_warning_mins = 58; // Minutes until popup displayed warning user o
   }
 
   updateLocalStorage();
-  sessionExpiryPopup();
-  startInactivityTimeout();
-  resetTimeouts();
+  sessionExpiryPopup(session_expiry_dialog);
+  startInactivityTimeout(inactivity_dialog);
+  resetTimeouts(inactivity_dialog);
 
   window.GOVUK.startInactivityTimeout = startInactivityTimeout;
   window.GOVUK.sessionExpiryPopup = sessionExpiryPopup;
@@ -143,6 +131,7 @@ const timeout_warning_mins = 58; // Minutes until popup displayed warning user o
   window.GOVUK.updateLocalStorage = updateLocalStorage;
   window.GOVUK.inactivity_mins = inactivity_mins;
   window.GOVUK.timeout_warning_mins = timeout_warning_mins;
+  window.GOVUK.initial_warning_mins = initial_warning_mins;
   window.GOVUK.isLoggedIn = isLoggedIn;
 
 })(window);
