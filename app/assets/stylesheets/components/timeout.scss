@@ -12,6 +12,11 @@
     width: 280px;
     z-index: 1002;
   }
+
+  &-dialog::backdrop {
+    background-color: rgba(64, 64, 64, 0.8);
+  }
+
   @media (min-width:40.0625em) {
     &-dialog {
       width: 435px;
