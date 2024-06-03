@@ -33,10 +33,11 @@
 {% if coordinate_type == 'latitude_longitude' %}
   {% set label1 = 'Latitude' %}
   {% set label2 = 'Longitude' %}
-  {% set error = "The latitude and longitude must be within the UK" %}
+  {% set unique_errors = ["The latitude and longitude must be within the UK", "No local authority found for the latitude, longitude entered. Enter a different latitude, longitude"] %}
 {% elif coordinate_type == 'easting_northing' %}
   {% set label1 = 'Eastings' %}
   {% set label2 = 'Northings' %}
+  {% set unique_errors = ["The easting and northing must be within the UK", "No local authority found for the easting, northing entered. Enter a different easting, northing"] %}
   {% set error = "The easting and northing must be within the UK" %}
 {% endif %}
 
@@ -47,7 +48,7 @@
   {% set errors_to_display = [] %}
   {% for field_name, error_list in form.errors.items() %}
     {% if field_name %}
-      {% if error_list[0] == error %}
+      {% if error_list[0] in unique_errors %}
         {% if error_list[0] not in errors_to_display %}
           {% set _ = errors.append({"href": "#" + form[field_name].id, "text": error_list[0]}) %}
           {% do errors_to_display.append(error_list[0]) %}
