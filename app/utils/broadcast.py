@@ -2,7 +2,8 @@ import pyproj
 from flask import render_template, url_for
 from postcode_validator.uk.uk_postcode_validator import UKPostcode
 from shapely import Point
-from shapely.geometry import MultiPolygon, Polygon
+from shapely.geometry import Polygon
+from shapely.ops import unary_union
 
 from app.broadcast_areas.models import CustomBroadcastArea
 from app.formatters import round_to_significant_figures
@@ -47,24 +48,36 @@ def create_coordinate_area(lat, lng, radius, type):
 
 def check_coordinates_valid_for_enclosed_polygons(message, lat, lng, type):
     in_polygon = []
-    polygons_to_check = message.libraries.get_areas(
+    buffer = 0.5  # in kilometres
+    uk_countries = message.libraries.get_areas(
         [
             "ctry19-E92000001",
             "ctry19-N92000002",
             "ctry19-S92000003",
             "ctry19-W92000004",
+        ]
+    )
+    test_areas = message.libraries.get_areas(
+        [
             "test-santa-claus-village-rovaniemi-a",
             "test-santa-claus-village-rovaniemi-b",
             "test-santa-claus-village-rovaniemi-c",
             "test-santa-claus-village-rovaniemi-d",
         ]
     )
-
-    for polygon in polygons_to_check:
-        polygon_list = [Polygon(p) for p in polygon.polygons.polygons]
-        shapely_polygon = MultiPolygon(polygon_list)
+    # instead need to add buffer to each polygon and combine
+    polygons_to_check = [uk_countries, test_areas]
+    for group in polygons_to_check:
+        polygons = []
+        for area in group:
+            polygons.extend([Polygon(p).buffer(buffer) for p in area.polygons.polygons])
+        combined_polygon = unary_union(polygons)
+        shapely_polygon = Polygon(combined_polygon)
         normalized_center = normalising_point(lat, lng, type)
         in_polygon.append(shapely_polygon.contains(normalized_center))
+        # geojson = json.dumps(mapping(shapely_polygon))
+        # with open('countries.geojson', 'w') as f:
+        #     f.write(geojson)
     return any(in_polygon)
 
 
