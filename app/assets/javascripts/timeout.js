@@ -1,6 +1,6 @@
-const inactivity_mins = 28; // Minutes until first popup displayed
-const initial_warning_mins = 2; // Minutes until logout if no response after popup displayed
-const timeout_warning_mins = 58; // Minutes until popup displayed warning user of end of session
+const inactivity_mins = 1; // Minutes until first popup displayed
+const initial_warning_mins = 0.6; // Minutes until logout if no response after popup displayed
+const timeout_warning_mins = 2; // Minutes until popup displayed warning user of end of session
 let inactivity_logout;
 let inactivity_dialog = document.getElementById("activity");
 let session_expiry_dialog = document.getElementById("expiry");
