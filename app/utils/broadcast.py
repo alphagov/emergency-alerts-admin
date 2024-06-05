@@ -2,7 +2,7 @@ import pyproj
 from flask import render_template, url_for
 from postcode_validator.uk.uk_postcode_validator import UKPostcode
 from shapely import Point
-from shapely.geometry import Polygon
+from shapely.geometry import MultiPolygon, Polygon
 from shapely.ops import unary_union
 
 from app.broadcast_areas.models import CustomBroadcastArea
@@ -64,14 +64,16 @@ def check_coordinates_valid_for_enclosed_polygons(message, lat, lng, type):
             "test-santa-claus-village-rovaniemi-d",
         ]
     )
-    # instead need to add buffer to each polygon and combine
     polygons_to_check = [uk_countries, test_areas]
     for group in polygons_to_check:
         polygons = []
         for area in group:
             polygons.extend([Polygon(p).buffer(0.25) for p in area.polygons.polygons])
         combined_polygon = unary_union(polygons)
-        shapely_polygon = Polygon(combined_polygon)
+        if isinstance(combined_polygon, MultiPolygon):
+            shapely_polygon = MultiPolygon(combined_polygon)
+        else:
+            shapely_polygon = Polygon(combined_polygon)
         normalized_center = normalising_point(lat, lng, type)
         in_polygon.append(shapely_polygon.contains(normalized_center))
     return any(in_polygon)
