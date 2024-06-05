@@ -48,7 +48,6 @@ def create_coordinate_area(lat, lng, radius, type):
 
 def check_coordinates_valid_for_enclosed_polygons(message, lat, lng, type):
     in_polygon = []
-    buffer = 0.5  # in kilometres
     uk_countries = message.libraries.get_areas(
         [
             "ctry19-E92000001",
@@ -70,14 +69,11 @@ def check_coordinates_valid_for_enclosed_polygons(message, lat, lng, type):
     for group in polygons_to_check:
         polygons = []
         for area in group:
-            polygons.extend([Polygon(p).buffer(buffer) for p in area.polygons.polygons])
+            polygons.extend([Polygon(p).buffer(0.25) for p in area.polygons.polygons])
         combined_polygon = unary_union(polygons)
         shapely_polygon = Polygon(combined_polygon)
         normalized_center = normalising_point(lat, lng, type)
         in_polygon.append(shapely_polygon.contains(normalized_center))
-        # geojson = json.dumps(mapping(shapely_polygon))
-        # with open('countries.geojson', 'w') as f:
-        #     f.write(geojson)
     return any(in_polygon)
 
 
