@@ -22,9 +22,9 @@ def test_simple_polygons():
         broadcast_message_json(
             area_ids=[
                 # Hackney Central
-                "wd21-E05009372",
+                "wd23-E05009372",
                 # Hackney Wick
-                "wd21-E05009374",
+                "wd23-E05009374",
             ],
         )
     )
@@ -51,7 +51,7 @@ def test_content_comes_from_attribute_not_template():
     ("areas", "expected_length"),
     [
         ({"ids": []}, 0),
-        ({"ids": ["wd21-E05009372"]}, 1),
+        ({"ids": ["wd23-E05009372"]}, 1),
         ({"no data": "just created"}, 0),
         ({"names": ["somewhere"], "simple_polygons": [[[3.5, 1.5]]]}, 1),
     ],
@@ -95,21 +95,21 @@ def test_areas_treats_missing_ids_as_custom_broadcast(notify_admin):
         ),
         (
             [
-                "lad21-E06000031",  # Peterborough (UTM zone 30N)
-                "lad21-E07000146",  # Kings Lyn and West Norfolk (UTM zone 31N)
+                "lad23-E06000031",  # Peterborough (UTM zone 30N)
+                "lad23-E07000146",  # Kings Lyn and West Norfolk (UTM zone 31N)
             ],
             [-0.5, 52.5, 0.8, 53.0],
         ),
         (
             [
-                "wd21-E05009372",  # Hackney Central (UTM zone 30N)
-                "wd21-E05009374",  # Hackney Wick (UTM zone 30N)
+                "wd23-E05009372",  # Hackney Central (UTM zone 30N)
+                "wd23-E05009374",  # Hackney Wick (UTM zone 30N)
             ],
             [-0.1, 51.5, -0.0, 51.6],
         ),
         (
             [
-                "wd21-E05009372",  # Hackney Central (UTM zone 30N)
+                "wd23-E05009372",  # Hackney Central (UTM zone 30N)
                 "test-santa-claus-village-rovaniemi-a",  # (UTM zone 35N)
             ],
             [-0.1, 51.5, 25.9, 66.6],

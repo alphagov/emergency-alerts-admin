@@ -163,7 +163,7 @@ def estimate_number_of_smartphones_in_area(country_or_ward_code):
     # For some reason Bryher is the only ward missing population data, so we
     # need to hard code it. For simplicity, let’s assume all 84 people who
     # live on Bryher are 40 years old
-    if country_or_ward_code == BRYHER.WD21_CODE:
+    if country_or_ward_code == BRYHER.WD23_CODE:
         return BRYHER.POPULATION * SMARTPHONE_OWNERSHIP_BY_AGE_RANGE[MEDIAN_AGE_RANGE_UK]
 
     if country_or_ward_code not in area_to_population_mapping:
@@ -188,7 +188,7 @@ ctyua23_filepath = source_files_path / "Counties_and_Unitary_Authorities_(Decemb
 pfa23_filepath = source_files_path / "Police_Force_Areas_(December_2023)_EW_BGC.geojson"
 
 # https://geoportal.statistics.gov.uk/documents/ward-to-local-authority-district-december-2021-lookup-in-the-united-kingdom/about
-wd_lad_map_filepath = source_files_path / "WD21_LAD21_UK_LU.csv"
+wd_lad_map_filepath = source_files_path / "WD23_LAD23_UK_LU.csv"
 
 # https://geoportal.statistics.gov.uk/datasets/ons::lower-tier-local-authority-to-upper-tier-local-authority-april-2021-lookup-in-england-and-wales/explore
 ltla_utla_map_filepath = (
@@ -198,20 +198,24 @@ ltla_utla_map_filepath = (
 
 # https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/populationandmigration/populationestimates/datasets/wardlevelmidyearpopulationestimatesexperimental/mid2020sape23dt8a/wards210120popest.zip
 # Munged using https://docs.google.com/spreadsheets/d/1gR50P0l02Fz7ZH7EwZI87F3axDbNp6oIDDnkKYgWEpA/edit#gid=2092678703
-population_filepath_england_wales = source_files_path / "Mid-2020_Persons_England_Wales_(2023_wards).csv"
+population_filepath_england_wales = source_files_path / "Mid-2022_Persons_England_Wales_(2023_wards).csv"
 
 # https://www.nrscotland.gov.uk/statistics-and-data/statistics/statistics-by-theme/population/population-estimates/2011-based-special-area-population-estimates/electoral-ward-population-estimates
 population_filepath_scotland = source_files_path / "Mid-2021_Persons_Scotland_(2022_wards).csv"
 population_filepath_northern_ireland = source_files_path / "Ward-2014_Northern_Ireland.csv"
-population_filepath_uk = source_files_path / "MYE1-2023.csv"
+population_filepath_uk = source_files_path / "MYE1-2022.csv"
 
 
-ward_code_to_la_mapping = {row["WD23CD"]: row["LAD23NM"] for row in csv.DictReader(wd_lad_map_filepath.open())}
-ward_code_to_la_id_mapping = {row["WD23CD"]: row["LAD23CD"] for row in csv.DictReader(wd_lad_map_filepath.open())}
+ward_code_to_la_mapping = {
+    row["WD23CD"]: row["LAD23NM"] for row in csv.DictReader(wd_lad_map_filepath.open(encoding="utf-8-sig"))
+}
+ward_code_to_la_id_mapping = {
+    row["WD23CD"]: row["LAD23CD"] for row in csv.DictReader(wd_lad_map_filepath.open(encoding="utf-8-sig"))
+}
 
 
 # the mapping dict is empty for lower tier local authorities that are also upper tier (unitary authorities, etc)
-ltla_utla_mapping_csv = csv.DictReader(ltla_utla_map_filepath.open())
+ltla_utla_mapping_csv = csv.DictReader(ltla_utla_map_filepath.open(encoding="utf-8-sig"))
 la_code_to_cty_id_mapping = {
     row["LTLA23CD"]: row["UTLA23CD"] for row in ltla_utla_mapping_csv if row["LTLA23CD"] != row["UTLA23CD"]
 }
@@ -224,7 +228,7 @@ for population_filepath in (
     population_filepath_northern_ireland,
     population_filepath_scotland,
 ):
-    area_to_population_csv = csv.DictReader(population_filepath.open())
+    area_to_population_csv = csv.DictReader(population_filepath.open(encoding="utf-8-sig"))
     for row in area_to_population_csv:
         area_to_population_mapping[row["ward"]] = [
             (int(k) if k.isnumeric() else MEDIAN_AGE_UK, int(float(v.replace(",", "") or "0")))
@@ -369,7 +373,7 @@ def add_police_force_areas():
 def add_wards_local_authorities_and_counties():
     dataset_name = "Local authorities"
     dataset_name_singular = "local authority"
-    dataset_id = "wd21-lad21-ctyua21"
+    dataset_id = "wd23-lad23-ctyua23"
     repo.insert_broadcast_area_library(
         dataset_id,
         name=dataset_name,
@@ -453,9 +457,8 @@ def _add_counties_and_unitary_authorities(dataset_id):
         ctyua_id = feature["properties"]["CTYUA23CD"]
         group_name = feature["properties"]["CTYUA23NM"]
 
-        la_id = "lad23-" + ctyua_id
-        if repo.get_areas([la_id]):
-            continue
+        print()
+        print(group_name)
 
         group_id = "ctyua23-" + ctyua_id
 

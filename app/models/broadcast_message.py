@@ -18,7 +18,7 @@ from app.models import JSONModel, ModelList
 from app.models.user import User
 from app.notify_client.broadcast_message_api_client import broadcast_message_api_client
 
-ESTIMATED_AREA_OF_LARGEST_UK_COUNTY = broadcast_area_libraries.get_areas(["ctyua21-E10000023"])[  # North Yorkshire
+ESTIMATED_AREA_OF_LARGEST_UK_COUNTY = broadcast_area_libraries.get_areas(["ctyua23-E06000065"])[  # North Yorkshire
     0
 ].polygons.estimated_area
 
