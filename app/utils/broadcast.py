@@ -68,8 +68,9 @@ def check_coordinates_valid_for_enclosed_polygons(message, lat, lng, type):
     for group in polygons_to_check:
         polygons = []
         for area in group:
+            # Extending polygons list by a list of polygons from those areas, with a buffer of 0.25 degrees
             polygons.extend([Polygon(p).buffer(0.25) for p in area.polygons.polygons])
-        combined_polygon = unary_union(polygons)
+        combined_polygon = unary_union(polygons)  # Calculating unary union of buffered polygons
         if isinstance(combined_polygon, MultiPolygon):
             shapely_polygon = MultiPolygon(combined_polygon)
         else:
