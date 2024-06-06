@@ -457,6 +457,10 @@ def _add_counties_and_unitary_authorities(dataset_id):
         ctyua_id = feature["properties"]["CTYUA23CD"]
         group_name = feature["properties"]["CTYUA23NM"]
 
+        la_id = f"lad23-{ctyua_id}"
+        if repo.get_areas([la_id]):
+            continue
+
         print()
         print(group_name)
 
