@@ -409,7 +409,6 @@ def test_count_of_phones_for_custom_area(
         polygons=[polygon],
     )
 
-    print(expected_count_of_phones, area.count_of_phones)
     assert sorted(overlap.name for overlap in area.nearby_electoral_wards) == expected_possible_overlaps
 
     assert close_enough(area.count_of_phones, expected_count_of_phones)

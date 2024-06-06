@@ -1020,8 +1020,6 @@ def test_preview_broadcast_areas_page(
         broadcast_message_id=fake_uuid,
     )
 
-    # print(page)
-
     assert [normalize_spaces(item.text) for item in page.select("ul.area-list li.area-list-item")] == areas_listed
 
     assert len(page.select("#area-list-map")) == 1
