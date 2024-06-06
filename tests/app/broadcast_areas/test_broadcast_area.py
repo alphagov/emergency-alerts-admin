@@ -36,7 +36,7 @@ def test_loads_libraries():
             True,
         ),
         (
-            "pfa20",
+            "pfa23",
             "Police forces in England and Wales",
             False,
         ),
@@ -67,7 +67,7 @@ def test_examples():
     assert countries == "England, Northern Ireland, Scotland and Wales"
 
     wards = broadcast_area_libraries.get("wd23-lad23-ctyua23").get_examples()
-    assert wards == "Aberdeen City, Aberdeenshire, Adur and 395 more…"
+    assert wards == "Aberdeen City, Aberdeenshire, Adur and 379 more…"
 
 
 @pytest.mark.parametrize(
@@ -140,14 +140,14 @@ def test_electoral_wards_are_groupable_cardiff():
     areas = broadcast_area_libraries.get_areas(["lad23-W06000015"])
     assert len(areas) == 1
     cardiff = areas[0]
-    assert len(cardiff.sub_areas) == 29
+    assert len(cardiff.sub_areas) == 28
 
 
 def test_electoral_wards_are_groupable_ealing():
     areas = broadcast_area_libraries.get_areas(["lad23-E09000009"])
     assert len(areas) == 1
     ealing = areas[0]
-    assert len(ealing.sub_areas) == 23
+    assert len(ealing.sub_areas) == 24
 
 
 def test_repository_has_all_libraries():
@@ -181,30 +181,30 @@ def test_every_area_has_count_of_phones(library):
     "area_id, area_name, expected_count",
     (
         # Unitary authority
-        ("ctyua23-E10000014", "Hampshire", 978_280.52),
+        ("ctyua23-E10000014", "Hampshire", 1_006_824.87),
         # District
-        ("lad23-E07000087", "Fareham", 81_462.75),
+        ("lad23-E07000087", "Fareham", 80_028.62000000001),
         # Ward
-        ("wd23-E05004516", "Fareham East", 5_652.1),
+        ("wd23-E05004516", "Fareham East", 5_383.320000000001),
         # Unitary authority
-        ("lad23-E09000012", "Hackney", 219_848.91),
+        ("lad23-E09000012", "Hackney", 208_390.13000000003),
         # Ward
-        ("wd23-E05009373", "Hackney Downs", 11_165.240000000002),
+        ("wd23-E05009373", "Hackney Downs", 10_449.059999999998),
         # Special case: ward with hard-coded population
         ("wd23-E05011090", "Bryher", 76.44),
         # Areas with missing data
-        ("lad23-E07000008", "Cambridge", 96_863.51000000001),
-        ("lad23-E07000084", "Basingstoke and Deane", 12_7996.77000000002),
-        ("lad23-E07000118", "Chorley", 84_910.93000000002),
-        ("lad23-E07000178", "Oxford", 11_8197.16),
+        ("lad23-E07000008", "Cambridge", 118_198.88),
+        ("lad23-E07000084", "Basingstoke and Deane", 137_302.38),
+        ("lad23-E07000118", "Chorley", 84_921.76999999999),
+        ("lad23-E07000178", "Oxford", 130_069.15999999999),
         # In Scotland
-        ("lad23-S12000013", "Na h-Eileanan Siar", 9_212.5),
-        ("wd23-S13002600", "Barraigh, Bhatarsaigh, Eirisgeigh agus Uibhist a Deas", 1_010.32),
+        ("lad23-S12000013", "Na h-Eileanan Siar", 18_430.030000000002),
+        ("wd23-S13003135", "Barraigh agus Bhatarsaigh", 893.0300000000001),
         # In Wales
-        ("lad23-W06000021", "Monmouthshire", 65_870.19000000003),
-        ("wd23-W05000815", "Mitchel Troy", 811.26),
+        ("lad23-W06000021", "Monmouthshire", 64_997.89000000001),
+        ("wd23-W05001785", "Mitchel Troy and Trellech United", 2_431.44),
         # In Northern Ireland
-        ("lad23-N09000005", "Derry City and Strabane", 132917.33000000005),
+        ("lad23-N09000005", "Derry City and Strabane", 132_917.33000000005),
         ("wd23-N08000508", "City Walls", 3_129.4900000000002),
     ),
 )
@@ -287,7 +287,7 @@ def test_estimate_number_of_smartphones_for_population(
         (
             # Islington (most dense in UK)
             "lad23-E09000019",
-            33_204,
+            29_595,
         ),
         (
             # Cordwainer Ward (City of London)
@@ -299,17 +299,17 @@ def test_estimate_number_of_smartphones_for_population(
         (
             # Crewe East
             "wd23-E05008621",
-            3_272,
+            3_500,
         ),
         (
-            # Eden (Cumbria, least dense in England)
-            "lad23-E07000030",
-            43.48,
+            # Eden (Cumbria)
+            "wd23-E05005317",
+            303.4,
         ),
         (
             # Highland (least dense in UK)
             "lad23-S12000017",
-            6.97,
+            14.23,
         ),
     ),
 )
@@ -340,17 +340,17 @@ def test_phone_density(
         (
             # Crewe East
             "wd23-E05008621",
-            1_506,
+            1_471,
         ),
         (
             # Eden (Cumbria, least dense in England)
-            "lad23-E07000030",
-            3_852,
+            "wd23-E05005317",
+            2_799,
         ),
         (
             # Highland (least dense in UK)
             "lad23-S12000017",
-            4_846,
+            4_462,
         ),
         (
             # No population data available
@@ -385,17 +385,17 @@ def test_estimated_bleed(area, expected_bleed_in_m):
                 "Stoke Bishop",
                 "Windmill Hill",
             ],
-            74_224,
+            72_748,
         ),
         (
             SKYE,
             [
                 "Caol and Mallaig",
                 "Eilean á Chèo",
-                "Na Hearadh agus Ceann a Deas nan Loch",
+                "Na Hearadh",
                 "Wester Ross, Strathpeffer and Lochalsh",
             ],
-            3_413,
+            6_939,
         ),
     ),
 )
@@ -409,6 +409,7 @@ def test_count_of_phones_for_custom_area(
         polygons=[polygon],
     )
 
+    print(expected_count_of_phones, area.count_of_phones)
     assert sorted(overlap.name for overlap in area.nearby_electoral_wards) == expected_possible_overlaps
 
     assert close_enough(area.count_of_phones, expected_count_of_phones)

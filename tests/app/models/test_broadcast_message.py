@@ -38,7 +38,7 @@ def test_simple_polygons():
         # Because the areas are close to each other, the simplification
         # and unioning process results in a single polygon with fewer
         # total coordinates
-        [58],
+        [57],
     ]
 
 
