@@ -193,6 +193,10 @@
   <!--[if gt IE 8]><!-->
   <script>
     let logged_in_at = "{{session.get('session_start_utc')}}" // Created for inactivity and expiry dialogs
+    let permanent_session_lifetime = "{{config.get('PERMANENT_SESSION_LIFETIME')}}"
+    let inactivity_mins = "{{config.get('INACTIVITY_MINS')}}"
+    let expiry_warning_mins = "{{config.get('EXPIRY_WARNING_MINS')}}"
+    let inactivity_warning_duration = "{{config.get('INACTIVITY_WARNING_DURATION')}}"
   </script>
   <script type="text/javascript" src="{{ asset_url('javascripts/all.js') }}"></script>
   <!--<![endif]-->

@@ -100,6 +100,10 @@ class Config(object):
 
     NOTIFY_RUNTIME_PLATFORM = os.environ.get("NOTIFY_RUNTIME_PLATFORM", "paas")
 
+    INACTIVITY_MINS = os.environ.get("INACTIVITY_MINS", 0.5)
+    EXPIRY_WARNING_MINS = os.environ.get("EXPIRY_WARNING_MINS", 2)
+    INACTIVITY_WARNING_DURATION = os.environ.get("INACTIVITY_WARNING_DURATION", 0.5)
+
 
 class Hosted(Config):
     HOST = "hosted"

@@ -1,6 +1,7 @@
-const inactivityMins = 1; // Minutes until first popup displayed
-const inactivityWarningDisplayedDuration = 0.6; // Minutes until logout if no response after popup displayed
-const expiryWarningMins = 2; // Minutes until popup displayed warning user of end of session
+const inactivityMins = Number(inactivity_mins); // Minutes until first popup displayed
+const inactivityWarningDisplayedDuration = Number(inactivity_warning_duration); // Minutes until logout if no response after popup displayed
+const expiryWarningMins = Number(expiry_warning_mins); // Minutes until popup displayed warning user of end of session
+const sessionExpiryMins = Number(permanent_session_lifetime);
 let inactivityLogoutTimeout;
 let lastActiveTimeout;
 
