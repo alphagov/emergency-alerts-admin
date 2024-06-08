@@ -63,49 +63,49 @@ class BRYHER:
 
 POLICE_FORCE_AREAS = {
     # Estimated by calculating the overlap with electoral wards
-    "pfa23-E23000001": 5499865,  # Metropolitan Police
-    "pfa23-E23000002": 347193,  # Cumbria
-    "pfa23-E23000003": 931068,  # Lancashire
-    "pfa23-E23000004": 1035309,  # Merseyside
-    "pfa23-E23000005": 1900035,  # Greater Manchester
-    "pfa23-E23000006": 667818,  # Cheshire
-    "pfa23-E23000007": 1055281,  # Northumbria
-    "pfa23-E23000008": 458019,  # Durham
-    "pfa23-E23000009": 591255,  # North Yorkshire
-    "pfa23-E23000010": 1712333,  # West Yorkshire
-    "pfa23-E23000011": 843372,  # South Yorkshire
-    "pfa23-E23000012": 660480,  # Humberside
-    "pfa23-E23000013": 340795,  # Cleveland
-    "pfa23-E23000014": 2156825,  # West Midlands
-    "pfa23-E23000015": 819624,  # Staffordshire
-    "pfa23-E23000016": 917312,  # West Mercia
-    "pfa23-E23000017": 420089,  # Warwickshire
-    "pfa23-E23000018": 764621,  # Derbyshire
-    "pfa23-E23000019": 854309,  # Nottinghamshire
-    "pfa23-E23000020": 469432,  # Lincolnshire
-    "pfa23-E23000021": 807566,  # Leicestershire
-    "pfa23-E23000022": 545165,  # Northamptonshire
-    "pfa23-E23000023": 361479,  # Cambridgeshire
-    "pfa23-E23000024": 634492,  # Norfolk
-    "pfa23-E23000025": 529853,  # Suffolk
-    "pfa23-E23000026": 492654,  # Bedfordshire
-    "pfa23-E23000027": 825700,  # Hertfordshire
-    "pfa23-E23000028": 1842426,  # Essex
-    "pfa23-E23000029": 1255799,  # Thames Valley
-    "pfa23-E23000030": 1287584,  # Hampshire
-    "pfa23-E23000031": 863499,  # Surrey
-    "pfa23-E23000032": 1322246,  # Kent
-    "pfa23-E23000033": 868383,  # Sussex
-    "pfa23-E23000034": 528943,  # London, City of
-    "pfa23-E23000035": 1360980,  # Devon & Cornwall
-    "pfa23-E23000036": 1245304,  # Avon and Somerset
-    "pfa23-E23000037": 405117,  # Gloucestershire
-    "pfa23-E23000038": 516349,  # Wiltshire
-    "pfa23-E23000039": 530412,  # Dorset
-    "pfa23-W15000001": 486462,  # North Wales
-    "pfa23-W15000002": 426139,  # Gwent
-    "pfa23-W15000003": 978408,  # South Wales
-    "pfa23-W15000004": 357392,  # Dyfed-Powys
+    "pfa23-E23000001": 5517388,  # Metropolitan Police
+    "pfa23-E23000002": 354402,  # Cumbria
+    "pfa23-E23000003": 1166837,  # Lancashire
+    "pfa23-E23000004": 1067017,  # Merseyside
+    "pfa23-E23000005": 2168460,  # Greater Manchester
+    "pfa23-E23000006": 825927,  # Cheshire
+    "pfa23-E23000007": 1072422,  # Northumbria
+    "pfa23-E23000008": 468765,  # Durham
+    "pfa23-E23000009": 623984,  # North Yorkshire
+    "pfa23-E23000010": 1759386,  # West Yorkshire
+    "pfa23-E23000011": 1030290,  # South Yorkshire
+    "pfa23-E23000012": 679111,  # Humberside
+    "pfa23-E23000013": 417438,  # Cleveland
+    "pfa23-E23000014": 2195745,  # West Midlands
+    "pfa23-E23000015": 867787,  # Staffordshire
+    "pfa23-E23000016": 981758,  # West Mercia
+    "pfa23-E23000017": 477813,  # Warwickshire
+    "pfa23-E23000018": 803403,  # Derbyshire
+    "pfa23-E23000019": 870605,  # Nottinghamshire
+    "pfa23-E23000020": 492067,  # Lincolnshire
+    "pfa23-E23000021": 845016,  # Leicestershire
+    "pfa23-E23000022": 591008,  # Northamptonshire
+    "pfa23-E23000023": 383211,  # Cambridgeshire
+    "pfa23-E23000024": 668357,  # Norfolk
+    "pfa23-E23000025": 551565,  # Suffolk
+    "pfa23-E23000026": 534825,  # Bedfordshire
+    "pfa23-E23000027": 853966,  # Hertfordshire
+    "pfa23-E23000028": 1519509,  # Essex
+    "pfa23-E23000029": 1904724,  # Thames Valley
+    "pfa23-E23000030": 1488297,  # Hampshire
+    "pfa23-E23000031": 915403,  # Surrey
+    "pfa23-E23000032": 1359696,  # Kent
+    "pfa23-E23000033": 889827,  # Sussex
+    "pfa23-E23000034": 530154,  # London, City of
+    "pfa23-E23000035": 1386440,  # Devon & Cornwall
+    "pfa23-E23000036": 1293970,  # Avon and Somerset
+    "pfa23-E23000037": 472878,  # Gloucestershire
+    "pfa23-E23000038": 545357,  # Wiltshire
+    "pfa23-E23000039": 558286,  # Dorset
+    "pfa23-W15000001": 494828,  # North Wales
+    "pfa23-W15000002": 431486,  # Gwent
+    "pfa23-W15000003": 982699,  # South Wales
+    "pfa23-W15000004": 374541,  # Dyfed-Powys
 }
 
 
