@@ -163,11 +163,14 @@ class CustomBroadcastArea(BaseBroadcastArea):
     @cached_property
     def local_authority(self):
         centroid = Polygon(self.polygons[0]).centroid
-        for area in self.nearby_electoral_wards:
-            if Polygon(area.simple_polygons[0]).contains(centroid):
-                local_authority = area.parent.name
-                break
-        return local_authority or None
+        return next(
+            (
+                area.parent.name
+                for area in self.nearby_electoral_wards
+                if Polygon(area.simple_polygons[0]).contains(centroid)
+            ),
+            None,
+        )
 
     @cached_property
     def nearby_electoral_wards(self):
