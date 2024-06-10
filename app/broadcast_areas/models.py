@@ -5,6 +5,7 @@ from emergency_alerts_utils.formatters import formatted_list
 from emergency_alerts_utils.polygons import Polygons
 from emergency_alerts_utils.serialised_model import SerialisedModelCollection
 from rtreelib import Rect
+from shapely import Polygon
 from werkzeug.utils import cached_property
 
 from app.formatters import square_metres_to_square_miles
@@ -161,17 +162,11 @@ class CustomBroadcastArea(BaseBroadcastArea):
 
     @cached_property
     def local_authority(self):
-        """
-        The nearby electoral wards are iterated through and ratio of intersection with polygon is calculated.
-        These values are added to a dictionary that is then sorted and the electoral ward returned, the local
-        authority returned by the function is the parent of the ward with the greatest intersection with polygon.
-        """
-        if self.nearby_electoral_wards:
-            intersection_dict = {
-                area: self.polygons.ratio_of_intersection_with(area.simple_polygons)
-                for area in self.nearby_electoral_wards
-            }
-            local_authority = sorted(intersection_dict.items(), key=lambda x: x[1], reverse=True)[0][0].parent.name
+        centroid = Polygon(self.polygons[0]).centroid
+        for area in self.nearby_electoral_wards:
+            if Polygon(area.simple_polygons[0]).contains(centroid):
+                local_authority = area.parent.name
+                break
         return local_authority or None
 
     @cached_property
