@@ -13,7 +13,6 @@ from app import (
     complaint_api_client,
     format_date_numeric,
     notification_api_client,
-    platform_stats_api_client,
     service_api_client,
     user_api_client,
 )
@@ -88,12 +87,7 @@ def platform_admin():
         api_args["start_date"] = form.start_date.data
         api_args["end_date"] = form.end_date.data or datetime.utcnow().date()
 
-    platform_stats = platform_stats_api_client.get_aggregate_platform_stats(api_args)
-    number_of_complaints = complaint_api_client.get_complaint_count(api_args)
-
-    return render_template(
-        "views/platform-admin/index.html", form=form, global_stats=make_columns(platform_stats, number_of_complaints)
-    )
+    return render_template("views/platform-admin/index.html", form=form)
 
 
 def is_over_threshold(number, total, threshold):
