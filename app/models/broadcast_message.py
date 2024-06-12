@@ -221,18 +221,27 @@ class BroadcastMessage(JSONModel):
     @cached_property
     def count_of_phones_likely(self):
         estimated_area = self.simple_polygons.estimated_area
+        count_of_phones = self.count_of_phones
 
-        if estimated_area > ESTIMATED_AREA_OF_LARGEST_UK_COUNTY:
-            # For large areas, use a naïve but computationally less
-            # expensive way of counting the number of phones in the
-            # bleed area
-            count = self.count_of_phones * (self.simple_polygons_with_bleed.estimated_area / estimated_area)
-        else:
+        def naive_estimate():
+            return count_of_phones * (self.simple_polygons_with_bleed.estimated_area / estimated_area)
+
+        def intersecting_estimate():
+            return CustomBroadcastArea.from_polygon_objects(self.simple_polygons_with_bleed).count_of_phones
+
+        if estimated_area <= ESTIMATED_AREA_OF_LARGEST_UK_COUNTY:
             # For smaller areas, where the computation can be done in
             # a second or less (approximately) calculate the number of
             # phones based on the ammount of overlap with areas for
             # which we have population data
-            count = CustomBroadcastArea.from_polygon_objects(self.simple_polygons_with_bleed).count_of_phones
+            count = intersecting_estimate()
+            if count < count_of_phones:
+                count = naive_estimate()
+        else:
+            # For large areas, use a naïve but computationally less
+            # expensive way of counting the number of phones in the
+            # bleed area
+            count = naive_estimate()
 
         return round_to_significant_figures(count, 1)
 
