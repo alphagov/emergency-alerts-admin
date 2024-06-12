@@ -5,20 +5,15 @@ from collections import OrderedDict
 from datetime import datetime
 from typing import Optional
 
-from flask import abort, flash, redirect, render_template, request, url_for
+from flask import flash, redirect, render_template, request, url_for
 from notifications_python_client.errors import HTTPError
 
-from app import complaint_api_client, service_api_client, user_api_client
+from app import service_api_client, user_api_client
 from app.extensions import redis_client
 from app.main import main
 from app.main.forms import AdminClearCacheForm, DateFilterForm, PlatformAdminSearch
 from app.notify_client.platform_admin_api_client import admin_api_client
 from app.statistics_utils import get_formatted_percentage
-from app.utils.pagination import (
-    generate_next_dict,
-    generate_previous_dict,
-    get_page_from_request,
-)
 from app.utils.user import user_is_platform_admin
 
 COMPLAINT_THRESHOLD = 0.02
@@ -135,31 +130,6 @@ def platform_admin_services():
     )
 
 
-@main.route("/platform-admin/complaints")
-@user_is_platform_admin
-def platform_admin_list_complaints():
-    page = get_page_from_request()
-    if page is None:
-        abort(404, f"Invalid page argument ({request.args.get('page')}).")
-
-    response = complaint_api_client.get_all_complaints(page=page)
-
-    prev_page = None
-    if response["links"].get("prev"):
-        prev_page = generate_previous_dict("main.platform_admin_list_complaints", None, page)
-    next_page = None
-    if response["links"].get("next"):
-        next_page = generate_next_dict("main.platform_admin_list_complaints", None, page)
-
-    return render_template(
-        "views/platform-admin/complaints.html",
-        complaints=response["complaints"],
-        page=page,
-        prev_page=prev_page,
-        next_page=next_page,
-    )
-
-
 @main.route("/platform-admin/clear-cache", methods=["GET", "POST"])
 @user_is_platform_admin
 def clear_cache():
@@ -264,7 +234,6 @@ def get_url_for_notify_record(uuid_):
             "api_key": _EndpointSpec(".api_keys", with_service_id=True),
             "template_folder": _EndpointSpec(".choose_template", "template_folder_id", with_service_id=True),
             "service_callback_api": _EndpointSpec(".delivery_status_callback", with_service_id=True),
-            "complaint": _EndpointSpec(".platform_admin_list_complaints"),
         }
         if not (spec := url_for_data.get(result["type"])):
             raise KeyError(f"Don't know how to redirect to {result['type']}")

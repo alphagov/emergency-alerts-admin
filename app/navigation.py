@@ -81,7 +81,6 @@ class HeaderNavigation(Navigation):
             "live_services",
             "organisations",
             "platform_admin",
-            "platform_admin_list_complaints",
             "platform_admin_search",
             "trial_services",
             "user_information",

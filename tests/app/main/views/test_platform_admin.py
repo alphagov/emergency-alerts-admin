@@ -1,5 +1,4 @@
 import datetime
-import uuid
 from functools import partial
 from unittest.mock import ANY, call
 
@@ -293,84 +292,6 @@ def test_sum_service_usage_with_zeros(fake_uuid):
         emails_requested=0, emails_delivered=0, emails_failed=25, sms_requested=0, sms_delivered=0, sms_failed=0
     )
     assert sum_service_usage(service) == 0
-
-
-def test_platform_admin_list_complaints(client_request, platform_admin_user, mocker):
-    complaint = {
-        "id": str(uuid.uuid4()),
-        "notification_id": str(uuid.uuid4()),
-        "service_id": str(uuid.uuid4()),
-        "service_name": "Sample service",
-        "ses_feedback_id": "Some ses id",
-        "complaint_type": "abuse",
-        "complaint_date": "2018-06-05T13:50:30.012354",
-        "created_at": "2018-06-05T13:50:30.012354",
-    }
-    mock = mocker.patch(
-        "app.complaint_api_client.get_all_complaints", return_value={"complaints": [complaint], "links": {}}
-    )
-
-    client_request.login(platform_admin_user)
-    page = client_request.get("main.platform_admin_list_complaints")
-
-    assert "Email complaints" in page.text
-    assert mock.called
-
-
-def test_should_show_complaints_with_next_previous(
-    client_request,
-    platform_admin_user,
-    mocker,
-    service_one,
-    fake_uuid,
-):
-    api_response = {
-        "complaints": [
-            {
-                "complaint_date": None,
-                "complaint_type": None,
-                "created_at": "2017-12-18T05:00:00.000000Z",
-                "id": fake_uuid,
-                "notification_id": fake_uuid,
-                "service_id": service_one["id"],
-                "service_name": service_one["name"],
-                "ses_feedback_id": "None",
-            }
-        ],
-        "links": {"last": "/complaint?page=3", "next": "/complaint?page=3", "prev": "/complaint?page=1"},
-    }
-
-    mocker.patch("app.complaint_api_client.get_all_complaints", return_value=api_response)
-
-    client_request.login(platform_admin_user)
-    page = client_request.get(
-        "main.platform_admin_list_complaints",
-        page=2,
-    )
-
-    next_page_link = page.select_one("a[rel=next]")
-    prev_page_link = page.select_one("a[rel=previous]")
-    assert url_for("main.platform_admin_list_complaints", page=3) in next_page_link["href"]
-    assert "Next page" in next_page_link.text.strip()
-    assert "page 3" in next_page_link.text.strip()
-    assert url_for("main.platform_admin_list_complaints", page=1) in prev_page_link["href"]
-    assert "Previous page" in prev_page_link.text.strip()
-    assert "page 1" in prev_page_link.text.strip()
-
-
-def test_platform_admin_list_complaints_returns_404_with_invalid_page(
-    client_request,
-    platform_admin_user,
-    mocker,
-):
-    mocker.patch("app.complaint_api_client.get_all_complaints", return_value={"complaints": [], "links": {}})
-
-    client_request.login(platform_admin_user)
-    client_request.get(
-        "main.platform_admin_list_complaints",
-        page="invalid",
-        _expected_status=404,
-    )
 
 
 @pytest.mark.parametrize(

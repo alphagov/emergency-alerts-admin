@@ -157,7 +157,6 @@ EXCLUDED_ENDPOINTS = tuple(
             "organisations",
             "platform_admin",
             "platform_admin_search",
-            "platform_admin_list_complaints",
             "preview_broadcast_areas",
             "preview_broadcast_message",
             "privacy",
