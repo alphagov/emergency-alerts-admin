@@ -19,9 +19,9 @@ from tests.app.broadcast_areas.custom_polygons import (
     [
         (
             [
-                "wd21-E05009336",  # Whitechapel, Tower Hamlets (electoral ward)
-                "wd21-E05009372",  # Hackney Central, Hackney (electoral ward)
-                "wd21-E05009374",  # Hackney Wick, Hackney (electoral ward)
+                "wd23-E05009336",  # Whitechapel, Tower Hamlets (electoral ward)
+                "wd23-E05009372",  # Hackney Central, Hackney (electoral ward)
+                "wd23-E05009374",  # Hackney Wick, Hackney (electoral ward)
             ],
             [
                 "Hackney",  # in Greater London* (DB doesn't know this)
@@ -30,8 +30,8 @@ from tests.app.broadcast_areas.custom_polygons import (
         ),
         (
             [
-                "wd21-E05004294",  # Hester’s Way, Cheltenham (electoral ward)
-                "wd21-E05010981",  # Painswick & Upton, Stroud (electoral ward)
+                "wd23-E05004294",  # Hester’s Way, Cheltenham (electoral ward)
+                "wd23-E05010981",  # Painswick & Upton, Stroud (electoral ward)
             ],
             [
                 "Cheltenham",  # in Gloucestershire (upper tier authority)
@@ -40,8 +40,8 @@ from tests.app.broadcast_areas.custom_polygons import (
         ),
         (
             [
-                "wd21-E05004294",  # Hester’s Way, Cheltenham (electoral ward)
-                "wd21-E05009372",  # Hackney Central (electoral ward)
+                "wd23-E05004294",  # Hester’s Way, Cheltenham (electoral ward)
+                "wd23-E05009372",  # Hackney Central (electoral ward)
             ],
             [
                 "Cheltenham",  # in Gloucestershire (upper tier authority)
@@ -50,9 +50,9 @@ from tests.app.broadcast_areas.custom_polygons import (
         ),
         (
             [
-                "wd21-E05004294",  # Hester’s Way, Cheltenham (electoral ward)
-                "wd21-E05010981",  # Painswick & Upton, Stroud (electoral ward)
-                "wd21-E05009372",  # Hackney Central, Hackney (electoral ward)
+                "wd23-E05004294",  # Hester’s Way, Cheltenham (electoral ward)
+                "wd23-E05010981",  # Painswick & Upton, Stroud (electoral ward)
+                "wd23-E05009372",  # Hackney Central, Hackney (electoral ward)
             ],
             [
                 "Gloucestershire",  # upper tier authority
@@ -61,7 +61,7 @@ from tests.app.broadcast_areas.custom_polygons import (
         ),
         (
             [
-                "lad21-E07000037",  # High Peak (lower tier authority)
+                "lad23-E07000037",  # High Peak (lower tier authority)
             ],
             [
                 "High Peak",  # in Derbyshire (upper tier authority)
@@ -69,8 +69,8 @@ from tests.app.broadcast_areas.custom_polygons import (
         ),
         (
             [
-                "lad21-E07000037",  # High Peak (lower tier authority)
-                "lad21-E07000035",  # Derbyshire Dales (lower tier authority)
+                "lad23-E07000037",  # High Peak (lower tier authority)
+                "lad23-E07000035",  # Derbyshire Dales (lower tier authority)
             ],
             [
                 "Derbyshire Dales",  # in Derbyshire (upper tier authority)
@@ -79,9 +79,9 @@ from tests.app.broadcast_areas.custom_polygons import (
         ),
         (
             [
-                "lad21-E07000037",  # High Peak (lower tier authority)
-                "lad21-E07000035",  # Derbyshire Dales (lower tier authority)
-                "ctyua21-E10000028",  # Staffordshire (upper tier authority)
+                "lad23-E07000037",  # High Peak (lower tier authority)
+                "lad23-E07000035",  # Derbyshire Dales (lower tier authority)
+                "ctyua23-E10000028",  # Staffordshire (upper tier authority)
             ],
             [
                 "Derbyshire",  # upper tier authority
