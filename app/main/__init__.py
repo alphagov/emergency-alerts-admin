@@ -46,7 +46,6 @@ from app.main.views import (  # noqa isort:skip
     notifications,
     organisations,
     platform_admin,
-    providers,
     register,
     send,
     service_settings,
