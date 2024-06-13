@@ -235,6 +235,10 @@ class BroadcastMessage(JSONModel):
             # phones based on the ammount of overlap with areas for
             # which we have population data
             count = intersecting_estimate()
+
+            # This serves as a guardrail in case our bleed area yields smaller figures
+            # - which can happen because the calculations for the base polygon and the bleed
+            # area are different.
             if count < count_of_phones:
                 count = naive_estimate()
         else:
