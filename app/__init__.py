@@ -101,7 +101,6 @@ from app.notify_client.notification_api_client import notification_api_client
 from app.notify_client.org_invite_api_client import org_invite_api_client
 from app.notify_client.organisations_api_client import organisations_client
 from app.notify_client.platform_stats_api_client import platform_stats_api_client
-from app.notify_client.provider_client import provider_client
 from app.notify_client.service_api_client import service_api_client
 from app.notify_client.status_api_client import status_api_client
 from app.notify_client.template_folder_api_client import template_folder_api_client
@@ -171,7 +170,6 @@ def create_app(application):
         org_invite_api_client,
         organisations_client,
         platform_stats_api_client,
-        provider_client,
         service_api_client,
         status_api_client,
         template_folder_api_client,

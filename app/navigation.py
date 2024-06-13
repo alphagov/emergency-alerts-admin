@@ -75,7 +75,6 @@ class HeaderNavigation(Navigation):
             "archive_user",
             "change_user_auth",
             "clear_cache",
-            "edit_sms_provider_ratio",
             "find_services_by_name",
             "find_users_by_email",
             "live_services",
@@ -84,8 +83,6 @@ class HeaderNavigation(Navigation):
             "platform_admin_search",
             "trial_services",
             "user_information",
-            "view_provider",
-            "view_providers",
         },
         "sign-in": {
             "revalidate_email_sent",
