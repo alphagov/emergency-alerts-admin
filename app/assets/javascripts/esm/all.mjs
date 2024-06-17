@@ -12,6 +12,8 @@ import { Header, Details, Button, Radios, ErrorSummary, SkipLink, Tabs } from 'g
 
 // Modules from 3rd party vendors
 import morphdom from 'morphdom';
+import {differenceInSeconds} from 'date-fns/differenceInSeconds';
+import {addMinutes} from 'date-fns/addMinutes';
 
 /**
  * TODO: Ideally this would be a NodeList.prototype.forEach polyfill
@@ -82,7 +84,9 @@ var Frontend = {
 }
 
 var vendor = {
-  "morphdom": morphdom
+  "morphdom": morphdom,
+  "differenceInSeconds": differenceInSeconds,
+  "addMinutes": addMinutes
 }
 
 // The exported object will be assigned to window.GOVUK in our production code

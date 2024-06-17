@@ -147,7 +147,7 @@ class MainNavigation(Navigation):
             "send_one_off_letter_address",
             "send_one_off_step",
             "send_one_off_to_myself",
-            "no_cookie.send_test_preview",
+            "send_test_preview",
             "set_sender",
             "set_template_sender",
             "view_template",

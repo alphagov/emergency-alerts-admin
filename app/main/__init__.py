@@ -1,7 +1,6 @@
 from flask import Blueprint, request, session
 
 main = Blueprint("main", __name__)
-no_cookie = Blueprint("no_cookie", __name__)
 
 
 def make_session_permanent():

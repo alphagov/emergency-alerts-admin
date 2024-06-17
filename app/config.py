@@ -57,7 +57,7 @@ class Config(object):
     HTTP_PROTOCOL = "http"
     NOTIFY_APP_NAME = "admin"
     NOTIFY_LOG_LEVEL = "DEBUG"
-    PERMANENT_SESSION_LIFETIME = 30 * 60  # 30 minutes
+    PERMANENT_SESSION_LIFETIME = 2.5 * 60  # 60 minutes - maximum duration for a session
     SEND_FILE_MAX_AGE_DEFAULT = 365 * 24 * 60 * 60  # 1 year
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_NAME = "emergency_alerts_session"
@@ -99,6 +99,10 @@ class Config(object):
     NOTIFY_SERVICE_ID = "d6aa2c68-a2d9-4437-ab19-3ae8eb202553"
 
     NOTIFY_RUNTIME_PLATFORM = os.environ.get("NOTIFY_RUNTIME_PLATFORM", "paas")
+
+    INACTIVITY_MINS = os.environ.get("INACTIVITY_MINS", 0.5)
+    EXPIRY_WARNING_MINS = os.environ.get("EXPIRY_WARNING_MINS", 2)
+    INACTIVITY_WARNING_DURATION = os.environ.get("INACTIVITY_WARNING_DURATION", 0.5)
 
 
 class Hosted(Config):

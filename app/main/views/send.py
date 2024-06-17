@@ -33,7 +33,7 @@ from app import (
     notification_api_client,
     service_api_client,
 )
-from app.main import main, no_cookie
+from app.main import main
 from app.main.forms import (
     ChooseTimeForm,
     CsvUploadForm,
@@ -121,7 +121,7 @@ def send_messages(service_id, template_id):
         current_service,
         show_recipient=True,
         letter_preview_url=url_for(
-            "no_cookie.view_letter_template_preview",
+            ".view_letter_template_preview",
             service_id=service_id,
             template_id=template_id,
             filetype="png",
@@ -339,7 +339,7 @@ def send_one_off_letter_address(service_id, template_id):
         current_service,
         show_recipient=True,
         letter_preview_url=url_for(
-            "no_cookie.send_test_preview",
+            ".send_test_preview",
             service_id=service_id,
             template_id=template_id,
             filetype="png",
@@ -419,7 +419,7 @@ def send_one_off_step(service_id, template_id, step_index):
         current_service,
         show_recipient=True,
         letter_preview_url=url_for(
-            "no_cookie.send_test_preview",
+            ".send_test_preview",
             service_id=service_id,
             template_id=template_id,
             filetype="png",
@@ -512,7 +512,7 @@ def send_one_off_step(service_id, template_id, step_index):
     )
 
 
-@no_cookie.route("/services/<uuid:service_id>/send/<uuid:template_id>/test.<filetype>", methods=["GET"])
+@main.route("/services/<uuid:service_id>/send/<uuid:template_id>/test.<filetype>", methods=["GET"])
 @user_has_permissions("send_messages")
 def send_test_preview(service_id, template_id, filetype):
     if filetype not in ("pdf", "png"):
@@ -524,7 +524,7 @@ def send_test_preview(service_id, template_id, filetype):
         db_template,
         current_service,
         letter_preview_url=url_for(
-            "no_cookie.send_test_preview",
+            ".send_test_preview",
             service_id=service_id,
             template_id=template_id,
             filetype="png",
@@ -606,7 +606,7 @@ def _check_messages(service_id, template_id, upload_id, preview_row, letters_as_
         current_service,
         show_recipient=True,
         letter_preview_url=url_for(
-            "no_cookie.check_messages_preview",
+            ".check_messages_preview",
             service_id=service_id,
             template_id=template_id,
             upload_id=upload_id,
@@ -730,11 +730,11 @@ def check_messages(service_id, template_id, upload_id, row_index=2):
     return render_template("views/check/ok.html", **data)
 
 
-@no_cookie.route(
+@main.route(
     "/services/<uuid:service_id>/<uuid:template_id>/check/<uuid:upload_id>.<filetype>",
     methods=["GET"],
 )
-@no_cookie.route(
+@main.route(
     "/services/<uuid:service_id>/<uuid:template_id>/check/<uuid:upload_id>/row-<int:row_index>.<filetype>",
     methods=["GET"],
 )
@@ -751,7 +751,7 @@ def check_messages_preview(service_id, template_id, upload_id, filetype, row_ind
     return TemplatePreview.from_utils_template(template, filetype, page=page)
 
 
-@no_cookie.route(
+@main.route(
     "/services/<uuid:service_id>/<uuid:template_id>/check.<filetype>",
     methods=["GET"],
 )
@@ -937,7 +937,7 @@ def _check_notification(service_id, template_id, exception=None):
         email_reply_to=email_reply_to,
         sms_sender=sms_sender,
         letter_preview_url=url_for(
-            "no_cookie.check_notification_preview",
+            ".check_notification_preview",
             service_id=service_id,
             template_id=template_id,
             filetype="png",

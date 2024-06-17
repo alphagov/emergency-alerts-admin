@@ -38,7 +38,7 @@ from tests.conftest import (
         ("main.view_template", {"template_id": sample_uuid()}),
         ("main.view_template_versions", {"template_id": sample_uuid()}),
         ("main.view_template_version", {"template_id": sample_uuid(), "version": 1}),
-        ("no_cookie.view_letter_template_preview", {"template_id": sample_uuid(), "filetype": "pdf"}),
+        ("main.view_letter_template_preview", {"template_id": sample_uuid(), "filetype": "pdf"}),
     ),
 )
 def test_services_pages_that_org_users_are_allowed_to_see(
