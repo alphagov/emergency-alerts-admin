@@ -106,10 +106,10 @@ def test_normalising_point(coordinate_type, first_coordinate, second_coordinate,
 
 def test_extract_attributes_from_custom_area():
     expected_attributes = (
-        3067.5881038789844,
+        2627.25959347374,
         3134370.3703178177,
-        51909389.409217164,
-        200,
+        41279574.21508839,
+        500,
         4000,
     )
     assert extract_attributes_from_custom_area(custom_craven_area) == pytest.approx(expected_attributes, 1e-12)

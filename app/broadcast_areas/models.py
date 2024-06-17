@@ -71,11 +71,11 @@ class BroadcastArea(BaseBroadcastArea, SortingAndEqualityMixin):
 
     @cached_property
     def is_lower_tier_local_authority(self):
-        return self.id.startswith("lad21-") and self.parent
+        return self.id.startswith("lad23-") and self.parent
 
     @cached_property
     def is_electoral_ward(self):
-        return self.id.startswith("wd21-")
+        return self.id.startswith("wd23-")
 
     @classmethod
     def from_row_with_simple_polygons(cls, row):
@@ -163,11 +163,14 @@ class CustomBroadcastArea(BaseBroadcastArea):
     @cached_property
     def local_authority(self):
         centroid = Polygon(self.polygons[0]).centroid
-        for area in self.nearby_electoral_wards:
-            if Polygon(area.simple_polygons[0]).contains(centroid):
-                local_authority = area.parent.name
-                break
-        return local_authority
+        return next(
+            (
+                area.parent.name
+                for area in self.nearby_electoral_wards
+                if Polygon(area.simple_polygons[0]).contains(centroid)
+            ),
+            None,
+        )
 
     @cached_property
     def nearby_electoral_wards(self):

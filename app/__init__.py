@@ -92,7 +92,6 @@ from app.notify_client import InviteTokenError
 from app.notify_client.api_key_api_client import api_key_api_client
 from app.notify_client.billing_api_client import billing_api_client
 from app.notify_client.broadcast_message_api_client import broadcast_message_api_client
-from app.notify_client.complaint_api_client import complaint_api_client
 from app.notify_client.contact_list_api_client import contact_list_api_client
 from app.notify_client.events_api_client import events_api_client
 from app.notify_client.feature_toggle_api_client import feature_toggle_api_client
@@ -102,7 +101,6 @@ from app.notify_client.notification_api_client import notification_api_client
 from app.notify_client.org_invite_api_client import org_invite_api_client
 from app.notify_client.organisations_api_client import organisations_client
 from app.notify_client.platform_stats_api_client import platform_stats_api_client
-from app.notify_client.provider_client import provider_client
 from app.notify_client.service_api_client import service_api_client
 from app.notify_client.status_api_client import status_api_client
 from app.notify_client.template_folder_api_client import template_folder_api_client
@@ -164,7 +162,6 @@ def create_app(application):
         billing_api_client,
         broadcast_message_api_client,
         contact_list_api_client,
-        complaint_api_client,
         events_api_client,
         feature_toggle_api_client,
         invite_api_client,
@@ -173,7 +170,6 @@ def create_app(application):
         org_invite_api_client,
         organisations_client,
         platform_stats_api_client,
-        provider_client,
         service_api_client,
         status_api_client,
         template_folder_api_client,
