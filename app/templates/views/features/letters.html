@@ -13,9 +13,6 @@
 
   <h1 class="heading heading-large">Letters</h1>
   <p class="govuk-body">GOV.UK Notify will print, pack and post your letters for you.</p>
-  {% if not current_user.is_authenticated %}
-    <p class="govuk-body"><a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('main.register') }}">Create an account</a> and try Notify for yourself.</p>
-  {% endif %}
 
   <h2 class="heading heading-medium">Features</h2>
   <p class="govuk-body">Notify makes it easy to:</p>
