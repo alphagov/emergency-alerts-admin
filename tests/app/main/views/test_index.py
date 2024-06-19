@@ -52,7 +52,6 @@ def test_robots(client_request):
         ("feedback", {"ticket_type": "report-problem"}),
         ("bat_phone", {}),
         ("thanks", {}),
-        ("register", {}),
         ("features_email", {}),
         pytest.param("index", {}, marks=pytest.mark.xfail(raises=AssertionError)),
     ),
