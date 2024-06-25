@@ -25,7 +25,7 @@ git+https://github.com/benoitc/gunicorn.git@1299ea9e967a61ae2edebe191082fd169b86
 notifications-python-client==8.0.0
 rtreelib==0.2.0
 fido2==1.1.0
-pyproj==3.4.0
+pyproj==3.6.1
 postcode-validator==0.0.4
 
 itsdangerous==2.1.2
