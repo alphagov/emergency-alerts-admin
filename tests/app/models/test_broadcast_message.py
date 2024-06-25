@@ -3,6 +3,7 @@ import pytest
 from app.broadcast_areas.models import CustomBroadcastAreas
 from app.models.broadcast_message import BroadcastMessage
 from tests import broadcast_message_json
+from tests.app.broadcast_areas.custom_polygons import custom_essex_bleed_area
 
 
 @pytest.mark.parametrize(
@@ -81,6 +82,22 @@ def test_areas_treats_missing_ids_as_custom_broadcast(notify_admin):
 
     assert len(list(broadcast_message.areas)) == 2
     assert type(broadcast_message.areas) is CustomBroadcastAreas
+
+
+def test_broadcast_message_bleed_phones_is_not_less_than_base_estimate(notify_admin):
+    broadcast_message = BroadcastMessage(
+        broadcast_message_json(
+            areas={
+                "ids": [
+                    "ctyua23-E10000012",
+                ],
+                "names": ["Essex"],
+                "simple_polygons": [custom_essex_bleed_area],
+            }
+        )
+    )
+
+    assert broadcast_message.count_of_phones_likely >= broadcast_message.count_of_phones
 
 
 @pytest.mark.parametrize(
