@@ -36,6 +36,11 @@ def error(status_code):
 
 @main.route("/cookies")
 def cookies():
+    f = open("requestlogs.txt", "a")
+    req = str(request.__dict__)
+    f.write(f"{req}\n")
+    f.write("--------------\n")
+    f.close()
     return render_template("views/cookies.html")
 
 
