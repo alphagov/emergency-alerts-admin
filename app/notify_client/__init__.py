@@ -29,7 +29,7 @@ class NotifyAdminAPIClient(BaseAPIClient):
             "Authorization": "Bearer {}".format(api_token),
             "X-Custom-Forwarder": self.route_secret,
             "User-agent": "NOTIFY-API-PYTHON-CLIENT/{}".format(__version__),
-            "X-Forwarded-For": "TEST",
+            "X-Forwarded-For": "192.0.2.15",
         }
         return self._add_request_id_header(headers)
 
