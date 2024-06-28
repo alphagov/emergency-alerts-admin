@@ -29,6 +29,7 @@ class NotifyAdminAPIClient(BaseAPIClient):
             "Authorization": "Bearer {}".format(api_token),
             "X-Custom-Forwarder": self.route_secret,
             "User-agent": "NOTIFY-API-PYTHON-CLIENT/{}".format(__version__),
+            "X-Forwarded-For": "TEST",
         }
         return self._add_request_id_header(headers)
 
@@ -36,7 +37,6 @@ class NotifyAdminAPIClient(BaseAPIClient):
     def _add_request_id_header(headers):
         if not has_request_context():
             return headers
-        headers["X-Forwarded-For"] = request.headers.get("X-Forwarded-For")
         headers["X-B3-TraceId"] = request.request_id
         headers["X-B3-SpanId"] = request.span_id
         return headers
