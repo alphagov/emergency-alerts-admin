@@ -78,11 +78,18 @@ def test_generate_headers_sets_standard_headers(notify_admin):
     # with patch('app.notify_client.has_request_context', return_value=False):
     headers = api_client.generate_headers("api_token")
 
-    assert set(headers.keys()) == {"Authorization", "Content-type", "User-agent", "X-Custom-Forwarder"}
+    assert set(headers.keys()) == {
+        "Authorization",
+        "Content-type",
+        "User-agent",
+        "X-Custom-Forwarder",
+        "X-Forwarded-For",
+    }
     assert headers["Authorization"] == "Bearer api_token"
     assert headers["Content-type"] == "application/json"
     assert headers["User-agent"].startswith("NOTIFY-API-PYTHON-CLIENT")
     assert headers["X-Custom-Forwarder"] == "proxy-secret"
+    assert headers["X-Forwarded-For"] == "192.0.2.15"
 
 
 def test_generate_headers_sets_request_id_if_in_request_context(notify_admin):
