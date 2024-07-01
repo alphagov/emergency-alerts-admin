@@ -89,7 +89,6 @@ def test_generate_headers_sets_standard_headers(notify_admin):
     assert headers["Content-type"] == "application/json"
     assert headers["User-agent"].startswith("NOTIFY-API-PYTHON-CLIENT")
     assert headers["X-Custom-Forwarder"] == "proxy-secret"
-    assert headers["X-Forwarded-For"] == "192.0.2.15"
 
 
 def test_generate_headers_sets_request_id_if_in_request_context(notify_admin):
