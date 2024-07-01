@@ -83,7 +83,6 @@ def test_generate_headers_sets_standard_headers(notify_admin):
         "Content-type",
         "User-agent",
         "X-Custom-Forwarder",
-        "X-Forwarded-For",
     }
     assert headers["Authorization"] == "Bearer api_token"
     assert headers["Content-type"] == "application/json"
