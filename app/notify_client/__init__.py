@@ -38,7 +38,7 @@ class NotifyAdminAPIClient(BaseAPIClient):
             return headers
         headers["X-B3-TraceId"] = request.request_id
         headers["X-B3-SpanId"] = request.span_id
-        headers["X-Forwarded-For"] = request.headers.get("X-Forwarded-For", "127.0.0.1")
+        headers["X-Forwarded-For"] = request.headers.get("X-Forwarded-For")
         return headers
 
     def check_inactive_service(self):
