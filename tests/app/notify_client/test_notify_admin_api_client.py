@@ -102,7 +102,6 @@ def test_generate_headers_sets_request_id_if_in_request_context(notify_admin):
         "Content-type",
         "User-agent",
         "X-Custom-Forwarder",
-        "X-Forwarded-For",
         "X-B3-TraceId",
         "X-B3-SpanId",
     }
