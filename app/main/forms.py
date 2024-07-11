@@ -17,7 +17,6 @@ from emergency_alerts_utils.recipients import (
 from flask import request
 from flask_login import current_user
 from flask_wtf import FlaskForm as Form
-from flask_wtf.file import FileAllowed
 from flask_wtf.file import FileField as FileField_wtf
 from flask_wtf.file import FileSize
 from markupsafe import Markup
@@ -69,9 +68,7 @@ from app.main.validators import (
     IsPostcode,
     MustContainAlphanumericCharacters,
     NoCommasInPlaceHolders,
-    NoEmbeddedImagesInSVG,
     NoPlaceholders,
-    NoTextInSVG,
     Only2DecimalPlaces,
     Only6DecimalPlaces,
     OnlySMSCharacters,
@@ -1585,28 +1582,6 @@ class ServiceSwitchChannelForm(ServiceOnOffSettingForm):
         )
 
         super().__init__(name, *args, **kwargs)
-
-
-class SVGFileUpload(StripWhitespaceForm):
-    file = VirusScannedFileField(
-        "Upload an SVG logo",
-        validators=[
-            FileAllowed(["svg"], "SVG Images only!"),
-            DataRequired(message="You need to upload a file to submit"),
-            NoEmbeddedImagesInSVG(),
-            NoTextInSVG(),
-        ],
-    )
-
-
-class PDFUploadForm(StripWhitespaceForm):
-    file = VirusScannedFileField(
-        "Upload a letter in PDF format",
-        validators=[
-            FileAllowed(["pdf"], "Save your letter as a PDF and try again."),
-            DataRequired(message="You need to choose a file to upload"),
-        ],
-    )
 
 
 class EmailFieldInGuestList(GovukEmailField, StripWhitespaceStringField):
