@@ -47,12 +47,7 @@ from app.utils.user import user_has_permissions
 @main.route("/services/<uuid:service_id>/jobs")
 @user_has_permissions()
 def view_jobs(service_id):
-    return redirect(
-        url_for(
-            "main.uploads",
-            service_id=current_service.id,
-        )
-    )
+    return redirect(url_for(".index"))
 
 
 @main.route("/services/<uuid:service_id>/jobs/<uuid:job_id>")

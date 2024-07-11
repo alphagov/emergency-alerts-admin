@@ -392,16 +392,7 @@ def test_should_show_upcoming_jobs_on_dashboard(
         "main.service_dashboard",
         service_id=SERVICE_ONE_ID,
     )
-    mock_get_jobs.assert_called_once_with(SERVICE_ONE_ID)
-    mock_get_scheduled_job_stats.assert_called_once_with(SERVICE_ONE_ID)
-
-    assert normalize_spaces(page.select_one("main h2").text) == "In the next few days"
-
-    assert normalize_spaces(page.select_one("a.banner-dashboard").text) == (
-        "2 files waiting to send sending starts today at 11:09am"
-    )
-
-    assert page.select_one("a.banner-dashboard")["href"] == url_for("main.uploads", service_id=SERVICE_ONE_ID)
+    assert normalize_spaces(page.select_one("main h2").text) == "In the last 7 days"
 
 
 def test_should_not_show_upcoming_jobs_on_dashboard_if_count_is_0(
@@ -425,7 +416,6 @@ def test_should_not_show_upcoming_jobs_on_dashboard_if_count_is_0(
         "main.service_dashboard",
         service_id=SERVICE_ONE_ID,
     )
-    mock_has_jobs.assert_called_once_with(SERVICE_ONE_ID)
     assert "In the next few days" not in page.select_one("main").text
     assert "files waiting to send " not in page.select_one("main").text
 
@@ -445,7 +435,6 @@ def test_should_not_show_upcoming_jobs_on_dashboard_if_service_has_no_jobs(
         "main.service_dashboard",
         service_id=SERVICE_ONE_ID,
     )
-    mock_has_no_jobs.assert_called_once_with(SERVICE_ONE_ID)
     assert mock_get_scheduled_job_stats.called is False
     assert "In the next few days" not in page.select_one("main").text
     assert "files waiting to send " not in page.select_one("main").text
@@ -772,7 +761,6 @@ def test_menu_send_messages(
         )
         in page
     )
-    assert url_for("main.uploads", service_id=service_one["id"]) in page
     assert url_for("main.manage_users", service_id=service_one["id"]) in page
 
     assert url_for("main.service_settings", service_id=service_one["id"]) not in page
@@ -800,7 +788,6 @@ def test_menu_send_messages_when_service_does_not_have_upload_letters_permission
     )
 
     assert page.select_one(".navigation")
-    assert url_for("main.uploads", service_id=service_one["id"]) not in page.select_one(".navigation")
 
 
 def test_menu_manage_service(

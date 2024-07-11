@@ -62,7 +62,7 @@
         {% endcall %}
       {% endcall %}
     </div>
-  {% else %}
+  {# {% else %}
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-five-sixths">
         <p class="govuk-body">
@@ -72,7 +72,7 @@
           To upload and save an emergency contact list, go to the <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('main.uploads', service_id=current_service.id) }}">uploads</a> page.
         </p>
       </div>
-    </div>
+    </div> #}
   {% endif %}
 
 {% endblock %}

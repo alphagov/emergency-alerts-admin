@@ -53,7 +53,6 @@ from app.main.views import (  # noqa isort:skip
     sign_out,
     templates,
     two_factor,
-    uploads,
     user_profile,
     verify,
     webauthn_credentials,

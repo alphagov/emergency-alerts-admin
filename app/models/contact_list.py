@@ -84,19 +84,19 @@ class ContactList(JSONModel):
             bucket=ContactList.get_bucket_name(),
         )
 
-    def copy_to_uploads(self):
-        metadata = self.get_metadata(self.service_id, self.id)
-        new_upload_id = s3upload(
-            self.service_id,
-            {"data": self.contents},
-            current_app.config["AWS_REGION"],
-        )
-        set_metadata_on_csv_upload(
-            self.service_id,
-            new_upload_id,
-            **metadata,
-        )
-        return new_upload_id
+    # def copy_to_uploads(self):
+    #     metadata = self.get_metadata(self.service_id, self.id)
+    #     new_upload_id = s3upload(
+    #         self.service_id,
+    #         {"data": self.contents},
+    #         current_app.config["AWS_REGION"],
+    #     )
+    #     set_metadata_on_csv_upload(
+    #         self.service_id,
+    #         new_upload_id,
+    #         **metadata,
+    #     )
+    #     return new_upload_id
 
     @classmethod
     def create(cls, service_id, upload_id):
@@ -115,11 +115,11 @@ class ContactList(JSONModel):
             )
         )
 
-    def delete(self):
-        contact_list_api_client.delete_contact_list(
-            service_id=self.service_id,
-            contact_list_id=self.id,
-        )
+    # def delete(self):
+    #     contact_list_api_client.delete_contact_list(
+    #         service_id=self.service_id,
+    #         contact_list_id=self.id,
+    #     )
 
     @property
     def contents(self):

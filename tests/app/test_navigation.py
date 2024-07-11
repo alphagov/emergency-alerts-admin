@@ -51,7 +51,6 @@ EXCLUDED_ENDPOINTS = tuple(
             "change_user_auth",
             "check_and_resend_text_code",
             "check_and_resend_verification_code",
-            "check_contact_list",
             "check_messages",
             "check_notification",
             "choose_account",
@@ -67,21 +66,18 @@ EXCLUDED_ENDPOINTS = tuple(
             "confirm_edit_user_email",
             "confirm_edit_user_mobile_number",
             "confirm_redact_template",
-            "contact_list",
             "cookies",
             "copy_template",
             "count_content_length",
             "create_and_send_messages",
             "create_api_key",
             "data_retention",
-            "delete_contact_list",
             "delete_service_template",
             "delete_template_folder",
             "delivery_and_failure",
             "delivery_status_callback",
             "design_content",
             "documentation",
-            "download_contact_list",
             "download_notifications_csv",
             "download_organisation_usage_report",
             "edit_and_format_messages",
@@ -174,7 +170,6 @@ EXCLUDED_ENDPOINTS = tuple(
             "revalidate_email_sent",
             "revoke_api_key",
             "roadmap",
-            "save_contact_list",
             "search_coordinates",
             "search_postcodes",
             "security",
@@ -187,7 +182,6 @@ EXCLUDED_ENDPOINTS = tuple(
             "send_one_off_letter_address",
             "send_one_off_step",
             "send_one_off_to_myself",
-            "send_uploaded_letter",
             "service_add_email_reply_to",
             "service_add_letter_contact",
             "service_confirm_delete_email_reply_to",
@@ -245,12 +239,6 @@ EXCLUDED_ENDPOINTS = tuple(
             "two_factor_email_interstitial",
             "two_factor_email_sent",
             "two_factor_webauthn",
-            "upload_a_letter",
-            "upload_contact_list",
-            "upload_letter",
-            "uploaded_letter_preview",
-            "uploaded_letters",
-            "uploads",
             "usage",
             "user_information",
             "user_profile",
@@ -278,7 +266,6 @@ EXCLUDED_ENDPOINTS = tuple(
             "view_job_updates",
             "view_jobs",
             "view_letter_notification_as_preview",
-            "view_letter_upload_as_preview",
             "view_notification",
             "view_notification_updates",
             "view_notifications",
@@ -433,7 +420,6 @@ def test_navigation_urls(
     assert [a["href"] for a in page.select(".navigation a")] == [
         "/services/{}".format(SERVICE_ONE_ID),
         "/services/{}/templates".format(SERVICE_ONE_ID),
-        "/services/{}/uploads".format(SERVICE_ONE_ID),
         "/services/{}/users".format(SERVICE_ONE_ID),
         "/services/{}/usage".format(SERVICE_ONE_ID),
         "/services/{}/service-settings".format(SERVICE_ONE_ID),
@@ -495,7 +481,7 @@ def test_caseworkers_get_caseworking_navigation(
 ):
     client_request.login(active_caseworking_user)
     page = client_request.get("main.choose_template", service_id=SERVICE_ONE_ID)
-    assert normalize_spaces(page.select_one(".navigation").text) == ("Templates Sent messages Uploads Team members")
+    assert normalize_spaces(page.select_one(".navigation").text) == ("Templates Sent messages Team members")
 
 
 def test_caseworkers_see_jobs_nav_if_jobs_exist(
@@ -508,4 +494,4 @@ def test_caseworkers_see_jobs_nav_if_jobs_exist(
 ):
     client_request.login(active_caseworking_user)
     page = client_request.get("main.choose_template", service_id=SERVICE_ONE_ID)
-    assert normalize_spaces(page.select_one(".navigation").text) == ("Templates Sent messages Uploads Team members")
+    assert normalize_spaces(page.select_one(".navigation").text) == ("Templates Sent messages Team members")

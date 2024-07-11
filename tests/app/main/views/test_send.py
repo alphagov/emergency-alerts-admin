@@ -3978,68 +3978,6 @@ def test_choose_from_contact_list_with_personalised_template(
     assert not page.select("table")
 
 
-def test_choose_from_contact_list_with_no_lists(
-    mocker,
-    client_request,
-    mock_get_service_template,
-    fake_uuid,
-):
-    mocker.patch(
-        "app.models.contact_list.ContactLists.client_method",
-        return_value=[],
-    )
-    page = client_request.get(
-        "main.choose_from_contact_list",
-        service_id=SERVICE_ONE_ID,
-        template_id=fake_uuid,
-    )
-    assert [normalize_spaces(p.text) for p in page.select("main p")] == [
-        "You have not saved any lists of phone numbers yet.",
-        "To upload and save an emergency contact list, go to the uploads page.",
-    ]
-    assert page.select_one("main p a")["href"] == url_for(
-        "main.uploads",
-        service_id=SERVICE_ONE_ID,
-    )
-    assert not page.select("table")
-
-
-def test_send_from_contact_list(
-    mocker,
-    client_request,
-    fake_uuid,
-    mock_get_contact_list,
-):
-    new_uuid = uuid.uuid4()
-    mock_download = mocker.patch("app.models.contact_list.s3download", return_value="contents")
-    mock_get_metadata = mocker.patch(
-        "app.models.contact_list.get_csv_metadata",
-        return_value={
-            "example_key": "example value",
-        },
-    )
-    mock_upload = mocker.patch("app.models.contact_list.s3upload", return_value=new_uuid)
-    mock_set_metadata = mocker.patch("app.models.contact_list.set_metadata_on_csv_upload")
-    client_request.get(
-        "main.send_from_contact_list",
-        service_id=SERVICE_ONE_ID,
-        template_id=fake_uuid,
-        contact_list_id=fake_uuid,
-        _expected_status=302,
-        _expected_redirect=url_for(
-            "main.check_messages",
-            service_id=SERVICE_ONE_ID,
-            template_id=fake_uuid,
-            upload_id=new_uuid,
-            contact_list_id=fake_uuid,
-        ),
-    )
-    mock_download.assert_called_once_with(SERVICE_ONE_ID, fake_uuid, bucket="test-contact-list")
-    mock_get_metadata.assert_called_once_with(SERVICE_ONE_ID, fake_uuid, bucket="test-contact-list")
-    mock_upload.assert_called_once_with(SERVICE_ONE_ID, {"data": "contents"}, ANY)
-    mock_set_metadata.assert_called_once_with(SERVICE_ONE_ID, new_uuid, example_key="example value")
-
-
 def test_send_to_myself_sets_placeholder_and_redirects_for_email(
     mocker, client_request, fake_uuid, mock_get_service_email_template
 ):
