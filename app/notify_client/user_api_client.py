@@ -48,6 +48,8 @@ class UserApiClient(NotifyAdminAPIClient):
         except HTTPError as e:
             if e.status_code == 404:
                 return None
+            elif e.status_code == 429:
+                abort(429)
             raise e
 
     @cache.delete("user-{user_id}")
