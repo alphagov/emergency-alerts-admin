@@ -90,8 +90,6 @@ class UserApiClient(NotifyAdminAPIClient):
         except HTTPError as e:
             if e.status_code == 400 or e.status_code == 404:
                 return False
-            elif e.status_code == 429:
-                abort(429)
 
     def send_verify_code(self, user_id, code_type, to, next_string=None):
         data = {"to": to}
