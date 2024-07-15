@@ -132,7 +132,6 @@ def test_service_navigation_for_org_user(
             (
                 "Templates",
                 "Sent messages",
-                "Uploads",
                 "Team members",
             ),
             403,
@@ -142,7 +141,6 @@ def test_service_navigation_for_org_user(
             (
                 "Templates",
                 "Sent messages",
-                "Uploads",
                 "Team members",
                 "Usage",
             ),

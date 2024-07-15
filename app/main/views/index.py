@@ -205,14 +205,6 @@ def send_files_by_email():
     )
 
 
-@main.route("/using-emergency-alerts/guidance/upload-a-letter")
-def upload_a_letter():
-    return render_template(
-        "views/guidance/upload-a-letter.html",
-        navigation_links=using_notify_nav(),
-    )
-
-
 @main.route("/using-emergency-alerts/guidance/letter-specification")
 def letter_specification():
     return render_template(

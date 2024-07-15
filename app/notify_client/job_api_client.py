@@ -35,12 +35,6 @@ class JobApiClient(NotifyAdminAPIClient):
 
         return self.get(url="/service/{}/job".format(service_id), params=params)
 
-    def get_uploads(self, service_id, limit_days=None, page=1):
-        params = {"page": page}
-        if limit_days is not None:
-            params["limit_days"] = limit_days
-        return self.get(url="/service/{}/upload".format(service_id), params=params)
-
     def has_sent_previously(self, service_id, template_id, template_version, original_file_name):
         return (template_id, template_version, original_file_name) in (
             (

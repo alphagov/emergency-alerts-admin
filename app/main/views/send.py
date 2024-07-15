@@ -566,7 +566,6 @@ def send_from_contact_list(service_id, template_id, contact_list_id):
             "main.check_messages",
             service_id=current_service.id,
             template_id=template_id,
-            upload_id=contact_list.copy_to_uploads(),
             contact_list_id=contact_list.id,
         )
     )

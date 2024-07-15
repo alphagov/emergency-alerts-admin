@@ -18,20 +18,6 @@ from tests.conftest import (
 )
 
 
-def test_old_jobs_hub_redirects(
-    client_request,
-):
-    client_request.get(
-        "main.view_jobs",
-        service_id=SERVICE_ONE_ID,
-        _expected_status=302,
-        _expected_redirect=url_for(
-            "main.uploads",
-            service_id=SERVICE_ONE_ID,
-        ),
-    )
-
-
 @pytest.mark.parametrize(
     "user",
     [
@@ -90,10 +76,6 @@ def test_should_show_page_for_one_job(
     page = client_request.get("main.view_job", service_id=SERVICE_ONE_ID, job_id=fake_uuid, status=status_argument)
 
     assert page.select_one("h1").text.strip() == "thisisatest.csv"
-    assert page.select_one(".govuk-back-link")["href"] == url_for(
-        "main.uploads",
-        service_id=SERVICE_ONE_ID,
-    )
     assert " ".join(page.select_one("tbody").find("tr").text.split()) == (
         "07123456789 template content Delivered 1 January at 11:10am"
     )

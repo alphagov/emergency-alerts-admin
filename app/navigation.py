@@ -165,19 +165,6 @@ class MainNavigation(Navigation):
             "cancel_broadcast_message",
             "remove_postcode_area",
         },
-        "uploads": {
-            "upload_contact_list",
-            "check_contact_list",
-            "save_contact_list",
-            "contact_list",
-            "delete_contact_list",
-            "upload_letter",
-            "uploaded_letter_preview",
-            "uploaded_letters",
-            "uploads",
-            "view_job",
-            "view_jobs",
-        },
         "team-members": {
             "confirm_edit_user_email",
             "confirm_edit_user_mobile_number",
@@ -259,19 +246,6 @@ class CaseworkNavigation(Navigation):
         "sent-messages": {
             "view_notifications",
             "view_notification",
-        },
-        "uploads": {
-            "view_jobs",
-            "view_job",
-            "upload_contact_list",
-            "check_contact_list",
-            "save_contact_list",
-            "contact_list",
-            "delete_contact_list",
-            "upload_letter",
-            "uploaded_letter_preview",
-            "uploaded_letters",
-            "uploads",
         },
     }
 
