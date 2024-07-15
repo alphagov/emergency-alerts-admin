@@ -423,6 +423,10 @@ def register_errorhandlers(application):  # noqa (C901 too complex)
     def handle_method_not_allowed(error):
         return _error_response(405, error_page_template=500)
 
+    @application.errorhandler(429)
+    def handle_login_throttling(error):
+        return _error_response(429)
+
     @application.errorhandler(WerkzeugHTTPException)
     def handle_http_error(error):
         if error.code == 301:
