@@ -32,7 +32,7 @@
     "href": "#" + file_contents_header_id
   }) }}
 
-  {{ template|string }}
+  {# {{ template|string }}
   <div class="bottom-gutter-3-2">
     <form method="post" enctype="multipart/form-data" action="{{url_for('main.start_job', service_id=current_service.id, upload_id=upload_id)}}" class='page-footer'>
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
@@ -60,7 +60,7 @@
         }) }}
       {% endif %}
     </form>
-  </div>
+  </div> #}
 
   {% if not request.args.from_test %}
 
@@ -75,7 +75,7 @@
           '<span class="govuk-visually-hidden">Row in file</span><span aria-hidden="true">1</span>'|safe
         ] + recipients.column_headers
       ) %}
-        {% call index_field() %}
+        {# {% call index_field() %}
           <span>
             {% if (item.index + 2) == preview_row %}
               {{ item.index + 2 }}
@@ -83,7 +83,7 @@
               <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('.check_messages', service_id=current_service.id, template_id=template.id, upload_id=upload_id, row_index=(item.index + 2), original_file_name=original_file_name) }}">{{ item.index + 2 }}</a>
             {% endif %}
           </span>
-        {% endcall %}
+        {% endcall %} #}
         {% for column in recipients.column_headers %}
           {% if item[column].ignore %}
             {{ text_field(item[column].data or '', status='default') }}

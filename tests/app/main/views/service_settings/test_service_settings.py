@@ -56,7 +56,6 @@ def mock_get_service_settings_page_common(
                 "Label Value Action",
                 "Send emails On Change your settings for sending emails",
                 "Reply-to email addresses Not set Manage reply-to email addresses",
-                "Send files by email contact_us@gov.uk Manage sending files by email",
                 "Label Value Action",
                 "Send text messages On Change your settings for sending text messages",
                 "Start text messages with service name On Change your settings for starting text messages with service name",  # noqa
@@ -74,7 +73,6 @@ def mock_get_service_settings_page_common(
                 "Label Value Action",
                 "Send emails On Change your settings for sending emails",
                 "Reply-to email addresses Not set Manage reply-to email addresses",
-                "Send files by email contact_us@gov.uk Manage sending files by email",
                 "Label Value Action",
                 "Send text messages On Change your settings for sending text messages",
                 "Start text messages with service name On Change your settings for starting text messages with service name",  # noqa
@@ -3018,160 +3016,6 @@ def test_cant_archive_inactive_service(
     )
 
     assert "Delete service" not in {a.text for a in page.select("a.button")}
-
-
-@pytest.mark.parametrize(
-    "contact_details_type, contact_details_value",
-    [
-        ("url", "http://example.com/"),
-        ("email_address", "me@example.com"),
-        ("phone_number", "0207 123 4567"),
-    ],
-)
-def test_send_files_by_email_contact_details_prefills_the_form_with_the_existing_contact_details(
-    client_request,
-    service_one,
-    contact_details_type,
-    contact_details_value,
-):
-    service_one["contact_link"] = contact_details_value
-
-    page = client_request.get("main.send_files_by_email_contact_details", service_id=SERVICE_ONE_ID)
-    assert page.select_one(f"input[name=contact_details_type][value={contact_details_type}]").has_attr("checked")
-    assert page.select_one(f"input#{contact_details_type}")["value"] == contact_details_value
-
-
-@pytest.mark.parametrize(
-    "contact_details_type, old_value, new_value",
-    [
-        ("url", "http://example.com/", "http://new-link.com/"),
-        ("email_address", "old@example.com", "new@example.com"),
-        ("phone_number", "0207 12345", "0207 56789"),
-    ],
-)
-def test_send_files_by_email_contact_details_updates_contact_details_and_redirects_to_settings_page(
-    client_request,
-    service_one,
-    mock_update_service,
-    mock_get_service_settings_page_common,
-    no_reply_to_email_addresses,
-    no_letter_contact_blocks,
-    single_sms_sender,
-    contact_details_type,
-    old_value,
-    new_value,
-):
-    service_one["contact_link"] = old_value
-
-    page = client_request.post(
-        "main.send_files_by_email_contact_details",
-        service_id=SERVICE_ONE_ID,
-        _data={
-            "contact_details_type": contact_details_type,
-            contact_details_type: new_value,
-        },
-        _follow_redirects=True,
-    )
-
-    assert page.select_one("h1").text == "Settings"
-    mock_update_service.assert_called_once_with(SERVICE_ONE_ID, contact_link=new_value)
-
-
-def test_send_files_by_email_contact_details_uses_the_selected_field_when_multiple_textboxes_contain_data(
-    client_request,
-    service_one,
-    mock_update_service,
-    mock_get_service_settings_page_common,
-    no_reply_to_email_addresses,
-    no_letter_contact_blocks,
-    single_sms_sender,
-):
-    service_one["contact_link"] = "http://www.old-url.com"
-
-    page = client_request.post(
-        "main.send_files_by_email_contact_details",
-        service_id=SERVICE_ONE_ID,
-        _data={
-            "contact_details_type": "url",
-            "url": "http://www.new-url.com",
-            "email_address": "me@example.com",
-            "phone_number": "0207 123 4567",
-        },
-        _follow_redirects=True,
-    )
-
-    assert page.select_one("h1").text == "Settings"
-    mock_update_service.assert_called_once_with(SERVICE_ONE_ID, contact_link="http://www.new-url.com")
-
-
-@pytest.mark.parametrize(
-    "contact_link, subheader, button_selected",
-    [
-        ("contact.me@gov.uk", "Change contact details for the file download page", True),
-        (None, "Add contact details to the file download page", False),
-    ],
-)
-def test_send_files_by_email_contact_details_page(
-    client_request, service_one, active_user_with_permissions, contact_link, subheader, button_selected
-):
-    service_one["contact_link"] = contact_link
-    page = client_request.get("main.send_files_by_email_contact_details", service_id=SERVICE_ONE_ID)
-    assert normalize_spaces(page.select("h2")[1].text) == subheader
-    if button_selected:
-        assert "checked" in page.select_one("input[name=contact_details_type][value=email_address]").attrs
-    else:
-        assert "checked" not in page.select_one("input[name=contact_details_type][value=email_address]").attrs
-
-
-def test_send_files_by_email_contact_details_displays_error_message_when_no_radio_button_selected(
-    client_request, service_one
-):
-    page = client_request.post(
-        "main.send_files_by_email_contact_details",
-        service_id=SERVICE_ONE_ID,
-        _data={
-            "contact_details_type": None,
-            "url": "",
-            "email_address": "",
-            "phone_number": "",
-        },
-        _follow_redirects=True,
-    )
-    assert normalize_spaces(page.select_one(".govuk-error-message").text) == "Error: Select an option"
-    assert normalize_spaces(page.select_one("h1").text) == "Send files by email"
-
-
-@pytest.mark.parametrize(
-    "contact_details_type, invalid_value, error",
-    [
-        ("url", "invalid.com/", "Must be a valid URL"),
-        ("email_address", "me@co", "Enter a valid email address"),
-        ("phone_number", "abcde", "Must be a valid phone number"),
-    ],
-)
-def test_send_files_by_email_contact_details_does_not_update_invalid_contact_details(
-    mocker,
-    client_request,
-    service_one,
-    contact_details_type,
-    invalid_value,
-    error,
-):
-    service_one["contact_link"] = "http://example.com/"
-    service_one["permissions"].append("upload_document")
-
-    page = client_request.post(
-        "main.send_files_by_email_contact_details",
-        service_id=SERVICE_ONE_ID,
-        _data={
-            "contact_details_type": contact_details_type,
-            contact_details_type: invalid_value,
-        },
-        _follow_redirects=True,
-    )
-
-    assert error in page.select_one(".govuk-error-message").text
-    assert normalize_spaces(page.select_one("h1").text) == "Send files by email"
 
 
 @pytest.mark.parametrize(

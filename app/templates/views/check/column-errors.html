@@ -146,7 +146,7 @@
           '<span class="govuk-visually-hidden">Row in file</span><span aria-hidden="true">1</span>'|safe
         ] + column_headers
       ) %}
-        {% call index_field() %}
+        {# {% call index_field() %}
           <span>
             {% set displayed_index = item.index + 2 %}
             {% if (
@@ -159,7 +159,7 @@
               {{ displayed_index }}
             {% endif %}
           </span>
-        {% endcall %}
+        {% endcall %} #}
         {% for column in column_headers %}
           {% if item[column].error and not recipients.missing_column_headers %}
             {% call field() %}

@@ -92,7 +92,7 @@
             }}
           {% endcall %}
 
-          {% call settings_row(if_has_permission='email') %}
+          {# {% call settings_row(if_has_permission='email') %}
             {{ text_field('Send files by email') }}
             {{ optional_text_field(current_service.contact_link, default="Not set up", truncate=true) }}
             {{ edit_field(
@@ -101,7 +101,7 @@
               permissions=['manage_service'],
               suffix='sending files by email',
             )}}
-          {% endcall %}
+          {% endcall %} #}
 
         {% endcall %}
 

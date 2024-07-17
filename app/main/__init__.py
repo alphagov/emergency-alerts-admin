@@ -47,7 +47,6 @@ from app.main.views import (  # noqa isort:skip
     organisations,
     platform_admin,
     register,
-    send,
     service_settings,
     sign_in,
     sign_out,
