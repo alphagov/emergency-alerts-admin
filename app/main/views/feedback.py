@@ -1,7 +1,8 @@
+import os
 from datetime import datetime
 
 import pytz
-from emergency_alerts_utils.clients.zendesk.zendesk_client import NotifySupportTicket
+from emergency_alerts_utils.clients.zendesk.zendesk_client import EASSupportTicket
 from flask import redirect, render_template, request, session, url_for
 from flask_login import current_user
 from govuk_bank_holidays.bank_holidays import BankHolidays
@@ -83,6 +84,7 @@ def feedback(ticket_type):
         (
             ticket_type != QUESTION_TICKET_TYPE,
             not in_business_hours(),
+            os.environ.get("ENVIRONMENT") == "production",  # Only raise a p1 in prod
             severe,
         )
     )
@@ -108,7 +110,7 @@ def feedback(ticket_type):
             out_of_hours_emergency=out_of_hours_emergency,
         )
 
-        ticket = NotifySupportTicket(
+        ticket = EASSupportTicket(
             subject="Emergency Alerts feedback",
             message=feedback_msg,
             ticket_type=get_zendesk_ticket_type(ticket_type),
@@ -216,6 +218,6 @@ def get_zendesk_ticket_type(ticket_type):
     # Emergency Alerts problem because they are designed to group multiple incident tickets together,
     # allowing them to be solved as a group.
     if ticket_type == PROBLEM_TICKET_TYPE:
-        return NotifySupportTicket.TYPE_INCIDENT
+        return EASSupportTicket.TYPE_INCIDENT
 
-    return NotifySupportTicket.TYPE_QUESTION
+    return EASSupportTicket.TYPE_QUESTION

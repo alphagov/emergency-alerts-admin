@@ -3,7 +3,7 @@ from unittest.mock import ANY, Mock, PropertyMock, call
 from uuid import uuid4
 
 import pytest
-from emergency_alerts_utils.clients.zendesk.zendesk_client import NotifySupportTicket
+from emergency_alerts_utils.clients.zendesk.zendesk_client import EASSupportTicket
 from flask import url_for
 from freezegun import freeze_time
 from notifications_python_client.errors import HTTPError
@@ -1319,7 +1319,7 @@ def test_should_redirect_after_request_to_go_live(
             new_callable=PropertyMock,
             return_value=volume,
         )
-    mock_create_ticket = mocker.spy(NotifySupportTicket, "__init__")
+    mock_create_ticket = mocker.spy(EASSupportTicket, "__init__")
     mock_send_ticket_to_zendesk = mocker.patch(
         "app.main.views.service_settings.zendesk_client.send_ticket_to_zendesk",
         autospec=True,
@@ -1393,7 +1393,7 @@ def test_request_to_go_live_displays_go_live_notes_in_zendesk_ticket(
             request_to_go_live_notes=go_live_note,
         ),
     )
-    mock_create_ticket = mocker.spy(NotifySupportTicket, "__init__")
+    mock_create_ticket = mocker.spy(EASSupportTicket, "__init__")
     mock_send_ticket_to_zendesk = mocker.patch(
         "app.main.views.service_settings.zendesk_client.send_ticket_to_zendesk",
         autospec=True,
@@ -1469,7 +1469,7 @@ def test_request_to_go_live_displays_mou_signatories(
         "app.main.views.service_settings.zendesk_client.send_ticket_to_zendesk",
         autospec=True,
     )
-    mock_create_ticket = mocker.spy(NotifySupportTicket, "__init__")
+    mock_create_ticket = mocker.spy(EASSupportTicket, "__init__")
     client_request.post("main.request_to_go_live", service_id=SERVICE_ONE_ID, _follow_redirects=True)
 
     assert (

@@ -2,7 +2,7 @@ from functools import partial
 from unittest.mock import ANY, PropertyMock
 
 import pytest
-from emergency_alerts_utils.clients.zendesk.zendesk_client import NotifySupportTicket
+from emergency_alerts_utils.clients.zendesk.zendesk_client import EASSupportTicket
 from flask import url_for
 from freezegun import freeze_time
 
@@ -133,7 +133,7 @@ def test_get_feedback_page(client_request, ticket_type, expected_status_code):
 )
 def test_passed_non_logged_in_user_details_through_flow(client_request, mocker, ticket_type, zendesk_ticket_type):
     client_request.logout()
-    mock_create_ticket = mocker.spy(NotifySupportTicket, "__init__")
+    mock_create_ticket = mocker.spy(EASSupportTicket, "__init__")
     mock_send_ticket_to_zendesk = mocker.patch(
         "app.main.views.feedback.zendesk_client.send_ticket_to_zendesk",
         autospec=True,
@@ -187,7 +187,7 @@ def test_passes_user_details_through_flow(
     zendesk_ticket_type,
     data,
 ):
-    mock_create_ticket = mocker.spy(NotifySupportTicket, "__init__")
+    mock_create_ticket = mocker.spy(EASSupportTicket, "__init__")
     mock_send_ticket_to_zendesk = mocker.patch(
         "app.main.views.feedback.zendesk_client.send_ticket_to_zendesk",
         autospec=True,
@@ -307,7 +307,7 @@ def test_urgency(
 ):
     mocker.patch("app.main.views.feedback.in_business_hours", return_value=is_in_business_hours)
 
-    mock_ticket = mocker.patch("app.main.views.feedback.NotifySupportTicket")
+    mock_ticket = mocker.patch("app.main.views.feedback.EASSupportTicket")
     mocker.patch(
         "app.main.views.feedback.zendesk_client.send_ticket_to_zendesk",
         autospec=True,
