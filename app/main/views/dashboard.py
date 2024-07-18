@@ -195,9 +195,6 @@ def get_dashboard_partials(service_id):
         get_current_financial_year(),
     )
     return {
-        "upcoming": render_template(
-            "views/dashboard/_upcoming.html",
-        ),
         "totals": render_template(
             "views/dashboard/_totals.html",
             service_id=service_id,

@@ -13,9 +13,6 @@
 
   <h1 class="heading heading-large">Text messages</h1>
   <p class="govuk-body">Send thousands of free text messages to UK and international numbers with GOV.UK Notify.</p>
-  {% if not current_user.is_authenticated %}
-  <p class="govuk-body"><a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('main.register') }}">Create an account</a> and try Notify for yourself.</p>
-  {% endif %}
 
   <h2 class="heading heading-medium">Features</h2>
   <p class="govuk-body">Notify makes it easy to:</p>

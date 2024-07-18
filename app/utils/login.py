@@ -32,7 +32,6 @@ def log_in_user(user_id):
     finally:
         # get rid of anything in the session that we don't expect to have been set during register/sign in flow
         session.pop("user_details", None)
-        session.pop("file_uploads", None)
 
     return redirect_when_logged_in(platform_admin=user.platform_admin)
 

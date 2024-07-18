@@ -1,3 +1,4 @@
+from flask import abort
 from notifications_python_client.errors import HTTPError
 
 from app.notify_client import NotifyAdminAPIClient, cache
@@ -47,6 +48,8 @@ class UserApiClient(NotifyAdminAPIClient):
         except HTTPError as e:
             if e.status_code == 404:
                 return None
+            elif e.status_code == 429:
+                abort(429)
             raise e
 
     @cache.delete("user-{user_id}")
@@ -120,6 +123,8 @@ class UserApiClient(NotifyAdminAPIClient):
         except HTTPError as e:
             if e.status_code == 400 or e.status_code == 404:
                 return False, e.message
+            elif e.status_code == 429:
+                abort(429)
             raise e
 
     @cache.delete("user-{user_id}")

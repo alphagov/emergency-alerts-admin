@@ -1,0 +1,17 @@
+{% extends "withoutnav_template.html" %}
+{% block per_page_title %}Too many requests{% endblock %}
+{% block maincolumn_content %}
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <h1 class="heading-large">
+          Too many requests
+        </h1>
+        <p class="govuk-body">
+          You've been temporarily throttled due to too many login attempts.
+        </p>
+        <p class="govuk-body">
+          Wait for a few minutes before attempting to login again.
+        </p>
+      </div>
+    </div>
+{% endblock %}

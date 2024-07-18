@@ -1,5 +1,4 @@
 import json
-from functools import partial
 from unittest.mock import ANY, Mock
 
 import pytest
@@ -7,12 +6,7 @@ from flask import url_for
 from freezegun import freeze_time
 from notifications_python_client.errors import HTTPError
 
-from tests import (
-    NotifyBeautifulSoup,
-    sample_uuid,
-    template_json,
-    validate_route_permission,
-)
+from tests import NotifyBeautifulSoup, template_json, validate_route_permission
 from tests.app.main.views.test_template_folders import (
     CHILD_FOLDER_ID,
     FOLDER_TWO_ID,
@@ -27,7 +21,6 @@ from tests.conftest import (
     ElementNotFound,
     create_active_caseworking_user,
     create_active_user_view_permissions,
-    create_letter_contact_block,
     create_template,
     normalize_spaces,
 )
@@ -539,78 +532,6 @@ def test_broadcast_template_doesnt_highlight_placeholders_but_does_count_charact
     assert (page.select_one("[data-notify-module=update-status]")["aria-live"]) == "polite"
 
 
-def test_caseworker_redirected_to_set_sender_for_one_off(
-    client_request,
-    mock_get_service_templates,
-    mock_get_service_template,
-    fake_uuid,
-    active_caseworking_user,
-):
-    client_request.login(active_caseworking_user)
-    client_request.get(
-        "main.view_template",
-        service_id=SERVICE_ONE_ID,
-        template_id=fake_uuid,
-        _expected_status=302,
-        _expected_redirect=url_for(
-            "main.set_sender",
-            service_id=SERVICE_ONE_ID,
-            template_id=fake_uuid,
-        ),
-    )
-
-
-@freeze_time("2020-01-01 15:00")
-def test_caseworker_sees_template_page_if_template_is_deleted(
-    client_request,
-    mock_get_deleted_template,
-    fake_uuid,
-    mocker,
-    active_caseworking_user,
-):
-    mocker.patch("app.user_api_client.get_user", return_value=active_caseworking_user)
-
-    template_id = fake_uuid
-    page = client_request.get(
-        ".view_template",
-        service_id=SERVICE_ONE_ID,
-        template_id=template_id,
-        _test_page_title=False,
-    )
-
-    content = str(page)
-    assert url_for("main.send_one_off", service_id=SERVICE_ONE_ID, template_id=fake_uuid) not in content
-    assert page.select("p.hint")[0].text.strip() == "This template was deleted today at 3:00pm."
-
-    mock_get_deleted_template.assert_called_with(SERVICE_ONE_ID, template_id, None)
-
-
-def test_user_with_only_send_and_view_redirected_to_set_sender_for_one_off(
-    client_request,
-    mock_get_service_templates,
-    mock_get_service_template,
-    active_user_with_permissions,
-    mocker,
-    fake_uuid,
-):
-    active_user_with_permissions["permissions"][SERVICE_ONE_ID] = [
-        "send_messages",
-        "view_activity",
-    ]
-    client_request.login(active_user_with_permissions)
-    client_request.get(
-        "main.view_template",
-        service_id=SERVICE_ONE_ID,
-        template_id=fake_uuid,
-        _expected_status=302,
-        _expected_redirect=url_for(
-            "main.set_sender",
-            service_id=SERVICE_ONE_ID,
-            template_id=fake_uuid,
-        ),
-    )
-
-
 @pytest.mark.parametrize(
     "permissions, links_to_be_shown, permissions_warning_to_be_shown",
     [
@@ -623,14 +544,6 @@ def test_user_with_only_send_and_view_redirected_to_set_sender_for_one_off(
         (
             ["manage_templates"],
             [
-                (".edit_service_template", "Edit"),
-            ],
-            None,
-        ),
-        (
-            ["send_messages", "manage_templates"],
-            [
-                (".set_sender", "Get ready to send a message using this template"),
                 (".edit_service_template", "Edit"),
             ],
             None,
@@ -775,52 +688,6 @@ def test_should_show_sms_template_with_downgraded_unicode_characters(
     )
 
     assert rendered_msg in page.text
-
-
-@pytest.mark.parametrize(
-    "contact_block_data, expected_partial_url",
-    (
-        (
-            [],
-            partial(
-                url_for,
-                "main.service_add_letter_contact",
-                from_template=sample_uuid(),
-            ),
-        ),
-        (
-            [create_letter_contact_block()],
-            partial(
-                url_for,
-                "main.set_template_sender",
-                template_id=sample_uuid(),
-            ),
-        ),
-    ),
-)
-def test_should_let_letter_contact_block_be_changed_for_the_template(
-    mocker,
-    mock_get_service_letter_template,
-    mock_get_template_folders,
-    client_request,
-    service_one,
-    fake_uuid,
-    contact_block_data,
-    expected_partial_url,
-):
-    mocker.patch("app.main.views.templates.get_page_count_for_letter", return_value=1)
-    mocker.patch("app.service_api_client.get_letter_contacts", return_value=contact_block_data)
-
-    page = client_request.get(
-        "main.view_template",
-        service_id=SERVICE_ONE_ID,
-        template_id=fake_uuid,
-        _test_page_title=False,
-    )
-
-    assert page.select_one("a.edit-template-link-letter-contact")["href"] == expected_partial_url(
-        service_id=SERVICE_ONE_ID
-    )
 
 
 @pytest.mark.parametrize("prefix_sms", [True, pytest.param(False, marks=pytest.mark.xfail())])
@@ -1299,35 +1166,6 @@ def test_should_not_allow_creation_of_a_template_without_correct_permission(
     assert page.select(".govuk-back-link")[0]["href"] == url_for(
         ".choose_template",
         service_id=service_one["id"],
-    )
-
-
-@pytest.mark.parametrize(
-    "template_type,  expected_status_code",
-    [
-        ("email", 200),
-        ("sms", 200),
-        ("letter", 302),
-    ],
-)
-def test_should_redirect_to_one_off_if_template_type_is_letter(
-    client_request,
-    multiple_reply_to_email_addresses,
-    multiple_sms_senders,
-    fake_uuid,
-    mocker,
-    template_type,
-    expected_status_code,
-):
-    mocker.patch(
-        "app.service_api_client.get_service_template",
-        return_value={"data": create_template(template_type=template_type)},
-    )
-    client_request.get(
-        ".set_sender",
-        service_id=SERVICE_ONE_ID,
-        template_id=fake_uuid,
-        _expected_status=expected_status_code,
     )
 
 
@@ -1847,7 +1685,6 @@ def test_should_show_page_for_a_deleted_template(
 
     content = str(page)
     assert url_for("main.edit_service_template", service_id=SERVICE_ONE_ID, template_id=fake_uuid) not in content
-    assert url_for("main.send_one_off", service_id=SERVICE_ONE_ID, template_id=fake_uuid) not in content
     assert page.select("p.hint")[0].text.strip() == "This template was deleted today at 3:00pm."
     assert "Delete this template" not in page.select_one("main").text
 
@@ -2152,27 +1989,6 @@ def test_should_show_hint_once_template_redacted(
     assert page.select(".hint")[0].text == "Personalisation is hidden after sending"
 
 
-def test_should_not_show_redaction_stuff_for_letters(
-    client_request,
-    mocker,
-    fake_uuid,
-    mock_get_service_letter_template,
-    mock_get_template_folders,
-    single_letter_contact_block,
-):
-    mocker.patch("app.main.views.templates.get_page_count_for_letter", return_value=1)
-
-    page = client_request.get(
-        "main.view_template",
-        service_id=SERVICE_ONE_ID,
-        template_id=fake_uuid,
-        _test_page_title=False,
-    )
-
-    assert page.select(".hint") == []
-    assert "personalisation" not in " ".join(link.text.lower() for link in page.select("a"))
-
-
 def test_should_not_show_redaction_stuff_for_broadcasts(
     client_request,
     fake_uuid,
@@ -2188,80 +2004,6 @@ def test_should_not_show_redaction_stuff_for_broadcasts(
 
     assert page.select(".hint") == []
     assert "personalisation" not in " ".join(link.text.lower() for link in page.select("a"))
-
-
-def test_set_template_sender(
-    client_request,
-    fake_uuid,
-    mock_update_service_template_sender,
-    mock_get_service_letter_template,
-    single_letter_contact_block,
-):
-    data = {
-        "sender": "1234",
-    }
-
-    client_request.post(
-        "main.set_template_sender",
-        service_id=SERVICE_ONE_ID,
-        template_id=fake_uuid,
-        _data=data,
-    )
-
-    mock_update_service_template_sender.assert_called_once_with(
-        SERVICE_ONE_ID,
-        fake_uuid,
-        "1234",
-    )
-
-
-@pytest.mark.parametrize(
-    "contact_block_data",
-    [
-        [],  # no letter contact blocks
-        [create_letter_contact_block()],
-    ],
-)
-def test_add_sender_link_only_appears_on_services_with_no_senders(
-    client_request,
-    fake_uuid,
-    mocker,
-    contact_block_data,
-    mock_get_service_letter_template,
-):
-    mocker.patch("app.service_api_client.get_letter_contacts", return_value=contact_block_data)
-    page = client_request.get(
-        "main.set_template_sender",
-        service_id=SERVICE_ONE_ID,
-        template_id=fake_uuid,
-    )
-
-    assert page.select_one("form .page-footer + a")["href"] == url_for(
-        "main.service_add_letter_contact",
-        service_id=SERVICE_ONE_ID,
-        from_template=fake_uuid,
-    )
-
-
-def test_set_template_sender_escapes_letter_contact_block_names(
-    client_request,
-    fake_uuid,
-    mocker,
-    mock_get_service_letter_template,
-):
-    letter_contact_block = create_letter_contact_block(contact_block="foo\n\n<script>\n\nbar")
-    mocker.patch("app.service_api_client.get_letter_contacts", return_value=[letter_contact_block])
-    page = client_request.get(
-        "main.set_template_sender",
-        service_id=SERVICE_ONE_ID,
-        template_id=fake_uuid,
-    )
-
-    # use decode_contents, which returns the raw html, rather than text, which sanitises it and makes
-    # testing confusing
-    radio_text = page.select_one('.govuk-grid-column-three-quarters label[for="sender-1"]').decode_contents()
-    assert "&lt;script&gt;" in radio_text
-    assert "<script>" not in radio_text
 
 
 @pytest.mark.parametrize(

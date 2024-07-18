@@ -32,36 +32,6 @@
     "href": "#" + file_contents_header_id
   }) }}
 
-  {{ template|string }}
-  <div class="bottom-gutter-3-2">
-    <form method="post" enctype="multipart/form-data" action="{{url_for('main.start_job', service_id=current_service.id, upload_id=upload_id)}}" class='page-footer'>
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-      <input type="hidden" name="contact_list_id" value="{{ request.args.get('contact_list_id', '') }}" />
-      {% if choose_time_form and template.template_type != 'letter' %}
-        {{ choose_time_form.scheduled_for(param_extensions={
-          'formGroup': {'classes': 'bottom-gutter-2-3'},
-          'attributes': {
-            'data-notify-module': 'radio-select',
-            'data-categories': choose_time_form.scheduled_for.categories|join(','),
-            'data-show-now-as-default': 'true'
-          }
-        }) }}
-      {% endif %}
-      {% if (template.template_type != 'letter' or not request.args.from_test) and not letter_too_long %}
-        {% set button_text %}
-          Send {{ count_of_recipients|message_count(template.template_type) }}
-        {% endset %}
-        {{ govukButton({ "text": button_text }) }}
-      {% else %}
-        {{ govukButton({
-          "element": "a",
-          "text": "Download as a PDF",
-          "href": url_for('.check_messages_preview', service_id=current_service.id, template_id=template.id, upload_id=upload_id, filetype='pdf'),
-        }) }}
-      {% endif %}
-    </form>
-  </div>
-
   {% if not request.args.from_test %}
 
     <h2 class="heading-medium" id="{{ file_contents_header_id }}">{{ original_file_name }}</h2>
@@ -75,15 +45,6 @@
           '<span class="govuk-visually-hidden">Row in file</span><span aria-hidden="true">1</span>'|safe
         ] + recipients.column_headers
       ) %}
-        {% call index_field() %}
-          <span>
-            {% if (item.index + 2) == preview_row %}
-              {{ item.index + 2 }}
-            {% else %}
-              <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('.check_messages', service_id=current_service.id, template_id=template.id, upload_id=upload_id, row_index=(item.index + 2), original_file_name=original_file_name) }}">{{ item.index + 2 }}</a>
-            {% endif %}
-          </span>
-        {% endcall %}
         {% for column in recipients.column_headers %}
           {% if item[column].ignore %}
             {{ text_field(item[column].data or '', status='default') }}

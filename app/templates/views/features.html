@@ -21,9 +21,6 @@
   <li><a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('main.features_letters') }}">letters</a></li>
 </ul>
 <p class="govuk-body">You do not need any technical knowledge to use Notify.</p>
-{% if not current_user.is_authenticated %}
-  <p class="govuk-body"><a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('main.register') }}">Create an account</a> for free and try it yourself.</p>
-{% endif %}
 
 <h2 class="heading-medium" id="templates">Reusable message templates</h2>
 <p class="govuk-body">To send an email, text or letter with Notify, you need to create a reusable message template first.</p>

@@ -235,7 +235,3 @@ class PaginatedJobs(PaginatedModelList, ImmediateJobs):
 
 class PaginatedJobsAndScheduledJobs(PaginatedJobs):
     statuses = job_api_client.NON_CANCELLED_JOB_STATUSES
-
-
-class PaginatedUploads(PaginatedModelList, ImmediateJobs):
-    client_method = job_api_client.get_uploads

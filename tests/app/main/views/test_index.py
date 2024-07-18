@@ -52,7 +52,6 @@ def test_robots(client_request):
         ("feedback", {"ticket_type": "report-problem"}),
         ("bat_phone", {}),
         ("thanks", {}),
-        ("register", {}),
         ("features_email", {}),
         pytest.param("index", {}, marks=pytest.mark.xfail(raises=AssertionError)),
     ),
@@ -91,8 +90,6 @@ def test_hiding_pages_from_search_engines(
         "guidance_index",
         "create_and_send_messages",
         "edit_and_format_messages",
-        "send_files_by_email",
-        "upload_a_letter",
         "who_can_use_notify",
     ],
 )

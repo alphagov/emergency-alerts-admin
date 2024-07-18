@@ -9,7 +9,6 @@ from notifications_python_client.errors import HTTPError
 from app import (
     current_service,
     format_delta,
-    nl2br,
     service_api_client,
     template_folder_api_client,
     template_statistics_client,
@@ -22,12 +21,10 @@ from app.main.forms import (
     LetterTemplateForm,
     LetterTemplatePostageForm,
     SearchTemplatesForm,
-    SetTemplateSenderForm,
     SMSTemplateForm,
     TemplateAndFoldersSelectionForm,
     TemplateFolderForm,
 )
-from app.main.views.send import get_sender_details
 from app.models.service import Service
 from app.models.template_list import TemplateList, UserTemplateList, UserTemplateLists
 from app.template_previews import TemplatePreview, get_page_count_for_letter
@@ -51,7 +48,7 @@ def view_template(service_id, template_id):
 
     user_has_template_permission = current_user.has_template_folder_permission(template_folder)
     if should_skip_template_page(template):
-        return redirect(url_for(".set_sender", service_id=service_id, template_id=template_id))
+        return redirect(url_for(".index"))
 
     page_count = get_page_count_for_letter(template)
 
@@ -60,12 +57,6 @@ def view_template(service_id, template_id):
         template=get_template(
             template,
             current_service,
-            letter_preview_url=url_for(
-                ".view_letter_template_preview",
-                service_id=service_id,
-                template_id=template_id,
-                filetype="png",
-            ),
             show_recipient=True,
             page_count=page_count,
         ),
@@ -769,39 +760,6 @@ def view_template_versions(service_id, template_id):
     )
 
 
-@main.route("/services/<uuid:service_id>/templates/<uuid:template_id>/set-template-sender", methods=["GET", "POST"])
-@user_has_permissions("manage_templates")
-def set_template_sender(service_id, template_id):
-    template = current_service.get_template_with_user_permission_or_403(template_id, current_user)
-    sender_details = get_template_sender_form_dict(service_id, template)
-    no_senders = sender_details.get("no_senders", False)
-
-    form = SetTemplateSenderForm(
-        sender=sender_details["current_choice"],
-        sender_choices=sender_details["value_and_label"],
-    )
-    form.sender.param_extensions = {"items": []}
-    for item_value, _item_label in sender_details["value_and_label"]:
-        if item_value == sender_details["default_sender"]:
-            extensions = {"hint": {"text": "(Default)"}}
-        else:
-            extensions = {}  # if no extensions needed, send an empty dict to preserve order of items
-
-        form.sender.param_extensions["items"].append(extensions)
-
-    if form.validate_on_submit():
-        service_api_client.update_service_template_sender(
-            service_id,
-            template_id,
-            form.sender.data if form.sender.data else None,
-        )
-        return redirect(url_for(".view_template", service_id=service_id, template_id=template_id))
-
-    return render_template(
-        "views/templates/set-template-sender.html", form=form, template_id=template_id, no_senders=no_senders
-    )
-
-
 @main.route("/services/<uuid:service_id>/templates/<uuid:template_id>/edit-postage", methods=["GET", "POST"])
 @user_has_permissions("manage_templates")
 def edit_template_postage(service_id, template_id):
@@ -822,23 +780,3 @@ def edit_template_postage(service_id, template_id):
         template_id=template_id,
         template_postage=template["postage"],
     )
-
-
-def get_template_sender_form_dict(service_id, template):
-    context = {
-        "email": {"field_name": "email_address"},
-        "letter": {"field_name": "contact_block"},
-        "sms": {"field_name": "sms_sender"},
-    }[template["template_type"]]
-
-    sender_format = context["field_name"]
-    service_senders = get_sender_details(service_id, template["template_type"])
-    context["default_sender"] = next((x["id"] for x in service_senders if x["is_default"]), "Not set")
-    if not service_senders:
-        context["no_senders"] = True
-
-    context["value_and_label"] = [(sender["id"], nl2br(sender[sender_format])) for sender in service_senders]
-    context["value_and_label"].insert(0, ("", "Blank"))  # Add blank option to start of list
-
-    context["current_choice"] = template["service_letter_contact"] if template["service_letter_contact"] else ""
-    return context

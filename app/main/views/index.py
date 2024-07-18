@@ -197,22 +197,6 @@ def edit_and_format_messages():
     )
 
 
-@main.route("/using-emergency-alerts/guidance/send-files-by-email")
-def send_files_by_email():
-    return render_template(
-        "views/guidance/send-files-by-email.html",
-        navigation_links=using_notify_nav(),
-    )
-
-
-@main.route("/using-emergency-alerts/guidance/upload-a-letter")
-def upload_a_letter():
-    return render_template(
-        "views/guidance/upload-a-letter.html",
-        navigation_links=using_notify_nav(),
-    )
-
-
 @main.route("/using-emergency-alerts/guidance/letter-specification")
 def letter_specification():
     return render_template(

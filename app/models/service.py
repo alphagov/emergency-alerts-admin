@@ -3,8 +3,7 @@ from flask import abort, current_app
 from werkzeug.utils import cached_property
 
 from app.models import JSONModel
-from app.models.contact_list import ContactLists
-from app.models.job import ImmediateJobs, PaginatedJobs, PaginatedUploads, ScheduledJobs
+from app.models.job import ImmediateJobs, PaginatedJobs, ScheduledJobs
 from app.models.organisation import Organisation
 from app.models.user import InvitedUsers, User, Users
 from app.notify_client.api_key_api_client import api_key_api_client
@@ -127,8 +126,8 @@ class Service(JSONModel):
     def get_page_of_jobs(self, page):
         return PaginatedJobs(self.id, page=page)
 
-    def get_page_of_uploads(self, page):
-        return PaginatedUploads(self.id, page=page)
+    # def get_page_of_uploads(self, page):
+    #     return PaginatedUploads(self.id, page=page)
 
     @cached_property
     def has_jobs(self):
@@ -509,10 +508,6 @@ class Service(JSONModel):
             Organisation.TYPE_NHS_GP,
             Organisation.TYPE_NHS_LOCAL,
         }
-
-    @property
-    def contact_lists(self):
-        return ContactLists(self.id)
 
 
 class Services(SerialisedModelCollection):
