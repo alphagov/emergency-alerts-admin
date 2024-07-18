@@ -45,7 +45,6 @@ from app.main.forms import (
     ServiceBroadcastAccountTypeForm,
     ServiceBroadcastChannelForm,
     ServiceBroadcastNetworkForm,
-    ServiceContactDetailsForm,
     ServiceLetterContactBlockForm,
     ServiceOnOffSettingForm,
     ServiceReplyToEmailForm,
@@ -358,32 +357,6 @@ def archive_service(service_id):
             "delete",
         )
         return service_settings(service_id)
-
-
-@main.route("/services/<uuid:service_id>/service-settings/send-files-by-email", methods=["GET", "POST"])
-@user_has_permissions("manage_service")
-def send_files_by_email_contact_details(service_id):
-    form = ServiceContactDetailsForm()
-    contact_details = None
-
-    if request.method == "GET":
-        contact_details = current_service.contact_link
-        if contact_details:
-            contact_type = check_contact_details_type(contact_details)
-            field_to_update = getattr(form, contact_type)
-
-            form.contact_details_type.data = contact_type
-            field_to_update.data = contact_details
-
-    if form.validate_on_submit():
-        contact_type = form.contact_details_type.data
-
-        current_service.update(contact_link=form.data[contact_type])
-        return redirect(url_for(".service_settings", service_id=current_service.id))
-
-    return render_template(
-        "views/service-settings/send-files-by-email.html", form=form, contact_details=contact_details
-    )
 
 
 @main.route("/services/<uuid:service_id>/service-settings/set-reply-to-email", methods=["GET"])

@@ -3,7 +3,6 @@ from flask import abort, current_app
 from werkzeug.utils import cached_property
 
 from app.models import JSONModel
-from app.models.contact_list import ContactLists
 from app.models.job import ImmediateJobs, PaginatedJobs, ScheduledJobs
 from app.models.organisation import Organisation
 from app.models.user import InvitedUsers, User, Users
@@ -509,10 +508,6 @@ class Service(JSONModel):
             Organisation.TYPE_NHS_GP,
             Organisation.TYPE_NHS_LOCAL,
         }
-
-    @property
-    def contact_lists(self):
-        return ContactLists(self.id)
 
 
 class Services(SerialisedModelCollection):

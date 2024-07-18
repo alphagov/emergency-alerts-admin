@@ -51,14 +51,11 @@ EXCLUDED_ENDPOINTS = tuple(
             "change_user_auth",
             "check_and_resend_text_code",
             "check_and_resend_verification_code",
-            "check_messages",
-            "check_notification",
             "choose_account",
             "choose_broadcast_area",
             # "choose_broadcast_duration",
             "choose_broadcast_library",
             "choose_broadcast_sub_area",
-            "choose_from_contact_list",
             "choose_service",
             "choose_template",
             "choose_template_to_copy",
@@ -109,7 +106,6 @@ EXCLUDED_ENDPOINTS = tuple(
             "find_services_by_name",
             "find_users_by_email",
             "forgot_password",
-            "get_example_csv",
             "get_notifications_as_json",
             "get_started",
             "get_started_old",
@@ -133,9 +129,6 @@ EXCLUDED_ENDPOINTS = tuple(
             "monthly",
             "new_broadcast",
             "new_password",
-            "no_cookie.check_messages_preview",
-            "no_cookie.check_notification_preview",
-            "no_cookie.send_test_preview",
             "no_cookie.view_letter_template_preview",
             "no_cookie.view_template_version_preview",
             "old_guest_list",
@@ -173,15 +166,6 @@ EXCLUDED_ENDPOINTS = tuple(
             "search_coordinates",
             "search_postcodes",
             "security",
-            "send_files_by_email",
-            "send_files_by_email_contact_details",
-            "send_from_contact_list",
-            "send_messages",
-            "send_notification",
-            "send_one_off",
-            "send_one_off_letter_address",
-            "send_one_off_step",
-            "send_one_off_to_myself",
             "service_add_email_reply_to",
             "service_add_letter_contact",
             "service_confirm_delete_email_reply_to",
@@ -216,12 +200,9 @@ EXCLUDED_ENDPOINTS = tuple(
             "set_free_sms_allowance",
             "set_message_limit",
             "set_rate_limit",
-            "set_sender",
-            "set_template_sender",
             "show_accounts_or_dashboard",
             "sign_in",
             "sign_out",
-            "start_job",
             "static",
             "submit_request_to_go_live",
             "support",
@@ -481,7 +462,7 @@ def test_caseworkers_get_caseworking_navigation(
 ):
     client_request.login(active_caseworking_user)
     page = client_request.get("main.choose_template", service_id=SERVICE_ONE_ID)
-    assert normalize_spaces(page.select_one(".navigation").text) == ("Templates Sent messages Team members")
+    assert normalize_spaces(page.select_one(".navigation").text) == ("Templates Team members")
 
 
 def test_caseworkers_see_jobs_nav_if_jobs_exist(
@@ -494,4 +475,4 @@ def test_caseworkers_see_jobs_nav_if_jobs_exist(
 ):
     client_request.login(active_caseworking_user)
     page = client_request.get("main.choose_template", service_id=SERVICE_ONE_ID)
-    assert normalize_spaces(page.select_one(".navigation").text) == ("Templates Sent messages Team members")
+    assert normalize_spaces(page.select_one(".navigation").text) == ("Templates Team members")

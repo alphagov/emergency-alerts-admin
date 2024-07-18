@@ -770,15 +770,10 @@ def test_user_access_denied_to_template_folder_actions_without_folder_permission
 @pytest.mark.parametrize(
     "endpoint",
     [
-        "main.check_notification",
         "main.confirm_redact_template",
         "main.delete_service_template",
         "main.edit_service_template",
         "main.edit_template_postage",
-        "main.send_messages",
-        "main.send_one_off",
-        "main.set_sender",
-        "main.set_template_sender",
     ],
 )
 def test_user_access_denied_to_template_actions_without_folder_permission(
