@@ -146,20 +146,6 @@
           '<span class="govuk-visually-hidden">Row in file</span><span aria-hidden="true">1</span>'|safe
         ] + column_headers
       ) %}
-        {# {% call index_field() %}
-          <span>
-            {% set displayed_index = item.index + 2 %}
-            {% if (
-              trying_to_send_letters_in_trial_mode and
-              (not errors or recipients.more_rows_than_can_send) and
-              displayed_index != preview_row
-            ) %}
-              <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('.check_messages', service_id=current_service.id, template_id=template.id, upload_id=upload_id, row_index=displayed_index, original_file_name=original_file_name) }}">{{ displayed_index }}</a>
-            {% else %}
-              {{ displayed_index }}
-            {% endif %}
-          </span>
-        {% endcall %} #}
         {% for column in column_headers %}
           {% if item[column].error and not recipients.missing_column_headers %}
             {% call field() %}

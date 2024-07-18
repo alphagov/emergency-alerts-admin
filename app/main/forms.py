@@ -1245,38 +1245,6 @@ class BroadcastTemplateForm(SMSTemplateForm):
         BroadcastLength()(None, field)
 
 
-# class LetterAddressForm(StripWhitespaceForm):
-#     def __init__(self, *args, allow_international_letters=False, **kwargs):
-#         self.allow_international_letters = allow_international_letters
-#         super().__init__(*args, **kwargs)
-
-#     address = PostalAddressField("Address", validators=[DataRequired(message="Cannot be empty")])
-
-#     def validate_address(self, field):
-#         address = PostalAddress(
-#             field.data,
-#             allow_international_letters=self.allow_international_letters,
-#         )
-
-#         if not address.has_enough_lines:
-#             raise ValidationError(f"Address must be at least {PostalAddress.MIN_LINES} lines long")
-
-#         if address.has_too_many_lines:
-#             raise ValidationError(f"Address must be no more than {PostalAddress.MAX_LINES} lines long")
-
-#         if not address.has_valid_last_line:
-#             if self.allow_international_letters:
-#                 raise ValidationError("Last line of the address must be a UK postcode or another country")
-#             if address.international:
-#                 raise ValidationError("You do not have permission to send letters to other countries")
-#             raise ValidationError("Last line of the address must be a real UK postcode")
-
-#         if address.has_invalid_characters:
-#             raise ValidationError(
-#                 "Address lines must not start with any of the following characters: @ ( ) = [ ] ” \\ / , < > ~"
-#             )
-
-
 class EmailTemplateForm(BaseTemplateForm):
     subject = TextAreaField("Subject", validators=[DataRequired(message="Cannot be empty")])
 
@@ -1343,17 +1311,6 @@ class ChangePasswordForm(StripWhitespaceForm):
     def validate_old_password(self, field):
         if not self.validate_password_func(field.data):
             raise ValidationError("Invalid password")
-
-
-# class CsvUploadForm(StripWhitespaceForm):
-#     file = FileField(
-#         "Add recipients",
-#         validators=[
-#             DataRequired(message="Please pick a file"),
-#             CsvFileValidator(),
-#             FileSize(max_size=10e6, message="File must be smaller than 10Mb"),  # 10Mb
-#         ],
-#     )
 
 
 class ChangeNameForm(StripWhitespaceForm):
@@ -1715,15 +1672,6 @@ def get_placeholder_form_instance(
     PlaceholderForm.placeholder_value = field
 
     return PlaceholderForm(placeholder_value=dict_to_populate_from.get(placeholder_name, ""))
-
-
-# class SetSenderForm(StripWhitespaceForm):
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         self.sender.choices = kwargs["sender_choices"]
-#         self.sender.label.text = kwargs["sender_label"]
-
-#     sender = GovukRadiosField()
 
 
 class SetTemplateSenderForm(StripWhitespaceForm):

@@ -52,11 +52,6 @@
   {% if current_user.has_permissions('manage_templates') and template.template_type == 'letter' %}
     <a href="{{ url_for(".edit_template_postage", service_id=current_service.id, template_id=template.id) }}" class="govuk-link govuk-link--inverse edit-template-link-letter-postage">Change<span class="govuk-visually-hidden"> postage</span></a>
     <a href="{{ url_for(".edit_service_template", service_id=current_service.id, template_id=template.id) }}" class="govuk-link govuk-link--inverse edit-template-link-letter-body">Edit<span class="govuk-visually-hidden"> letter template</span></a>
-    {# {% if current_service.count_letter_contact_details %}
-      <a href="{{ url_for(".set_template_sender", service_id=current_service.id, template_id=template.id) }}" class="govuk-link govuk-link--inverse edit-template-link-letter-contact">Edit<span class="govuk-visually-hidden"> letter contact block</span></a>
-    {% else %}
-      <a href="{{ url_for(".service_add_letter_contact", service_id=current_service.id, from_template=template.id) }}" class="govuk-link govuk-link--inverse edit-template-link-letter-contact">Edit<span class="govuk-visually-hidden"> letter contact block</span></a>
-    {% endif %} #}
   {% endif %}
   {{ template|string }}
 </div>
