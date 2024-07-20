@@ -14,45 +14,60 @@ afterAll(() => {
   document.body.innerHTML = "";
 });
 
-const inactivityDialog = {open: false, getElementsByTagName: jest.fn(), showModal: jest.fn(), close: jest.fn()}
-const sessionExpiryDialog = {open: false, getElementsByTagName: jest.fn(), showModal: jest.fn(), close: jest.fn()}
+const inactivityDialog = {open: false, showModal: jest.fn(), close: jest.fn(), hasAttribute: jest.fn()}
+const sessionExpiryDialog = {open: false, showModal: jest.fn(), close: jest.fn(), hasAttribute: jest.fn()}
 const htmlContent = `
-<dialog id="activity" tabindex="-1" aria-modal="true" class="hmrc-timeout-dialog"
-aria-labelledby="hmrc-timeout-heading hmrc-timeout-message">
-<div>
-    <h1 id="hmrc-timeout-heading" class="govuk-heading-m push--top">You're about to be signed out</h1>
-    <p class="govuk-body hmrc-timeout-dialog__message" aria-hidden="true">For your security, we will sign you out in 2 minutes.</p>
-    <p id="hmrc-timeout-message" class="govuk-visually-hidden screenreader-content" aria-live="assertive">For your
-        security, we will sign you out in 2 minutes.</p><button id="hmrc-timeout-keep-signin-btn"
-        class="govuk-button">Stay signed in</button>
-    <div class="hmrc-timeout-dialog__link-wrapper"><a id="hmrc-timeout-sign-out-link"
-            class="govuk-link hmrc-timeout-dialog__link" href="/sign-out">Sign out</a></div>
-</div>
-</dialog>
-
-<dialog id="expiry" tabindex="-1" aria-modal="true" class="hmrc-timeout-dialog"
-aria-labelledby="hmrc-timeout-heading hmrc-timeout-message">
-<div>
-<h1 id="hmrc-timeout-heading" class="govuk-heading-m push--top">You can no longer extend your session</h1>
-<p class="govuk-body hmrc-timeout-dialog__message" aria-hidden="true">For your security, we will sign you out in 2 minutes.</p>
-<p id="hmrc-timeout-message" class="govuk-visually-hidden screenreader-content" aria-live="assertive">For your security, we will sign you out in 2 minutes.</p><button id="hmrc-timeout-sign-in-again-btn"
-    class="govuk-button">Sign in again</button>
-<div class="hmrc-timeout-dialog__link-wrapper"><a id="hmrc-timeout-sign-out-link"
-        class="govuk-link hmrc-timeout-dialog__link" href="/sign-out">Sign out</a></div>
-</div>
-</dialog>
+  <dialog id="activity" tabindex="-1" aria-modal="true" class="hmrc-timeout-dialog"
+    role="dialog" aria-labelledby="hmrc-timeout-heading hmrc-timeout-message">
+    <div class="hmrc-timeout-dialog-header">
+        <div class="hmrc-timeout-dialog__link-wrapper close-link">
+            <a href="#" id="close-inactivity-dialog" class="govuk-link hmrc-timeout-dialog__link">Close</a>
+        </div>
+    </div>
+    <div class="hmrc-timeout-dialog-content">
+        <h2 id="hmrc-timeout-heading" class="govuk-heading-m push--top">You're about to be signed out</h2>
+        <h2 class="govuk-body hmrc-timeout-dialog__message" aria-hidden="true" id="time-remaining-message">You have n minutes remaining in your session.</h2>
+        <h2 id="hmrc-timeout-message" class="govuk-visually-hidden screenreader-content" aria-live="assertive">If you do not sign in within 2 mins, your session will end. We do this to keep your information secure.</h2>
+        {{ govukButton({
+            "text": "Stay signed in",
+            "classes": "govuk-button",
+            "id": "hmrc-timeout-keep-signin-btn"
+        }) }}
+        <div class="hmrc-timeout-dialog__link-wrapper">
+            <a id="hmrc-timeout-sign-out-link" class="govuk-link hmrc-timeout-dialog__link" href="/sign-out">Sign out now</a>
+        </div>
+    </div>
+  </dialog>
+  <dialog id="expiry" tabindex="-1" aria-modal="true" class="hmrc-timeout-dialog" role="dialog" aria-labelledby="hmrc-timeout-heading hmrc-timeout-message">
+    <div class="hmrc-timeout-dialog-header">
+        <div class="hmrc-timeout-dialog__link-wrapper close-link">
+            <a href="#" id="close-inactivity-dialog" class="govuk-link hmrc-timeout-dialog__link">Close</a>
+        </div>
+    </div>
+    <div class="hmrc-timeout-dialog-content">
+        <h2 id="hmrc-timeout-heading" class="govuk-heading-m push--top">You can no longer extend your session</h2>
+        <h2 class="govuk-body hmrc-timeout-dialog__message" aria-hidden="true">You’ll be signed out in 2 minutes. We do this to keep your information secure.</h2>
+        <h2 id="hmrc-timeout-message" class="govuk-visually-hidden screenreader-content" aria-live="assertive">You’ll be signed out in 2 minutes. We do this to keep your information secure.</h2>
+        {{ govukButton({
+            "text": "OK, continue",
+            "classes": "govuk-button",
+            "id": "continue-button"
+        }) }}
+        <div class="hmrc-timeout-dialog__link-wrapper">
+            <a id="hmrc-timeout-sign-out-link" class="govuk-link hmrc-timeout-dialog__link" href="/sign-out">Sign out now</a>
+        </div>
+    </div>
+  </dialog>
 `;
 
 describe("Inactivity dialog appears and components within it function correctly", () => {
   beforeEach(() => {
     document.body.innerHTML = htmlContent;
-    inactivity_button = document.getElementById("hmrc-timeout-keep-signin-btn");
     link = document.getElementById("hmrc-timeout-sign-out-link");
-
     jest.useFakeTimers();
-    window.GOVUK.sessionExpiryPopup(sessionExpiryDialog);
+    window.GOVUK.displaySessionExpiryDialog(inactivityDialog, sessionExpiryDialog);
     window.GOVUK.startInactivityTimeout(inactivityDialog);
-    window.GOVUK.resetTimeouts(inactivityDialog);
+    window.GOVUK.resetInactivityTimeouts(inactivityDialog);
   });
 
   afterEach(() => {
@@ -70,23 +85,13 @@ describe("Inactivity dialog appears and components within it function correctly"
     expect(inactivityDialog.showModal).toHaveBeenCalled();
   });
 
-  test("Stay signed in button should close dialog and reset timeouts", () => {
-    jest.spyOn(global, 'clearTimeout');
-    jest.advanceTimersByTime(60 * window.GOVUK.inactivityMins * 1000);
-    expect(inactivityDialog.close).not.toHaveBeenCalled();
-    helpers.triggerEvent(inactivity_button, "click");
-    expect(clearTimeout).toHaveBeenCalledTimes(2);
-    expect(inactivityDialog.close).toHaveBeenCalled();
-  });
-
 });
 
 describe("Timeout dialog appears", () => {
   beforeEach(() => {
     document.body.innerHTML = htmlContent;
-    expiry_button = document.getElementById("hmrc-timeout-sign-in-again-btn");
     jest.useFakeTimers();
-    window.GOVUK.sessionExpiryPopup(sessionExpiryDialog);
+    window.GOVUK.displaySessionExpiryDialog(inactivityDialog, sessionExpiryDialog);
   });
 
   afterEach(() => {

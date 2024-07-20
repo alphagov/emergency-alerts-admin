@@ -1,137 +1,210 @@
 const inactivityMins = Number(inactivity_mins); // Minutes until first popup displayed
 const inactivityWarningDisplayedDuration = Number(inactivity_warning_duration); // Minutes until logout if no response after popup displayed
 const expiryWarningMins = Number(expiry_warning_mins); // Minutes until popup displayed warning user of end of session
-const sessionExpiryMins = Number(permanent_session_lifetime);
+const sessionExpiryMins = Number(permanent_session_lifetime) / 60;
+const inactivityDialog = document.getElementById("activity");
+const sessionExpiryDialog = document.getElementById("expiry");
+const loginTimestamp = new Date(logged_in_at);
 let inactivityLogoutTimeout;
 let lastActiveTimeout;
-
-let inactivityDialog = document.getElementById("activity");
-let sessionExpiryDialog = document.getElementById("expiry");
 let inactivityDialogDisplayedTimeout;
-const loginTimestamp = new Date(logged_in_at);
+let sessionExpiryTimeout;
 
 (function (window) {
   "use strict";
 
   const {differenceInSeconds, addMinutes} = window.GOVUK.vendor;
+  console.log(inactivityMins, sessionExpiryMins, expiryWarningMins);
 
-  function isLoggedIn() {
+  const isLoggedIn = function() {
     // Checking whether user logged in or not based on whether loginTimestamp exists and is a date
     return (loginTimestamp && !isNaN(new Date(loginTimestamp)));
-  }
+  };
 
-  function getTimeLeftUntilExpiry() {
+  const getTimeLeftUntilExpiryDialogDisplayed = function() {
+    // calculates how long left in session before expiry dialog displayed, before final timeout, after each request
+    const current_time = new Date();
+    const expiry_warning_time = addMinutes(loginTimestamp, expiryWarningMins);
+    return differenceInSeconds(expiry_warning_time, current_time) * 1000;
+  };
+
+  const getTimeLeftUntilSessionExpiry = function() {
     // calculates how long left in session, before final timeout, after each request
     const current_time = new Date();
-    const expiry_time = addMinutes(loginTimestamp, expiryWarningMins);
+    const expiry_time = addMinutes(loginTimestamp, sessionExpiryMins);
     return differenceInSeconds(expiry_time, current_time) * 1000;
-  }
+  };
 
-  function displayInactivityPopup() {
-    // Check if user logged in and there is enough time left before session expires
-    let timeLeft = getTimeLeftUntilExpiry();
-    return (
-      isLoggedIn() &
-      (timeLeft > (expiryWarningMins - inactivityMins) * 60 * 1000)
-    );
-  }
-
-  function startInactivityTimeout(inactivityDialog) {
+  const startInactivityTimeout = function(inactivityDialog) {
     // Initial timeout that is restarted by request activity
-    if (displayInactivityPopup(inactivityDialog, addMinutes)) {
+    if (isLoggedIn()) {
       inactivityDialogDisplayedTimeout = setTimeout(function () {
         if (checkLocalStorage()) { // if last activity was less than set time ago,
           setLastActiveTimeout(inactivityDialog);
         } else {
+          setTimeRemainingMessage();
           inactivityDialog.showModal();
-          startInactivityPopupTimeout(inactivityDialog);
+          startInactivityDialogTimeout(inactivityDialog);
         }
       }, 1000 * 60 * inactivityMins);
     }
-  }
+  };
 
-  function resetTimeouts(inactivityDialog) {
+  const setTimeRemainingMessage = function() {
+    const inactivityTimeRemainingMsg = document.getElementById("time-remaining-message");
+    let timeLeft = Math.floor(getTimeLeftUntilExpiryDialogDisplayed() / 60000);
+    let message;
+    if (timeLeft == 1) {
+      message = "You have 1 minute remaining in your session.";
+    } else if (timeLeft > 1) {
+      message = "You have "+timeLeft+" minutes remaining in your session.";
+    } else if (timeLeft < 1) {
+      message = "You have less than a minute remaining in your session.";
+    }
+    inactivityTimeRemainingMsg.innerHTML = message;
+  };
+
+  const resetInactivityTimeouts = function(inactivityDialog) {
     // If stay signed in button is clicked then activity timeout is restarted
     const staySignedInButton = document.getElementById(
       "hmrc-timeout-keep-signin-btn"
     );
     if (staySignedInButton) {
       staySignedInButton.addEventListener("click", function () {
+        inactivityDialog.close();
         clearTimeout(inactivityDialogDisplayedTimeout);
         clearTimeout(inactivityLogoutTimeout);
-        inactivityDialog.close();
         startInactivityTimeout(inactivityDialog);
       });
     }
-  }
+  };
 
-  function startInactivityPopupTimeout(inactivityDialog) {
+  const startInactivityDialogTimeout = function(inactivityDialog) {
     // Logs user out if no response when the inactivity popup shows
     inactivityLogoutTimeout = setTimeout(function () {
       inactivityDialog.close();
-      signOutRedirect();
+      signOutRedirect('inactive');
     }, 1000 * 60 * inactivityWarningDisplayedDuration);
-  }
+  };
 
-  function sessionExpiryPopup(sessionExpiryDialog) {
+  const startSessionExpiryTimeout = function(inactivityDialog, sessionExpiryDialog) {
+    // Logs user out after session lifetime expires, flask terminates session
+    if (isLoggedIn()) {
+      sessionExpiryTimeout = setTimeout(function () {
+        if (sessionExpiryDialog.hasAttribute('open')) {
+          sessionExpiryDialog.close();
+        }
+        if (inactivityDialog.hasAttribute('open')) {
+          inactivityDialog.close();
+        }
+        signOutRedirect('expired');
+      }, getTimeLeftUntilSessionExpiry());
+    }
+  };
+
+  const displaySessionExpiryDialog = function(inactivityDialog, sessionExpiryDialog) {
     // displays session expiry popup after timeout
     if (isLoggedIn()) {
       inactivityLogoutTimeout = setTimeout(function () {
         if (sessionExpiryDialog)
         {
+          if (inactivityDialog.hasAttribute('open')){
+            inactivityDialog.close();
+          }
           sessionExpiryDialog.showModal();
+          clearTimeout(inactivityDialogDisplayedTimeout);
+          clearTimeout(inactivityLogoutTimeout);
+          clearTimeout(lastActiveTimeout);
         }
-      }, getTimeLeftUntilExpiry());
+      }, getTimeLeftUntilExpiryDialogDisplayed());
     }
-  }
+  };
 
-  function updateLocalStorage() {
+  const updateLocalStorage = function() {
     // With each request in any tab, the lastActive attribute is updated
     localStorage.setItem("lastActivity", new Date());
-  }
+  };
 
-  function checkLocalStorage() {
-    // Checking local storage for any activity in other tabs
+  const checkLocalStorage = function() {
+    // Checking local storage for any activity in other tabs & returns true if last activity less than set time ago
     let lastActive = new Date(localStorage.getItem("lastActivity"));
     return (differenceInSeconds(new Date(), lastActive) < inactivityMins * 60);
-  }
+  };
 
-  function setLastActiveTimeout(inactivityDialog) {
+  const setLastActiveTimeout = function(inactivityDialog) {
     // If activity in another tab, inactivity timeout period adjusted
     let lastActive = new Date(localStorage.getItem("lastActivity"));
     lastActiveTimeout = setTimeout(() => {
+      setTimeRemainingMessage();
       inactivityDialog.showModal();
-      startInactivityPopupTimeout(inactivityDialog);
+      startInactivityDialogTimeout(inactivityDialog);
     }, ((inactivityMins * 60) - differenceInSeconds(new Date(), lastActive)) * 1000);
-  }
+  };
 
-  function signOutRedirect() {
+  const signOutRedirect = function(status) {
     // send logout request and redirect to previous page upon relogging in
     let currentPage = encodeURIComponent(window.location.pathname);
     $.ajax("/sign-out", {
       method: "GET",
       success: function() {
-        window.location.href = "/sign-in?next="+currentPage+"&status=inactive";
+        window.location.href = "/sign-in?next="+currentPage+"&status="+status;
       },
       error: function(error) {
         console.log(error);
       },
     });
-  }
+  };
+
+  const closeExpiryDialog = function(sessionExpiryDialog) {
+    const closeExpiryDialogButton = document.getElementById(
+      "close-expiry-dialog"
+    );
+    const continueButton = document.getElementById(
+      "continue-button"
+    );
+    if (closeExpiryDialogButton) {
+      closeExpiryDialogButton.addEventListener("click", function () {
+        sessionExpiryDialog.close();
+      });
+    }
+    if (continueButton) {
+      continueButton.addEventListener("click", function () {
+        sessionExpiryDialog.close();
+      });
+    }
+  };
+
+  const closeInactivityDialog =  function(inactivityDialog) {
+    const closeInactivityDialogButton = document.getElementById(
+      "close-inactivity-dialog"
+    );
+    if (closeInactivityDialogButton) {
+      closeInactivityDialogButton.addEventListener("click", function () {
+      inactivityDialog.close();
+      clearTimeout(inactivityDialogDisplayedTimeout);
+      clearTimeout(inactivityLogoutTimeout);
+      startInactivityTimeout(inactivityDialog);
+      });
+    }
+  };
 
   updateLocalStorage();
-  sessionExpiryPopup(sessionExpiryDialog);
+  startSessionExpiryTimeout(inactivityDialog, sessionExpiryDialog);
+  displaySessionExpiryDialog(inactivityDialog, sessionExpiryDialog);
   startInactivityTimeout(inactivityDialog);
-  resetTimeouts(inactivityDialog);
+  resetInactivityTimeouts(inactivityDialog);
+  closeInactivityDialog(inactivityDialog);
+  closeExpiryDialog(sessionExpiryDialog);
 
   window.GOVUK.startInactivityTimeout = startInactivityTimeout;
-  window.GOVUK.sessionExpiryPopup = sessionExpiryPopup;
+  window.GOVUK.displaySessionExpiryDialog = displaySessionExpiryDialog;
   window.GOVUK.signOutRedirect = signOutRedirect;
-  window.GOVUK.resetTimeouts = resetTimeouts;
+  window.GOVUK.resetInactivityTimeouts = resetInactivityTimeouts;
   window.GOVUK.updateLocalStorage = updateLocalStorage;
   window.GOVUK.inactivityMins = inactivityMins;
   window.GOVUK.expiryWarningMins = expiryWarningMins;
   window.GOVUK.inactivityWarningDisplayedDuration = inactivityWarningDisplayedDuration;
   window.GOVUK.isLoggedIn = isLoggedIn;
+  window.GOVUK.startSessionExpiryTimeout = startSessionExpiryTimeout;
 
 })(window);
