@@ -597,8 +597,7 @@ def test_broadcast_dashboard_does_not_have_button_if_user_does_not_have_permissi
         service_id=SERVICE_ONE_ID,
     )
 
-    button = page.select_one("a.govuk-button")
-    assert normalize_spaces(button.text) != "Create new alert"
+    assert not page.select("a.govuk-button")
 
 
 @pytest.mark.parametrize(
