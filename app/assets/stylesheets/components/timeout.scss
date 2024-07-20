@@ -17,6 +17,12 @@
     background-color: rgba(64, 64, 64, 0.8);
   }
 
+  &-dialog-header {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+  }
+
   @media (min-width:40.0625em) {
     &-dialog {
       width: 435px;
