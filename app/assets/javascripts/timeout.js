@@ -14,7 +14,6 @@ let sessionExpiryTimeout;
   "use strict";
 
   const {differenceInSeconds, addMinutes} = window.GOVUK.vendor;
-  console.log(inactivityMins, sessionExpiryMins, expiryWarningMins);
 
   const isLoggedIn = function() {
     // Checking whether user logged in or not based on whether loginTimestamp exists and is a date
