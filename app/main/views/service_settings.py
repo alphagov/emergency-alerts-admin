@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from datetime import datetime
 
-from emergency_alerts_utils.clients.zendesk.zendesk_client import NotifySupportTicket
+from emergency_alerts_utils.clients.zendesk.zendesk_client import EASSupportTicket
 from emergency_alerts_utils.timezones import utc_string_to_aware_gmt_datetime
 from flask import (
     abort,
@@ -156,10 +156,10 @@ def request_to_go_live(service_id):
 def submit_request_to_go_live(service_id):
     ticket_message = render_template("support-tickets/go-live-request.txt") + "\n"
 
-    ticket = NotifySupportTicket(
+    ticket = EASSupportTicket(
         subject=f"Request to go live - {current_service.name}",
         message=ticket_message,
-        ticket_type=NotifySupportTicket.TYPE_QUESTION,
+        ticket_type=EASSupportTicket.TYPE_QUESTION,
         user_name=current_user.name,
         user_email=current_user.email_address,
         requester_sees_message_content=False,
