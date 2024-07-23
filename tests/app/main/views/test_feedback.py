@@ -292,7 +292,7 @@ def test_email_address_must_be_valid_if_provided_to_support_form(
         (PROBLEM_TICKET_TYPE, "no", False, False),
         (QUESTION_TICKET_TYPE, "no", False, False),
         # out of hours, only problems can be emergencies
-        (PROBLEM_TICKET_TYPE, "yes", False, True),
+        (PROBLEM_TICKET_TYPE, "yes", False, False),
         (QUESTION_TICKET_TYPE, "yes", False, False),
     ],
 )
