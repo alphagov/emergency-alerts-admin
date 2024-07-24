@@ -57,7 +57,7 @@ let sessionExpiryTimeout;
       message = "You have 1 minute remaining in your session.";
     } else if (timeLeft > 1) {
       message = "You have "+timeLeft+" minutes remaining in your session.";
-    } else if (timeLeft < 1) {
+    } else {
       message = "You have less than a minute remaining in your session.";
     }
     inactivityTimeRemainingMsg.innerHTML = message;
