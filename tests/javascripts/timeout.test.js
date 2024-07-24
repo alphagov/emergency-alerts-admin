@@ -19,11 +19,6 @@ const sessionExpiryDialog = {open: false, showModal: jest.fn(), close: jest.fn()
 const htmlContent = `
   <dialog id="activity" tabindex="-1" aria-modal="true" class="hmrc-timeout-dialog"
     role="dialog" aria-labelledby="hmrc-timeout-heading hmrc-timeout-message">
-    <div class="hmrc-timeout-dialog-header">
-        <div class="hmrc-timeout-dialog__link-wrapper close-link">
-            <a href="#" id="close-inactivity-dialog" class="govuk-link hmrc-timeout-dialog__link">Close</a>
-        </div>
-    </div>
     <div class="hmrc-timeout-dialog-content">
         <h2 id="hmrc-timeout-heading" class="govuk-heading-m push--top">You're about to be signed out</h2>
         <h2 class="govuk-body hmrc-timeout-dialog__message" aria-hidden="true" id="time-remaining-message">You have n minutes remaining in your session.</h2>
@@ -39,11 +34,6 @@ const htmlContent = `
     </div>
   </dialog>
   <dialog id="expiry" tabindex="-1" aria-modal="true" class="hmrc-timeout-dialog" role="dialog" aria-labelledby="hmrc-timeout-heading hmrc-timeout-message">
-    <div class="hmrc-timeout-dialog-header">
-        <div class="hmrc-timeout-dialog__link-wrapper close-link">
-            <a href="#" id="close-expiry-dialog" class="govuk-link hmrc-timeout-dialog__link">Close</a>
-        </div>
-    </div>
     <div class="hmrc-timeout-dialog-content">
         <h2 id="hmrc-timeout-heading" class="govuk-heading-m push--top">You can no longer extend your session</h2>
         <h2 class="govuk-body hmrc-timeout-dialog__message" aria-hidden="true">You’ll be signed out in 2 minutes. We do this to keep your information secure.</h2>
