@@ -51,7 +51,7 @@ let sessionExpiryTimeout;
 
   const setTimeRemainingMessage = function() {
     const inactivityTimeRemainingMsg = document.getElementById("time-remaining-message");
-    let timeLeft = Math.floor(getTimeLeftUntilExpiryDialogDisplayed() / 60000);
+    let timeLeft = Math.floor(getTimeLeftUntilSessionExpiry() / 60000);
     let message;
     if (timeLeft == 1) {
       message = "You have 1 minute remaining in your session.";
@@ -155,34 +155,12 @@ let sessionExpiryTimeout;
   };
 
   const closeExpiryDialog = function(sessionExpiryDialog) {
-    const closeExpiryDialogButton = document.getElementById(
-      "close-expiry-dialog"
-    );
     const continueButton = document.getElementById(
       "continue-button"
     );
-    if (closeExpiryDialogButton) {
-      closeExpiryDialogButton.addEventListener("click", function () {
-        sessionExpiryDialog.close();
-      });
-    }
     if (continueButton) {
       continueButton.addEventListener("click", function () {
         sessionExpiryDialog.close();
-      });
-    }
-  };
-
-  const closeInactivityDialog =  function(inactivityDialog) {
-    const closeInactivityDialogButton = document.getElementById(
-      "close-inactivity-dialog"
-    );
-    if (closeInactivityDialogButton) {
-      closeInactivityDialogButton.addEventListener("click", function () {
-      inactivityDialog.close();
-      clearTimeout(inactivityDialogDisplayedTimeout);
-      clearTimeout(inactivityLogoutTimeout);
-      startInactivityTimeout(inactivityDialog);
       });
     }
   };
@@ -192,7 +170,6 @@ let sessionExpiryTimeout;
   displaySessionExpiryDialog(inactivityDialog, sessionExpiryDialog);
   startInactivityTimeout(inactivityDialog);
   resetInactivityTimeouts(inactivityDialog);
-  closeInactivityDialog(inactivityDialog);
   closeExpiryDialog(sessionExpiryDialog);
 
   window.GOVUK.startInactivityTimeout = startInactivityTimeout;
