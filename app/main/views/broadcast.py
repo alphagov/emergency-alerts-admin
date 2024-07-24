@@ -124,7 +124,7 @@ def get_broadcast_dashboard_partials(service_id):
             "views/broadcast/partials/dashboard-table.html",
             broadcasts=broadcast_messages.with_status("pending-approval", "broadcasting"),
             empty_message="You do not have any current alerts",
-            view_broadcast_endpoint="main.view_current_broadcast",
+            view_broadcast_endpoint=".view_current_broadcast",
         ),
     )
 
