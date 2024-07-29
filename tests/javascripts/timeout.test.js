@@ -14,8 +14,8 @@ afterAll(() => {
   document.body.innerHTML = "";
 });
 
-const inactivityDialog = {open: false, showModal: jest.fn(), close: jest.fn(), hasAttribute: jest.fn()}
-const sessionExpiryDialog = {open: false, showModal: jest.fn(), close: jest.fn(), hasAttribute: jest.fn()}
+const inactivityDialog = {open: false, showModal: jest.fn(), close: jest.fn(), hasAttribute: jest.fn(), focus: jest.fn()}
+const sessionExpiryDialog = {open: false, showModal: jest.fn(), close: jest.fn(), hasAttribute: jest.fn(), focus: jest.fn()}
 const htmlContent = `
   <dialog id="activity" tabindex="-1" aria-modal="true" class="hmrc-timeout-dialog"
     role="dialog" aria-labelledby="hmrc-timeout-heading hmrc-timeout-message">

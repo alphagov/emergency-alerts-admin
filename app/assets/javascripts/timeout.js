@@ -43,6 +43,7 @@ let sessionExpiryTimeout;
         } else {
           setTimeRemainingMessage();
           inactivityDialog.showModal();
+          inactivityDialog.focus();
           startInactivityDialogTimeout(inactivityDialog);
         }
       }, 1000 * 60 * inactivityMins);
@@ -111,6 +112,7 @@ let sessionExpiryTimeout;
             inactivityDialog.close();
           }
           sessionExpiryDialog.showModal();
+          sessionExpiryDialog.focus();
           clearTimeout(inactivityDialogDisplayedTimeout);
           clearTimeout(inactivityLogoutTimeout);
           clearTimeout(lastActiveTimeout);
@@ -136,6 +138,7 @@ let sessionExpiryTimeout;
     lastActiveTimeout = setTimeout(() => {
       setTimeRemainingMessage();
       inactivityDialog.showModal();
+      inactivityDialog.focus();
       startInactivityDialogTimeout(inactivityDialog);
     }, ((inactivityMins * 60) - differenceInSeconds(new Date(), lastActive)) * 1000);
   };

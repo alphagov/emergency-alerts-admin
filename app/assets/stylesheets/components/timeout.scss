@@ -17,6 +17,10 @@
     background-color: rgba(64, 64, 64, 0.8);
   }
 
+  &-dialog:focus {
+    outline: none;
+  }
+
   &-dialog-header {
     display: flex;
     justify-content: flex-end;
