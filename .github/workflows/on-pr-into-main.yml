@@ -19,7 +19,7 @@ jobs:
 
       - name: Bootstrap Python app and run tests
         run: |
-          echo python -m pip list
+          python -m pip show setuptools
           export ENVIRONMENT='local'
           export ENCRYPTION_DANGEROUS_SALT='dev-notify-salt'
           export ENCRYPTION_SECRET_KEY='dev-notify-secret-key'
