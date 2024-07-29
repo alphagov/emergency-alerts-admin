@@ -1,0 +1,20 @@
+{% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
+{% macro sessionExpiryDialog(redirect_url) %}
+
+<dialog id="expiry" tabindex="-1" aria-modal="true" class="hmrc-timeout-dialog" role="dialog" aria-labelledby="hmrc-timeout-heading hmrc-timeout-message">
+    <div class="hmrc-timeout-dialog-content">
+        <h2 id="hmrc-timeout-heading" class="govuk-heading-m push--top">You can no longer extend your session</h2>
+        <h2 class="govuk-body hmrc-timeout-dialog__message" aria-hidden="true">You’ll be signed out in 2 minutes. We do this to keep your information secure.</h2>
+        <h2 id="hmrc-timeout-message" class="govuk-visually-hidden screenreader-content" aria-live="assertive">You’ll be signed out in 2 minutes. We do this to keep your information secure.</h2>
+        {{ govukButton({
+            "text": "OK, continue",
+            "classes": "govuk-button",
+            "id": "continue-button"
+        }) }}
+        <div class="hmrc-timeout-dialog__link-wrapper">
+            <a id="hmrc-timeout-sign-out-link" class="govuk-link hmrc-timeout-dialog__link" href="/sign-out">Sign out now</a>
+        </div>
+    </div>
+</dialog>
+
+{% endmacro %}
