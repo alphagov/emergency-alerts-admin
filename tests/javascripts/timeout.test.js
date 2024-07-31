@@ -26,7 +26,8 @@ const htmlContent = `
         {{ govukButton({
             "text": "Stay signed in",
             "classes": "govuk-button",
-            "id": "hmrc-timeout-keep-signin-btn"
+            "id": "hmrc-timeout-keep-signin-btn",
+            "name": "stay-signed-in-btn"
         }) }}
         <div class="hmrc-timeout-dialog__link-wrapper">
             <a id="hmrc-timeout-sign-out-link" class="govuk-link hmrc-timeout-dialog__link" href="/sign-out">Sign out now</a>
@@ -41,13 +42,14 @@ const htmlContent = `
         {{ govukButton({
             "text": "OK, continue",
             "classes": "govuk-button",
-            "id": "continue-button"
+            "id": "continue-button",
+            "name": "continue-btn"
         }) }}
         <div class="hmrc-timeout-dialog__link-wrapper">
             <a id="hmrc-timeout-sign-out-link" class="govuk-link hmrc-timeout-dialog__link" href="/sign-out">Sign out now</a>
         </div>
     </div>
-  </dialog>
+</dialog>
 `;
 
 describe("Inactivity dialog appears and components within it function correctly", () => {
