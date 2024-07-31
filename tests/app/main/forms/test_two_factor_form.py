@@ -11,10 +11,11 @@ def _check_code(code):
 @pytest.mark.parametrize(
     "post_data",
     [
-        {"sms_code": "12345"},
-        {"sms_code": " 12345 "},
-        {"sms_code": "12 34 5"},
-        {"sms_code": "1-23-45"},
+        {"sms_code": "1234567"},
+        {"sms_code": "1234567"},
+        {"sms_code": " 1234567 "},
+        {"sms_code": "12 34 5 67"},
+        {"sms_code": "1-23-45-67"},
     ],
 )
 def test_form_is_valid_returns_no_errors(
@@ -26,7 +27,7 @@ def test_form_is_valid_returns_no_errors(
         form = TwoFactorForm(_check_code)
         assert form.validate() is True
         assert form.errors == {}
-    mock_check_verify_code.assert_called_once_with("1", "12345", "sms")
+    mock_check_verify_code.assert_called_once_with("1", "1234567", "sms")
 
 
 @pytest.mark.parametrize(
@@ -37,7 +38,7 @@ def test_form_is_valid_returns_no_errors(
             "Not enough numbers",
         ),
         (
-            {"sms_code": "123456"},
+            {"sms_code": "12345678"},
             "Too many numbers",
         ),
         (
@@ -70,7 +71,7 @@ def test_check_verify_code_returns_error_when_code_has_expired(
     notify_admin,
     mock_check_verify_code_code_expired,
 ):
-    with notify_admin.test_request_context(method="POST", data={"sms_code": "99999"}):
+    with notify_admin.test_request_context(method="POST", data={"sms_code": "9999999"}):
         form = TwoFactorForm(_check_code)
         assert form.validate() is False
         assert form.errors == {"sms_code": ["Code has expired"]}
@@ -80,7 +81,7 @@ def test_check_verify_code_returns_error_when_code_was_not_found(
     notify_admin,
     mock_check_verify_code_code_not_found,
 ):
-    with notify_admin.test_request_context(method="POST", data={"sms_code": "99999"}):
+    with notify_admin.test_request_context(method="POST", data={"sms_code": "9999999"}):
         form = TwoFactorForm(_check_code)
         assert form.validate() is False
         assert form.errors == {"sms_code": ["Code not found"]}
