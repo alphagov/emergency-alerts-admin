@@ -46,11 +46,11 @@ def test_form_is_valid_returns_no_errors(
             "Cannot be empty",
         ),
         (
-            {"sms_code": "12E45"},
+            {"sms_code": "12E4567"},
             "Numbers only",
         ),
         (
-            {"sms_code": " ! 2 3 4 5"},
+            {"sms_code": " ! 2 3 4 5 6 7"},
             "Numbers only",
         ),
     ),
