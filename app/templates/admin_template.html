@@ -1,6 +1,8 @@
 {% extends "govuk_frontend_jinja/template.html"%}
 {% from "components/banner.html" import banner %}
 {%- from "govuk_frontend_jinja/components/notification-banner/macro.html" import govukNotificationBanner -%}
+{%- from "partials/notifications/sessionInactivityDialog.html" import sessionInactivityDialog -%}
+{%- from "partials/notifications/sessionExpiryDialog.html" import sessionExpiryDialog -%}
 {% from "components/cookie-banner.html" import cookie_banner %}
 
 {% block headIcons %}
@@ -49,6 +51,8 @@
 
 {% block header %}
   {% if current_user.is_authenticated %}
+    {{ sessionInactivityDialog() }}
+    {{ sessionExpiryDialog(request.path) }}
     {% if current_user.platform_admin %}
       {% set navigation = [
         {
@@ -187,6 +191,30 @@
   {% block extra_javascripts %}
   {% endblock %}
   <!--[if gt IE 8]><!-->
+  <script>
+
+    let logged_in_at = "{{session.get('session_start_utc')}}"; // Created for inactivity and expiry dialogs
+    let current_user_id = "{{session.get('user_id')}}";
+    let inactivity_mins;
+    let permanent_session_lifetime;
+    let expiry_warning_mins;
+    let inactivity_warning_duration;
+    const functional_test_user_id = "{{config.get('FUNCTIONAL_TEST_USER_ID')}}";
+
+
+    if ((current_user_id != 'None') && (current_user_id != functional_test_user_id)) {
+      permanent_session_lifetime = "{{config.get('PERMANENT_SESSION_LIFETIME')}}";
+      inactivity_mins = "{{config.get('INACTIVITY_MINS')}}";
+      expiry_warning_mins = "{{config.get('EXPIRY_WARNING_MINS')}}";
+      inactivity_warning_duration = "{{config.get('INACTIVITY_WARNING_DURATION')}}";
+    } else if ((current_user_id != 'None') && (current_user_id == functional_test_user_id)) {
+      permanent_session_lifetime = "{{config.get('FUNCTIONAL_TEST_PERMANENT_SESSION_LIFETIME')}}"
+      inactivity_mins = "{{config.get('FUNCTIONAL_TEST_INACTIVITY_MINS')}}"
+      expiry_warning_mins = "{{config.get('FUNCTIONAL_TEST_EXPIRY_WARNING_MINS')}}"
+      inactivity_warning_duration = "{{config.get('FUNCTIONAL_TEST_INACTIVITY_WARNING_DURATION')}}"
+    }
+
+  </script>
   <script type="text/javascript" src="{{ asset_url('javascripts/all.js') }}"></script>
   <!--<![endif]-->
 {% endblock %}
