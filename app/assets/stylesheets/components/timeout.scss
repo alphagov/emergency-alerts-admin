@@ -1,0 +1,125 @@
+.hmrc-timeout {
+  &-dialog {
+    background-color: #FFF;
+    border: 5px solid #0B0C0C;
+    left: 30%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 30px;
+    position: fixed;
+    top: 30%;
+    transform: translate(-50%, -50%);
+    width: 280px;
+    z-index: 1002;
+  }
+
+  &-dialog::backdrop {
+    background-color: rgba(64, 64, 64, 0.8);
+  }
+
+  &-dialog:focus {
+    outline: none;
+  }
+
+  &-dialog-header {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+  }
+
+  @media (min-width:40.0625em) {
+    &-dialog {
+      width: 435px;
+  }
+  }
+  &-dialog__message {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-family: GDS Transport, arial, sans-serif;
+    font-size: 16px;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.25;
+    line-height: 1.31579;
+  }
+  @media print {
+    &-dialog__message {
+      font-family: sans-serif;
+  }
+  }@media (min-width:40.0625em) {
+    &-dialog__message {
+      font-size: 19px;
+      font-size: 1.1875rem;
+      line-height: 1.31579;
+  }
+  }@media print {
+    &-dialog__message {
+      font-size: 14pt;
+      line-height: 1.15;
+  }
+  }&-dialog__countdown {
+    display: inline-block;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  @media (min-width:40.0625em) {
+    &-dialog__link-wrapper {
+      display: inline-block;
+      line-height: 2.5em;
+      vertical-align: baseline;
+  }
+  }&-dialog__link {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    display: inline-block;
+    font-family: GDS Transport, arial, sans-serif;
+    font-size: 18px;
+    font-size: 1.125rem;
+    font-weight: 400;
+    line-height: 1.11111;
+  }
+  @media print {
+    &-dialog__link {
+      font-family: sans-serif;
+  }
+  }@media (min-width:40.0625em) {
+    &-dialog__link {
+      font-size: 24px;
+      font-size: 1.5rem;
+      line-height: 1.25;
+  }
+  }@media print {
+    &-dialog__link {
+      font-size: 18pt;
+      line-height: 1.15;
+  }
+  }@media (min-width:40.0625em) {
+    &-dialog__link {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      font-family: GDS Transport, arial, sans-serif;
+      font-size: 16px;
+      font-size: 1rem;
+      font-weight: 400;
+      line-height: 1.25;
+      line-height: 1.5;
+      padding: .526315em .789473em .263157em;
+      position: relative;
+      top: 2px;
+  }
+  }@media print and (min-width:40.0625em) {
+    &-dialog__link {
+      font-family: sans-serif;
+  }
+  }@media (min-width:40.0625em) and (min-width:40.0625em) {
+    &-dialog__link {
+      font-size: 19px;
+      font-size: 1.1875rem;
+      line-height: 1.31579;
+  }
+  }@media print and (min-width:40.0625em) {
+    &-dialog__link {
+      font-size: 14pt;
+      line-height: 1.15;
+  }}
+}
