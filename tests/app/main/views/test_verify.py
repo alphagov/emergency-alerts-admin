@@ -47,7 +47,7 @@ def test_should_redirect_to_add_service_when_sms_code_is_correct(
 
     client_request.post(
         "main.verify",
-        _data={"sms_code": "12345"},
+        _data={"sms_code": "1234567"},
         _expected_redirect=url_for("main.add_service", first="first"),
     )
 
@@ -55,7 +55,7 @@ def test_should_redirect_to_add_service_when_sms_code_is_correct(
     with client_request.session_transaction() as session:
         assert session["current_session_id"] == str(uuid.UUID(int=1))
 
-    mock_check_verify_code.assert_called_once_with(api_user_active["id"], "12345", "sms")
+    mock_check_verify_code.assert_called_once_with(api_user_active["id"], "1234567", "sms")
 
 
 def test_should_activate_user_after_verify(
@@ -71,7 +71,7 @@ def test_should_activate_user_after_verify(
     mocker.patch("app.user_api_client.get_user", return_value=api_user_pending)
     with client_request.session_transaction() as session:
         session["user_details"] = {"email_address": api_user_pending["email_address"], "id": api_user_pending["id"]}
-    client_request.post("main.verify", _data={"sms_code": "12345"})
+    client_request.post("main.verify", _data={"sms_code": "1234567"})
     assert mock_activate_user.called
 
 
@@ -88,7 +88,7 @@ def test_should_return_200_when_sms_code_is_wrong(
 
     page = client_request.post(
         "main.verify",
-        _data={"sms_code": "12345"},
+        _data={"sms_code": "1234567"},
         _expected_status=200,
     )
 

@@ -647,7 +647,7 @@ def test_new_invited_user_verifies_and_added_to_service(
     # that sends user on to verify
     page = client_request.post(
         "main.verify",
-        _data={"sms_code": "12345"},
+        _data={"sms_code": "1234567"},
         _follow_redirects=True,
     )
 
@@ -660,7 +660,7 @@ def test_new_invited_user_verifies_and_added_to_service(
         new_user_id = session["user_id"]
         mock_add_user_to_service.assert_called_with(data["service"], new_user_id, expected_permissions, [])
         mock_accept_invite.assert_called_with(data["service"], sample_invite["id"])
-        mock_check_verify_code.assert_called_once_with(new_user_id, "12345", "sms")
+        mock_check_verify_code.assert_called_once_with(new_user_id, "1234567", "sms")
         assert service_one["id"] == session["service_id"]
 
     assert page.select_one("h1").text == "Dashboard"
@@ -717,7 +717,7 @@ def test_new_invited_user_is_redirected_to_correct_place(
 
     client_request.post(
         "main.verify",
-        _data={"sms_code": "12345"},
+        _data={"sms_code": "1234567"},
         _expected_redirect=url_for(expected_endpoint, service_id=sample_invite["service"], **extra_args),
     )
 
