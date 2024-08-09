@@ -23,6 +23,7 @@ def test_owasp_useful_headers_set(
     assert response.headers["Link"] == (
         "<https://static.example.com>; rel=dns-prefetch, " "<https://static.example.com>; rel=preconnect"
     )
+    assert response.headers["Strict-Transport-Security"] == "max-age=63072000; includeSubdomains; preload"
 
 
 def test_headers_non_ascii_characters_are_replaced(
