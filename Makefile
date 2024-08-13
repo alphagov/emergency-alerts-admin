@@ -35,7 +35,7 @@ bootstrap: generate-version-file ## Set up everything to run the app
 .PHONY: bootstrap-for-tests
 bootstrap-for-tests: generate-version-file ## Set up everything to run the app
 	${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements_github_utils.txt
-	du -h $()/.nvm/nvm.sh
+	du -h $(HOME)/.nvm/nvm.sh
 
 	. $(HOME)/.nvm/nvm.sh
 	nvm install
