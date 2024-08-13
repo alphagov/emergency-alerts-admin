@@ -1,4 +1,4 @@
-<script nonce="a1b2c3d4" src="{{ asset_url('javascripts/leaflet.js') }}"></script>
+<script nonce="{{ cspNonce }}" src="{{ asset_url('javascripts/leaflet.js') }}"></script>
 <script>
   let polygons = []
   {% if is_custom_broadcast %}

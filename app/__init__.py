@@ -326,11 +326,12 @@ def useful_headers_after_request(response):
         "Content-Security-Policy",
         (
             "default-src 'self' {asset_domain};"
-            "script-src 'self' {asset_domain} 'nonce-{content_nonce}' 'unsafe-eval';"
+            "script-src 'self' {asset_domain} *.google-analytics.com 'nonce-{content_nonce}' 'unsafe-eval';"
             "style-src 'self' {asset_domain} 'nonce-{content_nonce}';"
+            "connect-src 'self' *.google-analytics.com;"
             "object-src 'self';"
             "font-src 'self' {asset_domain} data:;"
-            "img-src 'self' {asset_domain} *.tile.openstreetmap.org data:;".format(
+            "img-src 'self' {asset_domain} *.tile.openstreetmap.org *.google-analytics.com data:;".format(
                 asset_domain=current_app.config["ASSET_DOMAIN"], content_nonce=g.content_nonce
             )
         ),
