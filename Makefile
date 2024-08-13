@@ -28,7 +28,7 @@ PYTHON_EXECUTABLE_PREFIX := $(shell test -d "$${VIRTUALENV_ROOT}" && echo "$${VI
 bootstrap: generate-version-file ## Set up everything to run the app
 	${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements_local_utils.txt
 	source $(HOME)/.nvm/nvm.sh || true && nvm install && npm ci --no-audit
-	source $(HOME)/.nvm/nvm.sh && npm run build
+	source $(HOME)/.nvm/nvm.sh || true && npm run build
 	. environment.sh; ./scripts/get-broadcast-areas-db.sh ./app/broadcast_areas $(BUCKET_NAME)
 
 
