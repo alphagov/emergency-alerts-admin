@@ -34,5 +34,4 @@ jobs:
           export IN_CICD='True'
           export FLASK_APP=application.py
           set -eu
-
           make bootstrap-for-tests

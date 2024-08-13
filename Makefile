@@ -27,16 +27,16 @@ PYTHON_EXECUTABLE_PREFIX := $(shell test -d "$${VIRTUALENV_ROOT}" && echo "$${VI
 .PHONY: bootstrap
 bootstrap: generate-version-file ## Set up everything to run the app
 	${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements_local_utils.txt
-	source $(HOME)/.nvm/nvm.sh || true && nvm install && npm ci --no-audit
-	source $(HOME)/.nvm/nvm.sh || true && npm run build
+	source $(HOME)/.nvm/nvm.sh && nvm install && npm ci --no-audit
+	source $(HOME)/.nvm/nvm.sh && npm run build
 	. environment.sh; ./scripts/get-broadcast-areas-db.sh ./app/broadcast_areas $(BUCKET_NAME)
 
 
 .PHONY: bootstrap-for-tests
 bootstrap-for-tests: generate-version-file ## Set up everything to run the app
-# ${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements_github_utils.txt
-	. ${NVM_DIR}/nvm.sh
-
+	${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements_github_utils.txt
+	source $(HOME)/.nvm/nvm.sh && nvm install && npm ci --no-audit
+	source $(HOME)/.nvm/nvm.sh && npm run build
 
 .PHONY: watch-frontend
 watch-frontend:  ## Build frontend and watch for changes
@@ -44,7 +44,7 @@ watch-frontend:  ## Build frontend and watch for changes
 
 .PHONY: run-flask
 run-flask:  ## Run flask
-	. environment.sh && flask --debug run -p 6012
+	. environment.sh && flask run -p 6012
 
 .PHONY: npm-audit
 npm-audit:  ## Check for vulnerabilities in NPM packages
