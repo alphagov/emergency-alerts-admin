@@ -35,10 +35,8 @@ bootstrap: generate-version-file ## Set up everything to run the app
 .PHONY: bootstrap-for-tests
 bootstrap-for-tests: generate-version-file ## Set up everything to run the app
 # ${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements_github_utils.txt
-	echo $(HOME)
-	ls $(HOME)/.nvm
-	cat $(HOME)/.nvm/nvm.sh
-	. $(HOME)/.nvm/nvm.sh
+	ls -la $(HOME)/.nvm
+	source $(HOME)/.nvm/nvm.sh
 
 
 .PHONY: watch-frontend
