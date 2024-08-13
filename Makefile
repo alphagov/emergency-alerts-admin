@@ -48,7 +48,7 @@ run-flask:  ## Run flask
 
 .PHONY: npm-audit
 npm-audit:  ## Check for vulnerabilities in NPM packages
-	source npm run audit
+	npm run audit
 
 .PHONY: help
 help:
