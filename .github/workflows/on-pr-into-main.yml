@@ -24,7 +24,6 @@ jobs:
 
       - name: Bootstrap Python app and run tests
         run: |
-          export ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true
           export ENVIRONMENT='local'
           export ENCRYPTION_DANGEROUS_SALT='dev-notify-salt'
           export ENCRYPTION_SECRET_KEY='dev-notify-secret-key'
