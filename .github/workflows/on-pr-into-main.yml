@@ -15,7 +15,7 @@ jobs:
       - name: Set up python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: "3.9"
 
       - name: Set up Node
         uses: actions/setup-node@v3
@@ -35,5 +35,8 @@ jobs:
           export FLASK_APP=application.py
           set -eu
           . $HOME/.nvm/nvm.sh && nvm --version && node --version
+          source $(HOME)/.nvm/nvm.sh
+
           make bootstrap-for-tests
-          make test
+
+          cat "nver.txt";
