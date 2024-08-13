@@ -8,7 +8,7 @@
 {% set page_title = 'Get your security key' %}
 
 {% block extra_javascripts_before_body %}
-  {{ webauthn_api_check() }}
+  {{ webauthn_api_check(cspNonce) }}
 {% endblock %}
 
 {% block per_page_title %}

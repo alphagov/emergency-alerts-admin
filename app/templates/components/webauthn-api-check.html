@@ -1,5 +1,5 @@
-{% macro webauthn_api_check() %}
-  <script>
+{% macro webauthn_api_check(cspNonce) %}
+  <script nonce="{{ cspNonce }}">
     if ('credentials' in window.navigator) {
       document.body.className = ((document.body.className) ? document.body.className + ' webauthn-api-enabled' : 'webauthn-api-enabled');
     }
