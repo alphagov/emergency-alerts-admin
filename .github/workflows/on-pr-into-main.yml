@@ -29,7 +29,6 @@ jobs:
           export IN_CICD='True'
           export FLASK_APP=application.py
           set -eu
-          nvm --version
-	        node --version
+          nvm --version && node --version
           make bootstrap-for-tests
           make test
