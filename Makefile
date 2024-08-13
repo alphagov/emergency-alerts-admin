@@ -36,7 +36,7 @@ bootstrap: generate-version-file ## Set up everything to run the app
 bootstrap-for-tests: generate-version-file ## Set up everything to run the app
 # ${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements_github_utils.txt
 	nver=$(node --version)
-	echo $nver > "nver.txt";
+	echo $(nver) > "nver.txt";
 
 
 # ls -la $(HOME)/.nvm
