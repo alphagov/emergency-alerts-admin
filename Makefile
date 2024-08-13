@@ -34,11 +34,8 @@ bootstrap: generate-version-file ## Set up everything to run the app
 
 .PHONY: bootstrap-for-tests
 bootstrap-for-tests: generate-version-file ## Set up everything to run the app
-# ${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements_github_utils.txt
-	node --version > "nver.txt";
-
-# ls -la $(HOME)/.nvm
-# source $(HOME)/.nvm/nvm.sh
+	${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements_github_utils.txt
+	. ${NVM_DIR}/nvm.sh
 
 
 .PHONY: watch-frontend

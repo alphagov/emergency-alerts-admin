@@ -35,7 +35,7 @@ jobs:
           export FLASK_APP=application.py
           set -eu
           . $HOME/.nvm/nvm.sh && nvm --version && node --version
-          source $HOME/.nvm/nvm.sh
+
 
           make bootstrap-for-tests
 
