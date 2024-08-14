@@ -26,6 +26,7 @@ jobs:
         run: |
           rm -rf ~/.nvm
           curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v${{ env.NVM_VERSION }}/install.sh | bash
+          source ~/.bashrc
 
           nvm install ${{ env.NODE_VERSION }}
           nvm use ${{ env.NODE_VERSION }}
