@@ -38,11 +38,6 @@ jobs:
           nvm use ${{ env.NODE_VERSION }}
           nvm alias default ${{ env.NODE_VERSION }}
 
-      - name: Set up Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16.14.0
-
       - name: Bootstrap Python app and run tests
         run: |
           source ~/.non-interactive
