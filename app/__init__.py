@@ -320,7 +320,7 @@ def generate_nonce_before_request():
 
 
 def generate_nonce():
-    g.content_nonce = base64.b64encode(os.urandom(16)).decode("utf-8")
+    return base64.b64encode(os.urandom(16)).decode("utf-8")
 
 
 #  https://www.owasp.org/index.php/List_of_useful_HTTP_headers
