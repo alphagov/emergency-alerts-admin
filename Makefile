@@ -34,6 +34,9 @@ write-source-file:
 	else \
 		cat ~/.bashrc | grep "export NVM" | tr -d "export" > ~/.nvm-source; \
 	fi
+	echo "=========="
+	cat ~/.nvm-source;
+	echo "=========="
 
 read-source-file: write-source-file
 	@for line in $$(cat ~/.nvm-source); do \
