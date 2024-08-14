@@ -71,7 +71,7 @@ test: ## Run tests
 	flake8 .
 	isort --check-only ./app ./tests
 	black --check .
-	source $(HOME)/.nvm/nvm.sh && npm test
+	npm test
 	py.test -n auto --maxfail=10 tests/
 
 .PHONY: fix-imports
