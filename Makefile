@@ -21,22 +21,68 @@ NOTIFY_CREDENTIALS ?= ~/.notify-credentials
 VIRTUALENV_ROOT := $(shell [ -z $$VIRTUAL_ENV ] && echo $$(pwd)/venv || echo $$VIRTUAL_ENV)
 PYTHON_EXECUTABLE_PREFIX := $(shell test -d "$${VIRTUALENV_ROOT}" && echo "$${VIRTUALENV_ROOT}/bin/" || echo "")
 
+NVM_VERSION := 0.39.7
+NODE_VERSION := 16.14.0
+
+write-source-file:
+	@if [[ $$(cat ~/.zshrc | grep "export NVM") ]]; then \
+		cat ~/.zshrc | grep "export NVM" | tr -d "export" > ~/.nvm-source; \
+	else \
+		cat ~/.bashrc | grep "export NVM" | tr -d "export" > ~/.nvm-source; \
+	fi
+
+read-source-file: write-source-file
+	@for line in $$(cat ~/.nvm-source); do \
+		export $$line; \
+	done
+
+	@echo '. "$$NVM_DIR/nvm.sh"' >> ~/.nvm-source;
+
+	@current_nvm_version=$$(. ~/.nvm-source && nvm --version); \
+	echo "NVM Versions (current/expected): $$current_nvm_version/$(NVM_VERSION)"; \
+	echo "";
+
+.PHONY: install-nvm
+install-nvm:
+	@echo ""
+	@echo "[Install Node Version Manager]"
+	@echo ""
+
+	@current_nvm_version=$$(. ~/.nvm-source && nvm --version); \
+	if [[ "$(NVM_VERSION)" == "$$current_nvm_version" ]]; then \
+		echo "No need up adjust NVM versions."; \
+	else \
+		rm -rf $(NVM_DIR); \
+		curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v$(NVM_VERSION)/install.sh | bash; \
+		echo ""; \
+	fi
+
+	@$(MAKE) read-source-file
+
+.PHONY: install-node
+install-node: install-nvm
+	@echo ""
+	@echo "[Install Node]"
+	@echo ""
+
+	@. ~/.nvm-source && nvm install $(NODE_VERSION) \
+		&& nvm use $(NODE_VERSION) \
+		&& nvm alias default $(NODE_VERSION);
 
 ## DEVELOPMENT
-
 .PHONY: bootstrap
-bootstrap: generate-version-file ## Set up everything to run the app
+bootstrap: generate-version-file install-node ## Set up everything to run the app
 	${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements_local_utils.txt
-	npm ci --no-audit
-	npm run build
+	. ~/.nvm-source && npm ci --no-audit
+	. ~/.nvm-source && npm run build
 	. environment.sh; ./scripts/get-broadcast-areas-db.sh ./app/broadcast_areas $(BUCKET_NAME)
 
 
 .PHONY: bootstrap-for-tests
-bootstrap-for-tests: generate-version-file ## Set up everything to run the app
+bootstrap-for-tests: generate-version-file install-node ## Set up everything to run the app
 	${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements_github_utils.txt
-	npm ci --no-audit
-	npm run build
+	. ~/.nvm-source && npm ci --no-audit
+	. ~/.nvm-source && npm run build
 
 .PHONY: watch-frontend
 watch-frontend:  ## Build frontend and watch for changes
@@ -48,7 +94,7 @@ run-flask:  ## Run flask
 
 .PHONY: npm-audit
 npm-audit:  ## Check for vulnerabilities in NPM packages
-	npm run audit
+	. ~/.nvm-source && npm run audit
 
 .PHONY: help
 help:
@@ -71,7 +117,7 @@ test: ## Run tests
 	flake8 .
 	isort --check-only ./app ./tests
 	black --check .
-	npm test
+	. ~/.nvm-source && npm test
 	py.test -n auto --maxfail=10 tests/
 
 .PHONY: fix-imports
