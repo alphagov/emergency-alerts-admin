@@ -25,7 +25,7 @@ NVM_VERSION := 0.39.7
 NODE_VERSION := 16.14.0
 
 write-source-file:
-	@if [ -f ~/.zshrc ]; then
+	@if [ -f ~/.zshrc ]; then \
 		if [[ $$(cat ~/.zshrc | grep "export NVM") ]]; then \
 			cat ~/.zshrc | grep "export NVM" | tr -d "export" > ~/.nvm-source; \
 		else \
