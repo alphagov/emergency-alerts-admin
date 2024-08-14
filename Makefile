@@ -42,6 +42,8 @@ read-source-file: write-source-file
 
 	@echo '. "$$NVM_DIR/nvm.sh"' >> ~/.nvm-source;
 
+	cat ~/.nvm-source;
+
 	@current_nvm_version=$$(. ~/.nvm-source && nvm --version); \
 	echo "NVM Versions (current/expected): $$current_nvm_version/$(NVM_VERSION)"; \
 	echo "";
@@ -59,6 +61,10 @@ install-nvm:
 	fi
 
 	@$(MAKE) read-source-file
+
+	echo "##########################################"
+	echo "##########################################"
+	echo "##########################################"
 
 	@current_nvm_version=$$(. ~/.nvm-source && nvm --version); \
 	if [[ "$(NVM_VERSION)" == "$$current_nvm_version" ]]; then \
