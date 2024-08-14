@@ -25,18 +25,14 @@ NVM_VERSION := 0.39.7
 NODE_VERSION := 16.14.0
 
 write-source-file:
-	echo "=========="
-	cat ~/.bashrc;
-	echo "=========="
-
 	@if [ -f ~/.zshrc ]; then \
 		if [[ $$(cat ~/.zshrc | grep "export NVM") ]]; then \
-			cat ~/.zshrc | grep "export NVM" | tr -d "export" > ~/.nvm-source; \
+			cat ~/.zshrc | grep "export NVM" | sed "s/export//" > ~/.nvm-source; \
 		else \
-			cat ~/.bashrc | grep "export NVM" | tr -d "export" > ~/.nvm-source; \
+			cat ~/.bashrc | grep "export NVM" | sed "s/export//" > ~/.nvm-source; \
 		fi \
 	else \
-		cat ~/.bashrc | grep "export NVM" | tr -d "export" > ~/.nvm-source; \
+		cat ~/.bashrc | grep "export NVM" | sed "s/export//" > ~/.nvm-source; \
 	fi
 
 
@@ -46,8 +42,6 @@ read-source-file: write-source-file
 	done
 
 	@echo '. "$$NVM_DIR/nvm.sh"' >> ~/.nvm-source;
-
-	cat ~/.nvm-source;
 
 	@current_nvm_version=$$(. ~/.nvm-source && nvm --version); \
 	echo "NVM Versions (current/expected): $$current_nvm_version/$(NVM_VERSION)"; \
@@ -66,10 +60,6 @@ install-nvm:
 	fi
 
 	@$(MAKE) read-source-file
-
-	echo "##########################################"
-	echo "##########################################"
-	echo "##########################################"
 
 	@current_nvm_version=$$(. ~/.nvm-source && nvm --version); \
 	if [[ "$(NVM_VERSION)" == "$$current_nvm_version" ]]; then \
