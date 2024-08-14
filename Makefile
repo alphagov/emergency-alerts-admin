@@ -52,7 +52,15 @@ install-nvm:
 	@echo "[Install Node Version Manager]"
 	@echo ""
 
-	@current_nvm_version=$$(. ~/.nvm-source && nvm --version); \
+	if [ ! -f ~/.nvm-source ]; then \
+		rm -rf $(NVM_DIR); \
+		curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v$(NVM_VERSION)/install.sh | bash; \
+		echo ""; \
+	fi
+
+	@$(MAKE) read-source-file
+
+	current_nvm_version=$$(. ~/.nvm-source && nvm --version); \
 	if [[ "$(NVM_VERSION)" == "$$current_nvm_version" ]]; then \
 		echo "No need up adjust NVM versions."; \
 	else \
