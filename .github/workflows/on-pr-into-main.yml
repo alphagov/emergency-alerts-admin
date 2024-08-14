@@ -22,17 +22,23 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Rebuild nvm and node to a specific version
+      - name: Install a specific nvm version
         run: |
           rm -rf ~/.nvm
           curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v${{ env.NVM_VERSION }}/install.sh | bash
           cat ~/.bashrc
           . ~/.bashrc
 
-
-
+      - name: Install a specific node version
+        run: |
           nvm install ${{ env.NODE_VERSION }}
+
+      - name: Use a specific node version
+        run: |
           nvm use ${{ env.NODE_VERSION }}
+
+      - name: Alias a specific node version
+        run: |
           nvm alias default ${{ env.NODE_VERSION }}
 
       - name: Bootstrap Python app and run tests
