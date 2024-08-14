@@ -20,16 +20,16 @@ jobs:
       - name: Set up python
         uses: actions/setup-python@v4
         with:
-          python-version: $PYTHON_VERSION
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Rebuild nvm and node to a specific version
         run: |
           rm -rf ~/.nvm
-          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v$NVM_VERSION/install.sh | bash
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v${{ env.NVM_VERSION }}/install.sh | bash
 
-          nvm install $NODE_VERSION
-          nvm use $NODE_VERSION
-          nvm alias default $NODE_VERSION
+          nvm install ${{ env.NODE_VERSION }}
+          nvm use ${{ env.NODE_VERSION }}
+          nvm alias default ${{ env.NODE_VERSION }}
 
       - name: Bootstrap Python app and run tests
         run: |
