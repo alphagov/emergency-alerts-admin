@@ -31,14 +31,17 @@ jobs:
 
       - name: Install a specific node version
         run: |
+          . ~/.bashrc
           nvm install ${{ env.NODE_VERSION }}
 
       - name: Use a specific node version
         run: |
+          . ~/.bashrc
           nvm use ${{ env.NODE_VERSION }}
 
       - name: Alias a specific node version
         run: |
+          . ~/.bashrc
           nvm alias default ${{ env.NODE_VERSION }}
 
       - name: Bootstrap Python app and run tests
