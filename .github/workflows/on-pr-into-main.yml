@@ -15,37 +15,33 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install a specific nvm version
         run: |
-          rm -rf ~/.nvm
+          rm -rf $NVM_DIR
           curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v${{ env.NVM_VERSION }}/install.sh | bash
-          cat ~/.bashrc
-          . ~/.bashrc
+
+          cat ~/.bashrc | grep "NVM" > ~/.non-interactive
 
       - name: Install a specific node version
         run: |
-          . ~/.bashrc
+          source ~/.non-interactive
+
+          echo "NVM Version: $(nvm --version)"
           nvm install ${{ env.NODE_VERSION }}
-
-      - name: Use a specific node version
-        run: |
-          . ~/.bashrc
           nvm use ${{ env.NODE_VERSION }}
-
-      - name: Alias a specific node version
-        run: |
-          . ~/.bashrc
           nvm alias default ${{ env.NODE_VERSION }}
 
       - name: Bootstrap Python app and run tests
         run: |
+          source ~/.non-interactive
+
           export ENVIRONMENT='local'
           export ENCRYPTION_DANGEROUS_SALT='dev-notify-salt'
           export ENCRYPTION_SECRET_KEY='dev-notify-secret-key'
