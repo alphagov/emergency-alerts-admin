@@ -17,6 +17,11 @@ jobs:
         with:
           python-version: '3.9'
 
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.14.0
+
       - name: Bootstrap Python app and run tests
         run: |
           export ENVIRONMENT='local'
