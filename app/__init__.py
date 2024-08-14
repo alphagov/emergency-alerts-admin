@@ -126,6 +126,8 @@ current_organisation = LocalProxy(lambda: g.current_organisation)
 
 current_service_status = LocalProxy(lambda: g.service_status_text)
 
+content_nonce = LocalProxy(lambda: g.content_nonce)
+
 navigation = {
     "casework_navigation": CaseworkNavigation(),
     "main_navigation": MainNavigation(),
@@ -244,7 +246,7 @@ def init_app(application):
             "live_service_notice": current_service_status,
             "header_colour": application.config["HEADER_COLOUR"],
             "asset_url": asset_fingerprinter.get_url,
-            "content_nonce": g.content_nonce,
+            "content_nonce": content_nonce,
             "font_paths": font_paths,
         }
 
@@ -314,6 +316,10 @@ def load_service_status_before_request():
 
 
 def generate_nonce_before_request():
+    g.content_nonce = generate_nonce()
+
+
+def generate_nonce():
     g.content_nonce = base64.b64encode(os.urandom(16)).decode("utf-8")
 
 
@@ -332,7 +338,7 @@ def useful_headers_after_request(response):
             "object-src 'self';"
             "font-src 'self' {asset_domain} data:;"
             "img-src 'self' {asset_domain} *.tile.openstreetmap.org *.google-analytics.com data:;".format(
-                asset_domain=current_app.config["ASSET_DOMAIN"], content_nonce=g.content_nonce
+                asset_domain=current_app.config["ASSET_DOMAIN"], content_nonce=content_nonce
             )
         ),
     )
