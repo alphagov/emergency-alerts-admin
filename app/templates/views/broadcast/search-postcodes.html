@@ -11,7 +11,11 @@
 {% from "components/input-custom-error.html" import inputWithCustomError %}
 
 {% block per_page_title %}
-  {{ page_title }} – {{ current_service.name }}
+  {% if bleed %}
+    Chosen postcode area – {{ current_service.name }}
+  {% else %}
+    {{ page_title }} – {{ current_service.name }}
+  {% endif %}
 {% endblock %}
 
 {% block service_page_title %}

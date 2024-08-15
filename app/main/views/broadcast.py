@@ -890,4 +890,5 @@ def cancel_broadcast_message(service_id, broadcast_message_id):
         broadcast_message=broadcast_message,
         hide_stop_link=True,
         is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
+        cancelling=True,
     )

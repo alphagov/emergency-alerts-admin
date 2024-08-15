@@ -11,7 +11,11 @@
 {% from "govuk_frontend_jinja/components/error-summary/macro.html" import govukErrorSummary %}
 
 {% block per_page_title %}
-{{ page_title }} – {{ current_service.name }}
+  {% if bleed %}
+    Chosen coordinate area – {{ current_service.name }}
+  {% else %}
+    {{ page_title }} – {{ current_service.name }}
+  {% endif %}
 {% endblock %}
 
 {% block service_page_title %}

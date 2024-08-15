@@ -39,6 +39,8 @@
     {% else %}
       This alert is waiting for approval
     {% endif %}
+  {% elif cancelling %}
+    Are you sure you want to stop this broadcast now?
   {% else %}
     {{ broadcast_message.template.name }}
   {% endif %}
