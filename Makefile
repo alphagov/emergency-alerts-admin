@@ -56,10 +56,10 @@ install-nvm:
 	@if [ ! -f ~/.nvm-source ]; then \
 		rm -rf /tmp/nodeupgrade; \
 		mkdir /tmp/nodeupgrade; \
-		mv $(NVM_DIR)/versions /tmp/nodeupgrade;
-		rm -rf $(NVM_DIR);
-		curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v$(NVM_VERSION)/install.sh | bash;
-		mv /tmp/nodeupgrade/versions $(NVM_DIR);
+		mv $(NVM_DIR)/versions /tmp/nodeupgrade; \
+		rm -rf $(NVM_DIR); \
+		curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v$(NVM_VERSION)/install.sh | bash; \
+		mv /tmp/nodeupgrade/versions $(NVM_DIR); \
 	fi
 
 	@$(MAKE) read-source-file
@@ -70,10 +70,10 @@ install-nvm:
 	else \
 		rm -rf /tmp/nodeupgrade; \
 		mkdir /tmp/nodeupgrade; \
-		mv $(NVM_DIR)/versions /tmp/nodeupgrade;
-		rm -rf $(NVM_DIR);
-		curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v$(NVM_VERSION)/install.sh | bash;
-		mv /tmp/nodeupgrade/versions $(NVM_DIR);
+		mv $(NVM_DIR)/versions /tmp/nodeupgrade; \
+		rm -rf $(NVM_DIR); \
+		curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v$(NVM_VERSION)/install.sh | bash; \
+		mv /tmp/nodeupgrade/versions $(NVM_DIR); \
 	fi
 
 	@$(MAKE) read-source-file
