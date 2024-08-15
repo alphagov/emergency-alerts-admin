@@ -43,23 +43,24 @@ read-source-file: write-source-file
 
 	@for line in $$(cat ~/.nvm-source); do \
 		export $$line; \
-	done
+	done; \
+	echo '. "$$NVM_DIR/nvm.sh"' >> ~/.nvm-source;
 
-	@if [[ "$(NVM_DIR)" == "" ]]; then \
+	@if [[ "$(NVM_DIR)" == "" || ! -f "$(NVM_DIR)/nvm.sh" ]]; then \
 		curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v$(NVM_VERSION)/install.sh | bash; \
+		echo ""; \
 		$(MAKE) write-source-file; \
 		for line in $$(cat ~/.nvm-source); do \
 			export $$line; \
-		done
+		done; \
+		echo '. "$$NVM_DIR/nvm.sh"' >> ~/.nvm-source; \
 	fi
-
-	@echo '. "$$NVM_DIR/nvm.sh"' >> ~/.nvm-source;
 
 	@current_nvm_version=$$(. ~/.nvm-source && nvm --version); \
 	echo "NVM Versions (current/expected): $$current_nvm_version/$(NVM_VERSION)";
 
 upgrade-node:
-	TEMPDIR=/tmp/node-upgrade; \
+	@TEMPDIR=/tmp/node-upgrade; \
 	if [[ -d $(NVM_DIR)/versions ]]; then \
 		rm -rf $$TEMPDIR; \
 		mkdir $$TEMPDIR; \
@@ -67,7 +68,7 @@ upgrade-node:
 		echo "Node versions temporarily backed up to: $$TEMPDIR"; \
 	fi; \
 	rm -rf $(NVM_DIR); \
-	curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v$(NVM_VERSION)/install.sh | bash; \
+	$(MAKE) read-source-file; \
 	if [[ -d $$TEMPDIR/versions ]]; then \
 		cp -rf $$TEMPDIR/versions $(NVM_DIR); \
 		echo "Restored node versions from: $$TEMPDIR"; \
@@ -86,16 +87,10 @@ install-nvm:
 
 	@$(MAKE) read-source-file
 
-
-
 	@current_nvm_version=$$(. ~/.nvm-source && nvm --version); \
-	if [[ "$(NVM_VERSION)" == "$$current_nvm_version" ]]; then \
-		echo "No need up adjust NVM versions."; \
-	else \
+	if [[ "$(NVM_VERSION)" != "$$current_nvm_version" ]]; then \
 		$(MAKE) upgrade-node; \
 	fi
-
-	@$(MAKE) read-source-file
 
 .PHONY: install-node
 install-node: install-nvm
