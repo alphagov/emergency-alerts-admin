@@ -53,13 +53,23 @@ install-nvm:
 	@echo "[Install Node Version Manager]"
 	@echo ""
 
+	@if [[ "$$NVM_DIR" == "" ]]; then \
+		echo "NVM_DIR cannot be empty."; \
+		exit 1; \
+	fi
+
+	@if [[ "$(NVM_VERSION)" == "" ]]; then \
+		echo "NVM_VERSION cannot be empty."; \
+		exit 1; \
+	fi
+
 	@if [ ! -f ~/.nvm-source ]; then \
 		rm -rf /tmp/nodeupgrade; \
 		mkdir /tmp/nodeupgrade; \
-		mv $(NVM_DIR)/versions /tmp/nodeupgrade; \
-		rm -rf $(NVM_DIR); \
+		mv $$NVM_DIR/versions /tmp/nodeupgrade; \
+		rm -rf $$NVM_DIR; \
 		curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v$(NVM_VERSION)/install.sh | bash; \
-		mv /tmp/nodeupgrade/versions $(NVM_DIR); \
+		mv /tmp/nodeupgrade/versions $$NVM_DIR; \
 	fi
 
 	@$(MAKE) read-source-file
@@ -70,10 +80,10 @@ install-nvm:
 	else \
 		rm -rf /tmp/nodeupgrade; \
 		mkdir /tmp/nodeupgrade; \
-		mv $(NVM_DIR)/versions /tmp/nodeupgrade; \
-		rm -rf $(NVM_DIR); \
+		mv $$NVM_DIR/versions /tmp/nodeupgrade; \
+		rm -rf $$NVM_DIR; \
 		curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v$(NVM_VERSION)/install.sh | bash; \
-		mv /tmp/nodeupgrade/versions $(NVM_DIR); \
+		mv /tmp/nodeupgrade/versions $$NVM_DIR; \
 	fi
 
 	@$(MAKE) read-source-file
