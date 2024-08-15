@@ -44,8 +44,7 @@ read-source-file: write-source-file
 	@echo '. "$$NVM_DIR/nvm.sh"' >> ~/.nvm-source;
 
 	@current_nvm_version=$$(. ~/.nvm-source && nvm --version); \
-	echo "NVM Versions (current/expected): $$current_nvm_version/$(NVM_VERSION)"; \
-	echo "";
+	echo "NVM Versions (current/expected): $$current_nvm_version/$(NVM_VERSION)";
 
 .PHONY: install-nvm
 install-nvm:
