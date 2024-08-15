@@ -119,7 +119,7 @@ bootstrap-for-tests: generate-version-file install-node ## Set up everything to 
 
 .PHONY: watch-frontend
 watch-frontend:  ## Build frontend and watch for changes
-	. environment.sh; npm run watch
+	. ~/.nvm-source && . environment.sh; npm run watch
 
 .PHONY: run-flask
 run-flask:  ## Run flask
