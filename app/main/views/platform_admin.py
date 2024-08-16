@@ -181,6 +181,7 @@ def clear_cache():
     form = AdminClearCacheForm()
 
     form.model_type.choices = [(key, key.replace("_", " ").title()) for key in CACHE_KEYS]
+    msg = None
 
     if form.validate_on_submit():
         group_keys = form.model_type.data
@@ -193,7 +194,7 @@ def clear_cache():
 
         flash(msg, category="default")
 
-    return render_template("views/platform-admin/clear-cache.html", form=form)
+    return render_template("views/platform-admin/clear-cache.html", form=form, page_title=msg or None)
 
 
 def get_url_for_notify_record(uuid_):

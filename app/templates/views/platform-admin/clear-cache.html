@@ -3,7 +3,11 @@
 {% from "components/page-footer.html" import page_footer %}
 
 {% block per_page_title %}
-  Clear cache
+  {% if not page_title %}
+    Clear cache
+  {% else %}
+    {{page_title}}
+  {% endif %}
 {% endblock %}
 
 {% block platform_admin_content %}
