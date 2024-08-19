@@ -1,4 +1,5 @@
 {% extends "withnav_template.html" %}
+{% from "govuk_frontend_jinja/components/breadcrumbs/macro.html" import govukBreadcrumbs %}
 {% from "components/folder-path.html" import folder_path, page_title_folder_path %}
 {% from "components/page-footer.html" import page_footer %}
 {% from "components/form.html" import form_wrapper %}
@@ -7,6 +8,20 @@
   {{ page_title_folder_path(template_folder_path) }}
 {% endblock %}
 
+{% set breadcrumbs = [] %}
+
+{% block additionalBeforeContent %}
+  {% for folder in template_folder_path %}
+    {% set breadcrumb_href = url_for('.choose_template', service_id=current_service.id, template_type='all', template_folder_id=folder.id) %}
+    {% set breadcrumb_item = {'text': folder.name, 'href': breadcrumb_href} %}
+    {% set _ = breadcrumbs.append(breadcrumb_item) %}
+  {% endfor %}
+  {{ govukBreadcrumbs({
+    "items": breadcrumbs
+  }) }}
+{% endblock %}
+
+
 {% block maincolumn_content %}
 
   <div class="govuk-grid-row bottom-gutter-1-2">
@@ -14,9 +29,7 @@
       {{ folder_path(
         folders=template_folder_path,
         service_id=current_service.id,
-        template_type='all',
         current_user=current_user,
-        link_current_item=True
       ) }}
     </div>
   </div>
