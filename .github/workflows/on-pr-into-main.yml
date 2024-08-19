@@ -32,3 +32,4 @@ jobs:
           export FLASK_APP=application.py
           set -eu
           make bootstrap-for-tests
+          make test
