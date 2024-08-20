@@ -63,7 +63,7 @@ class Config(object):
     SESSION_COOKIE_NAME = "emergency_alerts_session"
     SESSION_COOKIE_SECURE = False
     SESSION_PROTECTION = None
-    SESSION_COOKIE_SAMESITE = "Lax"
+    SESSION_COOKIE_SAMESITE = "Strict"
     # don't send back the cookie if it hasn't been modified by the request. this means that the expiry time won't be
     # updated unless the session is changed - but it's generally refreshed by `save_service_or_org_after_request`
     # every time anyway, except for specific endpoints (png/pdfs generally) where we've disabled that handler.
