@@ -331,6 +331,7 @@ def useful_headers_after_request(response):
             )
         ),
     )
+    response.headers.add("Strict-Transport-Security", "max-age=63072000; includeSubdomains; preload")
     response.headers.add(
         "Link",
         (
