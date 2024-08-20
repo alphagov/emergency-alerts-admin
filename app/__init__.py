@@ -1,3 +1,4 @@
+import base64
 import os
 import pathlib
 from time import monotonic
@@ -125,6 +126,8 @@ current_organisation = LocalProxy(lambda: g.current_organisation)
 
 current_service_status = LocalProxy(lambda: g.service_status_text)
 
+content_nonce = LocalProxy(lambda: g.content_nonce)
+
 navigation = {
     "casework_navigation": CaseworkNavigation(),
     "main_navigation": MainNavigation(),
@@ -207,6 +210,7 @@ def init_app(application):
     application.before_request(load_service_before_request)
     application.before_request(load_organisation_before_request)
     application.before_request(load_service_status_before_request)
+    application.before_request(generate_nonce_before_request)
     application.before_request(request_helper.check_proxy_header_before_request)
 
     font_paths = [
@@ -242,6 +246,7 @@ def init_app(application):
             "live_service_notice": current_service_status,
             "header_colour": application.config["HEADER_COLOUR"],
             "asset_url": asset_fingerprinter.get_url,
+            "content_nonce": content_nonce,
             "font_paths": font_paths,
         }
 
@@ -310,6 +315,14 @@ def load_service_status_before_request():
     g.service_status_text = service_is_not_live_flag["display_html"] if flag_enabled else None
 
 
+def generate_nonce_before_request():
+    g.content_nonce = generate_nonce()
+
+
+def generate_nonce():
+    return base64.b64encode(os.urandom(16)).decode("utf-8")
+
+
 #  https://www.owasp.org/index.php/List_of_useful_HTTP_headers
 def useful_headers_after_request(response):
     response.headers.add("X-Frame-Options", "deny")
@@ -318,16 +331,14 @@ def useful_headers_after_request(response):
     response.headers.add(
         "Content-Security-Policy",
         (
-            "default-src 'self' {asset_domain} 'unsafe-inline';"
-            "script-src 'self' {asset_domain} *.google-analytics.com 'unsafe-inline' 'unsafe-eval' data:;"
+            "default-src 'self' {asset_domain};"
+            "script-src 'self' {asset_domain} *.google-analytics.com 'nonce-{content_nonce}' 'unsafe-eval';"
+            "style-src 'self' {asset_domain} 'nonce-{content_nonce}';"
             "connect-src 'self' *.google-analytics.com;"
             "object-src 'self';"
             "font-src 'self' {asset_domain} data:;"
-            "img-src 'self' {asset_domain} *.tile.openstreetmap.org *.google-analytics.com"
-            " *.notifications.service.gov.uk {logo_domain} data:;"
-            "frame-src 'self' www.youtube-nocookie.com;".format(
-                asset_domain=current_app.config["ASSET_DOMAIN"],
-                logo_domain=current_app.config["LOGO_CDN_DOMAIN"],
+            "img-src 'self' {asset_domain} *.tile.openstreetmap.org *.google-analytics.com data:;".format(
+                asset_domain=current_app.config["ASSET_DOMAIN"], content_nonce=content_nonce
             )
         ),
     )

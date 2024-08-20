@@ -1,3 +1,6 @@
+from flask import g
+
+
 def test_owasp_useful_headers_set(
     client_request,
     mocker,
@@ -10,16 +13,15 @@ def test_owasp_useful_headers_set(
     assert response.headers["X-Content-Type-Options"] == "nosniff"
     assert response.headers["X-XSS-Protection"] == "1; mode=block"
     assert response.headers["Content-Security-Policy"] == (
-        "default-src 'self' static.example.com 'unsafe-inline';"
-        "script-src 'self' static.example.com *.google-analytics.com 'unsafe-inline' 'unsafe-eval' data:;"
+        "default-src 'self' static.example.com;"
+        "script-src 'self' static.example.com *.google-analytics.com 'nonce-{content_nonce}' 'unsafe-eval';"
+        "style-src 'self' static.example.com 'nonce-{content_nonce}';"
         "connect-src 'self' *.google-analytics.com;"
         "object-src 'self';"
         "font-src 'self' static.example.com data:;"
         "img-src "
-        "'self' static.example.com *.tile.openstreetmap.org *.google-analytics.com"
-        " *.notifications.service.gov.uk static-logos.test.com data:;"
-        "frame-src 'self' www.youtube-nocookie.com;"
-    )
+        "'self' static.example.com *.tile.openstreetmap.org *.google-analytics.com data:;"
+    ).format(content_nonce=g.content_nonce)
     assert response.headers["Link"] == (
         "<https://static.example.com>; rel=dns-prefetch, " "<https://static.example.com>; rel=preconnect"
     )
@@ -40,13 +42,12 @@ def test_headers_non_ascii_characters_are_replaced(
     response = client_request.get_response("main.sign_in")
 
     assert response.headers["Content-Security-Policy"] == (
-        "default-src 'self' static.example.com 'unsafe-inline';"
-        "script-src 'self' static.example.com *.google-analytics.com 'unsafe-inline' 'unsafe-eval' data:;"
+        "default-src 'self' static.example.com;"
+        "script-src 'self' static.example.com *.google-analytics.com 'nonce-{content_nonce}' 'unsafe-eval';"
+        "style-src 'self' static.example.com 'nonce-{content_nonce}';"
         "connect-src 'self' *.google-analytics.com;"
         "object-src 'self';"
         "font-src 'self' static.example.com data:;"
-        "img-src"
-        " 'self' static.example.com *.tile.openstreetmap.org *.google-analytics.com"
-        " *.notifications.service.gov.uk static-logos??.test.com data:;"
-        "frame-src 'self' www.youtube-nocookie.com;"
-    )
+        "img-src "
+        "'self' static.example.com *.tile.openstreetmap.org *.google-analytics.com data:;"
+    ).format(content_nonce=g.content_nonce)
