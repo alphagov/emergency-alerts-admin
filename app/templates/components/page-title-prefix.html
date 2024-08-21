@@ -1,0 +1,9 @@
+{% macro page_title_prefix() %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for _, message in messages %}
+                {{ message if message is string else message[0]}} - 
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+{% endmacro %}
