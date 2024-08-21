@@ -22,7 +22,6 @@ plugins.rollup = require('gulp-better-rollup')
 plugins.sass = require('gulp-sass')(require('sass'));
 plugins.sassLint = require('gulp-sass-lint');
 plugins.uglify = require('gulp-uglify');
-plugins.sourcemaps = require('gulp-sourcemaps');
 
 // 2. CONFIGURATION
 // - - - - - - - - - - - - - - -
