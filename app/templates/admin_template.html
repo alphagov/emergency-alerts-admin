@@ -6,6 +6,7 @@
 {%- from "partials/notifications/sessionInactivityDialog.html" import sessionInactivityDialog -%}
 {%- from "partials/notifications/sessionExpiryDialog.html" import sessionExpiryDialog -%}
 {% from "components/cookie-banner.html" import cookie_banner %}
+{% from "components/page-title-prefix.html" import page_title_prefix %}
 
 {% block headIcons %}
   <link rel="shortcut icon" sizes="16x16 32x32 48x48" href="{{ asset_url('images/favicon.ico') }}" type="image/x-icon" />
@@ -39,7 +40,7 @@
 {% endblock %}
 
 {% block pageTitle %}
-   {% block per_page_title %}{% endblock %} – GOV.UK Emergency Alerts
+  {{ page_title_prefix() }}{% block per_page_title %}{% endblock %} – GOV.UK Emergency Alerts
 {% endblock %}
 
 {% block bodyStart %}
