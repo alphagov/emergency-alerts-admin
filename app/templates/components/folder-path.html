@@ -3,26 +3,10 @@
 {% macro folder_path(
   folders,
   service_id,
-  template_type,
   current_user,
-  link_current_item=False,
   is_template=False,
   add_header=True
 ) %}
-    {% set breadcrumbs = [] %}
-    {% for folder in folders %}
-      {% set breadcrumb_href = url_for('.choose_template', service_id=service_id, template_type=template_type, template_folder_id=folder.id) %}
-      {% if loop.last %}
-        {% if not link_current_item %}
-          {% set breadcrumb_href = None %}
-        {% endif %}
-      {% endif %}
-      {% set breadcrumb_item = {'text': folder.name, 'href': breadcrumb_href} %}
-      {% set _ = breadcrumbs.append(breadcrumb_item) %}
-    {% endfor %}
-    {{ govukBreadcrumbs({
-      "items": breadcrumbs
-    }) }}
 
     {% if add_header %}
       {% for folder in folders %}

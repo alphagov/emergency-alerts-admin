@@ -1,5 +1,5 @@
-<script src="{{ asset_url('javascripts/leaflet.js') }}"></script>
-<script>
+<script nonce="{{ cspNonce }}" src="{{ asset_url('javascripts/leaflet.js') }}"></script>
+<script nonce="{{ cspNonce }}">
   let polygons = []
   {% if is_custom_broadcast %}
     area_color = "#0201FE"
