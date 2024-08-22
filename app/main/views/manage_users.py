@@ -131,13 +131,10 @@ def edit_user_permissions(service_id, user_id):
         if current_service.has_permission("email_auth") and not user.webauthn_auth:
             user.update(auth_type=form.login_authentication.data)
         return redirect(url_for(".manage_users", service_id=service_id))
+    if request.args.get("delete"):
+        flash(f"Are you sure you want to remove {user.name}?", "delete")
 
-    return render_template(
-        "views/edit-user-permissions.html",
-        user=user,
-        form=form,
-        delete=request.args.get("delete"),
-    )
+    return render_template("views/edit-user-permissions.html", user=user, form=form)
 
 
 @main.route("/services/<uuid:service_id>/users/<uuid:user_id>/delete", methods=["POST"])
