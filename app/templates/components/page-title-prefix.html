@@ -2,7 +2,9 @@
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for _, message in messages %}
-                {{ message if message is string else message[0]}} - 
+                {% set initial_message = message if message is string else message %}
+                {% set prefix = initial_message.split('?') | first %}
+                {{ prefix ~ '? - ' }}
             {% endfor %}
         {% endif %}
     {% endwith %}
