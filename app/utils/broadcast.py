@@ -258,7 +258,7 @@ def render_coordinates_page(
 ):
     return render_template(
         "views/broadcast/search-coordinates.html",
-        page_title="Choose a coordinate area",
+        page_title="Choose alert area",
         broadcast_message=broadcast_message,
         back_link=url_for(
             ".choose_broadcast_area",
