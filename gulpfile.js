@@ -22,7 +22,6 @@ plugins.rollup = require('gulp-better-rollup')
 plugins.sass = require('gulp-sass')(require('sass'));
 plugins.sassLint = require('gulp-sass-lint');
 plugins.uglify = require('gulp-uglify');
-plugins.sourcemaps = require('gulp-sourcemaps');
 
 // 2. CONFIGURATION
 // - - - - - - - - - - - - - - -
@@ -153,10 +152,8 @@ const javascripts = () => {
   // return single stream of all vinyl objects piped from the end of the vendored stream, then
   // those from the end of the local stream
   return streamqueue({ objectMode: true }, vendored, local)
-    .pipe(plugins.sourcemaps.init())
     .pipe(plugins.uglify())
     .pipe(plugins.concat('all.js'))
-    .pipe(plugins.sourcemaps.write('.'))
     .pipe(dest(paths.dist + 'javascripts/'))
 };
 

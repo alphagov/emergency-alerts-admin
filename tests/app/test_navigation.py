@@ -166,6 +166,7 @@ EXCLUDED_ENDPOINTS = tuple(
             "search_coordinates",
             "search_postcodes",
             "security",
+            "security_policy",
             "service_add_email_reply_to",
             "service_add_letter_contact",
             "service_confirm_delete_email_reply_to",
