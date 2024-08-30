@@ -2980,7 +2980,11 @@ def test_archive_service_prompts_user(
     service_one["restricted"] = is_trial_service
     client_request.login(user)
 
-    settings_page = client_request.get("main.archive_service", service_id=SERVICE_ONE_ID, _test_page_title=False)
+    settings_page = client_request.get(
+        "main.archive_service",
+        service_id=SERVICE_ONE_ID,
+        _test_page_prefix="Are you sure you want to delete ‘service one’?",
+    )
     delete_link = settings_page.select(".page-footer-link a")[0]
     assert normalize_spaces(delete_link.text) == "Delete this service"
     assert delete_link["href"] == url_for(
@@ -2988,7 +2992,11 @@ def test_archive_service_prompts_user(
         service_id=SERVICE_ONE_ID,
     )
 
-    delete_page = client_request.get("main.archive_service", service_id=SERVICE_ONE_ID, _test_page_title=False)
+    delete_page = client_request.get(
+        "main.archive_service",
+        service_id=SERVICE_ONE_ID,
+        _test_page_prefix="Are you sure you want to delete ‘service one’?",
+    )
     assert normalize_spaces(delete_page.select_one(".banner-dangerous").text) == (
         "Are you sure you want to delete ‘service one’? There’s no way to undo this. Yes, delete"
     )

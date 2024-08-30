@@ -979,6 +979,7 @@ def test_archive_organisation_prompts_user(
     delete_page = client_request.get(
         "main.archive_organisation",
         org_id=organisation_one["id"],
+        _test_page_prefix="Are you sure you want to delete ‘organisation one’?",
     )
     assert normalize_spaces(delete_page.select_one(".banner-dangerous").text) == (
         "Are you sure you want to delete ‘organisation one’? There’s no way to undo this. Yes, delete"
