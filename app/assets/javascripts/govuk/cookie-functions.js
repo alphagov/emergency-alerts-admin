@@ -132,7 +132,7 @@
       if (typeof options === 'undefined') {
         options = {};
       }
-      var cookieString = name + '=' + value + '; path=/; SameSite=Lax';
+      var cookieString = name + '=' + value + '; path=/; SameSite=Strict';
       if (options.days) {
         var date = new Date();
         date.setTime(date.getTime() + (options.days * 24 * 60 * 60 * 1000));
@@ -160,4 +160,3 @@
     return null;
   };
 }(window));
-
