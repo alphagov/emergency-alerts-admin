@@ -16,7 +16,6 @@ from app.main.forms import (
     ChangeEmailForm,
     ChangeMobileNumberForm,
     ChangeNonGovEmailForm,
-    InviteUserForm,
     PermissionsForm,
     SearchUsersForm,
 )
@@ -44,19 +43,19 @@ def manage_users(service_id):
 @main.route("/services/<uuid:service_id>/users/invite/<uuid:user_id>", methods=["GET", "POST"])
 @user_has_permissions("manage_service")
 def invite_user(service_id, user_id=None):
-    if current_service.has_permission("broadcast"):
-        form_class = BroadcastInviteUserForm
-    else:
-        form_class = InviteUserForm
-
-    form = form_class(
+    form = BroadcastInviteUserForm(
         inviter_email_address=current_user.email_address,
         all_template_folders=current_service.all_template_folders,
         folder_permissions=[f["id"] for f in current_service.all_template_folders],
     )
 
+    user_to_invite = None
     if user_id:
         user_to_invite = User.from_id(user_id)
+    elif form.email_address.data:
+        user_to_invite = User.from_email_address_or_none(form.email_address.data)
+
+    if user_to_invite is not None:
         if user_to_invite.belongs_to_service(current_service.id):
             return render_template(
                 "views/user-already-team-member.html",
@@ -67,28 +66,21 @@ def invite_user(service_id, user_id=None):
                 "views/user-already-invited.html",
                 user_to_invite=user_to_invite,
             )
-        if not user_to_invite.default_organisation:
-            abort(403)
-        if user_to_invite.default_organisation.id != current_service.organisation_id:
-            abort(403)
-        form.email_address.data = user_to_invite.email_address
+        form.login_authentication.data = user_to_invite.auth_type
+    elif current_service.has_permission("email_auth"):
+        form.login_authentication.data = "email_auth"
     else:
-        user_to_invite = None
-
-    if not current_service.has_permission("email_auth"):
         form.login_authentication.data = "sms_auth"
 
     if form.validate_on_submit():
-        email_address = form.email_address.data
         invited_user = InvitedUser.create(
             current_user.id,
             service_id,
-            email_address,
+            form.email_address.data,
             form.permissions,
             form.login_authentication.data,
             form.folder_permissions.data,
         )
-
         flash("Invite sent to {}".format(invited_user.email_address), "default_with_tick")
         return redirect(url_for(".manage_users", service_id=service_id))
 
