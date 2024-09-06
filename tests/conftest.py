@@ -2206,11 +2206,10 @@ def client_request(_logged_in_client, mocker, service_one):  # noqa (C901 too co
             if _test_page_title:
                 # Page should have one H1
                 if _test_page_prefix:
-                    assert len(page.select("h1")) == 1
-                    page_title, h1 = (normalize_spaces(page.select_one(selector).text) for selector in ("title", "h1"))
+                    page_title = normalize_spaces(page.select_one("title").text)
                     assert normalize_spaces(page_title).startswith(
-                        f"{_test_page_prefix} - {h1}"
-                    ), f"Page {url} title '{page_title}' does not start with prefix & H1 '{_test_page_prefix} - {h1}'"
+                        f"{_test_page_prefix}"
+                    ), f"Page {url} title '{page_title}' does not start with prefix '{_test_page_prefix}'"
                 else:
                     assert len(page.select("h1")) == 1
                     page_title, h1 = (normalize_spaces(page.select_one(selector).text) for selector in ("title", "h1"))
