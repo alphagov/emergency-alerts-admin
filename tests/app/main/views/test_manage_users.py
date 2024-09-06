@@ -1938,7 +1938,11 @@ def test_edit_user_permissions_with_delete_query_shows_banner(
     client_request, active_user_with_permissions, mock_get_users_by_service, mock_get_template_folders, service_one
 ):
     page = client_request.get(
-        "main.edit_user_permissions", service_id=service_one["id"], user_id=active_user_with_permissions["id"], delete=1
+        "main.edit_user_permissions",
+        service_id=service_one["id"],
+        user_id=active_user_with_permissions["id"],
+        delete=1,
+        _test_page_prefix="Are you sure you want to remove Test User?",
     )
 
     banner = page.select_one("div.banner-dangerous")
