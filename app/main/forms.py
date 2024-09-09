@@ -1588,20 +1588,20 @@ class BillingReportDateFilterForm(StripWhitespaceForm):
 
 class SearchByNameForm(StripWhitespaceForm):
     search = GovukSearchField(
-        "Search by name",
+        "Search and filter by name",
         validators=[DataRequired("You need to enter full or partial name to search by.")],
     )
 
 
 class AdminSearchUsersByEmailForm(StripWhitespaceForm):
     search = GovukSearchField(
-        "Search by name or email address",
+        "Search and filter by name or email address",
         validators=[DataRequired("You need to enter full or partial email address to search by.")],
     )
 
 
 class SearchUsersForm(StripWhitespaceForm):
-    search = GovukSearchField("Search by name or email address")
+    search = GovukSearchField("Search and filter by name or email address")
 
 
 class SearchNotificationsForm(StripWhitespaceForm):
@@ -1616,7 +1616,7 @@ class SearchNotificationsForm(StripWhitespaceForm):
         super().__init__(*args, **kwargs)
         self.to.label.text = self.labels.get(
             message_type,
-            "Search by phone number or email address",
+            "Search and filter by phone number or email address",
         )
 
 
@@ -1625,7 +1625,7 @@ class SearchTemplatesForm(StripWhitespaceForm):
 
     def __init__(self, api_keys, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.search.label.text = "Search by name or ID" if api_keys else "Search by name"
+        self.search.label.text = "Search and filter by name or ID" if api_keys else "Search and filter by name"
 
 
 class PlaceholderForm(StripWhitespaceForm):
