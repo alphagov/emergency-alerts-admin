@@ -67,6 +67,7 @@ def invite_user(service_id, user_id=None):
                 user_to_invite=user_to_invite,
             )
         form.login_authentication.data = user_to_invite.auth_type
+        form.email_address.data = user_to_invite.email_address
     elif current_service.has_permission("email_auth"):
         form.login_authentication.data = "email_auth"
     else:
