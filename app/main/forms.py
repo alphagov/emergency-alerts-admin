@@ -2192,12 +2192,19 @@ class EastingNorthingCoordinatesForm(StripWhitespaceForm):
 
 class ChooseCoordinateTypeForm(StripWhitespaceForm):
     content = GovukRadiosField(
+        "Choose coordinate type",
         choices=[
             ("latitude_longitude", "Latitude and longitude"),
             ("easting_northing", "Eastings and northings"),
         ],
         param_extensions={
-            "fieldset": {"legend": {"classes": "govuk-visually-hidden"}},
+            "fieldset": {
+                "legend": {
+                    "text": "Choose coordinate type",
+                    "isPageHeading": True,
+                    "classes": "govuk-fieldset__legend--l",
+                }
+            },
             "hint": {"text": "Select one option"},
             "items": [
                 {"hint": {"text": "For example, 51.503630, -0.126770"}},
