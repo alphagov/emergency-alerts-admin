@@ -472,7 +472,7 @@ describe('Live search', () => {
 
   describe("With a list of content items", () => {
 
-    searchLabelText = "Search by name or email address";
+    searchLabelText = "Search and filter by name or email address";
 
     function getContentItems (users) {
 
