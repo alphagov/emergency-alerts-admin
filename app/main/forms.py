@@ -63,6 +63,7 @@ from app.main.validators import (
     CommonlyUsedPassword,
     FileIsVirusFree,
     IsPostcode,
+    LowEntropyPassword,
     MustContainAlphanumericCharacters,
     NoCommasInPlaceHolders,
     NoPlaceholders,
@@ -242,6 +243,7 @@ def password(label="Password"):
             DataRequired(message="Cannot be empty"),
             Length(8, 255, message="Must be at least 8 characters"),
             CommonlyUsedPassword(message="Choose a password that’s harder to guess"),
+            LowEntropyPassword(),
         ],
     )
 
