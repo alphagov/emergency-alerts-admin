@@ -834,6 +834,7 @@ def test_show_cancel_letter_confirmation(
         "main.cancel_letter",
         service_id=SERVICE_ONE_ID,
         notification_id=fake_uuid,
+        _test_page_prefix="Are you sure you want to cancel sending this letter?",
     )
 
     flash_message = normalize_spaces(page.select_one("div.banner-dangerous").text)

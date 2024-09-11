@@ -214,7 +214,11 @@ def test_archive_user_prompts_for_confirmation(
     mock_get_organisations_and_services_for_user,
 ):
     client_request.login(platform_admin_user)
-    page = client_request.get("main.archive_user", user_id=api_user_active["id"])
+    page = client_request.get(
+        "main.archive_user",
+        user_id=api_user_active["id"],
+        _test_page_prefix="There's no way to reverse this! Are you sure you want to archive this user?",
+    )
 
     assert "Are you sure you want to archive this user?" in page.select_one("div.banner-dangerous").text
 

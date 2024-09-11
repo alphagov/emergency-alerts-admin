@@ -5,7 +5,11 @@
 {% from "components/error-summary.html" import errorSummary %}
 
 {% block per_page_title %}
-  Search
+  {% if show_results %}
+    Search results
+  {% else %}
+    Search
+  {% endif %}
 {% endblock %}
 
 {% block platform_admin_content %}
