@@ -226,12 +226,12 @@ def test_should_show_archived_services_last(
         {"detailed": True, "include_from_test_key": True, "only_active": ANY}
     )
 
-    table_body = page.select_one("table tbody")
-    services = [service.tr for service in table_body.select("tbody")]
+    list_body = page.select_one("nav.browse-list")
+    services = list(list_body.select("li.browse-list-item"))
     assert len(services) == 3
-    assert normalize_spaces(services[0].td.text) == "A"
-    assert normalize_spaces(services[1].td.text) == "B"
-    assert normalize_spaces(services[2].td.text) == "C Archived"
+    assert normalize_spaces(services[0].text) == "A"
+    assert normalize_spaces(services[1].text) == "B"
+    assert normalize_spaces(services[2].text) == "C Archived"
 
 
 @pytest.mark.parametrize(
@@ -271,11 +271,12 @@ def test_should_order_services_by_usage_with_inactive_last(
         {"detailed": True, "include_from_test_key": True, "only_active": ANY}
     )
 
-    services = page.select("table tbody tbody tr:first-child")
+    list_body = page.select_one("nav.browse-list")
+    services = list(list_body.select("li.browse-list-item"))
     assert len(services) == 3
-    assert normalize_spaces(services[0].td.text) == "My Service 2"
-    assert normalize_spaces(services[1].td.text) == "My Service 1"
-    assert normalize_spaces(services[2].td.text) == "My Service 3 Archived"
+    assert normalize_spaces(services[0].text) == "My Service 2"
+    assert normalize_spaces(services[1].text) == "My Service 1"
+    assert normalize_spaces(services[2].text) == "My Service 3 Archived"
 
 
 def test_sum_service_usage_is_sum_of_all_activity(fake_uuid):
