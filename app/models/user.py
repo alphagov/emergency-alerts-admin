@@ -513,7 +513,9 @@ class InvitedUser(BaseUser):
 
     @classmethod
     def from_token(cls, token):
+        print(token)
         try:
+            print(cls(invite_api_client.check_token(token)))
             return cls(invite_api_client.check_token(token))
         except HTTPError as exception:
             if exception.status_code == 400 and "invitation" in exception.message:
