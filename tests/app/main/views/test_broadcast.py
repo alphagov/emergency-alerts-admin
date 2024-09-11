@@ -4189,6 +4189,7 @@ def test_cancel_broadcast(
         ".cancel_broadcast_message",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
+        _test_page_prefix="Are you sure you want to stop this broadcast now?",
     )
     assert normalize_spaces(page.select_one(".banner-dangerous").text) == (
         "Are you sure you want to stop this broadcast now? Yes, stop broadcasting"

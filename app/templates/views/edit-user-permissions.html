@@ -6,7 +6,11 @@
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
 
 {% block service_page_title %}
-  {{ user.name or user.email_localpart }}
+  {% if not delete%}
+    {{ user.name or user.email_localpart }}
+  {% else %}
+    {{'Are you sure you want to remove {}?'.format(user.name)}}
+  {% endif %}
 {% endblock %}
 
 {% block backLink %}
