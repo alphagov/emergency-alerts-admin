@@ -238,7 +238,7 @@ def test_should_show_live_search_if_more_than_7_users(
         "govuk-input",
         "govuk-!-width-full",
     ]
-    assert normalize_spaces(page.select_one("label[for=search]").text) == "Search by name or email address"
+    assert normalize_spaces(page.select_one("label[for=search]").text) == "Search and filter by name or email address"
 
 
 def test_should_show_caseworker_on_overview_page(

@@ -843,7 +843,7 @@ def test_manage_org_users_should_show_live_search_if_more_than_7_users(
         "govuk-input",
         "govuk-!-width-full",
     ]
-    assert normalize_spaces(page.select_one("label[for=search]").text) == "Search by name or email address"
+    assert normalize_spaces(page.select_one("label[for=search]").text) == "Search and filter by name or email address"
 
 
 def test_edit_organisation_user_shows_the_delete_confirmation_banner(
