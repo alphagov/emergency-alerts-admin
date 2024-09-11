@@ -8,6 +8,7 @@ from emergency_alerts_utils.sanitise_text import SanitiseSMS
 from emergency_alerts_utils.template import BroadcastMessageTemplate
 from flask import current_app
 from orderedset import OrderedSet
+from password_strength import PasswordPolicy
 from postcode_validator.uk.uk_postcode_regex import postcode_regex
 from wtforms import ValidationError
 from wtforms.validators import StopValidation
@@ -26,6 +27,18 @@ class CommonlyUsedPassword:
 
     def __call__(self, form, field):
         if field.data in commonly_used_passwords:
+            raise ValidationError(self.message)
+
+
+class LowEntropyPassword:
+    def __init__(self, message=None):
+        if not message:
+            message = "Password has low entropy."
+        self.message = message
+
+    def __call__(self, form, field):
+        policy = PasswordPolicy.from_names(entropybits=30)  # need a password that has minimum 30 entropy bits
+        if policy.test(field.data) != []:
             raise ValidationError(self.message)
 
 
