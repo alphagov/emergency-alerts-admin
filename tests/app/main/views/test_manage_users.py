@@ -1125,8 +1125,7 @@ def test_should_show_folder_permission_form_if_service_has_folder_permissions_en
     assert len(folder_checkboxes) == 3
 
 
-# @pytest.mark.parametrize("email_address, gov_user", [("test@example.gov.uk", True), ("test@example.com", False)])
-@pytest.mark.parametrize("email_address, gov_user", [("test@example.gov.uk", True)])
+@pytest.mark.parametrize("email_address, gov_user", [("test@example.gov.uk", True), ("test@example.com", False)])
 def test_invite_user(
     client_request,
     active_user_with_permissions,
@@ -1138,14 +1137,13 @@ def test_invite_user(
     mock_get_organisations,
 ):
     sample_invite["email_address"] = email_address
-
     assert is_gov_user(email_address) == gov_user
 
     mocker.patch("app.models.user.InvitedUsers.client_method", return_value=[sample_invite])
     mocker.patch("app.models.user.Users.client_method", return_value=[active_user_with_permissions])
     mocker.patch("app.invite_api_client.create_invite", return_value=sample_invite)
     mocker.patch("app.models.user.User.from_email_address_or_none", return_value=None)
-    mocker.patch("app.models.user.User.belongs_to_service", return_value=False)
+    mocker.patch("app.models.user.User.belongs_to_service", return_value=gov_user)
     mocker.patch("app.models.service.Service.invite_pending_for", return_value=False)
 
     page = client_request.post(
@@ -1162,20 +1160,26 @@ def test_invite_user(
             ],
         },
         _follow_redirects=True,
-        _expected_redirect=url_for("main.manage_users", service_id=SERVICE_ONE_ID),
     )
-    # assert page.select_one("h1").string.strip() == "Team members"
+    if gov_user:
+        assert page.select_one("h1").string.strip() == "Team members"
 
-    print(page)
+        flash_banner = page.select_one("div.banner-default-with-tick").string.strip()
+        assert flash_banner == f"Invite sent to {email_address}"
 
-    flash_banner = page.select_one("div.banner-default-with-tick").string.strip()
-    assert flash_banner == f"Invite sent to {email_address}"
-
-    expected_permissions = {"manage_api_keys", "manage_service", "manage_templates", "send_messages", "view_activity"}
-
-    app.invite_api_client.create_invite.assert_called_once_with(
-        sample_invite["from_user"], sample_invite["service"], email_address, expected_permissions, "sms_auth", []
-    )
+        expected_permissions = {
+            "manage_api_keys",
+            "manage_service",
+            "manage_templates",
+            "send_messages",
+            "view_activity",
+        }
+        app.invite_api_client.create_invite.assert_called_once_with(
+            sample_invite["from_user"], sample_invite["service"], email_address, expected_permissions, "sms_auth", []
+        )
+    else:
+        assert page.select_one("h1").string.strip() == "Invite a team member"
+        assert "Enter a public sector email address" in page.select_one("p.govuk-error-message").text
 
 
 def test_invite_user_when_email_address_is_prefilled(
