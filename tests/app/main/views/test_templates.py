@@ -311,7 +311,7 @@ def test_should_show_live_search_if_list_of_templates_taller_than_screen(
 
     assert search["data-notify-module"] == "live-search"
     assert search["data-targets"] == "#template-list .template-list-item"
-    assert normalize_spaces(search.select_one("label").text) == "Search by name"
+    assert normalize_spaces(search.select_one("label").text) == "Search and filter by name"
 
     assert len(page.select(search["data-targets"])) == len(page.select("#template-list .govuk-label")) == 14
 
@@ -326,7 +326,7 @@ def test_should_label_search_by_id_for_services_with_api_keys(
         "main.choose_template",
         service_id=SERVICE_ONE_ID,
     )
-    assert normalize_spaces(page.select_one(".live-search label").text) == "Search by name or ID"
+    assert normalize_spaces(page.select_one(".live-search label").text) == "Search and filter by name or ID"
 
 
 def test_should_show_live_search_if_service_has_lots_of_folders(

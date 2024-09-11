@@ -1,0 +1,25 @@
+{% macro page_title_prefix() %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            {% if category in [
+                'cancel',
+                'delete',
+                'suspend',
+                'resume',
+                'remove',
+                'revoke this API key',
+                'stop broadcasting',
+                'info',
+                'default'
+            ] %}
+                {% set message = message if message is string else message[0] %}
+                {% if '?' in message %}
+                    {% set message = message.split('?')[0] + '?'%}
+                {% endif %}
+                {{ message ~ ' - '}}
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
+{% endmacro %}
