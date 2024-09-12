@@ -1,6 +1,7 @@
 import re
 from abc import ABC, abstractmethod
 
+import pwdpy
 from emergency_alerts_utils.field import Field
 from emergency_alerts_utils.formatters import formatted_list
 from emergency_alerts_utils.recipients import InvalidEmailError, validate_email_address
@@ -8,7 +9,6 @@ from emergency_alerts_utils.sanitise_text import SanitiseSMS
 from emergency_alerts_utils.template import BroadcastMessageTemplate
 from flask import current_app
 from orderedset import OrderedSet
-from password_strength import PasswordPolicy
 from postcode_validator.uk.uk_postcode_regex import postcode_regex
 from wtforms import ValidationError
 from wtforms.validators import StopValidation
@@ -37,8 +37,8 @@ class LowEntropyPassword:
         self.message = message
 
     def __call__(self, form, field):
-        policy = PasswordPolicy.from_names(entropybits=30)  # need a password that has minimum 30 entropy bits
-        if policy.test(field.data) != []:
+        entropy = pwdpy.entropy((field.data))
+        if float(entropy) < 90:
             raise ValidationError(self.message)
 
 
