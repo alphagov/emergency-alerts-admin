@@ -248,6 +248,13 @@ def password(label="Password"):
     )
 
 
+def existing_password(label="Password"):
+    return GovukPasswordField(
+        label,
+        validators=[DataRequired(message="Cannot be empty"), Length(8, 255, message="Must be at least 8 characters")],
+    )
+
+
 class GovukTextInputField(GovukTextInputFieldMixin, StringField):
     pass
 
@@ -1307,7 +1314,7 @@ class ChangePasswordForm(StripWhitespaceForm):
         self.validate_password_func = validate_password_func
         super(ChangePasswordForm, self).__init__(*args, **kwargs)
 
-    old_password = password("Current password")
+    old_password = existing_password("Current password")
     new_password = password("New password")
 
     def validate_old_password(self, field):
