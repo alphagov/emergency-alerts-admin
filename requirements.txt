@@ -142,8 +142,6 @@ packaging==23.0
     # via
     #   black
     #   pytest
-password-strength==0.0.3.post2
-    # via -r requirements.in
 pathspec==0.11.1
     # via black
 pillow==9.3.0
@@ -158,6 +156,8 @@ prometheus-client==0.15.0
     # via
     #   -r requirements.in
     #   gds-metrics
+pwdpy==1.0.1
+    # via -r requirements.in
 pycodestyle==2.11.1
     # via
     #   flake8
@@ -226,7 +226,6 @@ s3transfer==0.6.0
 six==1.16.0
     # via
     #   eventlet
-    #   password-strength
     #   python-dateutil
     #   requests-mock
 soupsieve==2.4
