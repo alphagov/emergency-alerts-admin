@@ -70,7 +70,7 @@ def test_should_redirect_to_two_factor_when_password_reset_is_successful(
     token = generate_token(data, notify_admin.config["SECRET_KEY"], notify_admin.config["DANGEROUS_SALT"])
     client_request.post_url(
         url_for_endpoint_with_token(".new_password", token=token, next=redirect_url),
-        _data={"new_password": "a-new_password"},
+        _data={"new_password": "a-new_password_123"},
         _expected_redirect=url_for(".two_factor_sms", next=redirect_url),
     )
     mock_get_user_by_email_request_password_reset.assert_called_once_with(user["email_address"])
@@ -98,7 +98,7 @@ def test_should_redirect_to_two_factor_webauthn_when_password_reset_is_successfu
     token = generate_token(data, notify_admin.config["SECRET_KEY"], notify_admin.config["DANGEROUS_SALT"])
     client_request.post_url(
         url_for_endpoint_with_token(".new_password", token=token, next=redirect_url),
-        _data={"new_password": "a-new_password"},
+        _data={"new_password": "a-new_password-123!"},
         _expected_redirect=url_for(".two_factor_webauthn", next=redirect_url),
     )
     mock_get_user_by_email_request_password_reset.assert_called_once_with(user["email_address"])
@@ -160,7 +160,7 @@ def test_should_sign_in_when_password_reset_is_successful_for_email_auth(
 
     client_request.post_url(
         url_for_endpoint_with_token(".new_password", token=token),
-        _data={"new_password": "a-new_password"},
+        _data={"new_password": "a-new_password_123"},
         _expected_redirect=url_for(".show_accounts_or_dashboard"),
     )
 
@@ -169,6 +169,6 @@ def test_should_sign_in_when_password_reset_is_successful_for_email_auth(
 
     # the log-in flow makes a couple of calls
     mock_get_user.assert_called_once_with(user["id"])
-    mock_update_user_password.assert_called_once_with(user["id"], "a-new_password")
+    mock_update_user_password.assert_called_once_with(user["id"], "a-new_password_123")
 
     assert not mock_send_verify_code.called

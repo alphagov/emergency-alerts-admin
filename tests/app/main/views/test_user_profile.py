@@ -360,8 +360,8 @@ def test_should_redirect_after_password_change(
     client_request.post(
         "main.user_profile_password",
         _data={
-            "new_password": "the new password",
-            "old_password": "the old password",
+            "new_password": "the new password123",
+            "old_password": "the old password123",
         },
         _expected_status=302,
         _expected_redirect=url_for(
