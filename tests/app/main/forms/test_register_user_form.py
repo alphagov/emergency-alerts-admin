@@ -19,6 +19,22 @@ def test_should_raise_validation_error_for_password(
     assert "Choose a password that’s harder to guess" in form.errors["password"]
 
 
+@pytest.mark.parametrize("password", ["govuknotif1", "1111112!", "lowentropy"])
+def test_should_raise_low_entropy_validation_error_for_password(
+    client_request,
+    mock_get_user_by_email,
+    password,
+):
+    form = RegisterUserForm()
+    form.name.data = "test"
+    form.email_address.data = "teset@example.gov.uk"
+    form.mobile_number.data = "441231231231"
+    form.password.data = password
+
+    form.validate()
+    assert "Password has low entropy." in form.errors["password"]
+
+
 def test_valid_email_not_in_valid_domains(
     client_request,
     mock_get_organisations,
