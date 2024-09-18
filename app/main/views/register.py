@@ -16,6 +16,7 @@ def register_from_invite():
         token = request.args.get("token")
         if token is not None:
             invited_user = InvitedUser.from_token(token)
+            session["invited_user_id"] = invited_user.id
 
     if not invited_user:
         abort(404)
