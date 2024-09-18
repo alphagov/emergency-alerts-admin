@@ -88,30 +88,35 @@
 {% call form_wrapper() %}
 <div class="mapping-form">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-  <div class="govuk-form-group">
-    {{inputWithCustomError(form.first_coordinate, label1, 'Enter a valid value')}}
+  <div class="mapping-form-group">
+    <div class="govuk-form-group">
+      {{inputWithCustomError(form.first_coordinate, label1, 'Enter a valid value')}}
+    </div>
+    <div class="mapping-margin-left govuk-form-group">
+      {{inputWithCustomError(form.second_coordinate, label2, 'Enter a valid value')}}
+    </div>
+    <div class="mapping-margin-left govuk-form-group">
+      {{ govukButton({
+      "classes": "notify-simple-search-form__button govuk-button--secondary search-postcode-button",
+      "html": "Search",
+      "name": 'search_btn',
+      "value": True
+      }) }}
+    </div>
   </div>
-  <div class="mapping-margin-left govuk-form-group">
-    {{inputWithCustomError(form.second_coordinate, label2, 'Enter a valid value')}}
-  </div>
-  <div class="mapping-margin-left govuk-form-group">
-    {{ govukButton({
-    "classes": "notify-simple-search-form__button govuk-button--secondary search-postcode-button",
-    "html": "Search",
-    "name": 'search_btn',
-    "value": True
-    }) }}
-  </div>
-  <div class="mapping-margin-left">
-    {{inputWithCustomError(form.radius, "Radius", 'Enter a valid value')}}
-  </div>
-  <div class="mapping-margin-left govuk-form-group">
-    {{ govukButton({
-    "classes": "notify-simple-search-form__button govuk-button--secondary search-postcode-button",
-    "html": "Add radius",
-    "name": 'radius_btn',
-    "value": True
-    }) }}
+
+  <div class="mapping-form-group">
+    <div>
+      {{inputWithCustomError(form.radius, "Radius", 'Enter a valid value')}}
+    </div>
+    <div class="mapping-margin-left govuk-form-group">
+      {{ govukButton({
+      "classes": "notify-simple-search-form__button govuk-button--secondary add-radius-button",
+      "html": "Add radius",
+      "name": 'radius_btn',
+      "value": True
+      }) }}
+    </div>
   </div>
   <div class="preview-button govuk-form-group">
     {% if bleed %}
@@ -130,7 +135,7 @@
       }) }}
     {% endif %}
   </div>
-  </div>
+</div>
 {% endcall %}
 
 <ul class="area-list"></ul>
