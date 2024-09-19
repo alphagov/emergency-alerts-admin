@@ -78,7 +78,7 @@ def accept_invite(token):
                     return redirect(url_for("main.broadcast_tour", service_id=service.id, step_index=1))
             return redirect(url_for("main.service_dashboard", service_id=service.id))
     else:
-        return redirect(url_for("main.register_from_invite"))
+        return redirect(url_for("main.register_from_invite", token=token))
 
 
 @main.route("/organisation-invitation/<token>")

@@ -11,7 +11,11 @@
 {% from "govuk_frontend_jinja/components/error-summary/macro.html" import govukErrorSummary %}
 
 {% block per_page_title %}
-{{ page_title }} – {{ current_service.name }}
+  {% if bleed %}
+    Chosen alert area – {{ current_service.name }}
+  {% else %}
+    {{ page_title }} – {{ current_service.name }}
+  {% endif %}
 {% endblock %}
 
 {% block service_page_title %}
@@ -68,7 +72,11 @@
 
 
 {% block maincolumn_content %}
-{{ page_header('Choose alert area', classes="heading-no-margin-top") }}
+  {% if bleed %}
+    {{ page_header('Chosen alert area', classes="heading-no-margin-top") }}
+  {% else %}
+    {{ page_header(page_title, classes="heading-no-margin-top") }}
+  {% endif %}
 
 {% if form.errors %}
   {{ govukErrorSummary({
@@ -80,30 +88,35 @@
 {% call form_wrapper() %}
 <div class="mapping-form">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-  <div class="govuk-form-group">
-    {{inputWithCustomError(form.first_coordinate, label1, 'Enter a valid value')}}
+  <div class="mapping-form-group">
+    <div class="govuk-form-group">
+      {{inputWithCustomError(form.first_coordinate, label1, 'Enter a valid value')}}
+    </div>
+    <div class="mapping-margin-left govuk-form-group">
+      {{inputWithCustomError(form.second_coordinate, label2, 'Enter a valid value')}}
+    </div>
+    <div class="mapping-margin-left govuk-form-group">
+      {{ govukButton({
+      "classes": "notify-simple-search-form__button govuk-button--secondary search-postcode-button",
+      "html": "Search",
+      "name": 'search_btn',
+      "value": True
+      }) }}
+    </div>
   </div>
-  <div class="mapping-margin-left govuk-form-group">
-    {{inputWithCustomError(form.second_coordinate, label2, 'Enter a valid value')}}
-  </div>
-  <div class="mapping-margin-left govuk-form-group">
-    {{ govukButton({
-    "classes": "notify-simple-search-form__button govuk-button--secondary search-postcode-button",
-    "html": "Search",
-    "name": 'search_btn',
-    "value": True
-    }) }}
-  </div>
-  <div class="mapping-margin-left">
-    {{inputWithCustomError(form.radius, "Radius", 'Enter a valid value')}}
-  </div>
-  <div class="mapping-margin-left govuk-form-group">
-    {{ govukButton({
-    "classes": "notify-simple-search-form__button govuk-button--secondary search-postcode-button",
-    "html": "Add radius",
-    "name": 'radius_btn',
-    "value": True
-    }) }}
+
+  <div class="mapping-form-group">
+    <div>
+      {{inputWithCustomError(form.radius, "Radius", 'Enter a valid value')}}
+    </div>
+    <div class="mapping-margin-left govuk-form-group">
+      {{ govukButton({
+      "classes": "notify-simple-search-form__button govuk-button--secondary add-radius-button",
+      "html": "Add radius",
+      "name": 'radius_btn',
+      "value": True
+      }) }}
+    </div>
   </div>
   <div class="preview-button govuk-form-group">
     {% if bleed %}
@@ -122,7 +135,7 @@
       }) }}
     {% endif %}
   </div>
-  </div>
+</div>
 {% endcall %}
 
 <ul class="area-list"></ul>

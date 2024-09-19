@@ -2162,6 +2162,7 @@ def client_request(_logged_in_client, mocker, service_one):  # noqa (C901 too co
             _follow_redirects=False,
             _expected_redirect=None,
             _test_page_title=True,
+            _test_page_prefix=None,
             _test_for_elements_without_class=True,
             _optional_args="",
             **endpoint_kwargs,
@@ -2172,6 +2173,7 @@ def client_request(_logged_in_client, mocker, service_one):  # noqa (C901 too co
                 _follow_redirects=_follow_redirects,
                 _expected_redirect=_expected_redirect,
                 _test_page_title=_test_page_title,
+                _test_page_prefix=_test_page_prefix,
                 _test_for_elements_without_class=_test_for_elements_without_class,
             )
 
@@ -2182,6 +2184,7 @@ def client_request(_logged_in_client, mocker, service_one):  # noqa (C901 too co
             _follow_redirects=False,
             _expected_redirect=None,
             _test_page_title=True,
+            _test_page_prefix=None,
             _test_for_elements_without_class=True,
             **endpoint_kwargs,
         ):
@@ -2202,11 +2205,17 @@ def client_request(_logged_in_client, mocker, service_one):  # noqa (C901 too co
 
             if _test_page_title:
                 # Page should have one H1
-                assert len(page.select("h1")) == 1
-                page_title, h1 = (normalize_spaces(page.select_one(selector).text) for selector in ("title", "h1"))
-                assert normalize_spaces(page_title).startswith(
-                    h1
-                ), f"Page {url} title '{page_title}' does not start with H1 '{h1}'"
+                if _test_page_prefix:
+                    page_title = normalize_spaces(page.select_one("title").text)
+                    assert normalize_spaces(page_title).startswith(
+                        f"{_test_page_prefix}"
+                    ), f"Page {url} title '{page_title}' does not start with prefix '{_test_page_prefix}'"
+                else:
+                    assert len(page.select("h1")) == 1
+                    page_title, h1 = (normalize_spaces(page.select_one(selector).text) for selector in ("title", "h1"))
+                    assert normalize_spaces(page_title).startswith(
+                        h1
+                    ), f"Page {url} title '{page_title}' does not start with H1 '{h1}'"
 
             if _test_for_elements_without_class and _expected_status not in (301, 302):
                 for tag, hint in (

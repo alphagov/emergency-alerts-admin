@@ -11,7 +11,11 @@
 {% from "components/input-custom-error.html" import inputWithCustomError %}
 
 {% block per_page_title %}
-  {{ page_title }} – {{ current_service.name }}
+  {% if bleed %}
+    Chosen alert area – {{ current_service.name }}
+  {% else %}
+    {{ page_title }} – {{ current_service.name }}
+  {% endif %}
 {% endblock %}
 
 {% block service_page_title %}
@@ -42,7 +46,11 @@
 {% endif %}
 
 {% block maincolumn_content %}
-  {{ page_header('Choose alert area', classes="heading-no-margin-top") }}
+  {% if bleed %}
+    {{ page_header('Chosen alert area', classes="heading-no-margin-top") }}
+  {% else %}
+    {{ page_header(page_title, classes="heading-no-margin-top") }}
+  {% endif %}
   {{ errorSummary(form) }}
   {% call form_wrapper() %}
   <div class="mapping-form">
