@@ -31,15 +31,17 @@ class CommonlyUsedPassword:
 
 
 class LowEntropyPassword:
-    def __init__(self, message=None):
-        if not message:
-            message = "Password has low entropy."
-        self.message = message
-
     def __call__(self, form, field):
         entropy = pwdpy.entropy((field.data))
-        if float(entropy) < 90:
-            raise ValidationError(self.message)
+        if float(entropy) < 70:
+            message = (
+                "Your password is not strong enough. To make it stronger, you can: "
+                "<ul class='govuk-error-message govuk-list govuk-list--bullet'>"
+                "<li>Increase the length of your password.</li>"
+                "<li>Use a mix of upper and lower case letters, numbers, and special characters.</li>"
+                "</ul>"
+            )
+            raise ValidationError(message)
 
 
 class CsvFileValidator:

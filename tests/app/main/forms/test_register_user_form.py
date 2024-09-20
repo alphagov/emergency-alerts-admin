@@ -32,7 +32,13 @@ def test_should_raise_low_entropy_validation_error_for_password(
     form.password.data = password
 
     form.validate()
-    assert "Password has low entropy." in form.errors["password"]
+    assert (
+        "Your password is not strong enough. To make it stronger, you can: "
+        "<ul class='govuk-error-message govuk-list govuk-list--bullet'>"
+        "<li>Increase the length of your password.</li>"
+        "<li>Use a mix of upper and lower case letters, numbers, and special characters.</li>"
+        "</ul>" in form.errors["password"]
+    )
 
 
 def test_valid_email_not_in_valid_domains(
