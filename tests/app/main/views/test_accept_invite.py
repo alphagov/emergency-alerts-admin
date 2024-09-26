@@ -194,8 +194,11 @@ def test_invite_goes_in_session(
         token="thisisnotarealtoken",
         _expected_status=302,
         _expected_redirect=url_for(
-            "main.service_dashboard",
+            # "main.service_dashboard",
+            # service_id=SERVICE_ONE_ID,
+            "main.broadcast_tour",
             service_id=SERVICE_ONE_ID,
+            step_index=1,
         ),
         _follow_redirects=False,
     )
