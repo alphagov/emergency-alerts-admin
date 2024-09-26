@@ -43,7 +43,7 @@ def accept_invite(token):
                 return redirect(url_for("main.broadcast_tour", service_id=service.id, step_index=1))
         return redirect(url_for("main.service_dashboard", service_id=invited_user.service))
 
-    session["invited_user_id"] = invited_user.id
+    # session["invited_user_id"] = invited_user.id
 
     existing_user = User.from_email_address_or_none(invited_user.email_address)
 
@@ -78,6 +78,7 @@ def accept_invite(token):
                     return redirect(url_for("main.broadcast_tour", service_id=service.id, step_index=1))
             return redirect(url_for("main.service_dashboard", service_id=service.id))
     else:
+        session["invited_user_id"] = invited_user.id
         return redirect(url_for("main.register_from_invite", token=token))
 
 

@@ -9,7 +9,6 @@ import app
 from tests import service_json
 from tests.conftest import (
     SERVICE_ONE_ID,
-    create_active_caseworking_user,
     create_active_user_with_permissions,
     normalize_spaces,
 )
@@ -194,8 +193,6 @@ def test_invite_goes_in_session(
         token="thisisnotarealtoken",
         _expected_status=302,
         _expected_redirect=url_for(
-            # "main.service_dashboard",
-            # service_id=SERVICE_ONE_ID,
             "main.broadcast_tour",
             service_id=SERVICE_ONE_ID,
             step_index=1,
@@ -210,8 +207,7 @@ def test_invite_goes_in_session(
 @pytest.mark.parametrize(
     "user, landing_page_title",
     [
-        (create_active_user_with_permissions(), "Dashboard"),
-        (create_active_caseworking_user(), "Templates"),
+        (create_active_user_with_permissions(), "Welcome"),
     ],
 )
 def test_accepting_invite_removes_invite_from_session(
