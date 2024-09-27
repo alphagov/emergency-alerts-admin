@@ -50,7 +50,7 @@
         pool += 100;
         if (pool == 0)
         return 0;
-        return Math.round(password.length * Math.log(pool) / Math.LN2);
+        return (password.length * Math.log(pool) / Math.LN2).toFixed(2);
     };
 
     window.GOVUK.setColour = setColour;
