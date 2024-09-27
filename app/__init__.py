@@ -102,6 +102,7 @@ from app.notify_client.notification_api_client import notification_api_client
 from app.notify_client.org_invite_api_client import org_invite_api_client
 from app.notify_client.organisations_api_client import organisations_client
 from app.notify_client.platform_stats_api_client import platform_stats_api_client
+from app.notify_client.reports_api_client import reports_api_client
 from app.notify_client.service_api_client import service_api_client
 from app.notify_client.status_api_client import status_api_client
 from app.notify_client.template_folder_api_client import template_folder_api_client
@@ -172,6 +173,7 @@ def create_app(application):
         org_invite_api_client,
         organisations_client,
         platform_stats_api_client,
+        reports_api_client,
         service_api_client,
         status_api_client,
         template_folder_api_client,
@@ -332,6 +334,7 @@ def useful_headers_after_request(response):
         "Content-Security-Policy",
         (
             "default-src 'self' {asset_domain};"
+            "report-to default;"
             "script-src 'self' {asset_domain} *.google-analytics.com 'nonce-{content_nonce}' 'unsafe-eval';"
             "style-src 'self' {asset_domain} 'nonce-{content_nonce}';"
             "connect-src 'self' *.google-analytics.com;"
@@ -354,6 +357,9 @@ def useful_headers_after_request(response):
     if "Cache-Control" in response.headers:
         del response.headers["Cache-Control"]
     response.headers.add("Cache-Control", "no-store, no-cache, private, must-revalidate")
+    response.headers.add(
+        "Reporting-Endpoints", f"default={current_app.config['ADMIN_EXTERNAL_URL']}{url_for('main.reports')}"
+    )
     for key, value in response.headers:
         response.headers[key] = SanitiseASCII.encode(value)
     return response
