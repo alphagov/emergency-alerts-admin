@@ -196,8 +196,12 @@ def user_profile_password():
     form = ChangePasswordForm(_check_password)
 
     if form.validate_on_submit():
-        user_api_client.update_password(current_user.id, password=form.new_password.data)
-        return redirect(url_for(".user_profile"))
+        try:
+            user_api_client.update_password(current_user.id, password=form.new_password.data)
+            return redirect(url_for(".user_profile"))
+        except HTTPError as e:
+            if e.status_code == 400:
+                form.new_password.errors.append(e.message[0])
 
     return render_template("views/user-profile/change-password.html", form=form)
 
