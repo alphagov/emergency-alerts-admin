@@ -157,6 +157,7 @@ EXCLUDED_ENDPOINTS = tuple(
             "remove_user_from_organisation",
             "remove_user_from_service",
             "remove_postcode_area",
+            "reports",
             "request_to_go_live",
             "resend_email_link",
             "resend_email_verification",
