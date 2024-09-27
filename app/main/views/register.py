@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from flask import abort, redirect, render_template, session, url_for
+from flask import abort, redirect, render_template, request, session, url_for
 
 from app.main import main
 from app.main.forms import RegisterUserFromInviteForm, RegisterUserFromOrgInviteForm
@@ -11,6 +11,13 @@ from app.models.user import InvitedOrgUser, InvitedUser, User
 @main.route("/register-from-invite", methods=["GET", "POST"])
 def register_from_invite():
     invited_user = InvitedUser.from_session()
+
+    if not invited_user:
+        token = request.args.get("token")
+        if token is not None:
+            invited_user = InvitedUser.from_token(token)
+            session["invited_user_id"] = invited_user.id
+
     if not invited_user:
         abort(404)
 

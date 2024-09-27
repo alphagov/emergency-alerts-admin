@@ -374,7 +374,7 @@ def test_new_user_accept_invite_calls_api_and_redirects_to_registration(
     client_request.get(
         "main.accept_invite",
         token="thisisnotarealtoken",
-        _expected_redirect="/register-from-invite",
+        _expected_redirect="/register-from-invite?token=thisisnotarealtoken",
     )
 
     mock_check_invite_token.assert_called_with("thisisnotarealtoken")
@@ -502,7 +502,7 @@ def test_new_user_accept_invite_completes_new_registration_redirects_to_verify(
     mocker,
 ):
     client_request.logout()
-    expected_redirect_location = "/register-from-invite"
+    expected_redirect_location = "/register-from-invite?token=thisisnotarealtoken"
 
     client_request.get(
         "main.accept_invite",
@@ -625,7 +625,7 @@ def test_new_invited_user_verifies_and_added_to_service(
     client_request.get(
         "main.accept_invite",
         token="thisisnotarealtoken",
-        _expected_redirect=url_for("main.register_from_invite"),
+        _expected_redirect=url_for("main.register_from_invite", token="thisisnotarealtoken"),
     )
 
     # get redirected to register from invite
