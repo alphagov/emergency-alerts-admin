@@ -874,7 +874,11 @@ def test_existing_email_auth_user_without_phone_cannot_set_sms_auth(
         "main.accept_invite",
         token="thisisnotarealtoken",
         _expected_status=302,
-        _expected_redirect=url_for("main.service_dashboard", service_id=service_one["id"]),
+        _expected_redirect=url_for(
+            "main.broadcast_tour",
+            service_id=service_one["id"],
+            step_index=1,
+        ),
     )
 
     mock_update_user_attribute.assert_called_once_with(
