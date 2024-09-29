@@ -20,6 +20,11 @@ def mock_no_users_for_service(mocker):
 
 
 @pytest.fixture(scope="function")
+def mock_user_exists_in_service(mocker, api_user_active):
+    mocker.patch("app.models.user.Users.client_method", return_value=[api_user_active])
+
+
+@pytest.fixture(scope="function")
 def mock_get_existing_user_by_email(mocker, api_user_active):
     return mocker.patch("app.user_api_client.get_user_by_email", return_value=api_user_active)
 
@@ -290,7 +295,7 @@ def test_accept_invite_redirects_if_api_raises_an_error_that_they_are_already_pa
     mock_check_invite_token,
     mock_accept_invite,
     mock_get_service,
-    mock_no_users_for_service,
+    mock_user_exists_in_service,
     mock_get_user,
     mock_update_user_attribute,
 ):
