@@ -667,7 +667,7 @@ def test_new_invited_user_verifies_and_added_to_service(
         mock_check_verify_code.assert_called_once_with(new_user_id, "1234567", "sms")
         assert service_one["id"] == session["service_id"]
 
-    assert page.select_one("h1").text == "Dashboard"
+    assert normalize_spaces(page.select_one("h1").text) == "Welcome"
 
 
 @pytest.mark.parametrize(
