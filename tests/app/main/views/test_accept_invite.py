@@ -57,7 +57,6 @@ def test_existing_user_accept_invite_calls_api_and_redirects_to_tour(
     client_request.get(
         "main.accept_invite",
         token="thisisnotarealtoken",
-        # _expected_redirect=url_for("main.service_dashboard", service_id=expected_service),
         _expected_redirect=url_for(
             "main.broadcast_tour",
             service_id=SERVICE_ONE_ID,
@@ -754,7 +753,6 @@ def test_existing_user_accepts_and_sets_email_auth(
         "main.accept_invite",
         token="thisisnotarealtoken",
         _expected_status=302,
-        # _expected_redirect=url_for("main.service_dashboard", service_id=service_one["id"]),
         _expected_redirect=url_for(
             "main.broadcast_tour",
             service_id=service_one["id"],
@@ -798,7 +796,6 @@ def test_platform_admin_user_accepts_and_preserves_auth(
         "main.accept_invite",
         token="thisisnotarealtoken",
         _expected_status=302,
-        # _expected_redirect=url_for("main.service_dashboard", service_id=service_one["id"]),
         _expected_redirect=url_for(
             "main.broadcast_tour",
             service_id=service_one["id"],
@@ -837,7 +834,11 @@ def test_existing_user_doesnt_get_auth_changed_by_service_without_permission(
         "main.accept_invite",
         token="thisisnotarealtoken",
         _expected_status=302,
-        _expected_redirect=url_for("main.service_dashboard", service_id=service_one["id"]),
+        _expected_redirect=url_for(
+            "main.broadcast_tour",
+            service_id=service_one["id"],
+            step_index=1,
+        ),
     )
 
     mock_update_user_attribute.assert_called_once_with(
