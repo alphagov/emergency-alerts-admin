@@ -400,12 +400,13 @@ def test_navigation_urls(
 ):
     page = client_request.get("main.choose_template", service_id=SERVICE_ONE_ID)
     assert [a["href"] for a in page.select(".navigation a")] == [
-        "/services/{}".format(SERVICE_ONE_ID),
+        "/services/{}/current-alerts".format(SERVICE_ONE_ID),
+        "/services/{}/past-alerts".format(SERVICE_ONE_ID),
+        "/services/{}/rejected-alerts".format(SERVICE_ONE_ID),
         "/services/{}/templates".format(SERVICE_ONE_ID),
         "/services/{}/users".format(SERVICE_ONE_ID),
-        "/services/{}/usage".format(SERVICE_ONE_ID),
         "/services/{}/service-settings".format(SERVICE_ONE_ID),
-        "/services/{}/api".format(SERVICE_ONE_ID),
+        "/services/{}/api/keys".format(SERVICE_ONE_ID),
     ]
 
 
