@@ -757,7 +757,7 @@ def test_existing_user_accepts_and_sets_email_auth(
         # _expected_redirect=url_for("main.service_dashboard", service_id=service_one["id"]),
         _expected_redirect=url_for(
             "main.broadcast_tour",
-            service_id=SERVICE_ONE_ID,
+            service_id=service_one["id"],
             step_index=1,
         ),
     )
@@ -798,7 +798,12 @@ def test_platform_admin_user_accepts_and_preserves_auth(
         "main.accept_invite",
         token="thisisnotarealtoken",
         _expected_status=302,
-        _expected_redirect=url_for("main.service_dashboard", service_id=service_one["id"]),
+        # _expected_redirect=url_for("main.service_dashboard", service_id=service_one["id"]),
+        _expected_redirect=url_for(
+            "main.broadcast_tour",
+            service_id=service_one["id"],
+            step_index=1,
+        ),
     )
 
     mock_update_user_attribute.assert_called_once_with(
