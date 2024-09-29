@@ -49,11 +49,10 @@ def accept_invite(token):
 
     if existing_user:
         existing_user.update_email_access_validated_at()
-        # invited_user.accept_invite()
+        invited_user.accept_invite()
         if existing_user in Users(invited_user.service):
             return redirect(url_for("main.service_dashboard", service_id=invited_user.service))
         else:
-            invited_user.accept_invite()
             service = Service.from_id(invited_user.service)
             # if the service you're being added to can modify auth type, then check if we can do this;
             # if the user is a Platform Admin, we silently leave this unchanged to prevent a security

@@ -35,7 +35,7 @@ def mock_check_invite_token(mocker, sample_invite):
 
 
 @freeze_time("2021-12-12 12:12:12")
-def test_existing_user_accept_invite_calls_api_and_redirects_to_dashboard(
+def test_existing_user_accept_invite_calls_api_and_redirects_to_tour(
     client_request,
     service_one,
     api_user_active,
@@ -57,7 +57,12 @@ def test_existing_user_accept_invite_calls_api_and_redirects_to_dashboard(
     client_request.get(
         "main.accept_invite",
         token="thisisnotarealtoken",
-        _expected_redirect=url_for("main.service_dashboard", service_id=expected_service),
+        # _expected_redirect=url_for("main.service_dashboard", service_id=expected_service),
+        _expected_redirect=url_for(
+            "main.broadcast_tour",
+            service_id=SERVICE_ONE_ID,
+            step_index=1,
+        ),
     )
 
     mock_check_invite_token.assert_called_with("thisisnotarealtoken")
