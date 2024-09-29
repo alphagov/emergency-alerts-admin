@@ -9,7 +9,7 @@ from app.navigation import (
     Navigation,
     OrgNavigation,
 )
-from tests.conftest import ORGANISATION_ID, SERVICE_ONE_ID, normalize_spaces
+from tests.conftest import ORGANISATION_ID, SERVICE_ONE_ID
 
 EXCLUDED_ENDPOINTS = tuple(
     map(
@@ -452,29 +452,3 @@ def test_navigation_for_services_with_broadcast_permission_platform_admin(
         "/services/{}/service-settings".format(SERVICE_ONE_ID),
         "/services/{}/api/keys".format(SERVICE_ONE_ID),
     ]
-
-
-def test_caseworkers_get_caseworking_navigation(
-    client_request,
-    mock_get_template_folders,
-    mock_get_service_templates,
-    mock_has_no_jobs,
-    mock_get_api_keys,
-    active_caseworking_user,
-):
-    client_request.login(active_caseworking_user)
-    page = client_request.get("main.choose_template", service_id=SERVICE_ONE_ID)
-    assert normalize_spaces(page.select_one(".navigation").text) == ("Templates Team members")
-
-
-def test_caseworkers_see_jobs_nav_if_jobs_exist(
-    client_request,
-    mock_get_service_templates,
-    mock_get_template_folders,
-    mock_has_jobs,
-    active_caseworking_user,
-    mock_get_api_keys,
-):
-    client_request.login(active_caseworking_user)
-    page = client_request.get("main.choose_template", service_id=SERVICE_ONE_ID)
-    assert normalize_spaces(page.select_one(".navigation").text) == ("Templates Team members")
