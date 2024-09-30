@@ -3,7 +3,7 @@ import uuid
 
 import pytest
 from emergency_alerts_utils.url_safe_token import generate_token
-from flask import url_for
+from flask import Response, url_for
 from freezegun import freeze_time
 from notifications_python_client.errors import HTTPError
 
@@ -367,6 +367,27 @@ def test_should_redirect_after_password_change(
         _expected_redirect=url_for(
             "main.user_profile",
         ),
+    )
+
+
+def test_choosing_weak_password_returns_400(client_request, mock_verify_password, mocker):
+    mocker.patch(
+        "app.user_api_client.update_password",
+        side_effect=HTTPError(Response(status=400), "Password does not have enough entropy."),
+    )
+
+    page = client_request.post(
+        "main.user_profile_password",
+        _data={
+            "new_password": "the new password123",
+            "old_password": "the old password123",
+        },
+        _expected_status=200,
+    )
+    assert normalize_spaces(page.select_one(".govuk-error-message").text) == (
+        "Error: Your password is not strong enough. To make it stronger, you can: "
+        "Increase the length of your password."
+        "Use a mix of upper and lower case letters, numbers, and special characters."
     )
 
 
