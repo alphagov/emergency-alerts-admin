@@ -328,67 +328,6 @@ def test_should_show_overview_page_for_broadcast_service(
     )
 
 
-# @pytest.mark.parametrize(
-#     "endpoint, extra_args, service_has_email_auth, auth_options_hidden",
-#     [
-#         ("main.edit_user_permissions", {"user_id": sample_uuid()}, True, True),
-#         ("main.edit_user_permissions", {"user_id": sample_uuid()}, False, True),
-#         ("main.invite_user", {}, True, True),
-#         ("main.invite_user", {}, False, True),
-#     ],
-# )
-# def test_service_with_no_email_auth_hides_auth_type_options(
-#     client_request,
-#     endpoint,
-#     extra_args,
-#     service_has_email_auth,
-#     auth_options_hidden,
-#     service_one,
-#     mock_get_users_by_service,
-#     mock_get_template_folders,
-# ):
-#     if service_has_email_auth:
-#         service_one["permissions"].append("email_auth")
-#     page = client_request.get(endpoint, service_id=service_one["id"], **extra_args)
-#     assert (page.select_one("input[name=login_authentication]") is None) == auth_options_hidden
-
-
-# @pytest.mark.parametrize("service_has_caseworking", (True, False))
-# @pytest.mark.parametrize(
-#     "endpoint, extra_args",
-#     [
-#         (
-#             "main.edit_user_permissions",
-#             {"user_id": sample_uuid()},
-#         ),
-#         (
-#             "main.invite_user",
-#             {},
-#         ),
-#     ],
-# )
-# def test_service_without_caseworking_doesnt_show_admin_vs_caseworker(
-#     client_request,
-#     mock_get_users_by_service,
-#     mock_get_template_folders,
-#     endpoint,
-#     service_has_caseworking,
-#     extra_args,
-# ):
-#     page = client_request.get(endpoint, service_id=SERVICE_ONE_ID, **extra_args)
-#     permission_checkboxes = page.select("input[type=checkbox]")
-
-#     for idx in range(len(permission_checkboxes)):
-#         assert permission_checkboxes[idx]["name"] == "permissions_field"
-#         print(permission_checkboxes[idx]["value"])
-
-#     assert permission_checkboxes[0]["value"] == "view_activity"
-#     assert permission_checkboxes[1]["value"] == "send_messages"
-#     assert permission_checkboxes[2]["value"] == "manage_templates"
-#     assert permission_checkboxes[3]["value"] == "manage_service"
-#     assert permission_checkboxes[4]["value"] == "manage_api_keys"
-
-
 @pytest.mark.parametrize(
     "endpoint, extra_args",
     [
@@ -873,28 +812,6 @@ def test_edit_user_permissions_including_authentication_with_email_auth_service(
     mock_update_user_attribute.assert_called_with(str(active_user_with_permissions["id"]), auth_type="sms_auth")
 
 
-# def test_edit_user_permissions_shows_authentication_for_email_auth_service(
-#     client_request,
-#     service_one,
-#     mock_get_users_by_service,
-#     mock_get_template_folders,
-#     active_user_with_permissions,
-# ):
-#     service_one["permissions"].append("email_auth")
-
-#     page = client_request.get(
-#         "main.edit_user_permissions",
-#         service_id=SERVICE_ONE_ID,
-#         user_id=active_user_with_permissions["id"],
-#     )
-
-#     radio_buttons = page.select("input[name=login_authentication]")
-#     values = {button["value"] for button in radio_buttons}
-
-#     assert values == {"sms_auth", "email_auth"}
-#     assert not any(button.has_attr("disabled") for button in radio_buttons)
-
-
 def test_edit_user_permissions_hides_authentication_for_webauthn_user(
     client_request,
     service_one,
@@ -1054,56 +971,6 @@ def test_should_show_page_if_prefilled_user_is_already_invited(
         "Service Two User has not accepted their invitation to " "‘service one’ yet. You do not need to do anything."
     )
     assert not page.select("form")
-
-
-# def test_should_403_if_trying_to_prefill_email_address_for_user_with_no_organisation(
-#     mocker,
-#     client_request,
-#     service_one,
-#     mock_get_template_folders,
-#     fake_uuid,
-#     active_user_with_permissions,
-#     active_user_with_permission_to_other_service,
-#     mock_get_invites_for_service,
-#     mock_get_no_organisation_by_domain,
-# ):
-#     service_one["organisation"] = ORGANISATION_ID
-#     client_request.login(active_user_with_permissions)
-#     mocker.patch(
-#         "app.models.user.user_api_client.get_user",
-#         return_value=active_user_with_permission_to_other_service,
-#     )
-#     client_request.get(
-#         "main.invite_user",
-#         service_id=SERVICE_ONE_ID,
-#         user_id=fake_uuid,
-#         _expected_status=403,
-#     )
-
-
-# def test_should_403_if_trying_to_prefill_email_address_for_user_from_other_organisation(
-#     mocker,
-#     client_request,
-#     service_one,
-#     mock_get_template_folders,
-#     fake_uuid,
-#     active_user_with_permissions,
-#     active_user_with_permission_to_other_service,
-#     mock_get_invites_for_service,
-#     mock_get_organisation_by_domain,
-# ):
-#     service_one["organisation"] = ORGANISATION_TWO_ID
-#     client_request.login(active_user_with_permissions)
-#     mocker.patch(
-#         "app.models.user.user_api_client.get_user",
-#         return_value=active_user_with_permission_to_other_service,
-#     )
-#     client_request.get(
-#         "main.invite_user",
-#         service_id=SERVICE_ONE_ID,
-#         user_id=fake_uuid,
-#         _expected_status=403,
-#     )
 
 
 def test_should_show_folder_permission_form_if_service_has_folder_permissions_enabled(
