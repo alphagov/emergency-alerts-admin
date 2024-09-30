@@ -1,10 +1,18 @@
 (function (window) {
     "use strict";
 
-    const setColour = function(entropy) {
+    const lcase = "abcdefghijklmnopqrstuvwxyz";
+    const ucase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const numb = "1234567890";
+    const symbol = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~ ";
+
+    let strengthBar = document.getElementById("meter");
+    let strengthText = document.getElementById("password-strength");
+
+    const setColour = function(entropy, strengthBar) {
         if (entropy < 33 ){
             strengthBar.style.setProperty('--progress-bar-color', "#D4351C");
-        } else if (33 < entropy < 66) {
+        } else if (33 < entropy && entropy < 66) {
             strengthBar.style.setProperty('--progress-bar-color', "#F47738");
         }
         if (entropy > 70) {
@@ -16,7 +24,7 @@
         if (entropy < 33 ){
             strengthText.innerText = "Weak";
             strengthText.style.color = "#D4351C";
-        } else if (33 < entropy < 66) {
+        } else if (33 < entropy && entropy < 66) {
             strengthText.innerText = "Medium";
             strengthText.style.color = "#F47738";
         }
