@@ -8,8 +8,9 @@
 
     let strengthBar = document.getElementById("meter");
     let strengthText = document.getElementById("password-strength");
+    let code = document.getElementById("new_password");
 
-    const setColour = function(entropy, strengthBar) {
+    const setColour = function(entropy) {
         if (entropy < 33 ){
             strengthBar.style.setProperty('--progress-bar-color', "#D4351C");
         } else if (33 < entropy && entropy < 66) {
@@ -60,6 +61,30 @@
         return 0;
         return (password.length * Math.log(pool) / Math.LN2).toFixed(2);
     };
+
+    code.oninput = function () {
+        let entropy = Number(window.GOVUK.calculateEntropy(code.value));
+        strengthBar.value = entropy;
+        if (entropy < 100) {
+            window.GOVUK.setColour(entropy);
+            window.GOVUK.setText(entropy);
+        }
+        if (code.value == "") {
+            strengthText.innerText = "";
+        }
+    };
+
+    addEventListener("DOMContentLoaded", (event) => {
+        let entropy = Number(window.GOVUK.calculateEntropy(code.value));
+        strengthBar.value = entropy;
+        if (entropy < 100) {
+            window.GOVUK.setColour(entropy);
+            window.GOVUK.setText(entropy);
+        }
+        if (code.value == "") {
+            strengthText.innerText = "";
+        }
+    });
 
     window.GOVUK.setColour = setColour;
     window.GOVUK.setText = setText;
