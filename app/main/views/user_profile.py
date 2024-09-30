@@ -201,7 +201,7 @@ def user_profile_password():
             return redirect(url_for(".user_profile"))
         except HTTPError as e:
             if e.status_code == 400:
-                if e.message[0] == "Password does not have enough entropy.":
+                if e.message == "Password does not have enough entropy.":
                     form.new_password.errors.append(
                         "Your password is not strong enough. To make it stronger, you can: "
                         "<ul class='govuk-error-message govuk-list govuk-list--bullet'>"
@@ -210,7 +210,7 @@ def user_profile_password():
                         "</ul>"
                     )
                 else:
-                    form.new_password.errors.append(e.message[0])
+                    form.new_password.errors.append(e.message)
 
     return render_template("views/user-profile/change-password.html", form=form)
 
