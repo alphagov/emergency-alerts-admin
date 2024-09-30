@@ -553,6 +553,7 @@ def mock_update_service_raise_httperror_duplicate_name(mocker):
 
 SERVICE_ONE_ID = "596364a0-858e-42c8-9062-a8fe822260eb"
 SERVICE_TWO_ID = "147ad62a-2951-4fa1-9ca0-093cd1a52c52"
+SERVICE_NO_BROADCAST = "a45678a8-4ca5-4814-a3eb-5b47eb35805f"
 ORGANISATION_ID = "c011fa40-4cbe-4524-b415-dde2f421bd9c"
 ORGANISATION_TWO_ID = "d9b5be73-0b36-4210-9d89-8f1a5c2fef26"
 TEMPLATE_ONE_ID = "b22d7d94-2197-4a7d-a8e7-fd5f9770bf48"
