@@ -857,7 +857,7 @@ def test_edit_user_permissions_preserves_auth_type_for_webauthn_user(
     mock_set_user_permissions.assert_called_with(
         str(active_user_with_permissions["id"]),
         SERVICE_ONE_ID,
-        permissions=set(),
+        permissions={"view_activity"},
         folder_permissions=[],
     )
     mock_update_user_attribute.assert_not_called()
