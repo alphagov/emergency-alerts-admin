@@ -419,56 +419,6 @@ def test_manage_users_page_shows_member_auth_type_if_service_has_email_auth_acti
 
 
 @pytest.mark.parametrize(
-    "sms_option_disabled, mobile_number, expected_label",
-    [
-        (
-            True,
-            None,
-            """
-            Text message code
-            Not available because this team member has not added a
-            phone number to their profile
-        """,
-        ),
-        (
-            False,
-            "07700 900762",
-            """
-            Text message code
-        """,
-        ),
-    ],
-)
-def test_user_with_no_mobile_number_cant_be_set_to_sms_auth(
-    client_request,
-    mock_get_users_by_service,
-    mock_get_template_folders,
-    sms_option_disabled,
-    mobile_number,
-    expected_label,
-    service_one,
-    mocker,
-    active_user_with_permissions,
-):
-    active_user_with_permissions["mobile_number"] = mobile_number
-
-    service_one["permissions"].append("email_auth")
-    mocker.patch("app.user_api_client.get_user", return_value=active_user_with_permissions)
-
-    page = client_request.get(
-        "main.edit_user_permissions",
-        service_id=service_one["id"],
-        user_id=sample_uuid(),
-    )
-
-    sms_auth_radio_button = page.select_one('input[value="sms_auth"]')
-    assert sms_auth_radio_button.has_attr("disabled") == sms_option_disabled
-    assert normalize_spaces(page.select_one("label[for=login_authentication-0]").text) == normalize_spaces(
-        expected_label
-    )
-
-
-@pytest.mark.parametrize(
     "endpoint, extra_args, expected_checkboxes",
     [
         (

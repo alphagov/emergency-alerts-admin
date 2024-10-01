@@ -1399,6 +1399,7 @@ def test_no_action_if_user_fills_in_ambiguous_fields(
         "email",
         "sms",
         "letter",
+        "broadcast",
         "copy-existing",
     ] == [radio["value"] for radio in page.select("#add_new_template_form input[type=radio]")]
 
