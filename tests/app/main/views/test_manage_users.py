@@ -334,19 +334,31 @@ def test_should_show_overview_page_for_broadcast_service(
     page = client_request.get("main.manage_users", service_id=SERVICE_ONE_ID)
     assert normalize_spaces(page.select(".user-list-item")[0].text) == (
         "Test User Create Broadcasts Permission (you) "
+        "Can See dashboard "
+        "Cannot Send messages "
         "Cannot Add and edit templates "
+        "Cannot Manage settings, team and usage "
+        "Cannot Manage API integration "
         "Can Create new alerts "
         "Cannot Approve alerts"
     )
     assert normalize_spaces(page.select(".user-list-item")[1].text) == (
         "Test User Approve Broadcasts Permission (you) "
+        "Can See dashboard "
+        "Cannot Send messages "
         "Cannot Add and edit templates "
+        "Cannot Manage settings, team and usage "
+        "Cannot Manage API integration "
         "Cannot Create new alerts "
         "Can Approve alerts"
     )
     assert normalize_spaces(page.select(".user-list-item")[2].text) == (
         "Test User With Permissions (you) "
+        "Can See dashboard "
+        "Cannot Send messages "
         "Cannot Add and edit templates "
+        "Cannot Manage settings, team and usage "
+        "Cannot Manage API integration "
         "Cannot Create new alerts "
         "Cannot Approve alerts"
     )
