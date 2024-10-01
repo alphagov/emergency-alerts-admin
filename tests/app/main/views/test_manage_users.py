@@ -388,9 +388,17 @@ def test_broadcast_service_only_shows_relevant_permissions(
     service_one["permissions"] = ["broadcast"]
     page = client_request.get(endpoint, service_id=SERVICE_ONE_ID, **extra_args)
     assert [(field["name"], field["value"]) for field in page.select("input[type=checkbox]")] == [
+        ("permissions_field", "view_activity"),
+        ("permissions_field", "send_messages"),
         ("permissions_field", "manage_templates"),
+        ("permissions_field", "manage_service"),
+        ("permissions_field", "manage_api_keys"),
         ("permissions_field", "create_broadcasts"),
         ("permissions_field", "approve_broadcasts"),
+        # ('permissions_field', 'view_activity'),
+        # ("permissions_field", "manage_templates"),
+        # ("permissions_field", "create_broadcasts"),
+        # ("permissions_field", "approve_broadcasts"),
     ]
 
 
@@ -727,7 +735,7 @@ def test_edit_user_folder_permissions(
         ),
     )
     mock_set_user_permissions.assert_called_with(
-        fake_uuid, SERVICE_ONE_ID, permissions=set(), folder_permissions=["folder-id-1", "folder-id-3"]
+        fake_uuid, SERVICE_ONE_ID, permissions={"view_activity"}, folder_permissions=["folder-id-1", "folder-id-3"]
     )
 
 
