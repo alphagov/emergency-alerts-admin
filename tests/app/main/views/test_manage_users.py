@@ -796,6 +796,7 @@ def test_edit_user_permissions_including_authentication_with_email_auth_service(
         str(active_user_with_permissions["id"]),
         SERVICE_ONE_ID,
         permissions={
+            "view_activity",
             "send_messages",
             "manage_templates",
             "manage_service",
