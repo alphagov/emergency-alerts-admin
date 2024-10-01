@@ -295,7 +295,9 @@ def test_should_show_caseworker_on_overview_page(
         "Cannot Send messages "
         "Cannot Add and edit templates "
         "Cannot Manage settings, team and usage "
-        "Cannot Manage API integration"
+        "Cannot Manage API integration "
+        "Cannot Create new alerts "
+        "Cannot Approve alerts"
     )
     # [1:5] are invited users
     assert normalize_spaces(page.select(".user-list-item")[6].text) == (
@@ -304,7 +306,9 @@ def test_should_show_caseworker_on_overview_page(
         "Can Send messages "
         "Cannot Add and edit templates "
         "Cannot Manage settings, team and usage "
-        "Cannot Manage API integration"
+        "Cannot Manage API integration "
+        "Cannot Create new alerts "
+        "Cannot Approve alerts"
     )
 
 
