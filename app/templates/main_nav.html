@@ -10,9 +10,6 @@
     {% endif %}
     <li><a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline{{ main_navigation.is_selected('templates') }}" href="{{ url_for('.choose_template', service_id=current_service.id) }}">Templates</a></li>
     <li><a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline{{ main_navigation.is_selected('team-members') }}" href="{{ url_for('.manage_users', service_id=current_service.id) }}">Team members</a></li>
-    {% if current_user.has_permissions('manage_service', allow_org_user=True) and not current_service.has_permission('broadcast') %}
-      <li><a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline{{ main_navigation.is_selected('usage') }}" href="{{ url_for('.usage', service_id=current_service.id) }}">Usage</a></li>
-    {% endif %}
     {% if current_user.has_permissions('manage_api_keys', 'manage_service') %}
       <li><a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline{{ main_navigation.is_selected('settings') }}" href="{{ url_for('.service_settings', service_id=current_service.id) }}">Settings</a></li>
     {% endif %}

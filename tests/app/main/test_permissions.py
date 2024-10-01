@@ -90,38 +90,6 @@ def test_services_pages_that_org_users_are_allowed_to_see(
     assert mock_get_service.called is organisation_checked
 
 
-def test_service_navigation_for_org_user(
-    client_request,
-    mocker,
-    api_user_active,
-    mock_get_annual_usage_for_service,
-    mock_get_monthly_usage_for_service,
-    mock_get_free_sms_fragment_limit,
-    mock_get_service,
-    mock_get_invites_for_service,
-    mock_get_users_by_service,
-    mock_get_organisation,
-):
-    api_user_active["services"] = []
-    api_user_active["organisations"] = [ORGANISATION_ID]
-    service = service_json(
-        id_=SERVICE_ONE_ID,
-        organisation_id=ORGANISATION_ID,
-    )
-    mocker.patch("app.service_api_client.get_service", return_value={"data": service})
-    client_request.login(api_user_active, service=service)
-
-    page = client_request.get(
-        "main.usage",
-        service_id=SERVICE_ONE_ID,
-    )
-    assert [item.text.strip() for item in page.select("nav.navigation a")] == [
-        "Usage",
-        "Templates",
-        "Team members",
-    ]
-
-
 def get_name_of_decorator_from_ast_node(node):
     if isinstance(node, ast.Name):
         return str(node.id)
