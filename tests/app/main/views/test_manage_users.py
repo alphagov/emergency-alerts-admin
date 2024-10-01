@@ -31,7 +31,9 @@ from tests.conftest import (
                 "Can Send messages "
                 "Can Add and edit templates "
                 "Can Manage settings, team and usage "
-                "Can Manage API integration"
+                "Can Manage API integration "
+                "Cannot Create new alerts "
+                "Cannot Approve alerts"
             ),
             (
                 "ZZZZZZZZ zzzzzzz@example.gov.uk "
@@ -40,6 +42,8 @@ from tests.conftest import (
                 "Cannot Add and edit templates "
                 "Cannot Manage settings, team and usage "
                 "Cannot Manage API integration "
+                "Cannot Create new alerts "
+                "Cannot Approve alerts "
                 "Change details for ZZZZZZZZ zzzzzzz@example.gov.uk"
             ),
         ),
@@ -51,7 +55,9 @@ from tests.conftest import (
                 "Cannot Send messages "
                 "Cannot Add and edit templates "
                 "Cannot Manage settings, team and usage "
-                "Cannot Manage API integration"
+                "Cannot Manage API integration "
+                "Cannot Create new alerts "
+                "Cannot Approve alerts"
             ),
             (
                 "ZZZZZZZZ zzzzzzz@example.gov.uk "
@@ -59,7 +65,9 @@ from tests.conftest import (
                 "Cannot Send messages "
                 "Cannot Add and edit templates "
                 "Cannot Manage settings, team and usage "
-                "Cannot Manage API integration"
+                "Cannot Manage API integration "
+                "Cannot Create new alerts "
+                "Cannot Approve alerts"
             ),
         ),
         (
@@ -70,7 +78,9 @@ from tests.conftest import (
                 "Cannot Send messages "
                 "Cannot Add and edit templates "
                 "Cannot Manage settings, team and usage "
-                "Cannot Manage API integration"
+                "Cannot Manage API integration "
+                "Cannot Create new alerts "
+                "Cannot Approve alerts"
             ),
             (
                 "ZZZZZZZZ zzzzzzz@example.gov.uk "
@@ -78,7 +88,9 @@ from tests.conftest import (
                 "Cannot Send messages "
                 "Cannot Add and edit templates "
                 "Cannot Manage settings, team and usage "
-                "Cannot Manage API integration"
+                "Cannot Manage API integration "
+                "Cannot Create new alerts "
+                "Cannot Approve alerts"
             ),
         ),
         (
@@ -89,7 +101,9 @@ from tests.conftest import (
                 "Cannot Send messages "
                 "Can Add and edit templates "
                 "Cannot Manage settings, team and usage "
-                "Cannot Manage API integration"
+                "Cannot Manage API integration "
+                "Cannot Create new alerts "
+                "Cannot Approve alerts"
             ),
             (
                 "ZZZZZZZZ zzzzzzz@example.gov.uk "
@@ -97,7 +111,9 @@ from tests.conftest import (
                 "Cannot Send messages "
                 "Cannot Add and edit templates "
                 "Cannot Manage settings, team and usage "
-                "Cannot Manage API integration"
+                "Cannot Manage API integration "
+                "Cannot Create new alerts "
+                "Cannot Approve alerts"
             ),
         ),
         (
@@ -108,7 +124,9 @@ from tests.conftest import (
                 "Cannot Send messages "
                 "Can Add and edit templates "
                 "Cannot Manage settings, team and usage "
-                "Cannot Manage API integration"
+                "Cannot Manage API integration "
+                "Cannot Create new alerts "
+                "Cannot Approve alerts"
             ),
             (
                 "ZZZZZZZZ zzzzzzz@example.gov.uk "
@@ -116,7 +134,9 @@ from tests.conftest import (
                 "Cannot Send messages "
                 "Cannot Add and edit templates "
                 "Cannot Manage settings, team and usage "
-                "Cannot Manage API integration"
+                "Cannot Manage API integration "
+                "Cannot Create new alerts "
+                "Cannot Approve alerts"
             ),
         ),
     ],
