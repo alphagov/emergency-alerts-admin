@@ -183,14 +183,14 @@ def test_if_existing_user_accepts_twice_they_redirect_to_sign_in(
     assert mock_update_user_attribute.called is False
 
 
-def test_invite_goes_in_session(
+def test_invite_for_new_user_goes_in_session(
     client_request,
     mocker,
     sample_invite,
     mock_get_service,
     api_user_active,
     mock_check_invite_token,
-    mock_get_user_by_email,
+    mock_dont_get_user_by_email,
     mock_no_users_for_service,
     mock_add_user_to_service,
     mock_accept_invite,
@@ -201,11 +201,7 @@ def test_invite_goes_in_session(
         "main.accept_invite",
         token="thisisnotarealtoken",
         _expected_status=302,
-        _expected_redirect=url_for(
-            "main.broadcast_tour",
-            service_id=SERVICE_ONE_ID,
-            step_index=1,
-        ),
+        _expected_redirect=url_for("main.register_from_invite", token="thisisnotarealtoken"),
         _follow_redirects=False,
     )
 
