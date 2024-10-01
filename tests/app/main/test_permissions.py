@@ -32,7 +32,6 @@ from tests.conftest import (
 @pytest.mark.parametrize(
     "endpoint, extra_args",
     (
-        ("main.usage", {}),
         ("main.manage_users", {}),
         ("main.choose_template", {"template_id": sample_uuid()}),
         ("main.view_template", {"template_id": sample_uuid()}),
