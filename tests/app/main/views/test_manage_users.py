@@ -1069,9 +1069,7 @@ def test_invite_user_when_email_address_is_prefilled(
         user_id=fake_uuid,
         _data={
             # No posted email address
-            "permissions_field": [
-                "send_messages",
-            ],
+            "permissions_field": ["send_messages"],
         },
     )
 
@@ -1079,7 +1077,7 @@ def test_invite_user_when_email_address_is_prefilled(
         active_user_with_permissions["id"],
         SERVICE_ONE_ID,
         active_user_with_permission_to_other_service["email_address"],
-        {"send_messages"},
+        {"view_activity", "send_messages"},
         "sms_auth",
         [],
     )
