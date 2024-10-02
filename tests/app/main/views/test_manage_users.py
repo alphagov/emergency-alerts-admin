@@ -1087,7 +1087,7 @@ def test_invite_user_when_email_address_is_prefilled(
     )
 
 
-@pytest.mark.parametrize("auth_type", [("sms_auth"), "email_auth"])
+@pytest.mark.parametrize("auth_type", ["sms_auth", "email_auth"])
 @pytest.mark.parametrize("email_address, gov_user", [("test@example.gov.uk", True), ("test@example.com", False)])
 def test_invite_user_with_email_auth_service(
     client_request,
@@ -1278,6 +1278,8 @@ def test_cancel_invited_user_doesnt_work_if_user_not_invited_to_this_service(
                 "Cannot Add and edit templates "
                 "Can Manage settings, team and usage "
                 "Can Manage API integration "
+                "Cannot Create new alerts "
+                "Cannot Approve alerts "
                 "Cancel invitation for invited_user@test.gov.uk"
             ),
         ),
@@ -1290,7 +1292,9 @@ def test_cancel_invited_user_doesnt_work_if_user_not_invited_to_this_service(
                 "Cannot Send messages "
                 "Cannot Add and edit templates "
                 "Cannot Manage settings, team and usage "
-                "Cannot Manage API integration"
+                "Cannot Manage API integration "
+                "Cannot Create new alerts "
+                "Cannot Approve alerts"
             ),
         ),
     ],
