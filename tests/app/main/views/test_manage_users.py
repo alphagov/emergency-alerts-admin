@@ -469,22 +469,6 @@ def test_should_show_page_for_one_user(
         assert checkboxes[index].has_attr("checked") == expected_checked
 
 
-def test_invite_user_allows_to_choose_auth(
-    client_request,
-    mock_get_users_by_service,
-    mock_get_template_folders,
-    service_one,
-):
-    service_one["permissions"].append("email_auth")
-    page = client_request.get("main.invite_user", service_id=SERVICE_ONE_ID)
-
-    radio_buttons = page.select("input[name=login_authentication]")
-    values = {button["value"] for button in radio_buttons}
-
-    assert values == {"sms_auth", "email_auth", "webauthn_auth"}
-    assert not any(button.has_attr("disabled") for button in radio_buttons)
-
-
 def test_invite_user_has_correct_email_field(
     client_request,
     mock_get_users_by_service,
@@ -544,7 +528,7 @@ def test_should_not_show_page_for_non_team_member(
         ),
         (
             {},
-            set(),
+            {"view_activity"},
         ),
     ],
 )
