@@ -430,6 +430,8 @@ def test_manage_users_page_shows_member_auth_type_if_service_has_email_auth_acti
                 ("manage_templates", True),
                 ("manage_service", True),
                 ("manage_api_keys", True),
+                ("create_broadcasts", False),
+                ("approve_broadcasts", False),
             ],
         ),
         (
@@ -441,6 +443,8 @@ def test_manage_users_page_shows_member_auth_type_if_service_has_email_auth_acti
                 ("manage_templates", False),
                 ("manage_service", False),
                 ("manage_api_keys", False),
+                ("create_broadcasts", False),
+                ("approve_broadcasts", False),
             ],
         ),
     ],
@@ -456,7 +460,7 @@ def test_should_show_page_for_one_user(
     page = client_request.get(endpoint, service_id=SERVICE_ONE_ID, **extra_args)
     checkboxes = page.select("input[type=checkbox]")
 
-    assert len(checkboxes) == 5
+    assert len(checkboxes) == 7
 
     for index, expected in enumerate(expected_checkboxes):
         expected_input_value, expected_checked = expected
