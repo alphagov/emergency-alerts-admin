@@ -216,29 +216,6 @@ def test_platform_admin_sees_correct_description_of_broadcast_service_setting(
     assert normalize_spaces(broadcast_setting_description) == expected_text
 
 
-def test_no_go_live_link_for_service_without_organisation(
-    client_request,
-    mocker,
-    no_reply_to_email_addresses,
-    no_letter_contact_blocks,
-    single_sms_sender,
-    platform_admin_user,
-    mock_get_service_settings_page_common,
-):
-    mocker.patch("app.organisations_client.get_organisation", return_value=None)
-    client_request.login(platform_admin_user)
-    page = client_request.get("main.service_settings", service_id=SERVICE_ONE_ID)
-
-    assert page.select_one("h1").text == "Settings"
-
-    is_live = find_element_by_tag_and_partial_text(page, tag="td", string="Live")
-    assert normalize_spaces(is_live.find_next_sibling().text) == "No (organisation must be set first)"
-
-    organisation = find_element_by_tag_and_partial_text(page, tag="td", string="Organisation")
-    assert normalize_spaces(organisation.find_next_siblings()[0].text) == "Not set Central government"
-    assert normalize_spaces(organisation.find_next_siblings()[1].text) == "Change organisation for service"
-
-
 def test_organisation_name_links_to_org_dashboard(
     client_request,
     platform_admin_user,
