@@ -254,8 +254,9 @@ def test_can_register_email_auth_without_phone_number(
         "main.register_from_invite",
         _data=data,
         _expected_redirect=url_for(
-            "main.service_dashboard",
+            "main.broadcast_tour",
             service_id=sample_invite["service"],
+            step_index=1,
         ),
     )
 

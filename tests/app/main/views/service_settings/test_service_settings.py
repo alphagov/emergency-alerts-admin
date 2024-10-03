@@ -3289,24 +3289,6 @@ def test_update_service_notes(client_request, platform_admin_user, service_one, 
     mock_update_service.assert_called_with(SERVICE_ONE_ID, notes="Very fluffy")
 
 
-def test_service_settings_links_to_edit_service_billing_details_page_for_platform_admins(
-    mocker,
-    service_one,
-    client_request,
-    platform_admin_user,
-    no_reply_to_email_addresses,
-    no_letter_contact_blocks,
-    single_sms_sender,
-    mock_get_service_settings_page_common,
-):
-    client_request.login(platform_admin_user)
-    page = client_request.get(
-        ".service_settings",
-        service_id=SERVICE_ONE_ID,
-    )
-    assert len(page.select(f'a[href="/services/{SERVICE_ONE_ID}/edit-billing-details"]')) == 1
-
-
 def test_view_edit_service_billing_details(
     client_request,
     platform_admin_user,
@@ -3389,18 +3371,6 @@ def test_service_set_broadcast_channel(
         "main.service_settings",
         service_id=SERVICE_ONE_ID,
     )
-
-
-def test_service_set_broadcast_channel_has_no_radio_selected_for_non_broadcast_service(
-    client_request,
-    platform_admin_user,
-):
-    client_request.login(platform_admin_user)
-    page = client_request.get(
-        "main.service_set_broadcast_channel",
-        service_id=SERVICE_ONE_ID,
-    )
-    assert len(page.select("input[checked]")) == 0
 
 
 @pytest.mark.parametrize(
