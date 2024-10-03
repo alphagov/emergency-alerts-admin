@@ -71,12 +71,11 @@ def test_should_show_add_template_form_if_service_has_folder_permission(
     )
 
     assert normalize_spaces(page.select_one("h1").text) == "Templates"
-    assert normalize_spaces(page.select_one("main p").text) == (
-        "You need a template before you can send emails, text messages or letters."
-    )
+    assert normalize_spaces(page.select_one("main p").text) == ("You haven’t added any templates yet.")
     assert [(item["name"], item["value"]) for item in page.select("[type=radio]")] == [
         ("add_template_by_template_type", "email"),
         ("add_template_by_template_type", "sms"),
+        ("add_template_by_template_type", "broadcast"),
     ]
     assert not page.select("main a")
 
