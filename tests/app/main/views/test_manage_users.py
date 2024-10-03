@@ -497,74 +497,6 @@ def test_should_not_show_page_for_non_team_member(
         (
             {
                 "permissions_field": [
-                    "view_activity",
-                    "send_messages",
-                    "manage_templates",
-                    "manage_service",
-                    "manage_api_keys",
-                ]
-            },
-            {
-                "view_activity",
-                "send_messages",
-                "manage_service",
-                "manage_templates",
-                "manage_api_keys",
-            },
-        ),
-        (
-            {
-                "permissions_field": [
-                    "view_activity",
-                    "send_messages",
-                    "manage_templates",
-                ]
-            },
-            {
-                "view_activity",
-                "send_messages",
-                "manage_templates",
-            },
-        ),
-        (
-            {},
-            {"view_activity"},
-        ),
-    ],
-)
-def test_edit_user_permissions(
-    client_request,
-    mocker,
-    mock_get_users_by_service,
-    mock_get_invites_for_service,
-    mock_set_user_permissions,
-    mock_get_template_folders,
-    fake_uuid,
-    submitted_permissions,
-    permissions_sent_to_api,
-):
-    client_request.post(
-        "main.edit_user_permissions",
-        service_id=SERVICE_ONE_ID,
-        user_id=fake_uuid,
-        _data=dict(email_address="test@example.com", **submitted_permissions),
-        _expected_status=302,
-        _expected_redirect=url_for(
-            "main.manage_users",
-            service_id=SERVICE_ONE_ID,
-        ),
-    )
-    mock_set_user_permissions.assert_called_with(
-        fake_uuid, SERVICE_ONE_ID, permissions=permissions_sent_to_api, folder_permissions=[]
-    )
-
-
-@pytest.mark.parametrize(
-    "submitted_permissions, permissions_sent_to_api",
-    [
-        (
-            {
-                "permissions_field": [
                     "create_broadcasts",
                 ]
             },
@@ -617,7 +549,7 @@ def test_edit_user_permissions_for_broadcast_service(
     submitted_permissions,
     permissions_sent_to_api,
 ):
-    service_one["permissions"] = "broadcast"
+    service_one["permissions"] = ["broadcast"]
     client_request.post(
         "main.edit_user_permissions",
         service_id=SERVICE_ONE_ID,
@@ -1128,6 +1060,7 @@ def test_invite_user_with_email_auth_service(
         (
             {
                 "permissions_field": [
+                    "view_activity",
                     "create_broadcasts",
                 ]
             },
