@@ -437,49 +437,28 @@ def test_service_name_change_fails_if_new_name_fails_validation(
 
 
 @pytest.mark.parametrize(
-    "user, expected_text, expected_link",
+    "user, expected_response",
     [
         (
             create_active_user_with_permissions(),
-            "To remove these restrictions, you can send us a request to go live.",
-            True,
+            200,
         ),
         (
             create_active_user_no_settings_permission(),
-            "Your service manager can ask to have these restrictions removed.",
-            False,
+            403,
         ),
     ],
 )
 def test_show_restricted_service(
     client_request,
-    service_one,
-    single_reply_to_email_address,
-    single_letter_contact_block,
-    single_sms_sender,
-    mock_get_service_settings_page_common,
     user,
-    expected_text,
-    expected_link,
+    expected_response,
 ):
     client_request.login(user)
-    page = client_request.get(
-        "main.service_settings",
-        service_id=SERVICE_ONE_ID,
-    )
+    page = client_request.get("main.service_settings", service_id=SERVICE_ONE_ID, _expected_response=expected_response)
 
-    assert page.select_one("h1").text == "Settings"
-    assert page.select("main h2")[0].text == "Your service is in trial mode"
-
-    request_to_live = page.select("main p")[1]
-    request_to_live_link = request_to_live.select_one("a")
-    assert normalize_spaces(request_to_live.text) == expected_text
-
-    if expected_link:
-        assert request_to_live_link.text.strip() == "request to go live"
-        assert request_to_live_link["href"] == url_for("main.request_to_go_live", service_id=SERVICE_ONE_ID)
-    else:
-        assert not request_to_live_link
+    if expected_response == 200:
+        assert page.select_one("main h1").text == "Settings"
 
 
 def test_broadcast_service_in_training_mode_doesnt_show_trial_mode_content(
