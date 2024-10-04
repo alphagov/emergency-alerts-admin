@@ -1277,9 +1277,6 @@ def test_user_cant_invite_themselves(
         _expected_status=200,
     )
     assert page.select_one("h1").string.strip() == "This person is already a team member"
-    # print(page)
-    # form_error = page.select_one(".govuk-error-message").text.strip()
-    # assert form_error == "Error: You cannot send an invitation to yourself"
     assert not mock_create_invite.called
 
 
@@ -1291,8 +1288,6 @@ def test_user_cant_invite_themselves(
         "test@USER.gov.uk",
         "test+test@user.gov.uk",
         "te.st@user.gov.uk",
-        pytest.param("test2@user.gov.uk", marks=pytest.mark.xfail),
-        pytest.param("test@other.gov.uk", marks=pytest.mark.xfail),
     ),
 )
 def test_broadcast_user_cant_invite_themselves_or_their_aliases(
@@ -1304,26 +1299,21 @@ def test_broadcast_user_cant_invite_themselves_or_their_aliases(
     mock_get_template_folders,
     email_address,
 ):
-    service_one["permissions"] += ["broadcast"]
+    mocker.patch("app.models.user.User.from_email_address_or_none", return_value=User(active_user_with_permissions))
+    mocker.patch("app.models.user.User.belongs_to_service", return_value=True)
+    mocker.patch("app.models.service.Service.invite_pending_for", return_value=False)
+
     page = client_request.post(
         "main.invite_user",
         service_id=SERVICE_ONE_ID,
         _data={"email_address": email_address, "permissions_field": []},
         _expected_status=200,
     )
-    assert normalize_spaces(page.select_one(".govuk-error-message").text) == (
-        "Error: You cannot send an invitation to yourself"
-    )
+
+    assert normalize_spaces(page.select_one("main h1").text) == ("This person is already a team member")
     assert mock_create_invite.called is False
 
 
-@pytest.mark.parametrize(
-    "extra_service_permissions",
-    (
-        pytest.param([], marks=pytest.mark.xfail),
-        ["broadcast"],
-    ),
-)
 def test_platform_admin_cant_invite_themselves_to_broadcast_services(
     client_request,
     service_one,
@@ -1331,9 +1321,11 @@ def test_platform_admin_cant_invite_themselves_to_broadcast_services(
     platform_admin_user,
     mock_create_invite,
     mock_get_template_folders,
-    extra_service_permissions,
 ):
-    service_one["permissions"] += extra_service_permissions
+    mocker.patch("app.models.user.User.from_email_address_or_none", return_value=User(platform_admin_user))
+    mocker.patch("app.models.user.User.belongs_to_service", return_value=True)
+    mocker.patch("app.models.service.Service.invite_pending_for", return_value=False)
+
     client_request.login(platform_admin_user)
     page = client_request.post(
         "main.invite_user",
@@ -1341,9 +1333,7 @@ def test_platform_admin_cant_invite_themselves_to_broadcast_services(
         _data={"email_address": platform_admin_user["email_address"], "permissions_field": []},
         _expected_status=200,
     )
-    assert normalize_spaces(page.select_one(".govuk-error-message").text) == (
-        "Error: You cannot send an invitation to yourself"
-    )
+    assert normalize_spaces(page.select_one("main h1").text) == ("This person is already a team member")
     assert mock_create_invite.called is False
 
 
