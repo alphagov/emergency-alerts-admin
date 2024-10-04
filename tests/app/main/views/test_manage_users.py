@@ -1079,6 +1079,7 @@ def test_invite_user_with_email_auth_service(
             },
             {
                 "view_activity",
+                "manage_api_keys",
             },
         ),
     ),
@@ -1086,7 +1087,7 @@ def test_invite_user_with_email_auth_service(
 def test_invite_user_to_broadcast_service(
     client_request,
     service_one,
-    active_user_with_permissions,
+    active_new_user_with_permissions,
     mocker,
     sample_invite,
     mock_get_template_folders,
@@ -1094,23 +1095,23 @@ def test_invite_user_to_broadcast_service(
     post_data,
     expected_permissions_to_api,
 ):
-    mocker.patch("app.models.user.User.from_email_address_or_none", return_value=User(active_user_with_permissions))
+    mocker.patch("app.models.user.User.from_email_address_or_none", return_value=User(active_new_user_with_permissions))
     mocker.patch("app.models.user.InvitedUsers.client_method", return_value=[sample_invite])
     mocker.patch("app.invite_api_client.create_invite", return_value=sample_invite)
     mocker.patch("app.models.user.User.belongs_to_service", return_value=False)
 
-    post_data["email_address"] = "broadcast@example.gov.uk"
+    post_data["email_address"] = "new.user@user.gov.uk"
     client_request.post(
         "main.invite_user",
         service_id=SERVICE_ONE_ID,
-        _expected_status=200,
+        _expected_status=302,
         _data=post_data,
     )
 
     app.invite_api_client.create_invite.assert_called_once_with(
         sample_invite["from_user"],
         sample_invite["service"],
-        "broadcast@example.gov.uk",
+        "new.user@user.gov.uk",
         expected_permissions_to_api,
         "sms_auth",
         [],

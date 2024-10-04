@@ -991,6 +991,11 @@ def active_user_with_permissions(fake_uuid):
 
 
 @pytest.fixture(scope="function")
+def active_new_user_with_permissions(fake_uuid):
+    return create_active_new_user_view_permissions()
+
+
+@pytest.fixture(scope="function")
 def active_user_create_broadcasts_permission():
     return create_active_user_create_broadcasts_permissions()
 
@@ -2941,6 +2946,15 @@ def create_active_user_view_permissions(with_unique_id=False):
         id=str(uuid4()) if with_unique_id else sample_uuid(),
         name="Test User With Permissions",
         permissions={SERVICE_ONE_ID: ["view_activity"]},
+    )
+
+
+def create_active_new_user_view_permissions(with_unique_id=False):
+    return create_service_one_user(
+        id=str(uuid4()) if with_unique_id else sample_uuid(),
+        name="Test User With Permissions",
+        permissions={SERVICE_ONE_ID: ["view_activity"]},
+        email_address="new.user@user.gov.uk",
     )
 
 
