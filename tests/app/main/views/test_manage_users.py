@@ -1123,9 +1123,7 @@ def test_invite_non_govt_user_to_broadcast_service_fails_validation(
     mock_get_template_folders,
     mock_get_organisations,
 ):
-    service_one["permissions"] = ["broadcast"]
-    mocker.patch("app.models.user.InvitedUsers.client_method", return_value=[sample_invite])
-    mocker.patch("app.models.user.Users.client_method", return_value=[active_user_with_permissions])
+    mocker.patch("app.models.user.User.from_email_address_or_none", return_value=None)
     mocker.patch("app.invite_api_client.create_invite", return_value=sample_invite)
     post_data = {
         "permissions_field": [
