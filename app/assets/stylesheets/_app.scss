@@ -269,21 +269,3 @@ details .arrow {
 .service-block {
   padding-bottom: 16px;
 }
-
-progress {
-  border-radius: 7px;
-  height: 20px;
-  border: #000000 1px solid;
-  margin-top: -20px;
-  margin-bottom: 20px;
-}
-progress::-webkit-progress-bar {
-  border-radius: 7px;
-  background-color: #FFFFFF;
-  border: #000000 1px solid;
-
-}
-progress::-webkit-progress-value {
-  background-color: var(--progress-bar-color, #00703C);
-  border-radius: 7px;
-}

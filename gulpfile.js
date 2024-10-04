@@ -143,7 +143,6 @@ const javascripts = () => {
     paths.src + 'javascripts/homepage.js',
     paths.src + 'javascripts/main.js',
     paths.src + 'javascripts/timeout.js',
-    paths.src + 'javascripts/passwordStrengthIndicator.js',
   ])
   .pipe(plugins.prettyerror())
   .pipe(plugins.babel({
