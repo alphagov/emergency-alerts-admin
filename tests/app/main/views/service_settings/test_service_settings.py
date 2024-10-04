@@ -3758,9 +3758,13 @@ def test_service_set_broadcast_channel_makes_you_choose(
     platform_admin_user,
 ):
     client_request.login(platform_admin_user)
-    page = client_request.post(
+    _ = client_request.post(
         "main.service_set_broadcast_channel",
         service_id=SERVICE_ONE_ID,
-        _expected_status=200,
+        _expected_status=302,
+        _expected_redirect=url_for(
+            ".service_confirm_broadcast_account_type",
+            service_id=SERVICE_ONE_ID,
+            account_type="training-test-all",
+        ),
     )
-    assert "Error: Select mode or channel" in page.select_one(".govuk-error-message").text
