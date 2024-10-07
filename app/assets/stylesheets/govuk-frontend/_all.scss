@@ -28,8 +28,8 @@ $govuk-assets-path: "/static/";
 @import "govuk-frontend/dist/govuk/components/tag/index";
 @import "govuk-frontend/dist/govuk/components/breadcrumbs/index";
 
-@import "govuk-frontend/dist/govuk/utilities/all";
-@import "govuk-frontend/dist/govuk/overrides/all";
+@import "govuk-frontend/dist/govuk/utilities/index";
+@import "govuk-frontend/dist/govuk/overrides/index";
 
 // Styles extending those from GOV.UK Frontend
 @import "./extensions";

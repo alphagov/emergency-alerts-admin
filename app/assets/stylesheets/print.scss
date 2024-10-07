@@ -2,12 +2,12 @@
 // set asset URL root to match that of application
 $govuk-assets-path: "/static/";
 
-@import "govuk/settings/all";
-@import "govuk/tools/all";
-@import "govuk/helpers/all";
+@import "govuk-frontend/dist/govuk/settings/index";
+@import "govuk-frontend/dist/govuk/tools/index";
+@import "govuk-frontend/dist/govuk/helpers/index";
 
-@import "govuk/core/all";
-@import "govuk/objects/all";
+@import "govuk-frontend/dist/govuk/core/index";
+@import "govuk-frontend/dist/govuk/objects/index";
 
 * {
   background: transparent;
