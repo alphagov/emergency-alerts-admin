@@ -236,9 +236,9 @@ def international_phone_number(label="Mobile number"):
     return InternationalPhoneNumber(label, validators=[DataRequired(message="Cannot be empty")])
 
 
-def password(label="Password"):
+def password():
     return GovukPasswordField(
-        label,
+        label="New password",
         validators=[
             DataRequired(message="Cannot be empty"),
             Length(8, 255, message="Must be at least 8 characters"),
@@ -1315,7 +1315,7 @@ class ChangePasswordForm(StripWhitespaceForm):
         super(ChangePasswordForm, self).__init__(*args, **kwargs)
 
     old_password = existing_password("Current password")
-    new_password = password("New password")
+    new_password = password()
 
     def validate_old_password(self, field):
         if not self.validate_password_func(field.data):
