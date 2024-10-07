@@ -1004,7 +1004,13 @@ def test_invite_user_when_email_address_is_prefilled(
 
 
 @pytest.mark.parametrize("auth_type", ["sms_auth", "email_auth"])
-@pytest.mark.parametrize("email_address, gov_user", [("test@example.gov.uk", True), ("test@example.com", False)])
+@pytest.mark.parametrize(
+    "email_address, gov_user",
+    [
+        ("test@example.gov.uk", True),
+        ("test@example.com", False),
+    ],
+)
 def test_invite_user_with_email_auth_service(
     client_request,
     service_one,
@@ -1024,6 +1030,7 @@ def test_invite_user_with_email_auth_service(
     mocker.patch("app.models.user.InvitedUsers.client_method", return_value=[sample_invite])
     mocker.patch("app.models.user.Users.client_method", return_value=[active_user_with_permissions])
     mocker.patch("app.invite_api_client.create_invite", return_value=sample_invite)
+    mocker.patch("app.models.user.User.from_email_address_or_none", return_value=None)
 
     page = client_request.post(
         "main.invite_user",
@@ -1043,15 +1050,27 @@ def test_invite_user_with_email_auth_service(
         _expected_status=200,
     )
 
-    assert page.select_one("h1").string.strip() == "Team members"
-    flash_banner = page.select_one("div.banner-default-with-tick").string.strip()
-    assert flash_banner == "Invite sent to test@example.gov.uk"
+    if gov_user:
+        assert page.select_one("h1").string.strip() == "Team members"
+        flash_banner = page.select_one("div.banner-default-with-tick").string.strip()
+        assert flash_banner == "Invite sent to test@example.gov.uk"
 
-    expected_permissions = {"manage_api_keys", "manage_service", "manage_templates", "send_messages", "view_activity"}
+        expected_permissions = {
+            "manage_api_keys",
+            "manage_service",
+            "manage_templates",
+            "send_messages",
+            "view_activity",
+        }
 
-    app.invite_api_client.create_invite.assert_called_once_with(
-        sample_invite["from_user"], sample_invite["service"], email_address, expected_permissions, auth_type, []
-    )
+        app.invite_api_client.create_invite.assert_called_once_with(
+            sample_invite["from_user"], sample_invite["service"], email_address, expected_permissions, "email_auth", []
+        )
+    else:
+        assert page.select_one("h1").string.strip() == "Invite a team member"
+        assert normalize_spaces(page.select_one(".govuk-error-message").text).startswith(
+            "Error: Enter a public sector email address"
+        )
 
 
 @pytest.mark.parametrize(
