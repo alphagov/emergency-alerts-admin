@@ -39,7 +39,6 @@ function initAll (options) {
   // Defaults to the entire document if nothing is set.
   var scope = typeof options.scope !== 'undefined' ? options.scope : document
 
-  // Find all buttons with [role=button] on the scope to enhance.
   createAll(Button);
 
   createAll(PasswordInput);
@@ -50,9 +49,9 @@ function initAll (options) {
     new Header($toggleButton)
   })
 
-  var $radios = scope.querySelectorAll('[data-module="govuk-radios"]')
-  nodeListForEach($radios, function ($radio) {
-    new Radios($radio).init()
+  const $radios = scope.querySelectorAll('[data-module="govuk-radios"]')
+  $radios.forEach(($radios) => {
+    new Radios($radios)
   })
 
   const $skipLinks = scope.querySelectorAll('[data-module="govuk-skip-link"]')
@@ -60,9 +59,9 @@ function initAll (options) {
     new SkipLink($skipLink)
   })
 
-  var $tabs = scope.querySelectorAll('[data-module="govuk-tabs"]')
-  nodeListForEach($tabs, function ($tabs) {
-    new Tabs($tabs).init()
+  const $tabs = scope.querySelectorAll('[data-module="govuk-tabs"]')
+  $tabs.forEach(($tabs) => {
+    new Tabs($tabs)
   })
 
   // There will only every be one error-summary per page
