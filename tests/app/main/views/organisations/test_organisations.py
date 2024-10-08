@@ -78,7 +78,7 @@ def test_page_to_create_new_organisation(
     page = client_request.get(".add_organisation")
 
     assert [(input["type"], input["name"], input.get("value")) for input in page.select("input")] == [
-        ("text", "name", None),
+        ("text", "name", ""),
         ("radio", "organisation_type", "central"),
         ("radio", "organisation_type", "local"),
         ("radio", "organisation_type", "nhs_central"),
@@ -1303,24 +1303,24 @@ def test_view_organisation_domains(
     assert [textbox.get("value") for textbox in page.select("input[type=text]")] == [
         "example.gov.uk",
         "test.example.gov.uk",
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
     ]
 
 
@@ -1453,7 +1453,7 @@ def test_update_organisation_domains_with_more_than_just_domain(
         "There is a problem Item 1: Cannot contain @ Item 3: Cannot contain @"
     )
 
-    assert [field["value"] for field in page.select("input[type=text][value]")] == [
+    assert [field["value"] for field in page.select("input[type=text][value]") if field["value"] != ""] == [
         "test@example.gov.uk",
         "example.gov.uk",
         "@example.gov.uk",
@@ -1491,7 +1491,7 @@ def test_update_organisation_domains_nhs_domains(
         f"There is a problem Item 1: Cannot be ‘{domain.lower()}’"
     )
 
-    assert [field["value"] for field in page.select("input[type=text][value]")] == [
+    assert [field["value"] for field in page.select("input[type=text][value]") if field["value"] != ""] == [
         domain,
     ]
 
