@@ -25,8 +25,6 @@ broadcast_permission_options = (
     ("view_activity", "See dashboard"),
     ("send_messages", "Send messages"),
     ("manage_templates", "Add and edit templates"),
-    ("manage_service", "Manage settings, team and usage"),
-    ("manage_api_keys", "Manage API integration"),
     ("create_broadcasts", "Create new alerts"),
     ("approve_broadcasts", "Approve alerts"),
 )

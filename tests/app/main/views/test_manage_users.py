@@ -30,8 +30,6 @@ from tests.conftest import (
                 "Can See dashboard "
                 "Can Send messages "
                 "Can Add and edit templates "
-                "Can Manage settings, team and usage "
-                "Can Manage API integration "
                 "Cannot Create new alerts "
                 "Cannot Approve alerts"
             ),
@@ -40,8 +38,6 @@ from tests.conftest import (
                 "Can See dashboard "
                 "Cannot Send messages "
                 "Cannot Add and edit templates "
-                "Cannot Manage settings, team and usage "
-                "Cannot Manage API integration "
                 "Cannot Create new alerts "
                 "Cannot Approve alerts "
                 "Change details for ZZZZZZZZ zzzzzzz@example.gov.uk"
@@ -54,8 +50,6 @@ from tests.conftest import (
                 "Cannot See dashboard "
                 "Cannot Send messages "
                 "Cannot Add and edit templates "
-                "Cannot Manage settings, team and usage "
-                "Cannot Manage API integration "
                 "Cannot Create new alerts "
                 "Cannot Approve alerts"
             ),
@@ -64,8 +58,6 @@ from tests.conftest import (
                 "Can See dashboard "
                 "Cannot Send messages "
                 "Cannot Add and edit templates "
-                "Cannot Manage settings, team and usage "
-                "Cannot Manage API integration "
                 "Cannot Create new alerts "
                 "Cannot Approve alerts"
             ),
@@ -77,8 +69,6 @@ from tests.conftest import (
                 "Can See dashboard "
                 "Cannot Send messages "
                 "Cannot Add and edit templates "
-                "Cannot Manage settings, team and usage "
-                "Cannot Manage API integration "
                 "Cannot Create new alerts "
                 "Cannot Approve alerts"
             ),
@@ -87,8 +77,6 @@ from tests.conftest import (
                 "Can See dashboard "
                 "Cannot Send messages "
                 "Cannot Add and edit templates "
-                "Cannot Manage settings, team and usage "
-                "Cannot Manage API integration "
                 "Cannot Create new alerts "
                 "Cannot Approve alerts"
             ),
@@ -100,8 +88,6 @@ from tests.conftest import (
                 "Can See dashboard "
                 "Cannot Send messages "
                 "Can Add and edit templates "
-                "Cannot Manage settings, team and usage "
-                "Cannot Manage API integration "
                 "Cannot Create new alerts "
                 "Cannot Approve alerts"
             ),
@@ -110,8 +96,6 @@ from tests.conftest import (
                 "Can See dashboard "
                 "Cannot Send messages "
                 "Cannot Add and edit templates "
-                "Cannot Manage settings, team and usage "
-                "Cannot Manage API integration "
                 "Cannot Create new alerts "
                 "Cannot Approve alerts"
             ),
@@ -123,8 +107,6 @@ from tests.conftest import (
                 "Can See dashboard "
                 "Cannot Send messages "
                 "Can Add and edit templates "
-                "Cannot Manage settings, team and usage "
-                "Cannot Manage API integration "
                 "Cannot Create new alerts "
                 "Cannot Approve alerts"
             ),
@@ -133,8 +115,6 @@ from tests.conftest import (
                 "Can See dashboard "
                 "Cannot Send messages "
                 "Cannot Add and edit templates "
-                "Cannot Manage settings, team and usage "
-                "Cannot Manage API integration "
                 "Cannot Create new alerts "
                 "Cannot Approve alerts"
             ),
@@ -294,8 +274,6 @@ def test_should_show_caseworker_on_overview_page(
         "Can See dashboard "
         "Cannot Send messages "
         "Cannot Add and edit templates "
-        "Cannot Manage settings, team and usage "
-        "Cannot Manage API integration "
         "Cannot Create new alerts "
         "Cannot Approve alerts"
     )
@@ -305,8 +283,6 @@ def test_should_show_caseworker_on_overview_page(
         "Cannot See dashboard "
         "Can Send messages "
         "Cannot Add and edit templates "
-        "Cannot Manage settings, team and usage "
-        "Cannot Manage API integration "
         "Cannot Create new alerts "
         "Cannot Approve alerts"
     )
@@ -337,8 +313,6 @@ def test_should_show_overview_page_for_broadcast_service(
         "Can See dashboard "
         "Cannot Send messages "
         "Cannot Add and edit templates "
-        "Cannot Manage settings, team and usage "
-        "Cannot Manage API integration "
         "Can Create new alerts "
         "Cannot Approve alerts"
     )
@@ -347,8 +321,6 @@ def test_should_show_overview_page_for_broadcast_service(
         "Can See dashboard "
         "Cannot Send messages "
         "Cannot Add and edit templates "
-        "Cannot Manage settings, team and usage "
-        "Cannot Manage API integration "
         "Cannot Create new alerts "
         "Can Approve alerts"
     )
@@ -357,8 +329,6 @@ def test_should_show_overview_page_for_broadcast_service(
         "Can See dashboard "
         "Cannot Send messages "
         "Cannot Add and edit templates "
-        "Cannot Manage settings, team and usage "
-        "Cannot Manage API integration "
         "Cannot Create new alerts "
         "Cannot Approve alerts"
     )
@@ -391,14 +361,8 @@ def test_broadcast_service_only_shows_relevant_permissions(
         ("permissions_field", "view_activity"),
         ("permissions_field", "send_messages"),
         ("permissions_field", "manage_templates"),
-        ("permissions_field", "manage_service"),
-        ("permissions_field", "manage_api_keys"),
         ("permissions_field", "create_broadcasts"),
         ("permissions_field", "approve_broadcasts"),
-        # ('permissions_field', 'view_activity'),
-        # ("permissions_field", "manage_templates"),
-        # ("permissions_field", "create_broadcasts"),
-        # ("permissions_field", "approve_broadcasts"),
     ]
 
 
@@ -428,8 +392,6 @@ def test_manage_users_page_shows_member_auth_type_if_service_has_email_auth_acti
                 ("view_activity", True),
                 ("send_messages", True),
                 ("manage_templates", True),
-                ("manage_service", True),
-                ("manage_api_keys", True),
                 ("create_broadcasts", False),
                 ("approve_broadcasts", False),
             ],
@@ -441,8 +403,6 @@ def test_manage_users_page_shows_member_auth_type_if_service_has_email_auth_acti
                 ("view_activity", False),
                 ("send_messages", False),
                 ("manage_templates", False),
-                ("manage_service", False),
-                ("manage_api_keys", False),
                 ("create_broadcasts", False),
                 ("approve_broadcasts", False),
             ],
@@ -460,7 +420,7 @@ def test_should_show_page_for_one_user(
     page = client_request.get(endpoint, service_id=SERVICE_ONE_ID, **extra_args)
     checkboxes = page.select("input[type=checkbox]")
 
-    assert len(checkboxes) == 7
+    assert len(checkboxes) == 5
 
     for index, expected in enumerate(expected_checkboxes):
         expected_input_value, expected_checked = expected
@@ -700,8 +660,6 @@ def test_edit_user_permissions_including_authentication_with_email_auth_service(
             "permissions_field": [
                 "send_messages",
                 "manage_templates",
-                "manage_service",
-                "manage_api_keys",
             ],
             "login_authentication": "sms_auth",
         },
@@ -719,8 +677,6 @@ def test_edit_user_permissions_including_authentication_with_email_auth_service(
             "view_activity",
             "send_messages",
             "manage_templates",
-            "manage_service",
-            "manage_api_keys",
         },
         folder_permissions=[],
     )
@@ -743,7 +699,6 @@ def test_edit_user_permissions_hides_authentication_for_webauthn_user(
         user_id=active_user_with_permissions["id"],
     )
 
-    # assert "This user will login with a security key" in str(page)
     assert page.select_one("#login_authentication") is None
 
 
@@ -950,8 +905,6 @@ def test_invite_user(
         assert flash_banner == f"Invite sent to {email_address}"
 
         expected_permissions = {
-            "manage_api_keys",
-            "manage_service",
             "manage_templates",
             "send_messages",
             "view_activity",
@@ -1056,8 +1009,6 @@ def test_invite_user_with_email_auth_service(
         assert flash_banner == "Invite sent to test@example.gov.uk"
 
         expected_permissions = {
-            "manage_api_keys",
-            "manage_service",
             "manage_templates",
             "send_messages",
             "view_activity",
@@ -1098,7 +1049,6 @@ def test_invite_user_with_email_auth_service(
             },
             {
                 "view_activity",
-                "manage_api_keys",
             },
         ),
     ),
@@ -1214,8 +1164,6 @@ def test_cancel_invited_user_doesnt_work_if_user_not_invited_to_this_service(
                 "Can See dashboard "
                 "Can Send messages "
                 "Cannot Add and edit templates "
-                "Can Manage settings, team and usage "
-                "Can Manage API integration "
                 "Cannot Create new alerts "
                 "Cannot Approve alerts "
                 "Cancel invitation for invited_user@test.gov.uk"
@@ -1229,8 +1177,6 @@ def test_cancel_invited_user_doesnt_work_if_user_not_invited_to_this_service(
                 "Cannot See dashboard "
                 "Cannot Send messages "
                 "Cannot Add and edit templates "
-                "Cannot Manage settings, team and usage "
-                "Cannot Manage API integration "
                 "Cannot Create new alerts "
                 "Cannot Approve alerts"
             ),
