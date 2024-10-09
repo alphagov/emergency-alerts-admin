@@ -46,7 +46,7 @@ Create an account
         "value": form.new_password.data,
         "name": form.new_password.name,
         "classes": "govuk-!-width-two-thirds govuk-!-margin-right-1",
-        "autocomplete": off,
+        "autocomplete": "new-password",
         "errorMessage": {
               "text" : form.new_password.errors[0] | safe
         } if form.new_password.errors[0] else None,
