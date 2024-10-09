@@ -224,11 +224,11 @@ def test_registration_from_org_invite_404s_if_user_not_in_session(
     "data, error",
     [
         [
-            {"name": "Bad Mobile", "mobile_number": "not good", "password": "validpassword!123"},
+            {"name": "Bad Mobile", "mobile_number": "not good", "new_password": "validpassword!123"},
             "Must not contain letters or symbols",
         ],
         [
-            {"name": "Bad Password", "mobile_number": "+44123412345", "password": "password"},
+            {"name": "Bad Password", "mobile_number": "+44123412345", "new_password": "password"},
             "Choose a password that’s harder to guess",
         ],
     ],
@@ -268,7 +268,7 @@ def test_registration_from_org_invite_has_different_email_or_organisation(
     data = {
         "name": "Test User",
         "mobile_number": "+4407700900460",
-        "password": "validpassword!123",
+        "new_password": "validpassword!123",
         "email_address": sample_org_invite["email_address"],
         "organisation": sample_org_invite["organisation"],
     }
@@ -301,7 +301,7 @@ def test_org_user_registers_with_email_already_in_use(
         _data={
             "name": "Test User",
             "mobile_number": "+4407700900460",
-            "password": "validpassword!123",
+            "new_password": "validpassword!123",
             "email_address": sample_org_invite["email_address"],
             "organisation": sample_org_invite["organisation"],
         },
@@ -335,7 +335,7 @@ def test_org_user_registration(
             "name": "Test User",
             "email_address": sample_org_invite["email_address"],
             "mobile_number": "+4407700900460",
-            "password": "validpassword!123",
+            "new_password": "validpassword!123",
             "organisation": sample_org_invite["organisation"],
         },
         _expected_redirect=url_for("main.verify"),
