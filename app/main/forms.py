@@ -537,7 +537,7 @@ class RegisterUserForm(StripWhitespaceForm):
     name = GovukTextInputField("Full name", validators=[DataRequired(message="Cannot be empty")])
     email_address = email_address()
     mobile_number = international_phone_number()
-    new_password = password()
+    password = password()
     # always register as sms type
     auth_type = HiddenField("auth_type", default="sms_auth")
 
@@ -571,7 +571,7 @@ class RegisterUserFromOrgInviteForm(StripWhitespaceForm):
     name = GovukTextInputField("Full name", validators=[DataRequired(message="Cannot be empty")])
 
     mobile_number = InternationalPhoneNumber("Mobile number", validators=[DataRequired(message="Cannot be empty")])
-    new_password = password()
+    password = password()
     organisation = HiddenField("organisation")
     email_address = HiddenField("email_address")
     auth_type = HiddenField("auth_type", validators=[DataRequired()])
@@ -1306,7 +1306,7 @@ class ForgotPasswordForm(StripWhitespaceForm):
 
 
 class NewPasswordForm(StripWhitespaceForm):
-    new_password = password()
+    password = password()
 
 
 class ChangePasswordForm(StripWhitespaceForm):
