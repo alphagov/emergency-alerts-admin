@@ -22,7 +22,7 @@
   "dependencies": {
     "cbor-js": "0.1.0",
     "date-fns": "^3.6.0",
-    "govuk-frontend": "4.8.0",
+    "govuk-frontend": "5.6.0",
     "hogan": "1.0.2",
     "jquery": "3.5.0",
     "leaflet": "1.6.0",
