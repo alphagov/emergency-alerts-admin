@@ -80,6 +80,7 @@ var Frontend = {
   "Radios": Radios,
   "ErrorSummary": ErrorSummary,
   "SkipLink": SkipLink,
+  "PasswordInput": PasswordInput,
   "initAll": initAll
 }
 
