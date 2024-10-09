@@ -1,5 +1,4 @@
-$app-body-text-line-height-default: get-govuk-typography-style($size: 19, $breakpoint: null, $property: "line-height");
-$app-body-text-line-height-tablet: get-govuk-typography-style($size: 19, $breakpoint: tablet, $property: "line-height");
+$app-body-text-line-height-default: get-govuk-typography-style($size: 19, $breakpoint: null, $property: "line-height");;
 
 @mixin separator {
   display: inline-block;
@@ -103,8 +102,8 @@ a {
           height: $app-body-text-line-height-default;
 
           @include govuk-media-query($from: tablet) {
-            bottom: -1 * $app-body-text-line-height-tablet;
-            height: $app-body-text-line-height-tablet;
+            bottom: -1 * $app-body-text-line-height-default;
+            height: $app-body-text-line-height-default;
           }
         }
 
