@@ -1,6 +1,7 @@
 {% extends "withoutnav_template.html" %}
 {% from "components/page-footer.html" import page_footer %}
 {% from "components/form.html" import form_wrapper %}
+{% from "govuk_frontend_jinja/components/password-input/macro.html" import govukPasswordInput %}
 
 {% block per_page_title %}
 Create an account
@@ -20,11 +21,22 @@ Create an account
             "hint": {"text": "We’ll send you a security code by text message"}
         }) }}
       </div>
-      {{ form.password(param_extensions={
-          "classes": "govuk-!-width-three-quarters",
-          "hint": {"text": "At least 8 characters"},
-          "autocomplete": "new-password"
-        }) }}
+      {{ govukPasswordInput({
+        "label": {
+          "text": form.new_password.label
+        },
+        "hint": {
+          "text": "Choose 3 random, unrelated words of at least 5 letters each for a strong password."
+        },
+        "id": form.new_password.id,
+        "value": form.new_password.data,
+        "name": form.new_password.name,
+        "classes": "govuk-!-width-two-thirds govuk-!-margin-right-1",
+        "autocomplete": "new-password",
+        "errorMessage": {
+              "text" : form.new_password.errors[0] | safe
+        } if form.new_password.errors[0] else None,
+      }) }}
       {{ page_footer("Continue") }}
       {{form.organisation}}
       {{form.email_address}}

@@ -571,7 +571,7 @@ class RegisterUserFromOrgInviteForm(StripWhitespaceForm):
     name = GovukTextInputField("Full name", validators=[DataRequired(message="Cannot be empty")])
 
     mobile_number = InternationalPhoneNumber("Mobile number", validators=[DataRequired(message="Cannot be empty")])
-    password = password()
+    new_password = password()
     organisation = HiddenField("organisation")
     email_address = HiddenField("email_address")
     auth_type = HiddenField("auth_type", validators=[DataRequired()])
