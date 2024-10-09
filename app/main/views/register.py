@@ -74,7 +74,7 @@ def _do_registration(form, send_sms=True, send_email=True, organisation_id=None)
             name=form.name.data,
             email_address=form.email_address.data,
             mobile_number=form.mobile_number.data,
-            password=form.new_password.data,
+            password=form.password.data,
             auth_type=form.auth_type.data,
         )
 
