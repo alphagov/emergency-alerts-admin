@@ -537,7 +537,7 @@ class RegisterUserForm(StripWhitespaceForm):
     name = GovukTextInputField("Full name", validators=[DataRequired(message="Cannot be empty")])
     email_address = email_address()
     mobile_number = international_phone_number()
-    password = password()
+    new_password = password()
     # always register as sms type
     auth_type = HiddenField("auth_type", default="sms_auth")
 
