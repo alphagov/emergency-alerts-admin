@@ -1,8 +1,8 @@
 @import 'leaflet/dist/leaflet';
 
 // Styles to make the leaflet map match GOVUK (accessibility-focused) styling
-@import "govuk/settings/all";
-@import "govuk/helpers/all";
+@import "govuk-frontend/dist/govuk/settings/index";
+@import "govuk-frontend/dist/govuk/helpers/index";
 
 $zoom-button-colour: govuk-colour("white");
 $zoom-button-hover-colour: govuk-shade($zoom-button-colour, 10%);
