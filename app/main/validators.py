@@ -34,13 +34,7 @@ class LowEntropyPassword:
     def __call__(self, form, field):
         entropy = pwdpy.entropy((field.data))
         if float(entropy) < 70:
-            message = (
-                "Your password is not strong enough. To make it stronger, you can: "
-                "<ul class='govuk-error-message govuk-list govuk-list--bullet'>"
-                "<li>Increase the length of your password.</li>"
-                "<li>Use a mix of upper and lower case letters, numbers, and special characters.</li>"
-                "</ul>"
-            )
+            message = "Your password must consist of 3 random, unrelated words, each at least 5 letters long."
             raise ValidationError(message)
 
 

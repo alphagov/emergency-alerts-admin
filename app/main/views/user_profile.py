@@ -203,11 +203,7 @@ def user_profile_password():
             if e.status_code == 400:
                 if e.message == "Password does not have enough entropy.":
                     form.new_password.errors.append(
-                        "Your password is not strong enough. To make it stronger, you can: "
-                        "<ul class='govuk-error-message govuk-list govuk-list--bullet'>"
-                        "<li>Increase the length of your password.</li>"
-                        "<li>Use a mix of upper and lower case letters, numbers, and special characters.</li>"
-                        "</ul>"
+                        "Your password must consist of 3 random, unrelated words, each at least 5 letters long."
                     )
                 else:
                     form.new_password.errors.append(e.message)

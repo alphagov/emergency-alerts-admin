@@ -385,9 +385,7 @@ def test_choosing_weak_password_returns_400(client_request, mock_verify_password
         _expected_status=200,
     )
     assert normalize_spaces(page.select_one(".govuk-error-message").text) == (
-        "Error: Your password is not strong enough. To make it stronger, you can: "
-        "Increase the length of your password."
-        "Use a mix of upper and lower case letters, numbers, and special characters."
+        "Error: Your password must consist of 3 random, unrelated words, each at least 5 letters long."
     )
 
 

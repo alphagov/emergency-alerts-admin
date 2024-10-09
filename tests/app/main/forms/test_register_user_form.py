@@ -33,11 +33,8 @@ def test_should_raise_low_entropy_validation_error_for_password(
 
     form.validate()
     assert (
-        "Your password is not strong enough. To make it stronger, you can: "
-        "<ul class='govuk-error-message govuk-list govuk-list--bullet'>"
-        "<li>Increase the length of your password.</li>"
-        "<li>Use a mix of upper and lower case letters, numbers, and special characters.</li>"
-        "</ul>" in form.errors["password"]
+        "Your password must consist of 3 random, unrelated words, each at least 5 letters long."
+        in form.errors["password"]
     )
 
 
