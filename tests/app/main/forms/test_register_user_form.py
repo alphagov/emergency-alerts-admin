@@ -13,10 +13,10 @@ def test_should_raise_validation_error_for_password(
     form.name.data = "test"
     form.email_address.data = "teset@example.gov.uk"
     form.mobile_number.data = "441231231231"
-    form.new_password.data = password
+    form.password.data = password
 
     form.validate()
-    assert "Choose a password that’s harder to guess" in form.errors["new_password"]
+    assert "Choose a password that’s harder to guess" in form.errors["password"]
 
 
 @pytest.mark.parametrize("password", ["govuknotif1", "1111112!", "lowentropy"])
@@ -29,7 +29,7 @@ def test_should_raise_low_entropy_validation_error_for_password(
     form.name.data = "test"
     form.email_address.data = "teset@example.gov.uk"
     form.mobile_number.data = "441231231231"
-    form.new_password.data = password
+    form.password.data = password
 
     form.validate()
     assert (
@@ -37,7 +37,7 @@ def test_should_raise_low_entropy_validation_error_for_password(
         "<ul class='govuk-error-message govuk-list govuk-list--bullet'>"
         "<li>Increase the length of your password.</li>"
         "<li>Use a mix of upper and lower case letters, numbers, and special characters.</li>"
-        "</ul>" in form.errors["new_password"]
+        "</ul>" in form.errors["password"]
     )
 
 
@@ -54,7 +54,7 @@ def test_valid_email_in_valid_domains(
     client_request,
 ):
     form = RegisterUserForm(
-        name="test", email_address="test@my.gov.uk", mobile_number="4407888999111", new_password="an uncommon password"
+        name="test", email_address="test@my.gov.uk", mobile_number="4407888999111", password="an uncommon password"
     )
     form.validate()
     assert form.errors == {}

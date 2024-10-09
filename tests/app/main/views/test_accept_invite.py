@@ -412,7 +412,7 @@ def test_new_user_accept_invite_calls_api_and_views_registration_page(
 
     form = page.select_one("form")
     name = form.select_one("input#name")
-    password = form.select_one("input#new_password")
+    password = form.select_one("input#password")
     service = form.select_one("input#service[type=hidden]")
     email = form.select_one("input#email_address[type=hidden]")
 
@@ -516,7 +516,7 @@ def test_new_user_accept_invite_completes_new_registration_redirects_to_verify(
         "service": sample_invite["service"],
         "email_address": sample_invite["email_address"],
         "from_user": sample_invite["from_user"],
-        "new_password": "longpassword!123",
+        "password": "longpassword!123",
         "mobile_number": "+447890123456",
         "name": "Invited User",
         "auth_type": "email_auth",
@@ -533,7 +533,7 @@ def test_new_user_accept_invite_completes_new_registration_redirects_to_verify(
     mock_get_invited_user_by_id.assert_called_once_with(sample_invite["id"])
 
     mock_register_user.assert_called_with(
-        data["name"], data["email_address"], data["mobile_number"], data["new_password"], data["auth_type"]
+        data["name"], data["email_address"], data["mobile_number"], data["password"], data["auth_type"]
     )
 
     assert mock_accept_invite.call_count == 1
@@ -633,7 +633,7 @@ def test_new_invited_user_verifies_and_added_to_service(
         "service": sample_invite["service"],
         "email_address": sample_invite["email_address"],
         "from_user": sample_invite["from_user"],
-        "new_password": "longpassword123!",
+        "password": "longpassword123!",
         "mobile_number": "+447890123456",
         "name": "Invited User",
         "auth_type": "sms_auth",

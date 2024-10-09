@@ -103,7 +103,7 @@ def test_register_from_invite(
             email_address=sample_invite["email_address"],
             mobile_number="+4407700900460",
             service=sample_invite["service"],
-            new_password="somreallyhardthingtoguess",
+            password="somreallyhardthingtoguess",
             auth_type="sms_auth",
             **extra_data
         ),
@@ -138,7 +138,7 @@ def test_register_from_invite_when_user_registers_in_another_browser(
             "email_address": api_user_active["email_address"],
             "mobile_number": api_user_active["mobile_number"],
             "service": sample_invite["service"],
-            "new_password": "somreallyhardthingtoguess",
+            "password": "somreallyhardthingtoguess",
             "auth_type": "sms_auth",
         },
         _expected_redirect=url_for("main.verify"),
@@ -177,7 +177,7 @@ def test_register_from_email_auth_invite(
         "name": "invited user",
         "email_address": sample_invite["email_address"],
         "mobile_number": "07700900001",
-        "new_password": "FSLKAJHFNvdzxgfyst",
+        "password": "FSLKAJHFNvdzxgfyst",
         "service": sample_invite["service"],
         "auth_type": "email_auth",
     }
@@ -196,7 +196,7 @@ def test_register_from_email_auth_invite(
     assert not mock_send_verify_code.called
     # creates user with email_auth set
     mock_register_user.assert_called_once_with(
-        data["name"], data["email_address"], data["mobile_number"], data["new_password"], data["auth_type"]
+        data["name"], data["email_address"], data["mobile_number"], data["password"], data["auth_type"]
     )
     # this is actually called twice, at the beginning of the function and then by the activate_user function
     mock_get_invited_user_by_id.assert_called_with(sample_invite["id"])
@@ -243,7 +243,7 @@ def test_can_register_email_auth_without_phone_number(
         "name": "invited user",
         "email_address": sample_invite["email_address"],
         "mobile_number": "",
-        "new_password": "FSLKAJHFNvdzxgfyst",
+        "password": "FSLKAJHFNvdzxgfyst",
         "service": sample_invite["service"],
         "auth_type": "email_auth",
     }
