@@ -410,7 +410,7 @@ def test_should_show_guestlist_page(
         service_id=SERVICE_ONE_ID,
     )
     textboxes = page.select("input.govuk-input")
-    for index, value in enumerate(["test@example.com"] + [None] * 4 + ["07900900000"] + [None] * 4):
+    for index, value in enumerate(["test@example.com"] + [""] * 4 + ["07900900000"] + [""] * 4):
         assert textboxes[index].get("value") == value
 
 
