@@ -19,6 +19,7 @@ from tests.app.broadcast_areas.custom_polygons import (
     SKYE,
 )
 from tests.conftest import (
+    SERVICE_NO_BROADCAST,
     SERVICE_ONE_ID,
     SERVICE_TWO_ID,
     create_active_user_approve_broadcasts_permissions,
@@ -152,8 +153,8 @@ def test_broadcast_pages_403_without_permission(
     expected_get_status,
     expected_post_status,
 ):
-    client_request.get(endpoint, service_id=SERVICE_ONE_ID, _expected_status=expected_get_status, **extra_args)
-    client_request.post(endpoint, service_id=SERVICE_ONE_ID, _expected_status=expected_post_status, **extra_args)
+    client_request.get(endpoint, service_id=SERVICE_NO_BROADCAST, _expected_status=expected_get_status, **extra_args)
+    client_request.post(endpoint, service_id=SERVICE_NO_BROADCAST, _expected_status=expected_post_status, **extra_args)
 
 
 @pytest.mark.parametrize("user_is_platform_admin", [True, False])

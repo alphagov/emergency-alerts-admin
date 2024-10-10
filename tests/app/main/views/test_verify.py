@@ -221,6 +221,4 @@ def test_activate_user_redirects_to_service_dashboard_if_user_already_belongs_to
 
     response = activate_user(api_user_active["id"])
 
-    assert response.location == url_for("main.service_dashboard", service_id=service_one["id"])
-
-    flask_session.pop("invited_user_id")
+    assert response.location == url_for("main.broadcast_tour", service_id=service_one["id"], step_index=1)

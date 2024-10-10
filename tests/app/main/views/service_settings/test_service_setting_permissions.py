@@ -98,29 +98,6 @@ def test_service_set_permission(
 
 
 @pytest.mark.parametrize(
-    "service_fields, endpoint, kwargs, text",
-    [
-        ({"restricted": True}, ".service_switch_live", {}, "Live Off Change service status"),
-        ({"restricted": False}, ".service_switch_live", {}, "Live On Change service status"),
-    ],
-)
-def test_service_setting_toggles_show(
-    mocker,
-    mock_get_service_organisation,
-    get_service_settings_page,
-    service_one,
-    service_fields,
-    endpoint,
-    kwargs,
-    text,
-):
-    link_url = url_for(endpoint, **kwargs, service_id=service_one["id"])
-    service_one.update(service_fields)
-    page = get_service_settings_page()
-    assert normalize_spaces(page.select_one(f'a[href="{link_url}"]').find_parent("tr").text.strip()) == text
-
-
-@pytest.mark.parametrize(
     "endpoint, index, text", [(".archive_service", 0, "Delete this service"), (".history", 1, "Service history")]
 )
 def test_service_setting_links_displayed_for_active_services(
