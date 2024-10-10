@@ -44,7 +44,7 @@ def new_password(token):
 
     if form.validate_on_submit():
         user.reset_failed_login_count()
-        session["user_details"] = {"id": user.id, "email": user.email_address, "password": form.new_password.data}
+        session["user_details"] = {"id": user.id, "email": user.email_address, "password": form.password.data}
         if user.email_auth:
             # they've just clicked an email link, so have done an email auth journey anyway. Just log them in.
             return log_in_user(user.id)

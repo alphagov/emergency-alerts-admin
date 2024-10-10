@@ -224,7 +224,7 @@ def test_registration_from_org_invite_404s_if_user_not_in_session(
     "data, error",
     [
         [
-            {"name": "Bad Mobile", "mobile_number": "not good", "password": "validPassword!"},
+            {"name": "Bad Mobile", "mobile_number": "not good", "password": "validpassword!123"},
             "Must not contain letters or symbols",
         ],
         [
@@ -268,7 +268,7 @@ def test_registration_from_org_invite_has_different_email_or_organisation(
     data = {
         "name": "Test User",
         "mobile_number": "+4407700900460",
-        "password": "validPassword!",
+        "password": "validpassword!123",
         "email_address": sample_org_invite["email_address"],
         "organisation": sample_org_invite["organisation"],
     }
@@ -301,7 +301,7 @@ def test_org_user_registers_with_email_already_in_use(
         _data={
             "name": "Test User",
             "mobile_number": "+4407700900460",
-            "password": "validPassword!",
+            "password": "validpassword!123",
             "email_address": sample_org_invite["email_address"],
             "organisation": sample_org_invite["organisation"],
         },
@@ -335,7 +335,7 @@ def test_org_user_registration(
             "name": "Test User",
             "email_address": sample_org_invite["email_address"],
             "mobile_number": "+4407700900460",
-            "password": "validPassword!",
+            "password": "validpassword!123",
             "organisation": sample_org_invite["organisation"],
         },
         _expected_redirect=url_for("main.verify"),
@@ -343,7 +343,7 @@ def test_org_user_registration(
 
     assert mock_get_user_by_email.called is False
     mock_register_user.assert_called_once_with(
-        "Test User", sample_org_invite["email_address"], "+4407700900460", "validPassword!", "sms_auth"
+        "Test User", sample_org_invite["email_address"], "+4407700900460", "validpassword!123", "sms_auth"
     )
     mock_send_verify_code.assert_called_once_with(
         "6ce466d0-fd6a-11e5-82f5-e0accb9d11a6",
