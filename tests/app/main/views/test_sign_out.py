@@ -37,6 +37,11 @@ def test_sign_out_user(
     client_request.get(
         "main.service_dashboard",
         service_id=SERVICE_ONE_ID,
+        _expected_status=302,
+        _expected_redirect=url_for(
+            "main.broadcast_dashboard",
+            service_id=SERVICE_ONE_ID,
+        ),
     )
     client_request.get(
         "main.sign_out",

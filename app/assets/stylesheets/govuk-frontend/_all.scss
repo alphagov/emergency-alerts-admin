@@ -1,35 +1,35 @@
-// Version of node_modules/govuk-frontend/govuk/components/all.scss specific to Notify
+// Version of node_modules/govuk-frontend/govuk-frontend/dist/govuk/components/all.scss specific to Notify
 // Included to allow us to only include the components we need
 // All imports come from node_modules/govuk-frontend
 
 // set asset URL root to match that of application
 $govuk-assets-path: "/static/";
 
-@import "govuk/base";
-@import "govuk/core/all";
-@import "govuk/objects/all";
+@import "govuk-frontend/dist/govuk/base";
+@import "govuk-frontend/dist/govuk/core";
+@import "govuk-frontend/dist/govuk/objects";
 
 // section replacing @import "components/all", specifying which components to include
-@import "govuk/components/skip-link/index";
-@import "govuk/components/header/index";
-@import "govuk/components/notification-banner/index";
-@import "govuk/components/footer/index";
-@import "govuk/components/back-link/index";
-@import "govuk/components/button/index";
-@import "govuk/components/details/index";
-@import "govuk/components/error-summary/index";
-@import "govuk/components/radios/index";
-@import "govuk/components/checkboxes/index";
-@import "govuk/components/input/index";
-@import "govuk/components/inset-text/index";
-@import "govuk/components/tabs/index";
-@import "govuk/components/textarea/index";
-@import "govuk/components/summary-list/index";
-@import "govuk/components/tag/index";
-@import "govuk/components/breadcrumbs/index";
+@import "govuk-frontend/dist/govuk/components/skip-link/index";
+@import "govuk-frontend/dist/govuk/components/header/index";
+@import "govuk-frontend/dist/govuk/components/notification-banner/index";
+@import "govuk-frontend/dist/govuk/components/footer/index";
+@import "govuk-frontend/dist/govuk/components/back-link/index";
+@import "govuk-frontend/dist/govuk/components/button/index";
+@import "govuk-frontend/dist/govuk/components/details/index";
+@import "govuk-frontend/dist/govuk/components/error-summary/index";
+@import "govuk-frontend/dist/govuk/components/radios/index";
+@import "govuk-frontend/dist/govuk/components/checkboxes/index";
+@import "govuk-frontend/dist/govuk/components/input/index";
+@import "govuk-frontend/dist/govuk/components/inset-text/index";
+@import "govuk-frontend/dist/govuk/components/tabs/index";
+@import "govuk-frontend/dist/govuk/components/textarea/index";
+@import "govuk-frontend/dist/govuk/components/summary-list/index";
+@import "govuk-frontend/dist/govuk/components/tag/index";
+@import "govuk-frontend/dist/govuk/components/breadcrumbs/index";
 
-@import "govuk/utilities/all";
-@import "govuk/overrides/all";
+@import "govuk-frontend/dist/govuk/utilities/index";
+@import "govuk-frontend/dist/govuk/overrides/index";
 
 // Styles extending those from GOV.UK Frontend
 @import "./extensions";

@@ -553,6 +553,7 @@ def mock_update_service_raise_httperror_duplicate_name(mocker):
 
 SERVICE_ONE_ID = "596364a0-858e-42c8-9062-a8fe822260eb"
 SERVICE_TWO_ID = "147ad62a-2951-4fa1-9ca0-093cd1a52c52"
+SERVICE_NO_BROADCAST = "a45678a8-4ca5-4814-a3eb-5b47eb35805f"
 ORGANISATION_ID = "c011fa40-4cbe-4524-b415-dde2f421bd9c"
 ORGANISATION_TWO_ID = "d9b5be73-0b36-4210-9d89-8f1a5c2fef26"
 TEMPLATE_ONE_ID = "b22d7d94-2197-4a7d-a8e7-fd5f9770bf48"
@@ -987,6 +988,11 @@ def api_nongov_user_active(fake_uuid):
 @pytest.fixture(scope="function")
 def active_user_with_permissions(fake_uuid):
     return create_active_user_with_permissions()
+
+
+@pytest.fixture(scope="function")
+def active_new_user_with_permissions(fake_uuid):
+    return create_active_new_user_view_permissions()
 
 
 @pytest.fixture(scope="function")
@@ -2943,6 +2949,15 @@ def create_active_user_view_permissions(with_unique_id=False):
     )
 
 
+def create_active_new_user_view_permissions(with_unique_id=False):
+    return create_service_one_user(
+        id=str(uuid4()) if with_unique_id else sample_uuid(),
+        name="Test User With Permissions",
+        permissions={SERVICE_ONE_ID: ["view_activity"]},
+        email_address="new.user@user.gov.uk",
+    )
+
+
 def create_active_user_create_broadcasts_permissions(with_unique_id=False):
     return create_service_one_user(
         id=str(uuid4()) if with_unique_id else sample_uuid(),
@@ -3088,7 +3103,7 @@ def create_user(**overrides):
         "organisations": [],
         "current_session_id": None,
         "logged_in_at": None,
-        "email_access_validated_at": None,
+        "email_access_validated_at": str(datetime.utcnow()),
         "can_use_webauthn": False,
     }
     user_data.update(overrides)

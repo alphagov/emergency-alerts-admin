@@ -8,7 +8,7 @@
 // For example, `export { Frontend }` will assign `Frontend` to `window.Frontend`
 
 // GOVUK Frontend modules
-import { Header, Details, Button, Radios, ErrorSummary, SkipLink, Tabs } from 'govuk-frontend';
+import { createAll, Header, Button, Radios, ErrorSummary, SkipLink, Tabs } from 'govuk-frontend';
 
 // Modules from 3rd party vendors
 import morphdom from 'morphdom';
@@ -39,43 +39,39 @@ function initAll (options) {
   // Defaults to the entire document if nothing is set.
   var scope = typeof options.scope !== 'undefined' ? options.scope : document
 
-  // Find all buttons with [role=button] on the scope to enhance.
-  new Button(scope).init()
-
-  // Find all global details elements to enhance.
-  var $details = scope.querySelectorAll('[data-module="govuk-details"]')
-  nodeListForEach($details, function ($detail) {
-    new Details($detail).init()
-  })
+  createAll(Button);
 
   // Find first header module to enhance.
-  var $toggleButton = scope.querySelector('[data-module="govuk-header"]')
-  new Header($toggleButton).init()
-
-  var $radios = scope.querySelectorAll('[data-module="govuk-radios"]')
-  nodeListForEach($radios, function ($radio) {
-    new Radios($radio).init()
+  const $toggleButton = scope.querySelectorAll('[data-module="govuk-header"]')
+  $toggleButton.forEach(($toggleButton) => {
+    new Header($toggleButton)
   })
 
-  var $skipLinks = scope.querySelectorAll('[data-module="govuk-skip-link"]')
-  nodeListForEach($skipLinks, function ($skipLink) {
-    new SkipLink($skipLink).init()
+  const $radios = scope.querySelectorAll('[data-module="govuk-radios"]')
+  $radios.forEach(($radios) => {
+    new Radios($radios)
   })
 
-  var $tabs = scope.querySelectorAll('[data-module="govuk-tabs"]')
-  nodeListForEach($tabs, function ($tabs) {
-    new Tabs($tabs).init()
+  const $skipLinks = scope.querySelectorAll('[data-module="govuk-skip-link"]')
+  $skipLinks.forEach(($skipLink) => {
+    new SkipLink($skipLink)
+  })
+
+  const $tabs = scope.querySelectorAll('[data-module="govuk-tabs"]')
+  $tabs.forEach(($tabs) => {
+    new Tabs($tabs)
   })
 
   // There will only every be one error-summary per page
-  var $errorSummary = scope.querySelector('[data-module="govuk-error-summary"]')
-  new ErrorSummary($errorSummary).init()
+  const $errorSummary = scope.querySelectorAll('[data-module="govuk-error-summary"]')
+  $errorSummary.forEach(($errorSummary) => {
+    new ErrorSummary($errorSummary)
+  })
 }
 
 // Create separate namespace for GOVUK Frontend.
 var Frontend = {
   "Header": Header,
-  "Details": Details,
   "Button": Button,
   "Radios": Radios,
   "ErrorSummary": ErrorSummary,

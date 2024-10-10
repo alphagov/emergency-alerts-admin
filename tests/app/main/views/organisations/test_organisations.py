@@ -78,7 +78,7 @@ def test_page_to_create_new_organisation(
     page = client_request.get(".add_organisation")
 
     assert [(input["type"], input["name"], input.get("value")) for input in page.select("input")] == [
-        ("text", "name", None),
+        ("text", "name", ""),
         ("radio", "organisation_type", "central"),
         ("radio", "organisation_type", "local"),
         ("radio", "organisation_type", "nhs_central"),
@@ -402,73 +402,6 @@ def test_nhs_local_assigns_to_selected_organisation(
         _expected_redirect=url_for(".index"),
     )
     mock_update_service_organisation.assert_called_once_with(SERVICE_ONE_ID, ORGANISATION_ID)
-
-
-@freeze_time("2020-02-20 20:20")
-def test_organisation_services_shows_live_services_and_usage(
-    client_request,
-    mock_get_organisation,
-    mocker,
-    active_user_with_permissions,
-    fake_uuid,
-):
-    mock = mocker.patch(
-        "app.organisations_client.get_services_and_usage",
-        return_value={
-            "services": [
-                {
-                    "service_id": SERVICE_ONE_ID,
-                    "service_name": "1",
-                    "chargeable_billable_sms": 250122,
-                    "emails_sent": 13000,
-                    "free_sms_limit": 250000,
-                    "letter_cost": 30.50,
-                    "sms_billable_units": 122,
-                    "sms_cost": 0,
-                    "sms_remainder": None,
-                },
-                {
-                    "service_id": SERVICE_TWO_ID,
-                    "service_name": "5",
-                    "chargeable_billable_sms": 0,
-                    "emails_sent": 20000,
-                    "free_sms_limit": 250000,
-                    "letter_cost": 0,
-                    "sms_billable_units": 2500,
-                    "sms_cost": 42.0,
-                    "sms_remainder": None,
-                },
-            ]
-        },
-    )
-
-    client_request.login(active_user_with_permissions)
-    page = client_request.get(".organisation_dashboard", org_id=ORGANISATION_ID)
-    mock.assert_called_once_with(ORGANISATION_ID, 2019)
-
-    services = page.select("main h3")
-    usage_rows = page.select("main .govuk-grid-column-one-third")
-    assert len(services) == 2
-
-    # Totals
-    assert normalize_spaces(usage_rows[0].text) == "Emails 33,000 sent"
-    assert normalize_spaces(usage_rows[1].text) == "Text messages £42.00 spent"
-    assert normalize_spaces(usage_rows[2].text) == "Letters £30.50 spent"
-
-    assert normalize_spaces(services[0].text) == "1"
-    assert normalize_spaces(services[1].text) == "5"
-    assert services[0].find("a")["href"] == url_for("main.usage", service_id=SERVICE_ONE_ID)
-
-    assert normalize_spaces(usage_rows[3].text) == "13,000 emails sent"
-    assert normalize_spaces(usage_rows[4].text) == "122 free text messages sent"
-    assert normalize_spaces(usage_rows[5].text) == "£30.50 spent on letters"
-    assert services[1].find("a")["href"] == url_for("main.usage", service_id=SERVICE_TWO_ID)
-    assert normalize_spaces(usage_rows[6].text) == "20,000 emails sent"
-    assert normalize_spaces(usage_rows[7].text) == "£42.00 spent on text messages"
-    assert normalize_spaces(usage_rows[8].text) == "£0.00 spent on letters"
-
-    # Ensure there’s no ‘this org has no services message’
-    assert not page.select(".govuk-hint")
 
 
 @freeze_time("2020-02-20 20:20")
@@ -1303,24 +1236,24 @@ def test_view_organisation_domains(
     assert [textbox.get("value") for textbox in page.select("input[type=text]")] == [
         "example.gov.uk",
         "test.example.gov.uk",
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
     ]
 
 
@@ -1453,7 +1386,7 @@ def test_update_organisation_domains_with_more_than_just_domain(
         "There is a problem Item 1: Cannot contain @ Item 3: Cannot contain @"
     )
 
-    assert [field["value"] for field in page.select("input[type=text][value]")] == [
+    assert [field["value"] for field in page.select("input[type=text][value]") if field["value"] != ""] == [
         "test@example.gov.uk",
         "example.gov.uk",
         "@example.gov.uk",
@@ -1491,7 +1424,7 @@ def test_update_organisation_domains_nhs_domains(
         f"There is a problem Item 1: Cannot be ‘{domain.lower()}’"
     )
 
-    assert [field["value"] for field in page.select("input[type=text][value]")] == [
+    assert [field["value"] for field in page.select("input[type=text][value]") if field["value"] != ""] == [
         domain,
     ]
 

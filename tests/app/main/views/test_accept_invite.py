@@ -9,7 +9,6 @@ import app
 from tests import service_json
 from tests.conftest import (
     SERVICE_ONE_ID,
-    create_active_caseworking_user,
     create_active_user_with_permissions,
     normalize_spaces,
 )
@@ -18,6 +17,11 @@ from tests.conftest import (
 @pytest.fixture()
 def mock_no_users_for_service(mocker):
     mocker.patch("app.models.user.Users.client_method", return_value=[])
+
+
+@pytest.fixture(scope="function")
+def mock_user_exists_in_service(mocker, api_user_active):
+    mocker.patch("app.models.user.Users.client_method", return_value=[api_user_active])
 
 
 @pytest.fixture(scope="function")
@@ -31,7 +35,7 @@ def mock_check_invite_token(mocker, sample_invite):
 
 
 @freeze_time("2021-12-12 12:12:12")
-def test_existing_user_accept_invite_calls_api_and_redirects_to_dashboard(
+def test_existing_user_accept_invite_calls_api_and_redirects_to_tour(
     client_request,
     service_one,
     api_user_active,
@@ -53,7 +57,11 @@ def test_existing_user_accept_invite_calls_api_and_redirects_to_dashboard(
     client_request.get(
         "main.accept_invite",
         token="thisisnotarealtoken",
-        _expected_redirect=url_for("main.service_dashboard", service_id=expected_service),
+        _expected_redirect=url_for(
+            "main.broadcast_tour",
+            service_id=SERVICE_ONE_ID,
+            step_index=1,
+        ),
     )
 
     mock_check_invite_token.assert_called_with("thisisnotarealtoken")
@@ -175,14 +183,14 @@ def test_if_existing_user_accepts_twice_they_redirect_to_sign_in(
     assert mock_update_user_attribute.called is False
 
 
-def test_invite_goes_in_session(
+def test_invite_for_new_user_goes_in_session(
     client_request,
     mocker,
     sample_invite,
     mock_get_service,
     api_user_active,
     mock_check_invite_token,
-    mock_get_user_by_email,
+    mock_dont_get_user_by_email,
     mock_no_users_for_service,
     mock_add_user_to_service,
     mock_accept_invite,
@@ -193,10 +201,7 @@ def test_invite_goes_in_session(
         "main.accept_invite",
         token="thisisnotarealtoken",
         _expected_status=302,
-        _expected_redirect=url_for(
-            "main.service_dashboard",
-            service_id=SERVICE_ONE_ID,
-        ),
+        _expected_redirect=url_for("main.register_from_invite", token="thisisnotarealtoken"),
         _follow_redirects=False,
     )
 
@@ -207,8 +212,7 @@ def test_invite_goes_in_session(
 @pytest.mark.parametrize(
     "user, landing_page_title",
     [
-        (create_active_user_with_permissions(), "Dashboard"),
-        (create_active_caseworking_user(), "Templates"),
+        (create_active_user_with_permissions(), "Welcome"),
     ],
 )
 def test_accepting_invite_removes_invite_from_session(
@@ -291,7 +295,7 @@ def test_accept_invite_redirects_if_api_raises_an_error_that_they_are_already_pa
     mock_check_invite_token,
     mock_accept_invite,
     mock_get_service,
-    mock_no_users_for_service,
+    mock_user_exists_in_service,
     mock_get_user,
     mock_update_user_attribute,
 ):
@@ -663,7 +667,7 @@ def test_new_invited_user_verifies_and_added_to_service(
         mock_check_verify_code.assert_called_once_with(new_user_id, "1234567", "sms")
         assert service_one["id"] == session["service_id"]
 
-    assert page.select_one("h1").text == "Dashboard"
+    assert normalize_spaces(page.select_one("h1").text) == "Welcome"
 
 
 @pytest.mark.parametrize(
@@ -745,7 +749,11 @@ def test_existing_user_accepts_and_sets_email_auth(
         "main.accept_invite",
         token="thisisnotarealtoken",
         _expected_status=302,
-        _expected_redirect=url_for("main.service_dashboard", service_id=service_one["id"]),
+        _expected_redirect=url_for(
+            "main.broadcast_tour",
+            service_id=service_one["id"],
+            step_index=1,
+        ),
     )
 
     mock_get_existing_user_by_email.assert_called_once_with("test@user.gov.uk")
@@ -784,7 +792,11 @@ def test_platform_admin_user_accepts_and_preserves_auth(
         "main.accept_invite",
         token="thisisnotarealtoken",
         _expected_status=302,
-        _expected_redirect=url_for("main.service_dashboard", service_id=service_one["id"]),
+        _expected_redirect=url_for(
+            "main.broadcast_tour",
+            service_id=service_one["id"],
+            step_index=1,
+        ),
     )
 
     mock_update_user_attribute.assert_called_once_with(
@@ -818,7 +830,11 @@ def test_existing_user_doesnt_get_auth_changed_by_service_without_permission(
         "main.accept_invite",
         token="thisisnotarealtoken",
         _expected_status=302,
-        _expected_redirect=url_for("main.service_dashboard", service_id=service_one["id"]),
+        _expected_redirect=url_for(
+            "main.broadcast_tour",
+            service_id=service_one["id"],
+            step_index=1,
+        ),
     )
 
     mock_update_user_attribute.assert_called_once_with(
@@ -854,7 +870,11 @@ def test_existing_email_auth_user_without_phone_cannot_set_sms_auth(
         "main.accept_invite",
         token="thisisnotarealtoken",
         _expected_status=302,
-        _expected_redirect=url_for("main.service_dashboard", service_id=service_one["id"]),
+        _expected_redirect=url_for(
+            "main.broadcast_tour",
+            service_id=service_one["id"],
+            step_index=1,
+        ),
     )
 
     mock_update_user_attribute.assert_called_once_with(
@@ -885,7 +905,11 @@ def test_existing_email_auth_user_with_phone_can_set_sms_auth(
         "main.accept_invite",
         token="thisisnotarealtoken",
         _expected_status=302,
-        _expected_redirect=url_for("main.service_dashboard", service_id=service_one["id"]),
+        _expected_redirect=url_for(
+            "main.broadcast_tour",
+            service_id=service_one["id"],
+            step_index=1,
+        ),
     )
 
     mock_get_existing_user_by_email.assert_called_once_with(sample_invite["email_address"])
