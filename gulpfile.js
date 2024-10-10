@@ -29,7 +29,7 @@ const paths = {
   src: 'app/assets/',
   dist: 'app/static/',
   npm: 'node_modules/',
-  govuk_frontend: 'node_modules/govuk-frontend/',
+  govuk_frontend: 'node_modules/govuk-frontend/dist/',
   proj4: 'node_modules/proj4/',
 };
 

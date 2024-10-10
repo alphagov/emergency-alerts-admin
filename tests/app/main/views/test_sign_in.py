@@ -12,10 +12,10 @@ def test_render_sign_in_template_for_new_user(client_request):
     page = client_request.get("main.sign_in")
     assert normalize_spaces(page.select_one("h1").text) == "Sign in"
     assert normalize_spaces(page.select("label")[0].text) == "Email address"
-    assert page.select_one("#email_address").get("value") is None
+    assert page.select_one("#email_address").get("value") == ""
     assert page.select_one("#email_address")["autocomplete"] == "email"
     assert normalize_spaces(page.select("label")[1].text) == "Password"
-    assert page.select_one("#password").get("value") is None
+    assert page.select_one("#password").get("value") == ""
     assert page.select_one("#password")["autocomplete"] == "current-password"
     assert page.select("main a")[0].text == "Forgotten your password?"
     assert page.select("main a")[0]["href"] == url_for("main.forgot_password")

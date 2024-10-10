@@ -10,6 +10,8 @@ $path: '/static/images/';
 
 // Dependencies from GOV.UK Frontend, packaged to be specific to this application
 $govuk-new-link-styles: true;
+$govuk-new-organisation-colours: true;
+$govuk-new-typography-scale: true;
 @import './govuk-frontend/all';
 
 // Dependencies from GOV.UK Elements, moved here until all components are migrated

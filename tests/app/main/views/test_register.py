@@ -24,9 +24,9 @@ from tests.conftest import normalize_spaces
         ("first.1.2.3.last@example.com", "First Last"),
         ("first.last.1.2.3@example.com", "First Last"),
         # Instances where we can’t make a good-enough guess:
-        ("example123@example.com", None),
-        ("f.last@example.com", None),
-        ("f.m.last@example.com", None),
+        ("example123@example.com", ""),
+        ("f.last@example.com", ""),
+        ("f.m.last@example.com", ""),
     ],
 )
 def test_shows_name_on_registration_page_from_invite(

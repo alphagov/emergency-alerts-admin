@@ -1030,7 +1030,7 @@ def test_non_gov_user_is_told_they_cant_go_live(
     (
         (
             (("email", None), ("sms", None), ("letter", None)),
-            (None, None, None),
+            ("", "", ""),
         ),
         (
             (("email", 1234), ("sms", 0), ("letter", 999)),
@@ -1188,7 +1188,7 @@ def test_should_error_if_all_volumes_zero(
         },
         _expected_status=200,
     )
-    assert page.select("input[type=text]")[0].get("value") is None
+    assert page.select("input[type=text]")[0].get("value") == ""
     assert page.select("input[type=text]")[1]["value"] == "0"
     assert page.select("input[type=text]")[2]["value"] == "0,00 0"
     assert normalize_spaces(page.select_one(".banner-dangerous").text) == (
@@ -1213,7 +1213,7 @@ def test_should_not_default_to_zero_if_some_fields_dont_validate(
         _expected_status=200,
     )
     assert page.select("input[type=text]")[0]["value"] == "1234"
-    assert page.select("input[type=text]")[1].get("value") is None
+    assert page.select("input[type=text]")[1].get("value") == ""
     assert page.select("input[type=text]")[2]["value"] == "aaaaaaaaaaaaa"
     assert (
         normalize_spaces(page.select_one("#volume_letter-error").text)
