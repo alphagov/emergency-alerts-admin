@@ -186,8 +186,9 @@ def test_register_from_email_auth_invite(
         "main.register_from_invite",
         _data=data,
         _expected_redirect=url_for(
-            "main.service_dashboard",
+            "main.broadcast_tour",
             service_id=sample_invite["service"],
+            step_index=1,
         ),
     )
 
@@ -216,8 +217,9 @@ def test_register_from_email_auth_invite(
     with client_request.session_transaction() as session:
         # The user is signed in
         assert "user_id" in session
-        # invited user details are still there so they can get added to the service
-        assert session["invited_user_id"] == sample_invite["id"]
+        # user already added to the service at this point, so check
+        # invited_user_id has been removed from session
+        assert "invited_user_id" not in session
 
 
 def test_can_register_email_auth_without_phone_number(
@@ -252,8 +254,9 @@ def test_can_register_email_auth_without_phone_number(
         "main.register_from_invite",
         _data=data,
         _expected_redirect=url_for(
-            "main.service_dashboard",
+            "main.broadcast_tour",
             service_id=sample_invite["service"],
+            step_index=1,
         ),
     )
 

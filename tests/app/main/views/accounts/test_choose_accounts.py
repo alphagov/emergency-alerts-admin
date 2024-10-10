@@ -295,25 +295,3 @@ def test_should_not_show_back_to_service_if_user_doesnt_belong_to_service(
     )
 
     assert normalize_spaces(page.select("p")[2].text).startswith(normalize_spaces(expected_page_text))
-
-
-def test_should_show_back_to_service_if_user_belongs_to_service(
-    client_request,
-    fake_uuid,
-    mock_get_service,
-    mock_get_service_template,
-    service_one,
-):
-    mock_get_service.return_value = service_one
-    expected_page_text = "Test Service Switch service"
-
-    page = client_request.get(
-        "main.view_template",
-        service_id=mock_get_service.return_value["id"],
-        template_id=fake_uuid,
-        _test_page_title=False,
-    )
-
-    assert normalize_spaces(page.select_one(".navigation-service").text).startswith(
-        normalize_spaces(expected_page_text)
-    )

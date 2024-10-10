@@ -106,9 +106,7 @@ class MainNavigation(Navigation):
     mapping = {
         "dashboard": {
             "broadcast_tour",
-            "monthly",
             "service_dashboard",
-            "template_usage",
             "view_notification",
             "view_notifications",
         },
@@ -163,9 +161,6 @@ class MainNavigation(Navigation):
             "invite_user",
             "manage_users",
             "remove_user_from_service",
-        },
-        "usage": {
-            "usage",
         },
         "settings": {
             "add_organisation_from_gp_service",

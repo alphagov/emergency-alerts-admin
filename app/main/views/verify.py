@@ -99,4 +99,5 @@ def _add_invited_user_to_service(invitation):
         invitation.folder_permissions,
         invitation.from_user.id,
     )
+    del session["invited_user_id"]
     return service_id

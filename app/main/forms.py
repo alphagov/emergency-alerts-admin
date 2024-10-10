@@ -858,6 +858,7 @@ class BasePermissionsForm(StripWhitespaceForm):
         choices=[
             ("sms_auth", "Text message code"),
             ("email_auth", "Email link"),
+            ("webauthn_auth", "WebAuthn verification"),
         ],
         thing="how this team member should sign in",
         validators=[DataRequired()],

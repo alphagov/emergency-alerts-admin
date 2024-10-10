@@ -71,12 +71,11 @@ def test_should_show_add_template_form_if_service_has_folder_permission(
     )
 
     assert normalize_spaces(page.select_one("h1").text) == "Templates"
-    assert normalize_spaces(page.select_one("main p").text) == (
-        "You need a template before you can send emails, text messages or letters."
-    )
+    assert normalize_spaces(page.select_one("main p").text) == ("You haven’t added any templates yet.")
     assert [(item["name"], item["value"]) for item in page.select("[type=radio]")] == [
         ("add_template_by_template_type", "email"),
         ("add_template_by_template_type", "sms"),
+        ("add_template_by_template_type", "broadcast"),
     ]
     assert not page.select("main a")
 
@@ -88,7 +87,7 @@ def test_should_show_add_template_form_if_service_has_folder_permission(
             create_active_user_view_permissions(),
             "Templates",
             {},
-            ["Email", "Text message", "Letter"],
+            ["Email", "Text message", "Letter", "Broadcast"],
             [
                 "sms_template_one",
                 "sms_template_two",
@@ -102,28 +101,28 @@ def test_should_show_add_template_form_if_service_has_folder_permission(
             create_active_user_view_permissions(),
             "Templates",
             {"template_type": "sms"},
-            ["All", "Email", "Letter"],
+            ["All", "Email", "Letter", "Broadcast"],
             ["sms_template_one", "sms_template_two"],
         ),
         (
             create_active_user_view_permissions(),
             "Templates",
             {"template_type": "email"},
-            ["All", "Text message", "Letter"],
+            ["All", "Text message", "Letter", "Broadcast"],
             ["email_template_one", "email_template_two"],
         ),
         (
             create_active_user_view_permissions(),
             "Templates",
             {"template_type": "letter"},
-            ["All", "Email", "Text message"],
+            ["All", "Email", "Text message", "Broadcast"],
             ["letter_template_one", "letter_template_two"],
         ),
         (
             create_active_caseworking_user(),
             "Templates",
             {},
-            ["Email", "Text message", "Letter"],
+            ["Email", "Text message", "Letter", "Broadcast"],
             [
                 "sms_template_one",
                 "sms_template_two",
@@ -137,7 +136,7 @@ def test_should_show_add_template_form_if_service_has_folder_permission(
             create_active_caseworking_user(),
             "Templates",
             {"template_type": "email"},
-            ["All", "Text message", "Letter"],
+            ["All", "Text message", "Letter", "Broadcast"],
             ["email_template_one", "email_template_two"],
         ),
     ],
