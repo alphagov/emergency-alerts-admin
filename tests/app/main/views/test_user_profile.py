@@ -373,7 +373,10 @@ def test_should_redirect_after_password_change(
 def test_choosing_weak_password_returns_400(client_request, mock_verify_password, mocker):
     mocker.patch(
         "app.user_api_client.update_password",
-        side_effect=HTTPError(Response(status=400), "Password does not have enough entropy."),
+        side_effect=HTTPError(
+            Response(status=400),
+            ["Your password must consist of 3 random, unrelated words, each at least 5 letters long."],
+        ),
     )
 
     page = client_request.post(
