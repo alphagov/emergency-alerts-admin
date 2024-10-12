@@ -80,6 +80,14 @@ class UserApiClient(NotifyAdminAPIClient):
         user_data = self.post(url, data=data)
         return user_data["data"]
 
+    def check_password_is_valid(self, password):
+        endpoint = "/user/check-password-validity"
+        data = {
+            "_password": password,
+        }
+
+        self.post(endpoint, data=data)
+
     @cache.delete("user-{user_id}")
     def verify_password(self, user_id, password):
         try:
