@@ -11,7 +11,9 @@ from flask import (
     url_for,
 )
 from itsdangerous import SignatureExpired
+from notifications_python_client.errors import HTTPError
 
+from app import user_api_client
 from app.main import main
 from app.main.forms import NewPasswordForm
 from app.models.user import User
@@ -43,6 +45,12 @@ def new_password(token):
     form = NewPasswordForm()
 
     if form.validate_on_submit():
+        try:
+            user_api_client.check_password_is_valid(form.password.data)
+        except HTTPError as e:
+            if e.status_code == 400:
+                form.password.errors.append(e.message[0])
+                return render_template("views/new-password.html", token=token, form=form, user=user)
         user.reset_failed_login_count()
         session["user_details"] = {"id": user.id, "email": user.email_address, "password": form.password.data}
         if user.email_auth:
