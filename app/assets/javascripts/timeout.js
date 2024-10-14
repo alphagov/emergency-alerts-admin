@@ -103,8 +103,9 @@ let sessionExpiryTimeout;
   };
 
   const displaySessionExpiryDialog = function(inactivityDialog, sessionExpiryDialog) {
+    let timeUntilDialogDisplay = getTimeLeftUntilExpiryDialogDisplayed();
     // displays session expiry popup after timeout
-    if (isLoggedIn()) {
+    if (isLoggedIn() && timeUntilDialogDisplay > 0) {
       inactivityLogoutTimeout = setTimeout(function () {
         if (sessionExpiryDialog)
         {
@@ -117,7 +118,7 @@ let sessionExpiryTimeout;
           clearTimeout(inactivityLogoutTimeout);
           clearTimeout(lastActiveTimeout);
         }
-      }, getTimeLeftUntilExpiryDialogDisplayed());
+      }, timeUntilDialogDisplay);
     }
   };
 
