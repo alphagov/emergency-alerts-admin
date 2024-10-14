@@ -32,10 +32,7 @@ def test_should_raise_low_entropy_validation_error_for_password(
     form.password.data = password
 
     form.validate()
-    assert (
-        "Your password should consist of 3 random, unrelated words, each at least 5 letters long"
-        in form.errors["password"]
-    )
+    assert "Your password is not strong enough, try adding more words" in form.errors["password"]
 
 
 def test_valid_email_not_in_valid_domains(
