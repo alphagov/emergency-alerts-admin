@@ -33,7 +33,7 @@ def test_should_raise_low_entropy_validation_error_for_password(
 
     form.validate()
     assert (
-        "Your password should consist of 3 random, unrelated words, each at least 5 letters long."
+        "Your password should consist of 3 random, unrelated words, each at least 5 letters long"
         in form.errors["password"]
     )
 
