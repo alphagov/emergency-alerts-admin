@@ -27,7 +27,7 @@ def register_from_invite():
 
     if form.validate_on_submit():
         try:
-            user_api_client.check_password_is_valid(form.password.data)
+            user_api_client.check_password_is_valid(invited_user.id, form.password.data)
         except HTTPError as e:
             if e.status_code == 400:
                 form.password.errors.append(e.message[0])
@@ -59,7 +59,7 @@ def register_from_org_invite():
 
     if form.validate_on_submit():
         try:
-            user_api_client.check_password_is_valid(form.password.data)
+            user_api_client.check_password_is_valid(invited_org_user.id, form.password.data)
         except HTTPError as e:
             if e.status_code == 400:
                 form.password.errors.append(e.message[0])

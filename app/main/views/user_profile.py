@@ -197,7 +197,7 @@ def user_profile_password():
 
     if form.validate_on_submit():
         try:
-            user_api_client.check_password_is_valid(form.new_password.data)
+            user_api_client.check_password_is_valid(current_user.id, form.new_password.data)
         except HTTPError as e:
             if e.status_code == 400:
                 form.new_password.errors.append(e.message[0])
