@@ -14,6 +14,7 @@ def test_owasp_useful_headers_set(
     assert response.headers["X-XSS-Protection"] == "1; mode=block"
     assert response.headers["Content-Security-Policy"] == (
         "default-src 'self' static.example.com;"
+        "report-to default;"
         "script-src 'self' static.example.com *.google-analytics.com 'nonce-{content_nonce}' 'unsafe-eval';"
         "style-src 'self' static.example.com 'nonce-{content_nonce}';"
         "connect-src 'self' *.google-analytics.com;"
@@ -43,6 +44,7 @@ def test_headers_non_ascii_characters_are_replaced(
 
     assert response.headers["Content-Security-Policy"] == (
         "default-src 'self' static.example.com;"
+        "report-to default;"
         "script-src 'self' static.example.com *.google-analytics.com 'nonce-{content_nonce}' 'unsafe-eval';"
         "style-src 'self' static.example.com 'nonce-{content_nonce}';"
         "connect-src 'self' *.google-analytics.com;"
