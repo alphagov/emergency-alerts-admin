@@ -34,7 +34,7 @@ class LowEntropyPassword:
     def __call__(self, form, field):
         entropy = pwdpy.entropy((field.data))
         if float(entropy) < 70:
-            message = "Your password must consist of 3 random, unrelated words, each at least 5 letters long."
+            message = "Your password should consist of 3 random, unrelated words, each at least 5 letters long."
             raise ValidationError(message)
 
 
