@@ -145,7 +145,6 @@ def test_should_show_page_for_choosing_a_template(
     client_request,
     mock_get_service_templates,
     mock_get_template_folders,
-    mock_has_no_jobs,
     mock_get_no_api_keys,
     extra_args,
     expected_nav_links,
@@ -1727,7 +1726,6 @@ def test_route_permissions_for_choose_template(
     mock_get_service_templates,
     mock_get_no_api_keys,
 ):
-    mocker.patch("app.job_api_client.get_job")
     validate_route_permission(
         mocker,
         notify_admin,

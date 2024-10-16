@@ -607,7 +607,6 @@ def validate_route_permission(
     mocker.patch("app.user_api_client.get_user_by_email", return_value=usr)
     mocker.patch("app.service_api_client.get_service", return_value={"data": service})
     mocker.patch("app.models.user.Users.client_method", return_value=[usr])
-    mocker.patch("app.job_api_client.has_jobs", return_value=False)
     with notify_admin.test_request_context():
         with notify_admin.test_client() as client:
             client.login(usr)
@@ -638,7 +637,6 @@ def validate_route_permission_with_client(mocker, client, method, response_code,
     mocker.patch("app.user_api_client.get_user_by_email", return_value=usr)
     mocker.patch("app.service_api_client.get_service", return_value={"data": service})
     mocker.patch("app.user_api_client.get_users_for_service", return_value=[usr])
-    mocker.patch("app.job_api_client.has_jobs", return_value=False)
     client.login(usr)
     resp = None
     if method == "GET":
