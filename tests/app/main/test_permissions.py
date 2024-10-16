@@ -51,7 +51,6 @@ def test_services_pages_that_org_users_are_allowed_to_see(
     mock_get_users_by_service,
     mock_get_template_folders,
     mock_get_organisation,
-    # mock_has_jobs,
     mock_get_service_templates,
     mock_get_service_template,
     mock_get_template_versions,
