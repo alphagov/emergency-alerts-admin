@@ -26,12 +26,7 @@ from flask import (
 from notifications_python_client.errors import APIError, HTTPError
 from PyPDF2.errors import PdfReadError
 
-from app import (
-    current_service,
-    format_date_numeric,
-    job_api_client,
-    notification_api_client,
-)
+from app import current_service, format_date_numeric, notification_api_client
 from app.main import main
 from app.notify_client.api_key_api_client import KEY_TYPE_TEST
 from app.template_previews import get_page_count_for_letter
@@ -105,10 +100,7 @@ def view_notification(service_id, notification_id):
         email_reply_to=notification["reply_to_text"],
     )
     template.values = personalisation
-    if notification["job"]:
-        job = job_api_client.get_job(service_id, notification["job"]["id"])["data"]
-    else:
-        job = None
+    job = None
 
     letter_print_day = get_letter_printing_statement(notification["status"], notification["created_at"])
 

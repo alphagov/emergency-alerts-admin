@@ -45,7 +45,7 @@ from tests.conftest import (
 def test_notification_status_page_shows_details(
     client_request,
     mocker,
-    mock_has_no_jobs,
+    # mock_has_no_jobs,
     service_one,
     fake_uuid,
     user,
@@ -82,7 +82,7 @@ def test_notification_status_page_shows_details(
 def test_notification_status_page_formats_email_and_sms_status_correctly(
     client_request,
     mocker,
-    mock_has_no_jobs,
+    # mock_has_no_jobs,
     service_one,
     fake_uuid,
     active_user_with_permissions,

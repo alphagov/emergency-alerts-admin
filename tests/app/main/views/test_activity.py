@@ -96,7 +96,7 @@ def test_can_show_notifications(
     mock_get_notifications,
     mock_get_service_statistics,
     mock_get_service_data_retention,
-    mock_has_no_jobs,
+    # mock_has_no_jobs,
     mock_get_no_api_keys,
     user,
     extra_args,
@@ -190,7 +190,7 @@ def test_can_show_notifications_if_data_retention_not_available(
     client_request,
     mock_get_notifications,
     mock_get_service_statistics,
-    mock_has_no_jobs,
+    # mock_has_no_jobs,
     mock_get_no_api_keys,
 ):
     page = client_request.get(
@@ -247,7 +247,7 @@ def test_link_to_download_notifications(
     mock_get_notifications,
     mock_get_service_statistics,
     mock_get_service_data_retention,
-    mock_has_no_jobs,
+    # mock_has_no_jobs,
     mock_get_no_api_keys,
     user,
     query_parameters,
