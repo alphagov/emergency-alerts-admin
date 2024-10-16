@@ -377,7 +377,6 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
 def test_should_show_templates_folder_page(
     client_request,
     mock_get_template_folders,
-    # mock_has_no_jobs,
     mock_get_no_api_keys,
     service_one,
     mocker,
@@ -473,7 +472,6 @@ def test_should_show_templates_folder_page(
 def test_template_id_is_searchable_for_services_with_api_keys(
     client_request,
     mock_get_template_folders,
-    # mock_has_no_jobs,
     mock_get_api_keys,
     service_one,
     mocker,
@@ -1017,7 +1015,6 @@ def test_should_show_checkboxes_for_selecting_templates(
     service_one,
     mock_get_service_templates,
     mock_get_template_folders,
-    # mock_has_no_jobs,
     mock_get_no_api_keys,
     user,
 ):
@@ -1056,7 +1053,6 @@ def test_should_not_show_radios_and_buttons_for_move_destination_if_incorrect_pe
     service_one,
     mock_get_service_templates,
     mock_get_template_folders,
-    # mock_has_no_jobs,
     mock_get_no_api_keys,
     user,
 ):
@@ -1081,7 +1077,6 @@ def test_should_show_radios_and_buttons_for_move_destination_if_correct_permissi
     service_one,
     mock_get_service_templates,
     mock_get_template_folders,
-    # mock_has_no_jobs,
     mock_get_no_api_keys,
     fake_uuid,
     active_user_with_permissions,
@@ -1133,7 +1128,6 @@ def test_move_to_shouldnt_select_a_folder_by_default(
     service_one,
     mock_get_service_templates,
     mock_get_template_folders,
-    # mock_has_no_jobs,
     mock_get_no_api_keys,
     fake_uuid,
     active_user_with_permissions,
@@ -1645,7 +1639,6 @@ def test_show_custom_error_message(
 def test_should_filter_templates_folder_page_based_on_user_permissions(
     client_request,
     mock_get_template_folders,
-    # mock_has_no_jobs,
     mock_get_no_api_keys,
     service_one,
     mocker,
