@@ -134,10 +134,6 @@ def test_notification_status_page_respects_redaction(
             {},
             partial(url_for, "main.view_notifications", message_type="sms", status="sending,delivered,failed"),
         ),
-        # (
-        #     {"from_job": "job_id"},
-        #     partial(url_for, "main.view_job", job_id="job_id"),
-        # ),
         (
             {"help": "0"},
             None,
