@@ -3,8 +3,6 @@ from flask import abort, current_app
 from werkzeug.utils import cached_property
 
 from app.models import JSONModel
-
-# from app.models.job import ImmediateJobs, PaginatedJobs, ScheduledJobs
 from app.models.organisation import Organisation
 from app.models.user import InvitedUsers, User, Users
 from app.notify_client.api_key_api_client import api_key_api_client
@@ -122,34 +120,6 @@ class Service(JSONModel):
         if permission not in self.ALL_PERMISSIONS:
             raise KeyError(f"{permission} is not a service permission")
         return permission in self.permissions
-
-    # def get_page_of_jobs(self, page):
-    #     return PaginatedJobs(self.id, page=page)
-
-    # def get_page_of_uploads(self, page):
-    #     return PaginatedUploads(self.id, page=page)
-
-    # @cached_property
-    # def has_jobs(self):
-    #     return job_api_client.has_jobs(self.id)
-
-    # @cached_property
-    # def immediate_jobs(self):
-    #     if not self.has_jobs:
-    #         return []
-    #     return ImmediateJobs(self.id)
-
-    # @cached_property
-    # def scheduled_jobs(self):
-    #     if not self.has_jobs:
-    #         return []
-    #     return ScheduledJobs(self.id)
-
-    # @cached_property
-    # def scheduled_job_stats(self):
-    #     if not self.has_jobs:
-    #         return {"count": 0}
-    #     return job_api_client.get_scheduled_job_stats(self.id)
 
     @cached_property
     def invited_users(self):
