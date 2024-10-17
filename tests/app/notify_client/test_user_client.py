@@ -362,3 +362,17 @@ def test_send_registration_email(
             "admin_base_url": f"https://{tenant}admin.{subdomain}emergency-alerts.service.gov.uk",
         },
     )
+
+
+def test_updating_with_weak_password_returns_400_response(mocker):
+    expected_url = f"/user/{sample_uuid()}/check-password-validity"
+    expected_params = {"_password": "notify test"}
+    mock_post = mocker.patch(
+        "app.notify_client.user_api_client.UserApiClient.post",
+        side_effect=HTTPError(response=Mock(status_code=400, message="error")),
+    )
+
+    with pytest.raises(HTTPError):
+        user_api_client.check_password_is_valid(sample_uuid(), expected_params["_password"])
+
+    mock_post.assert_called_once_with(expected_url, data=expected_params)
