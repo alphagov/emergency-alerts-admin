@@ -2,7 +2,7 @@
 
 PLATFORM=linux/amd64
 # We can add linux/arm64 back in if we need it
-REGION='eu-west-2'
+REGION=${AWS_REGION}
 
 while [ $# -gt 0 ]; do
   if [[ $1 == *"--"* ]]; then
