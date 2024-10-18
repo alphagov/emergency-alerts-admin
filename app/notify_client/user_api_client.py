@@ -39,8 +39,15 @@ class UserApiClient(NotifyAdminAPIClient):
         return self.get("/user/{}".format(user_id))
 
     def get_user_by_email(self, email_address):
-        user_data = self.post("/user/email", data={"email": email_address})
-        return user_data["data"]
+        try:
+            user_data = self.post("/user/email", data={"email": email_address})
+            return user_data["data"]
+        except HTTPError as e:
+            if e.status_code == 404:
+                return None
+            elif e.status_code == 429:
+                abort(429)
+            raise e
 
     def get_user_by_email_or_none(self, email_address):
         try:
