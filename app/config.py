@@ -47,7 +47,7 @@ class Config(object):
     ANTIVIRUS_API_KEY = "test-key"
 
     ASSETS_DEBUG = False
-    AWS_REGION = os.environ.get("AWS_REGION")
+    AWS_REGION = os.environ.get("AWS_REGION", "eu-west-2")
     DEFAULT_SERVICE_LIMIT = 50
 
     EMAIL_EXPIRY_SECONDS = 3600  # 1 hour
