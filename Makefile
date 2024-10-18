@@ -219,7 +219,7 @@ generate-manifest:
 
 .PHONY: upload-static ## Upload the static files to be served from S3
 upload-static:
-	aws s3 cp --region eu-west-2 --recursive --cache-control max-age=315360000,immutable ./app/static s3://${DNS_NAME}-static
+	aws s3 cp --region ${AWS_REGION} --recursive --cache-control max-age=315360000,immutable ./app/static s3://${DNS_NAME}-static
 
 .PHONY: cf-deploy
 cf-deploy: cf-target ## Deploys the app to Cloud Foundry
