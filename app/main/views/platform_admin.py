@@ -106,7 +106,7 @@ def platform_admin_services():
 
     include_from_test_key = form.include_from_test_key.data
     api_args = {
-        "detailed": True,
+        # "detailed": True,
         "only_active": False,  # specifically DO get inactive services
         "include_from_test_key": include_from_test_key,
     }
@@ -124,9 +124,8 @@ def platform_admin_services():
         "views/platform-admin/services.html",
         include_from_test_key=include_from_test_key,
         form=form,
-        services=list(format_stats_by_service(services)),
+        services=list(format_service_data(services)),
         page_title=f"{'Trial mode' if request.endpoint == 'main.trial_services' else 'Live'} services",
-        global_stats=create_global_stats(services),
     )
 
 
@@ -263,34 +262,18 @@ def filter_and_sort_services(services, trial_mode_services=False):
         service
         for service in sorted(
             services,
-            key=lambda service: (service["active"], sum_service_usage(service), service["created_at"]),
+            key=lambda service: (service["active"], service["created_at"]),
             reverse=True,
         )
         if service["restricted"] == trial_mode_services
     ]
 
 
-def create_global_stats(services):
-    stats = {
-        "email": {"delivered": 0, "failed": 0, "requested": 0},
-        "sms": {"delivered": 0, "failed": 0, "requested": 0},
-        "letter": {"delivered": 0, "failed": 0, "requested": 0},
-    }
-    for service in services:
-        for msg_type, status in itertools.product(("sms", "email", "letter"), ("delivered", "failed", "requested")):
-            stats[msg_type][status] += service["statistics"][msg_type][status]
-
-    for stat in stats.values():
-        stat["failure_rate"] = get_formatted_percentage(stat["failed"], stat["requested"])
-    return stats
-
-
-def format_stats_by_service(services):
+def format_service_data(services):
     for service in services:
         yield {
             "id": service["id"],
             "name": service["name"],
-            "stats": service["statistics"],
             "restricted": service["restricted"],
             "created_at": service["created_at"],
             "active": service["active"],

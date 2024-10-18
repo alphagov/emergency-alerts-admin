@@ -6,11 +6,8 @@ import pytest
 from flask import url_for
 
 from app.main.views.platform_admin import (
-    create_global_stats,
-    format_stats_by_service,
     get_tech_failure_status_box_data,
     is_over_threshold,
-    sum_service_usage,
 )
 from tests import service_json
 from tests.conftest import normalize_spaces
@@ -61,9 +58,7 @@ def test_should_render_platform_admin_page(
     client_request.login(platform_admin_user)
     page = client_request.get(endpoint)
     assert normalize_spaces(page.select("h1")) == expected_h1
-    mock_get_detailed_services.assert_called_once_with(
-        {"detailed": True, "include_from_test_key": True, "only_active": False}
-    )
+    mock_get_detailed_services.assert_called_once_with({"include_from_test_key": True, "only_active": False})
 
 
 @pytest.mark.parametrize(
@@ -88,7 +83,6 @@ def test_live_trial_services_toggle_including_from_test_key(
     client_request.get_url(partial_url_for(endpoint))
     mock_get_detailed_services.assert_called_once_with(
         {
-            "detailed": True,
             "only_active": False,
             "include_from_test_key": inc,
         }
@@ -112,91 +106,9 @@ def test_live_trial_services_with_date_filter(
             "include_from_test_key": False,
             "end_date": datetime.date(2016, 12, 28),
             "start_date": datetime.date(2016, 12, 20),
-            "detailed": True,
             "only_active": False,
         }
     )
-
-
-def test_create_global_stats_sets_failure_rates(fake_uuid):
-    services = [service_json(fake_uuid, "a", []), service_json(fake_uuid, "b", [])]
-    services[0]["statistics"] = create_stats(
-        emails_requested=1,
-        emails_delivered=1,
-        emails_failed=0,
-    )
-    services[1]["statistics"] = create_stats(
-        emails_requested=2,
-        emails_delivered=1,
-        emails_failed=1,
-    )
-
-    stats = create_global_stats(services)
-    assert stats == {
-        "email": {"delivered": 2, "failed": 1, "requested": 3, "failure_rate": "33.3"},
-        "sms": {"delivered": 0, "failed": 0, "requested": 0, "failure_rate": "0"},
-        "letter": {"delivered": 0, "failed": 0, "requested": 0, "failure_rate": "0"},
-    }
-
-
-def create_stats(
-    emails_requested=0,
-    emails_delivered=0,
-    emails_failed=0,
-    sms_requested=0,
-    sms_delivered=0,
-    sms_failed=0,
-    letters_requested=0,
-    letters_delivered=0,
-    letters_failed=0,
-):
-    return {
-        "sms": {
-            "requested": sms_requested,
-            "delivered": sms_delivered,
-            "failed": sms_failed,
-        },
-        "email": {
-            "requested": emails_requested,
-            "delivered": emails_delivered,
-            "failed": emails_failed,
-        },
-        "letter": {
-            "requested": letters_requested,
-            "delivered": letters_delivered,
-            "failed": letters_failed,
-        },
-    }
-
-
-def test_format_stats_by_service_returns_correct_values(fake_uuid):
-    services = [service_json(fake_uuid, "a", [])]
-    services[0]["statistics"] = create_stats(
-        emails_requested=10,
-        emails_delivered=3,
-        emails_failed=5,
-        sms_requested=50,
-        sms_delivered=7,
-        sms_failed=11,
-        letters_requested=40,
-        letters_delivered=20,
-        letters_failed=7,
-    )
-
-    ret = list(format_stats_by_service(services))
-    assert len(ret) == 1
-
-    assert ret[0]["stats"]["email"]["requested"] == 10
-    assert ret[0]["stats"]["email"]["delivered"] == 3
-    assert ret[0]["stats"]["email"]["failed"] == 5
-
-    assert ret[0]["stats"]["sms"]["requested"] == 50
-    assert ret[0]["stats"]["sms"]["delivered"] == 7
-    assert ret[0]["stats"]["sms"]["failed"] == 11
-
-    assert ret[0]["stats"]["letter"]["requested"] == 40
-    assert ret[0]["stats"]["letter"]["delivered"] == 20
-    assert ret[0]["stats"]["letter"]["failed"] == 7
 
 
 @pytest.mark.parametrize(
@@ -214,17 +126,12 @@ def test_should_show_archived_services_last(
         service_json(name="B", restricted=restricted, active=True, created_at="2001-01-01 12:00:00"),
         service_json(name="A", restricted=restricted, active=True, created_at="2003-03-03 12:00:00"),
     ]
-    services[0]["statistics"] = create_stats()
-    services[1]["statistics"] = create_stats()
-    services[2]["statistics"] = create_stats()
 
     mock_get_detailed_services.return_value = {"data": services}
     client_request.login(platform_admin_user)
     page = client_request.get(endpoint)
 
-    mock_get_detailed_services.assert_called_once_with(
-        {"detailed": True, "include_from_test_key": True, "only_active": ANY}
-    )
+    mock_get_detailed_services.assert_called_once_with({"include_from_test_key": True, "only_active": ANY})
 
     list_body = page.select_one("nav.browse-list")
     services = list(list_body.select("li.browse-list-item"))
@@ -251,25 +158,12 @@ def test_should_order_services_by_usage_with_inactive_last(
         service_json(fake_uuid, "My Service 2", [], restricted=restricted, research_mode=research_mode),
         service_json(fake_uuid, "My Service 3", [], restricted=restricted, research_mode=research_mode, active=False),
     ]
-    services[0]["statistics"] = create_stats(
-        emails_requested=100, emails_delivered=25, emails_failed=25, sms_requested=100, sms_delivered=25, sms_failed=25
-    )
-
-    services[1]["statistics"] = create_stats(
-        emails_requested=200, emails_delivered=50, emails_failed=50, sms_requested=200, sms_delivered=50, sms_failed=50
-    )
-
-    services[2]["statistics"] = create_stats(
-        emails_requested=200, emails_delivered=50, emails_failed=50, sms_requested=200, sms_delivered=50, sms_failed=50
-    )
 
     mock_get_detailed_services.return_value = {"data": services}
     client_request.login(platform_admin_user)
     page = client_request.get(endpoint)
 
-    mock_get_detailed_services.assert_called_once_with(
-        {"detailed": True, "include_from_test_key": True, "only_active": ANY}
-    )
+    mock_get_detailed_services.assert_called_once_with({"include_from_test_key": True, "only_active": ANY})
 
     list_body = page.select_one("nav.browse-list")
     services = list(list_body.select("li.browse-list-item"))
@@ -277,22 +171,6 @@ def test_should_order_services_by_usage_with_inactive_last(
     assert normalize_spaces(services[0].text) == "My Service 2"
     assert normalize_spaces(services[1].text) == "My Service 1"
     assert normalize_spaces(services[2].text) == "My Service 3 Archived"
-
-
-def test_sum_service_usage_is_sum_of_all_activity(fake_uuid):
-    service = service_json(fake_uuid, "My Service 1")
-    service["statistics"] = create_stats(
-        emails_requested=100, emails_delivered=25, emails_failed=25, sms_requested=100, sms_delivered=25, sms_failed=25
-    )
-    assert sum_service_usage(service) == 200
-
-
-def test_sum_service_usage_with_zeros(fake_uuid):
-    service = service_json(fake_uuid, "My Service 1")
-    service["statistics"] = create_stats(
-        emails_requested=0, emails_delivered=0, emails_failed=25, sms_requested=0, sms_delivered=0, sms_failed=0
-    )
-    assert sum_service_usage(service) == 0
 
 
 @pytest.mark.parametrize(

@@ -7,7 +7,7 @@ import pytest
 from flask import url_for
 from freezegun import freeze_time
 
-from app.main.views.jobs import get_status_filters, get_time_left
+from app.main.views.jobs import get_status_filters
 from app.models.service import Service
 from tests.conftest import (
     SERVICE_ONE_ID,
@@ -96,7 +96,6 @@ def test_can_show_notifications(
     mock_get_notifications,
     mock_get_service_statistics,
     mock_get_service_data_retention,
-    mock_has_no_jobs,
     mock_get_no_api_keys,
     user,
     extra_args,
@@ -190,7 +189,6 @@ def test_can_show_notifications_if_data_retention_not_available(
     client_request,
     mock_get_notifications,
     mock_get_service_statistics,
-    mock_has_no_jobs,
     mock_get_no_api_keys,
 ):
     page = client_request.get(
@@ -247,7 +245,6 @@ def test_link_to_download_notifications(
     mock_get_notifications,
     mock_get_service_statistics,
     mock_get_service_data_retention,
-    mock_has_no_jobs,
     mock_get_no_api_keys,
     user,
     query_parameters,
@@ -534,20 +531,6 @@ def test_doesnt_show_pagination_with_search_term(
     assert not page.select_one("a[rel=next]")
     assert not page.select_one("a[rel=previous]")
     assert normalize_spaces(page.select_one(".table-show-more-link").text) == "Only showing the first 50 messages"
-
-
-@pytest.mark.parametrize(
-    "job_created_at, expected_message",
-    [
-        ("2016-01-10 11:09:00.000000+00:00", "Data available for 7 days"),
-        ("2016-01-04 11:09:00.000000+00:00", "Data available for 1 day"),
-        ("2016-01-03 11:09:00.000000+00:00", "Data available for 12 hours"),
-        ("2016-01-02 23:59:59.000000+00:00", "Data no longer available"),
-    ],
-)
-@freeze_time("2016-01-10 12:00:00.000000")
-def test_time_left(job_created_at, expected_message):
-    assert get_time_left(job_created_at) == expected_message
 
 
 STATISTICS = {"sms": {"requested": 6, "failed": 2, "delivered": 1}}
