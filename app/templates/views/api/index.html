@@ -65,7 +65,7 @@
       </h3>
       {% endset %}
 
-      {% set htmlcontent %}
+      {# {% set htmlcontent %}
         <dl id="notification-{{ notification.id }}">
           {% for key in [
             'id', 'client_reference', 'notification_type', 'created_at', 'updated_at', 'sent_at', 'status'
@@ -79,7 +79,7 @@
             <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('.view_notification', service_id=current_service.id, notification_id=notification.id) }}">View {{ 1|message_count_label(notification.template.template_type, suffix='') }}</a>
             {% endif %}
           </dl>
-      {% endset %}
+      {% endset %} #}
 
       {{ govukDetails({
         "summaryHtml": summary_html,

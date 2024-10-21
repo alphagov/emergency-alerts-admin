@@ -57,31 +57,6 @@ def test_should_show_api_page_with_no_notifications(
     assert "When you send messages via the API they’ll appear here." in rows[len(rows) - 1].text.strip()
 
 
-@pytest.mark.parametrize(
-    "template_type, link_text",
-    [
-        ("sms", "View text message"),
-        ("letter", "View letter"),
-        ("email", "View email"),
-    ],
-)
-def test_letter_notifications_should_have_link_to_view_letter(
-    client_request,
-    mock_has_permissions,
-    mocker,
-    template_type,
-    link_text,
-):
-    notifications = create_notifications(template_type=template_type)
-    mocker.patch("app.notification_api_client.get_notifications_for_service", return_value=notifications)
-    page = client_request.get(
-        "main.api_integration",
-        service_id=SERVICE_ONE_ID,
-    )
-
-    assert page.select_one("details a").text.strip() == link_text
-
-
 @pytest.mark.parametrize("status", ["pending-virus-check", "virus-scan-failed"])
 def test_should_not_have_link_to_view_letter_for_precompiled_letters_in_virus_states(
     client_request, fake_uuid, mock_has_permissions, mocker, status
@@ -95,32 +70,6 @@ def test_should_not_have_link_to_view_letter_for_precompiled_letters_in_virus_st
     )
 
     assert not page.select_one("details a")
-
-
-@pytest.mark.parametrize(
-    "client_reference, shows_ref",
-    [
-        ("foo", True),
-        (None, False),
-    ],
-)
-def test_letter_notifications_should_show_client_reference(
-    client_request, fake_uuid, mock_has_permissions, mocker, client_reference, shows_ref
-):
-    notifications = create_notifications(client_reference=client_reference)
-    mocker.patch("app.notification_api_client.get_notifications_for_service", return_value=notifications)
-
-    page = client_request.get(
-        "main.api_integration",
-        service_id=fake_uuid,
-    )
-    dt_arr = [p.text for p in page.select("dt")]
-
-    if shows_ref:
-        assert "client_reference:" in dt_arr
-        assert page.select_one("dd:nth-of-type(2)").text == "foo"
-    else:
-        assert "client_reference:" not in dt_arr
 
 
 def test_should_show_api_page_for_live_service(

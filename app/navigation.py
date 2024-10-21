@@ -107,8 +107,6 @@ class MainNavigation(Navigation):
         "dashboard": {
             "broadcast_tour",
             "service_dashboard",
-            "view_notification",
-            "view_notifications",
         },
         "current-broadcasts": {
             "broadcast_dashboard",
