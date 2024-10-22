@@ -156,6 +156,8 @@ prometheus-client==0.15.0
     # via
     #   -r requirements.in
     #   gds-metrics
+pwdpy==1.0.1
+    # via -r requirements.in
 pycodestyle==2.11.1
     # via
     #   flake8

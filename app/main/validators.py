@@ -1,6 +1,7 @@
 import re
 from abc import ABC, abstractmethod
 
+import pwdpy
 from emergency_alerts_utils.field import Field
 from emergency_alerts_utils.formatters import formatted_list
 from emergency_alerts_utils.recipients import InvalidEmailError, validate_email_address
@@ -27,6 +28,14 @@ class CommonlyUsedPassword:
     def __call__(self, form, field):
         if field.data in commonly_used_passwords:
             raise ValidationError(self.message)
+
+
+class LowEntropyPassword:
+    def __call__(self, form, field):
+        entropy = pwdpy.entropy((field.data))
+        if float(entropy) < 70:
+            message = "Your password is not strong enough, try adding more words"
+            raise ValidationError(message)
 
 
 class CsvFileValidator:

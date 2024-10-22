@@ -269,3 +269,10 @@ details .arrow {
 .service-block {
   padding-bottom: 16px;
 }
+
+.footer-group {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+  gap: 5%;
+}
