@@ -20,7 +20,7 @@
 {% if broadcast_message.areas|length == 1 %}
     {% set label = "Map of the United Kingdom, showing the area for "+broadcast_message.areas[0].name %}
 {% else %}
-    {% set label = "Map of the United Kingdom, showing the areas for "+broadcast_message.area_ids[:-1]|join(', ')+' and '+broadcast_message.area_ids[-1] %}
+  {% set label = "Map of the United Kingdom, showing the areas for "+broadcast_message.area_ids[:-1]|join(', ')+' and '+broadcast_message.area_ids[-1] %}
 {% endif %}
 
 {% block service_page_title %}
@@ -67,17 +67,17 @@
           ) }}
         {% elif current_user.has_permissions('approve_broadcasts', restrict_admin_usage=True) %}
           <p class="govuk-body govuk-!-margin-bottom-3">
-            When you use a live account you'll need another member of
+            When you use a live account you’ll need another member of
             your team to approve your alert.
           </p>
           {% set approve_details %}
             {% call form_wrapper() %}
             <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-3">
-              Because you're in training mode you can approve
+              Because you’re in training mode you can approve
               your own alerts, to see how it works.
             </p>
             <p class="govuk-body govuk-!-margin-top-0 govuk-!-margin-bottom-3">
-              No real alerts will be broadcast to anyone's phone.
+              No real alerts will be broadcast to anyone’s phone.
             </p>
             {{ page_footer(
               "Start broadcasting now",
@@ -153,7 +153,7 @@
       <div class="banner govuk-!-margin-bottom-6">
         <h1 class="govuk-heading-m govuk-!-margin-bottom-3">This alert is waiting for approval</h1>
         <p class="govuk-body">
-          You don't have permission to approve alerts.
+          You don’t have permission to approve alerts.
         </p>
       </div>
     {% endif %}
