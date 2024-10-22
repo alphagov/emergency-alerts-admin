@@ -230,7 +230,6 @@ class OrgNavigation(Navigation):
         "settings": {
             "archive_organisation",
             "edit_organisation_agreement",
-            "edit_organisation_billing_details",
             "edit_organisation_crown_status",
             "edit_organisation_domains",
             "edit_organisation_domains",
@@ -248,8 +247,5 @@ class OrgNavigation(Navigation):
         },
         "trial-services": {
             "organisation_trial_mode_services",
-        },
-        "billing": {
-            "organisation_billing",
         },
     }

@@ -7,7 +7,6 @@ from tests import organisation_json, service_json
 from tests.conftest import (
     ORGANISATION_ID,
     SERVICE_ONE_ID,
-    SERVICE_TWO_ID,
     create_active_user_with_permissions,
     create_platform_admin_user,
     normalize_spaces,
@@ -54,14 +53,14 @@ def test_organisation_page_shows_all_organisations(client_request, platform_admi
 def test_view_organisation_shows_the_correct_organisation(client_request, mocker):
     org = {"id": ORGANISATION_ID, "name": "Test 1", "active": True}
     mocker.patch("app.organisations_client.get_organisation", return_value=org)
-    mocker.patch("app.organisations_client.get_services_and_usage", return_value={"services": {}})
+    mocker.patch("app.organisations_client.get_organisation_services", return_value=[])
 
     page = client_request.get(
         ".organisation_dashboard",
         org_id=ORGANISATION_ID,
     )
 
-    assert normalize_spaces(page.select_one("h1").text) == "Usage"
+    assert normalize_spaces(page.select_one("h1").text) == "Organisation Services"
     assert (
         normalize_spaces(page.select_one(".govuk-hint").text)
         == "Test 1 has no live services on GOV.UK Emergency Alerts"
@@ -413,68 +412,22 @@ def test_organisation_services_shows_live_services_and_usage_with_count_of_1(
     fake_uuid,
 ):
     mocker.patch(
-        "app.organisations_client.get_services_and_usage",
-        return_value={
-            "services": [
-                {
-                    "service_id": SERVICE_ONE_ID,
-                    "service_name": "1",
-                    "chargeable_billable_sms": 1,
-                    "emails_sent": 1,
-                    "free_sms_limit": 250000,
-                    "letter_cost": 0,
-                    "sms_billable_units": 1,
-                    "sms_cost": 0,
-                    "sms_remainder": None,
-                },
-            ]
-        },
+        "app.organisations_client.get_organisation_services",
+        return_value=[
+            {
+                "id": SERVICE_ONE_ID,
+                "name": "Service 1",
+            },
+        ],
     )
 
     client_request.login(active_user_with_permissions)
     page = client_request.get(".organisation_dashboard", org_id=ORGANISATION_ID)
 
-    usage_rows = page.select("main .govuk-grid-column-one-third")
+    usage_rows = page.select("main .organisation-service")
 
-    # Totals
-    assert normalize_spaces(usage_rows[0].text) == "Emails 1 sent"
-    assert normalize_spaces(usage_rows[1].text) == "Text messages £0.00 spent"
-    assert normalize_spaces(usage_rows[2].text) == "Letters £0.00 spent"
-
-    assert normalize_spaces(usage_rows[3].text) == "1 email sent"
-    assert normalize_spaces(usage_rows[4].text) == "1 free text message sent"
-    assert normalize_spaces(usage_rows[5].text) == "£0.00 spent on letters"
-
-
-@freeze_time("2020-02-20 20:20")
-@pytest.mark.parametrize(
-    "financial_year, expected_selected",
-    (
-        (2017, "2017 to 2018 financial year"),
-        (2018, "2018 to 2019 financial year"),
-        (2019, "2019 to 2020 financial year"),
-    ),
-)
-def test_organisation_services_filters_by_financial_year(
-    client_request,
-    mock_get_organisation,
-    mocker,
-    active_user_with_permissions,
-    fake_uuid,
-    financial_year,
-    expected_selected,
-):
-    mock = mocker.patch("app.organisations_client.get_services_and_usage", return_value={"services": []})
-    page = client_request.get(
-        ".organisation_dashboard",
-        org_id=ORGANISATION_ID,
-        year=financial_year,
-    )
-    mock.assert_called_once_with(ORGANISATION_ID, financial_year)
-    assert normalize_spaces(page.select_one(".pill").text) == (
-        "2019 to 2020 financial year 2018 to 2019 financial year 2017 to 2018 financial year"
-    )
-    assert normalize_spaces(page.select_one(".pill-item--selected").text) == (expected_selected)
+    assert len(usage_rows) == 1
+    assert normalize_spaces(usage_rows[0].text) == "Service 1"
 
 
 @freeze_time("2020-02-20 20:20")
@@ -486,23 +439,8 @@ def test_organisation_services_shows_search_bar(
     fake_uuid,
 ):
     mocker.patch(
-        "app.organisations_client.get_services_and_usage",
-        return_value={
-            "services": [
-                {
-                    "service_id": SERVICE_ONE_ID,
-                    "service_name": "Service 1",
-                    "chargeable_billable_sms": 250122,
-                    "emails_sent": 13000,
-                    "free_sms_limit": 250000,
-                    "letter_cost": 30.50,
-                    "sms_billable_units": 122,
-                    "sms_cost": 1.93,
-                    "sms_remainder": None,
-                },
-            ]
-            * 8
-        },
+        "app.organisations_client.get_organisation_services",
+        return_value=[{"id": "id-1", "name": "Service 1"}] * 8,
     )
 
     client_request.login(active_user_with_permissions)
@@ -533,23 +471,8 @@ def test_organisation_services_hides_search_bar_for_7_or_fewer_services(
     fake_uuid,
 ):
     mocker.patch(
-        "app.organisations_client.get_services_and_usage",
-        return_value={
-            "services": [
-                {
-                    "service_id": SERVICE_ONE_ID,
-                    "service_name": "Service 1",
-                    "chargeable_billable_sms": 250122,
-                    "emails_sent": 13000,
-                    "free_sms_limit": 250000,
-                    "letter_cost": 30.50,
-                    "sms_billable_units": 122,
-                    "sms_cost": 1.93,
-                    "sms_remainder": None,
-                },
-            ]
-            * 7
-        },
+        "app.organisations_client.get_organisation_services",
+        return_value=[{"id": "id-1", "name": "Service 1"}] * 7,
     )
 
     client_request.login(active_user_with_permissions)
@@ -558,93 +481,6 @@ def test_organisation_services_hides_search_bar_for_7_or_fewer_services(
     services = page.select(".organisation-service")
     assert len(services) == 7
     assert not page.select_one(".live-search")
-
-
-@freeze_time("2021-11-12 11:09:00.061258")
-def test_organisation_services_links_to_downloadable_report(
-    client_request,
-    mock_get_organisation,
-    mocker,
-    active_user_with_permissions,
-    fake_uuid,
-):
-    mocker.patch(
-        "app.organisations_client.get_services_and_usage",
-        return_value={
-            "services": [
-                {
-                    "service_id": SERVICE_ONE_ID,
-                    "service_name": "Service 1",
-                    "chargeable_billable_sms": 250122,
-                    "emails_sent": 13000,
-                    "free_sms_limit": 250000,
-                    "letter_cost": 30.50,
-                    "sms_billable_units": 122,
-                    "sms_cost": 1.93,
-                    "sms_remainder": None,
-                },
-            ]
-            * 2
-        },
-    )
-    client_request.login(active_user_with_permissions)
-    page = client_request.get(".organisation_dashboard", org_id=ORGANISATION_ID)
-
-    link_to_report = page.select_one("a[download]")
-    assert normalize_spaces(link_to_report.text) == "Download this report (CSV)"
-    assert link_to_report.attrs["href"] == url_for(
-        ".download_organisation_usage_report", org_id=ORGANISATION_ID, selected_year=2021
-    )
-
-
-@freeze_time("2021-11-12 11:09:00.061258")
-def test_download_organisation_usage_report(
-    client_request,
-    mock_get_organisation,
-    mocker,
-    active_user_with_permissions,
-    fake_uuid,
-):
-    mocker.patch(
-        "app.organisations_client.get_services_and_usage",
-        return_value={
-            "services": [
-                {
-                    "service_id": SERVICE_ONE_ID,
-                    "service_name": "Service 1",
-                    "chargeable_billable_sms": 22,
-                    "emails_sent": 13000,
-                    "free_sms_limit": 100,
-                    "letter_cost": 30.5,
-                    "sms_billable_units": 122,
-                    "sms_cost": 1.934,
-                    "sms_remainder": 0,
-                },
-                {
-                    "service_id": SERVICE_TWO_ID,
-                    "service_name": "Service 1",
-                    "chargeable_billable_sms": 222,
-                    "emails_sent": 23000,
-                    "free_sms_limit": 250000,
-                    "letter_cost": 60.5,
-                    "sms_billable_units": 322,
-                    "sms_cost": 3.935,
-                    "sms_remainder": 0,
-                },
-            ]
-        },
-    )
-    client_request.login(active_user_with_permissions)
-    csv_report = client_request.get(
-        ".download_organisation_usage_report", org_id=ORGANISATION_ID, selected_year=2021, _test_page_title=False
-    )
-
-    assert csv_report.string == (
-        "Service ID,Service Name,Emails sent,Free text message allowance remaining,"
-        "Spent on text messages (£),Spent on letters (£)"
-        "\r\n596364a0-858e-42c8-9062-a8fe822260eb,Service 1,13000,0,1.93,30.50"
-        "\r\n147ad62a-2951-4fa1-9ca0-093cd1a52c52,Service 1,23000,0,3.94,60.50\r\n"
-    )
 
 
 def test_organisation_trial_mode_services_shows_all_non_live_services(
@@ -843,7 +679,6 @@ def test_organisation_settings_for_platform_admin(
             "Not signed Change data sharing and financial agreement for the organisation"
         ),
         "Request to go live notes None Change go live notes for the organisation",
-        "Billing details None Change billing details for the organisation",
         "Notes None Change the notes for the organisation",
         "Known email domains None Change known email domains for the organisation",
     ]
@@ -1618,196 +1453,3 @@ def test_update_organisation_notes_doesnt_call_api_when_notes_dont_change(
         ),
     )
     assert not mock_update_organisation.called
-
-
-def test_organisation_settings_links_to_edit_organisation_billing_details_page(
-    mocker,
-    mock_get_organisation,
-    organisation_one,
-    client_request,
-    platform_admin_user,
-):
-    client_request.login(platform_admin_user)
-    page = client_request.get(".organisation_settings", org_id=organisation_one["id"])
-    assert len(page.select(f"""a[href="/organisations/{organisation_one['id']}/settings/edit-billing-details"]""")) == 1
-
-
-def test_view_edit_organisation_billing_details(
-    client_request,
-    platform_admin_user,
-    organisation_one,
-    mock_get_organisation,
-):
-    client_request.login(platform_admin_user)
-    page = client_request.get(
-        "main.edit_organisation_billing_details",
-        org_id=organisation_one["id"],
-    )
-    assert page.select_one("h1").text == "Edit organisation billing details"
-
-    assert [label.text.strip() for label in page.select("label.govuk-label") + page.select("label.form-label")] == [
-        "Contact names",
-        "Contact email addresses",
-        "Reference",
-        "Purchase order number",
-        "Notes",
-    ]
-
-    assert [
-        form_element["name"]
-        for form_element in page.select("input.govuk-input.govuk-\\!-width-full") + page.select("textarea")
-    ] == [
-        "billing_contact_names",
-        "billing_contact_email_addresses",
-        "billing_reference",
-        "purchase_order_number",
-        "notes",
-    ]
-
-
-def test_update_organisation_billing_details(
-    client_request,
-    platform_admin_user,
-    organisation_one,
-    mock_get_organisation,
-    mock_update_organisation,
-):
-    client_request.login(platform_admin_user)
-    client_request.post(
-        "main.edit_organisation_billing_details",
-        org_id=organisation_one["id"],
-        _data={
-            "billing_contact_email_addresses": "accounts@fluff.gov.uk",
-            "billing_contact_names": "Flannellette von Fluff",
-            "billing_reference": "",
-            "purchase_order_number": "PO1234",
-            "notes": "very fluffy, give extra allowance",
-        },
-        _expected_redirect=url_for(
-            "main.organisation_settings",
-            org_id=organisation_one["id"],
-        ),
-    )
-    mock_update_organisation.assert_called_with(
-        organisation_one["id"],
-        cached_service_ids=None,
-        billing_contact_email_addresses="accounts@fluff.gov.uk",
-        billing_contact_names="Flannellette von Fluff",
-        billing_reference="",
-        purchase_order_number="PO1234",
-        notes="very fluffy, give extra allowance",
-    )
-
-
-def test_update_organisation_billing_details_errors_when_user_not_platform_admin(
-    client_request,
-    organisation_one,
-    mock_get_organisation,
-    mock_update_organisation,
-):
-    client_request.post(
-        "main.edit_organisation_billing_details",
-        org_id=organisation_one["id"],
-        _data={"notes": "Very fluffy"},
-        _expected_status=403,
-    )
-
-
-def test_organisation_billing_page_not_accessible_if_not_platform_admin(
-    client_request,
-    mock_get_organisation,
-):
-    client_request.get(".organisation_billing", org_id=ORGANISATION_ID, _expected_status=403)
-
-
-@pytest.mark.parametrize(
-    "signed_by_id, signed_by_name, expected_signatory",
-    [
-        ("1234", None, "Test User"),
-        (None, "The Org Manager", "The Org Manager"),
-        ("1234", "The Org Manager", "The Org Manager"),
-    ],
-)
-def test_organisation_billing_page_when_the_agreement_is_signed_by_a_known_person(
-    organisation_one,
-    client_request,
-    api_user_active,
-    mocker,
-    platform_admin_user,
-    signed_by_id,
-    signed_by_name,
-    expected_signatory,
-):
-    api_user_active["id"] = "1234"
-
-    organisation_one["agreement_signed"] = True
-    organisation_one["agreement_signed_version"] = 2.5
-    organisation_one["agreement_signed_by_id"] = signed_by_id
-    organisation_one["agreement_signed_on_behalf_of_name"] = signed_by_name
-    organisation_one["agreement_signed_at"] = "Thu, 20 Feb 2020 00:00:00 GMT"
-
-    mocker.patch("app.organisations_client.get_organisation", return_value=organisation_one)
-
-    client_request.login(platform_admin_user)
-    mocker.patch("app.user_api_client.get_user", return_value=api_user_active)
-    page = client_request.get(
-        ".organisation_billing",
-        org_id=ORGANISATION_ID,
-    )
-
-    assert page.select_one("h1").string == "Billing"
-    assert "2.5 of the GOV.UK Notify data sharing and financial agreement on 20 February 2020" in normalize_spaces(
-        page.text
-    )
-    assert f"{expected_signatory} signed" in page.text
-    assert page.select_one("main a")["href"] == url_for(".organisation_download_agreement", org_id=ORGANISATION_ID)
-
-
-def test_organisation_billing_page_when_the_agreement_is_signed_by_an_unknown_person(
-    organisation_one,
-    client_request,
-    platform_admin_user,
-    mocker,
-):
-    organisation_one["agreement_signed"] = True
-    mocker.patch("app.organisations_client.get_organisation", return_value=organisation_one)
-
-    client_request.login(platform_admin_user)
-    page = client_request.get(
-        ".organisation_billing",
-        org_id=ORGANISATION_ID,
-    )
-
-    assert page.select_one("h1").string == "Billing"
-    assert (
-        f'{organisation_one["name"]} has accepted the GOV.UK Notify data ' "sharing and financial agreement."
-    ) in page.text
-    assert page.select_one("main a")["href"] == url_for(".organisation_download_agreement", org_id=ORGANISATION_ID)
-
-
-@pytest.mark.parametrize(
-    "agreement_signed, expected_content",
-    [
-        (False, "needs to accept"),
-        (None, "has not accepted"),
-    ],
-)
-def test_organisation_billing_page_when_the_agreement_is_not_signed(
-    organisation_one,
-    client_request,
-    platform_admin_user,
-    mocker,
-    agreement_signed,
-    expected_content,
-):
-    organisation_one["agreement_signed"] = agreement_signed
-    mocker.patch("app.organisations_client.get_organisation", return_value=organisation_one)
-
-    client_request.login(platform_admin_user)
-    page = client_request.get(
-        ".organisation_billing",
-        org_id=ORGANISATION_ID,
-    )
-
-    assert page.select_one("h1").string == "Billing"
-    assert f'{organisation_one["name"]} {expected_content}' in page.text

@@ -72,11 +72,9 @@ EXCLUDED_ENDPOINTS = tuple(
             "delivery_status_callback",
             "design_content",
             "documentation",
-            "download_organisation_usage_report",
             "edit_and_format_messages",
             "edit_data_retention",
             "edit_organisation_agreement",
-            "edit_organisation_billing_details",
             "edit_organisation_crown_status",
             "edit_organisation_domains",
             "edit_organisation_go_live_notes",
@@ -131,9 +129,7 @@ EXCLUDED_ENDPOINTS = tuple(
             "old_service_dashboard",
             "old_terms",
             "old_using_notify",
-            "organisation_billing",
             "organisation_dashboard",
-            "organisation_download_agreement",
             "organisation_settings",
             "organisation_trial_mode_services",
             "organisations",
@@ -354,7 +350,7 @@ def test_a_page_should_have_selected_header_navigation_item(
 @pytest.mark.parametrize(
     "endpoint, selected_nav_item",
     [
-        ("main.organisation_dashboard", "Usage"),
+        ("main.organisation_dashboard", "Services"),
         ("main.manage_org_users", "Team members"),
     ],
 )
@@ -367,7 +363,7 @@ def test_a_page_should_nave_selected_org_navigation_item(
     selected_nav_item,
     mocker,
 ):
-    mocker.patch("app.organisations_client.get_services_and_usage", return_value={"services": {}})
+    mocker.patch("app.organisations_client.get_organisation_services", return_value=[])
     page = client_request.get(endpoint, org_id=ORGANISATION_ID)
     selected_nav_items = page.select(".navigation a.selected")
     assert len(selected_nav_items) == 1
