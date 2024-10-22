@@ -60,7 +60,7 @@ def test_view_organisation_shows_the_correct_organisation(client_request, mocker
         org_id=ORGANISATION_ID,
     )
 
-    assert normalize_spaces(page.select_one("h1").text) == "Organisation Services"
+    assert normalize_spaces(page.select_one("h1").text) == "All services"
     assert (
         normalize_spaces(page.select_one(".govuk-hint").text)
         == "Test 1 has no live services on GOV.UK Emergency Alerts"
