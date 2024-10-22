@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta
 
 from flask import abort, redirect, render_template, request, session, url_for
+from notifications_python_client.errors import HTTPError
 
+from app import user_api_client
 from app.main import main
 from app.main.forms import RegisterUserFromInviteForm, RegisterUserFromOrgInviteForm
 from app.main.views.verify import activate_user
@@ -24,6 +26,12 @@ def register_from_invite():
     form = RegisterUserFromInviteForm(invited_user)
 
     if form.validate_on_submit():
+        try:
+            user_api_client.check_password_is_valid(invited_user.id, form.password.data)
+        except HTTPError as e:
+            if e.status_code == 400:
+                form.password.errors.append(e.message[0])
+                return render_template("views/register-from-invite.html", invited_user=invited_user, form=form)
         if form.service.data != invited_user.service or form.email_address.data != invited_user.email_address:
             abort(400)
         _do_registration(form, send_email=False, send_sms=invited_user.sms_auth)
@@ -50,6 +58,14 @@ def register_from_org_invite():
     form.auth_type.data = "sms_auth"
 
     if form.validate_on_submit():
+        try:
+            user_api_client.check_password_is_valid(invited_org_user.id, form.password.data)
+        except HTTPError as e:
+            if e.status_code == 400:
+                form.password.errors.append(e.message[0])
+                return render_template(
+                    "views/register-from-org-invite.html", invited_org_user=invited_org_user, form=form
+                )
         if (
             form.organisation.data != invited_org_user.organisation
             or form.email_address.data != invited_org_user.email_address
