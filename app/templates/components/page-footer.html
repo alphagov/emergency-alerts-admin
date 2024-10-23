@@ -12,9 +12,10 @@
   delete_link_text="delete",
   centered_button=False,
   button_url=None,
-  search=False
+  search=False,
+  classes=""
 ) %}
-  <div class="page-footer">
+  <div class="page-footer {{ classes }}">
     {% if button_text %}
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
 
