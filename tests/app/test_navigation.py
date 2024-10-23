@@ -45,9 +45,6 @@ EXCLUDED_ENDPOINTS = tuple(
             "cancel_broadcast_message",
             "cancel_invited_org_user",
             "cancel_invited_user",
-            "cancel_job",
-            "cancel_letter",
-            "cancel_letter_job",
             "change_user_auth",
             "check_and_resend_text_code",
             "check_and_resend_verification_code",
@@ -75,12 +72,9 @@ EXCLUDED_ENDPOINTS = tuple(
             "delivery_status_callback",
             "design_content",
             "documentation",
-            "download_notifications_csv",
-            "download_organisation_usage_report",
             "edit_and_format_messages",
             "edit_data_retention",
             "edit_organisation_agreement",
-            "edit_organisation_billing_details",
             "edit_organisation_crown_status",
             "edit_organisation_domains",
             "edit_organisation_go_live_notes",
@@ -106,7 +100,6 @@ EXCLUDED_ENDPOINTS = tuple(
             "find_services_by_name",
             "find_users_by_email",
             "forgot_password",
-            "get_notifications_as_json",
             "get_started",
             "get_started_old",
             "guest_list",
@@ -136,9 +129,7 @@ EXCLUDED_ENDPOINTS = tuple(
             "old_service_dashboard",
             "old_terms",
             "old_using_notify",
-            "organisation_billing",
             "organisation_dashboard",
-            "organisation_download_agreement",
             "organisation_settings",
             "organisation_trial_mode_services",
             "organisations",
@@ -239,15 +230,6 @@ EXCLUDED_ENDPOINTS = tuple(
             "verify",
             "verify_email",
             "view_current_broadcast",
-            "view_job",
-            "view_job_csv",
-            "view_job_updates",
-            "view_jobs",
-            "view_letter_notification_as_preview",
-            "view_notification",
-            "view_notification_updates",
-            "view_notifications",
-            "view_notifications_csv",
             "view_previous_broadcast",
             "view_rejected_broadcast",
             "view_template",
@@ -368,7 +350,7 @@ def test_a_page_should_have_selected_header_navigation_item(
 @pytest.mark.parametrize(
     "endpoint, selected_nav_item",
     [
-        ("main.organisation_dashboard", "Usage"),
+        ("main.organisation_dashboard", "Services"),
         ("main.manage_org_users", "Team members"),
     ],
 )
@@ -381,7 +363,7 @@ def test_a_page_should_nave_selected_org_navigation_item(
     selected_nav_item,
     mocker,
 ):
-    mocker.patch("app.organisations_client.get_services_and_usage", return_value={"services": {}})
+    mocker.patch("app.organisations_client.get_organisation_services", return_value=[])
     page = client_request.get(endpoint, org_id=ORGANISATION_ID)
     selected_nav_items = page.select(".navigation a.selected")
     assert len(selected_nav_items) == 1

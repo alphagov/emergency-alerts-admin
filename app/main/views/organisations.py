@@ -1,8 +1,6 @@
 from collections import OrderedDict
-from datetime import datetime
-from functools import partial
 
-from flask import flash, redirect, render_template, request, send_file, url_for
+from flask import flash, redirect, render_template, request, url_for
 from flask_login import current_user
 from notifications_python_client.errors import HTTPError
 
@@ -19,7 +17,6 @@ from app.main import main
 from app.main.forms import (
     AddGPOrganisationForm,
     AddNHSLocalOrganisationForm,
-    AdminBillingDetailsForm,
     AdminNewOrganisationForm,
     AdminNotesForm,
     AdminOrganisationDomainsForm,
@@ -32,14 +29,8 @@ from app.main.forms import (
     SearchByNameForm,
     SearchUsersForm,
 )
-from app.main.views.dashboard import (
-    get_tuples_of_financial_years,
-    requested_and_current_financial_year,
-)
 from app.models.organisation import AllOrganisations, Organisation
 from app.models.user import InvitedOrgUser, User
-from app.s3_client.s3_mou_client import get_mou
-from app.utils.csv import Spreadsheet
 from app.utils.user import user_has_permissions, user_is_platform_admin
 
 
@@ -126,64 +117,11 @@ def add_organisation_from_nhs_local_service(service_id):
 @main.route("/organisations/<uuid:org_id>", methods=["GET"])
 @user_has_permissions()
 def organisation_dashboard(org_id):
-    year, current_financial_year = requested_and_current_financial_year(request)
-    services = current_organisation.services_and_usage(financial_year=year)["services"]
+    services = current_organisation.services
     return render_template(
         "views/organisations/organisation/index.html",
         services=services,
-        years=get_tuples_of_financial_years(
-            partial(url_for, ".organisation_dashboard", org_id=current_organisation.id),
-            start=current_financial_year - 2,
-            end=current_financial_year,
-        ),
-        selected_year=year,
         search_form=SearchByNameForm() if len(services) > 7 else None,
-        **{
-            f"total_{key}": sum(service[key] for service in services)
-            for key in ("emails_sent", "sms_cost", "letter_cost")
-        },
-        download_link=url_for(".download_organisation_usage_report", org_id=org_id, selected_year=year),
-    )
-
-
-@main.route("/organisations/<uuid:org_id>/download-usage-report.csv", methods=["GET"])
-@user_has_permissions()
-def download_organisation_usage_report(org_id):
-    selected_year = request.args.get("selected_year")
-    services_usage = current_organisation.services_and_usage(financial_year=selected_year)["services"]
-
-    unit_column_names = OrderedDict(
-        [
-            ("service_id", "Service ID"),
-            ("service_name", "Service Name"),
-            ("emails_sent", "Emails sent"),
-            ("sms_remainder", "Free text message allowance remaining"),
-        ]
-    )
-
-    monetary_column_names = OrderedDict(
-        [("sms_cost", "Spent on text messages (£)"), ("letter_cost", "Spent on letters (£)")]
-    )
-
-    org_usage_data = [list(unit_column_names.values()) + list(monetary_column_names.values())] + [
-        [service[attribute] for attribute in unit_column_names.keys()]
-        + ["{:,.2f}".format(service[attribute]) for attribute in monetary_column_names.keys()]
-        for service in services_usage
-    ]
-
-    return (
-        Spreadsheet.from_rows(org_usage_data).as_csv_data,
-        200,
-        {
-            "Content-Type": "text/csv; charset=utf-8",
-            "Content-Disposition": (
-                "inline;"
-                'filename="{} organisation usage report for year {}'
-                ' - generated on {}.csv"'.format(
-                    current_organisation.name, selected_year, datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-                )
-            ),
-        },
     )
 
 
@@ -426,33 +364,6 @@ def edit_organisation_notes(org_id):
     )
 
 
-@main.route("/organisations/<uuid:org_id>/settings/edit-billing-details", methods=["GET", "POST"])
-@user_is_platform_admin
-def edit_organisation_billing_details(org_id):
-    form = AdminBillingDetailsForm(
-        billing_contact_email_addresses=current_organisation.billing_contact_email_addresses,
-        billing_contact_names=current_organisation.billing_contact_names,
-        billing_reference=current_organisation.billing_reference,
-        purchase_order_number=current_organisation.purchase_order_number,
-        notes=current_organisation.notes,
-    )
-
-    if form.validate_on_submit():
-        current_organisation.update(
-            billing_contact_email_addresses=form.billing_contact_email_addresses.data,
-            billing_contact_names=form.billing_contact_names.data,
-            billing_reference=form.billing_reference.data,
-            purchase_order_number=form.purchase_order_number.data,
-            notes=form.notes.data,
-        )
-        return redirect(url_for(".organisation_settings", org_id=org_id))
-
-    return render_template(
-        "views/organisations/organisation/settings/edit-organisation-billing-details.html",
-        form=form,
-    )
-
-
 @main.route("/organisations/<uuid:org_id>/settings/archive", methods=["GET", "POST"])
 @user_is_platform_admin
 def archive_organisation(org_id):
@@ -477,15 +388,3 @@ def archive_organisation(org_id):
         "delete",
     )
     return organisation_settings(org_id)
-
-
-@main.route("/organisations/<uuid:org_id>/billing")
-@user_is_platform_admin
-def organisation_billing(org_id):
-    return render_template("views/organisations/organisation/billing.html")
-
-
-@main.route("/organisations/<uuid:org_id>/agreement.pdf")
-@user_is_platform_admin
-def organisation_download_agreement(org_id):
-    return send_file(**get_mou(current_organisation.crown_status_or_404))

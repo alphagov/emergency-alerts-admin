@@ -1,6 +1,5 @@
 import pytest
 
-from app.models.job import Job
 from app.statistics_utils import add_rates_to, statistics_by_state, sum_of_statistics
 
 
@@ -95,35 +94,3 @@ def test_service_statistics_by_state():
         assert resp[message_type]["sending"] == 1
         assert resp[message_type]["delivered"] == 1
         assert resp[message_type]["failed"] == 1
-
-
-@pytest.mark.parametrize(
-    "failed, delivered, expected_failure_rate", [(0, 0, 0), (0, 1, 0), (1, 1, 50), (1, 0, 100), (1, 4, 20)]
-)
-def test_add_rate_to_job_calculates_rate(failed, delivered, expected_failure_rate):
-    resp = Job(
-        {
-            "statistics": [
-                {"status": "failed", "count": failed},
-                {"status": "delivered", "count": delivered},
-            ],
-            "id": "foo",
-        }
-    )
-
-    assert resp.failure_rate == expected_failure_rate
-
-
-def test_add_rate_to_job_preserves_initial_fields():
-    resp = Job(
-        {
-            "statistics": [
-                {"status": "failed", "count": 0},
-                {"status": "delivered", "count": 0},
-            ],
-            "id": "foo",
-        }
-    )
-
-    assert resp.notifications_failed == resp.notifications_delivered == resp.failure_rate == 0
-    assert resp.id == "foo"
