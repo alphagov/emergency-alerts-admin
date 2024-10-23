@@ -5,7 +5,7 @@ from shapely import Point
 from shapely.geometry import MultiPolygon, Polygon
 from shapely.ops import unary_union
 
-from app.broadcast_areas.models import CustomBroadcastArea
+from app.broadcast_areas.models import CustomBroadcastArea, CustomBroadcastAreas
 from app.formatters import round_to_significant_figures
 from app.main.forms import (
     EastingNorthingCoordinatesForm,
@@ -301,3 +301,20 @@ def get_centroid_if_postcode_in_db(postcode, form):
         form.postcode.process_errors.append("Enter a postcode within the UK")
     else:
         return get_centroid(area)
+
+
+def format_area_name(area_name):
+    if area_name.endswith(", City of"):
+        return f"City of {area_name[:-9]}"
+    elif area_name.endswith(", County of"):
+        return f"County of {area_name[:-11]}"
+    else:
+        return area_name
+
+
+def format_areas_list(areas_list):
+    return (
+        [format_area_name(area.name) for area in areas_list]
+        if (len(areas_list) == 1 or type(areas_list) is not CustomBroadcastAreas)
+        else [format_area_name(area) for area in areas_list.items]
+    )
