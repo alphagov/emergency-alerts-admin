@@ -430,3 +430,10 @@ def test_navigation_for_services_with_broadcast_permission_platform_admin(
         "/services/{}/service-settings".format(SERVICE_ONE_ID),
         "/services/{}/api/keys".format(SERVICE_ONE_ID),
     ]
+
+
+def test_static_404s_return(client_request):
+    client_request.get_response_from_url(
+        "/static/images/some-image-that-doesnt-exist.png",
+        _expected_status=404,
+    )
