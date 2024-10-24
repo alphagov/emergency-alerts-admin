@@ -5,10 +5,6 @@ from unittest.mock import ANY, call
 import pytest
 from flask import url_for
 
-from app.main.views.platform_admin import (
-    get_tech_failure_status_box_data,
-    is_over_threshold,
-)
 from tests import service_json
 from tests.conftest import normalize_spaces
 
@@ -171,30 +167,6 @@ def test_should_order_services_by_usage_with_inactive_last(
     assert normalize_spaces(services[0].text) == "My Service 2"
     assert normalize_spaces(services[1].text) == "My Service 1"
     assert normalize_spaces(services[2].text) == "My Service 3 Archived"
-
-
-@pytest.mark.parametrize(
-    "number, total, threshold, result",
-    [
-        (0, 0, 0, False),
-        (1, 1, 0, True),
-        (2, 3, 66, True),
-        (2, 3, 67, False),
-    ],
-)
-def test_is_over_threshold(number, total, threshold, result):
-    assert is_over_threshold(number, total, threshold) is result
-
-
-def test_get_tech_failure_status_box_data_removes_percentage_data():
-    stats = {
-        "failures": {"permanent-failure": 0, "technical-failure": 0, "temporary-failure": 1, "virus-scan-failed": 0},
-        "test-key": 0,
-        "total": 5589,
-    }
-    tech_failure_data = get_tech_failure_status_box_data(stats)
-
-    assert "percentage" not in tech_failure_data
 
 
 def test_clear_cache_shows_form(
