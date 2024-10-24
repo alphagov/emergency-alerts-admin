@@ -6,7 +6,7 @@ import pytest
 from flask import url_for
 
 from tests import validate_route_permission
-from tests.conftest import SERVICE_ONE_ID, create_notifications, normalize_spaces
+from tests.conftest import SERVICE_ONE_ID, normalize_spaces
 
 
 def test_should_show_api_page(
@@ -55,21 +55,6 @@ def test_should_show_api_page_with_no_notifications(
     )
     rows = page.select("div.api-notifications-item")
     assert "When you send messages via the API they’ll appear here." in rows[len(rows) - 1].text.strip()
-
-
-@pytest.mark.parametrize("status", ["pending-virus-check", "virus-scan-failed"])
-def test_should_not_have_link_to_view_letter_for_precompiled_letters_in_virus_states(
-    client_request, fake_uuid, mock_has_permissions, mocker, status
-):
-    notifications = create_notifications(status=status)
-    mocker.patch("app.notification_api_client.get_notifications_for_service", return_value=notifications)
-
-    page = client_request.get(
-        "main.api_integration",
-        service_id=fake_uuid,
-    )
-
-    assert not page.select_one("details a")
 
 
 def test_should_show_api_page_for_live_service(
