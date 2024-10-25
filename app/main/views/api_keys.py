@@ -1,16 +1,10 @@
 from flask import abort, flash, redirect, render_template, request, url_for
-from flask_login import current_user
 from markupsafe import Markup
 
-from app import (
-    api_key_api_client,
-    current_service,
-    notification_api_client,
-    service_api_client,
-)
+from app import api_key_api_client, current_service, service_api_client
 from app.formatters import email_safe
 from app.main import main
-from app.main.forms import CallbackForm, CreateKeyForm, GuestList
+from app.main.forms import CreateKeyForm
 from app.notify_client.api_key_api_client import (
     KEY_TYPE_NORMAL,
     KEY_TYPE_TEAM,
@@ -19,43 +13,6 @@ from app.notify_client.api_key_api_client import (
 from app.utils.user import user_has_permissions
 
 dummy_bearer_token = "bearer_token_set"
-
-
-@main.route("/services/<uuid:service_id>/api")
-@user_has_permissions("manage_api_keys")
-def api_integration(service_id):
-    callbacks_link = ".delivery_status_callback"
-    return render_template(
-        "views/api/index.html",
-        callbacks_link=callbacks_link,
-        api_notifications=notification_api_client.get_api_notifications_for_service(service_id),
-    )
-
-
-@main.route("/services/<uuid:service_id>/api/documentation")
-@user_has_permissions("manage_api_keys")
-def api_documentation(service_id):
-    return redirect(url_for(".documentation"), code=301)
-
-
-@main.route("/services/<uuid:service_id>/api/whitelist", methods=["GET", "POST"], endpoint="old_guest_list")
-@main.route("/services/<uuid:service_id>/api/guest-list", methods=["GET", "POST"])
-@user_has_permissions("manage_api_keys")
-def guest_list(service_id):
-    form = GuestList()
-    if form.validate_on_submit():
-        service_api_client.update_guest_list(
-            service_id,
-            {
-                "email_addresses": list(filter(None, form.email_addresses.data)),
-                "phone_numbers": list(filter(None, form.phone_numbers.data)),
-            },
-        )
-        flash("Guest list updated", "default_with_tick")
-        return redirect(url_for(".api_integration", service_id=service_id))
-    if not form.errors:
-        form.populate(**service_api_client.get_guest_list(service_id))
-    return render_template("views/api/guest-list.html", form=form)
 
 
 @main.route("/services/<uuid:service_id>/api/keys")
@@ -142,65 +99,6 @@ def check_token_against_dummy_bearer(token):
         return ""
 
 
-@main.route("/services/<uuid:service_id>/api/callbacks", methods=["GET"])
-@user_has_permissions("manage_api_keys")
-def api_callbacks(service_id):
-    if not current_service.has_permission("inbound_sms"):
-        return redirect(url_for(".delivery_status_callback", service_id=service_id))
-
-    delivery_status_callback = get_apis()
-
-    return render_template(
-        "views/api/callbacks.html",
-        delivery_status_callback=delivery_status_callback["url"] if delivery_status_callback else None,
-    )
-
-
 def get_delivery_status_callback_details():
     if current_service.service_callback_api:
         return service_api_client.get_service_callback_api(current_service.id, current_service.service_callback_api[0])
-
-
-@main.route("/services/<uuid:service_id>/api/callbacks/delivery-status-callback", methods=["GET", "POST"])
-@user_has_permissions("manage_api_keys")
-def delivery_status_callback(service_id):
-    delivery_status_callback = get_delivery_status_callback_details()
-    back_link = ".api_integration"
-
-    form = CallbackForm(
-        url=delivery_status_callback.get("url") if delivery_status_callback else "",
-        bearer_token=dummy_bearer_token if delivery_status_callback else "",
-    )
-
-    if form.validate_on_submit():
-        if delivery_status_callback and form.url.data:
-            if delivery_status_callback.get("url") != form.url.data or form.bearer_token.data != dummy_bearer_token:
-                service_api_client.update_service_callback_api(
-                    service_id,
-                    url=form.url.data,
-                    bearer_token=check_token_against_dummy_bearer(form.bearer_token.data),
-                    user_id=current_user.id,
-                    callback_api_id=delivery_status_callback.get("id"),
-                )
-        elif delivery_status_callback and not form.url.data:
-            service_api_client.delete_service_callback_api(
-                service_id,
-                delivery_status_callback["id"],
-            )
-        elif form.url.data:
-            service_api_client.create_service_callback_api(
-                service_id, url=form.url.data, bearer_token=form.bearer_token.data, user_id=current_user.id
-            )
-        else:
-            # If no callback is set up and the user chooses to continue
-            # having no callback (ie both fields empty) then there’s
-            # nothing for us to do here
-            pass
-
-        return redirect(url_for(back_link, service_id=service_id))
-
-    return render_template(
-        "views/api/callbacks/delivery-status-callback.html",
-        back_link=back_link,
-        form=form,
-    )

@@ -8,10 +8,6 @@
   API keys
 {% endblock %}
 
-{% block backLink %}
-  {{ govukBackLink({ "href": url_for('main.api_integration', service_id=current_service.id) }) }}
-{% endblock %}
-
 {% block maincolumn_content %}
 
   {{ page_header('API keys') }}

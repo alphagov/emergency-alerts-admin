@@ -1,19 +1,11 @@
 from functools import partial
 
-from emergency_alerts_utils import LETTER_MAX_PAGE_COUNT, SMS_CHAR_COUNT_LIMIT
-from emergency_alerts_utils.pdf import is_letter_too_long
 from flask import abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user
 from notifications_python_client.errors import HTTPError
 
-from app import (
-    current_service,
-    format_delta,
-    service_api_client,
-    template_folder_api_client,
-    template_statistics_client,
-)
-from app.formatters import character_count, message_count
+from app import current_service, service_api_client, template_folder_api_client
+from app.formatters import character_count
 from app.main import main
 from app.main.forms import (
     BroadcastTemplateForm,
@@ -62,8 +54,6 @@ def view_template(service_id, template_id):
         ),
         template_postage=template["postage"],
         user_has_template_permission=user_has_template_permission,
-        letter_too_long=is_letter_too_long(page_count),
-        letter_max_pages=LETTER_MAX_PAGE_COUNT,
         page_count=page_count,
     )
 
@@ -623,20 +613,6 @@ def count_content_length(service_id, template_type):
 
 
 def _get_content_count_error_and_message_for_template(template):
-    if template.template_type == "sms":
-        if template.is_message_too_long():
-            return True, (
-                f"You have "
-                f"{character_count(template.content_count_without_prefix - SMS_CHAR_COUNT_LIMIT)} "
-                f"too many"
-            )
-        if template.placeholders:
-            return False, (
-                f"Will be charged as {message_count(template.fragment_count, template.template_type)} "
-                f"(not including personalisation)"
-            )
-        return False, f"Will be charged as {message_count(template.fragment_count, template.template_type)} "
-
     if template.template_type == "broadcast":
         if template.content_too_long:
             return True, (
@@ -667,21 +643,10 @@ def delete_service_template(service_id, template_id):
             )
         )
 
-    try:
-        last_used_notification = template_statistics_client.get_last_used_date_for_template(service_id, template["id"])
-        message = (
-            "This template has never been used."
-            if not last_used_notification
-            else "This template was last used {}.".format(format_delta(last_used_notification))
-        )
-
-    except HTTPError as e:
-        if e.status_code == 404:
-            message = None
-        else:
-            raise e
-
-    flash(["Are you sure you want to delete ‘{}’?".format(template["name"]), message, template["name"]], "delete")
+    flash(
+        ["Are you sure you want to delete ‘{}’?".format(template["name"]), "delete_template", template["name"]],
+        "delete",
+    )
     return render_template(
         "views/templates/template.html",
         template=get_template(

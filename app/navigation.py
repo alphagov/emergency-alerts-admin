@@ -42,20 +42,8 @@ class HeaderNavigation(Navigation):
             "triage",
         },
         "features": {
-            "features",
-            "features_email",
-            "features_letters",
-            "features_sms",
-            "message_status",
-            "roadmap",
             "security",
             "terms",
-            "trial_mode_new",
-            "using_emergency_alerts",
-        },
-        "documentation": {
-            "documentation",
-            "integration_testing",
         },
         "user-profile": {
             "user_profile",
@@ -195,15 +183,9 @@ class MainNavigation(Navigation):
             "submit_request_to_go_live",
         },
         "api-integration": {
-            "api_callbacks",
-            "api_documentation",
-            "api_integration",
             "api_keys",
             "create_api_key",
-            "delivery_status_callback",
             "revoke_api_key",
-            "guest_list",
-            "old_guest_list",
         },
         "reports": {
             "reports",

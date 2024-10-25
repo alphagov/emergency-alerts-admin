@@ -2,7 +2,7 @@ import re
 import unicodedata
 import urllib
 from datetime import datetime, timedelta, timezone
-from functools import lru_cache, partial
+from functools import lru_cache
 from math import floor, log10
 from numbers import Number
 
@@ -15,7 +15,6 @@ from emergency_alerts_utils.formatters import nl2br as utils_nl2br
 from emergency_alerts_utils.recipients import InvalidPhoneError, validate_phone_number
 from emergency_alerts_utils.take import Take
 from emergency_alerts_utils.timezones import utc_string_to_aware_gmt_datetime
-from flask import url_for
 from markupsafe import Markup
 
 
@@ -278,19 +277,6 @@ def format_notification_status_as_field_status(status, notification_type):
         )
         .get(status, "error")
     )
-
-
-def format_notification_status_as_url(status, notification_type):
-    url = partial(url_for, "main.message_status")
-
-    if status not in {
-        "technical-failure",
-        "temporary-failure",
-        "permanent-failure",
-    }:
-        return None
-
-    return {"email": url(_anchor="email-statuses"), "sms": url(_anchor="text-message-statuses")}.get(notification_type)
 
 
 def nl2br(value):

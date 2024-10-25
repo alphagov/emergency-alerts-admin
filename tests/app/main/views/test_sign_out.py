@@ -25,9 +25,7 @@ def test_sign_out_user(
     mock_login,
     mock_get_service_templates,
     mock_has_permissions,
-    mock_get_template_statistics,
     mock_get_service_statistics,
-    mock_get_annual_usage_for_service,
     mock_get_free_sms_fragment_limit,
 ):
     with client_request.session_transaction() as session:

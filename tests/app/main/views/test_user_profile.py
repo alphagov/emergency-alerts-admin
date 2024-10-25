@@ -112,7 +112,7 @@ def test_should_redirect_after_email_change(
 @pytest.mark.parametrize(
     "email_address,error_message",
     [
-        ("me@example.com", "Enter a public sector email address or find out who can use Notify"),
+        ("me@example.com", "Enter a public sector email address"),
         ("not_valid", "Enter a valid email address"),  # 2 errors with email address, only first error shown
     ],
 )
