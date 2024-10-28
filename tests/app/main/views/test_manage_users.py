@@ -321,8 +321,6 @@ def test_broadcast_service_only_shows_relevant_permissions(
     service_one["permissions"] = ["broadcast"]
     page = client_request.get(endpoint, service_id=SERVICE_ONE_ID, **extra_args)
     assert [(field["name"], field["value"]) for field in page.select("input[type=checkbox]")] == [
-        # ("permissions_field", "view_activity"),
-        # ("permissions_field", "send_messages"),
         ("permissions_field", "manage_templates"),
         ("permissions_field", "create_broadcasts"),
         ("permissions_field", "approve_broadcasts"),
@@ -352,8 +350,6 @@ def test_manage_users_page_shows_member_auth_type_if_service_has_email_auth_acti
             "main.edit_user_permissions",
             {"user_id": sample_uuid()},
             [
-                # ("view_activity", True),
-                # ("send_messages", True),
                 ("manage_templates", True),
                 ("create_broadcasts", False),
                 ("approve_broadcasts", False),
@@ -363,8 +359,6 @@ def test_manage_users_page_shows_member_auth_type_if_service_has_email_auth_acti
             "main.invite_user",
             {},
             [
-                # ("view_activity", False),
-                # ("send_messages", False),
                 ("manage_templates", False),
                 ("create_broadcasts", False),
                 ("approve_broadcasts", False),
@@ -621,7 +615,6 @@ def test_edit_user_permissions_including_authentication_with_email_auth_service(
         _data={
             "email_address": active_user_with_permissions["email_address"],
             "permissions_field": [
-                # "send_messages",
                 "manage_templates",
             ],
             "login_authentication": "sms_auth",
@@ -638,7 +631,6 @@ def test_edit_user_permissions_including_authentication_with_email_auth_service(
         SERVICE_ONE_ID,
         permissions={
             "view_activity",
-            # "send_messages",
             "manage_templates",
         },
         folder_permissions=[],
@@ -853,7 +845,6 @@ def test_invite_user(
             "email_address": email_address,
             "permissions_field": [
                 "view_activity",
-                # "send_messages",
                 "manage_templates",
                 "manage_service",
                 "manage_api_keys",
@@ -869,7 +860,6 @@ def test_invite_user(
 
         expected_permissions = {
             "manage_templates",
-            # "send_messages",
             "view_activity",
         }
         app.invite_api_client.create_invite.assert_called_once_with(
@@ -973,7 +963,6 @@ def test_invite_user_with_email_auth_service(
 
         expected_permissions = {
             "manage_templates",
-            # "send_messages",
             "view_activity",
         }
 
