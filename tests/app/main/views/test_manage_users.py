@@ -25,18 +25,9 @@ from tests.conftest import (
     [
         (
             create_active_user_with_permissions(),
-            (
-                "Test User (you) "
-                "Can See dashboard "
-                "Can Send messages "
-                "Can Add and edit templates "
-                "Cannot Create new alerts "
-                "Cannot Approve alerts"
-            ),
+            ("Test User (you) " "Can Add and edit templates " "Cannot Create new alerts " "Cannot Approve alerts"),
             (
                 "ZZZZZZZZ zzzzzzz@example.gov.uk "
-                "Can See dashboard "
-                "Cannot Send messages "
                 "Cannot Add and edit templates "
                 "Cannot Create new alerts "
                 "Cannot Approve alerts "
@@ -47,16 +38,12 @@ from tests.conftest import (
             create_active_user_empty_permissions(),
             (
                 "Test User With Empty Permissions (you) "
-                "Cannot See dashboard "
-                "Cannot Send messages "
                 "Cannot Add and edit templates "
                 "Cannot Create new alerts "
                 "Cannot Approve alerts"
             ),
             (
                 "ZZZZZZZZ zzzzzzz@example.gov.uk "
-                "Can See dashboard "
-                "Cannot Send messages "
                 "Cannot Add and edit templates "
                 "Cannot Create new alerts "
                 "Cannot Approve alerts"
@@ -66,35 +53,12 @@ from tests.conftest import (
             create_active_user_view_permissions(),
             (
                 "Test User With Permissions (you) "
-                "Can See dashboard "
-                "Cannot Send messages "
                 "Cannot Add and edit templates "
                 "Cannot Create new alerts "
                 "Cannot Approve alerts"
             ),
             (
                 "ZZZZZZZZ zzzzzzz@example.gov.uk "
-                "Can See dashboard "
-                "Cannot Send messages "
-                "Cannot Add and edit templates "
-                "Cannot Create new alerts "
-                "Cannot Approve alerts"
-            ),
-        ),
-        (
-            create_active_user_manage_template_permissions(),
-            (
-                "Test User With Permissions (you) "
-                "Can See dashboard "
-                "Cannot Send messages "
-                "Can Add and edit templates "
-                "Cannot Create new alerts "
-                "Cannot Approve alerts"
-            ),
-            (
-                "ZZZZZZZZ zzzzzzz@example.gov.uk "
-                "Can See dashboard "
-                "Cannot Send messages "
                 "Cannot Add and edit templates "
                 "Cannot Create new alerts "
                 "Cannot Approve alerts"
@@ -104,16 +68,27 @@ from tests.conftest import (
             create_active_user_manage_template_permissions(),
             (
                 "Test User With Permissions (you) "
-                "Can See dashboard "
-                "Cannot Send messages "
                 "Can Add and edit templates "
                 "Cannot Create new alerts "
                 "Cannot Approve alerts"
             ),
             (
                 "ZZZZZZZZ zzzzzzz@example.gov.uk "
-                "Can See dashboard "
-                "Cannot Send messages "
+                "Cannot Add and edit templates "
+                "Cannot Create new alerts "
+                "Cannot Approve alerts"
+            ),
+        ),
+        (
+            create_active_user_manage_template_permissions(),
+            (
+                "Test User With Permissions (you) "
+                "Can Add and edit templates "
+                "Cannot Create new alerts "
+                "Cannot Approve alerts"
+            ),
+            (
+                "ZZZZZZZZ zzzzzzz@example.gov.uk "
                 "Cannot Add and edit templates "
                 "Cannot Create new alerts "
                 "Cannot Approve alerts"
@@ -269,8 +244,6 @@ def test_should_show_caseworker_on_overview_page(
     assert normalize_spaces(page.select_one("h1").text) == "Team members"
     assert normalize_spaces(page.select(".user-list-item")[0].text) == (
         "Test User With Permissions (you) "
-        "Can See dashboard "
-        "Cannot Send messages "
         "Cannot Add and edit templates "
         "Cannot Create new alerts "
         "Cannot Approve alerts"
@@ -278,8 +251,6 @@ def test_should_show_caseworker_on_overview_page(
     # [1:5] are invited users
     assert normalize_spaces(page.select(".user-list-item")[6].text) == (
         "Test User zzzzzzz@example.gov.uk "
-        "Cannot See dashboard "
-        "Can Send messages "
         "Cannot Add and edit templates "
         "Cannot Create new alerts "
         "Cannot Approve alerts"
@@ -308,24 +279,18 @@ def test_should_show_overview_page_for_broadcast_service(
     page = client_request.get("main.manage_users", service_id=SERVICE_ONE_ID)
     assert normalize_spaces(page.select(".user-list-item")[0].text) == (
         "Test User Create Broadcasts Permission (you) "
-        "Can See dashboard "
-        "Cannot Send messages "
         "Cannot Add and edit templates "
         "Can Create new alerts "
         "Cannot Approve alerts"
     )
     assert normalize_spaces(page.select(".user-list-item")[1].text) == (
         "Test User Approve Broadcasts Permission (you) "
-        "Can See dashboard "
-        "Cannot Send messages "
         "Cannot Add and edit templates "
         "Cannot Create new alerts "
         "Can Approve alerts"
     )
     assert normalize_spaces(page.select(".user-list-item")[2].text) == (
         "Test User With Permissions (you) "
-        "Can See dashboard "
-        "Cannot Send messages "
         "Cannot Add and edit templates "
         "Cannot Create new alerts "
         "Cannot Approve alerts"
@@ -356,8 +321,8 @@ def test_broadcast_service_only_shows_relevant_permissions(
     service_one["permissions"] = ["broadcast"]
     page = client_request.get(endpoint, service_id=SERVICE_ONE_ID, **extra_args)
     assert [(field["name"], field["value"]) for field in page.select("input[type=checkbox]")] == [
-        ("permissions_field", "view_activity"),
-        ("permissions_field", "send_messages"),
+        # ("permissions_field", "view_activity"),
+        # ("permissions_field", "send_messages"),
         ("permissions_field", "manage_templates"),
         ("permissions_field", "create_broadcasts"),
         ("permissions_field", "approve_broadcasts"),
@@ -387,8 +352,8 @@ def test_manage_users_page_shows_member_auth_type_if_service_has_email_auth_acti
             "main.edit_user_permissions",
             {"user_id": sample_uuid()},
             [
-                ("view_activity", True),
-                ("send_messages", True),
+                # ("view_activity", True),
+                # ("send_messages", True),
                 ("manage_templates", True),
                 ("create_broadcasts", False),
                 ("approve_broadcasts", False),
@@ -398,8 +363,8 @@ def test_manage_users_page_shows_member_auth_type_if_service_has_email_auth_acti
             "main.invite_user",
             {},
             [
-                ("view_activity", False),
-                ("send_messages", False),
+                # ("view_activity", False),
+                # ("send_messages", False),
                 ("manage_templates", False),
                 ("create_broadcasts", False),
                 ("approve_broadcasts", False),
@@ -418,7 +383,7 @@ def test_should_show_page_for_one_user(
     page = client_request.get(endpoint, service_id=SERVICE_ONE_ID, **extra_args)
     checkboxes = page.select("input[type=checkbox]")
 
-    assert len(checkboxes) == 5
+    assert len(checkboxes) == 3
 
     for index, expected in enumerate(expected_checkboxes):
         expected_input_value, expected_checked = expected
@@ -656,7 +621,7 @@ def test_edit_user_permissions_including_authentication_with_email_auth_service(
         _data={
             "email_address": active_user_with_permissions["email_address"],
             "permissions_field": [
-                "send_messages",
+                # "send_messages",
                 "manage_templates",
             ],
             "login_authentication": "sms_auth",
@@ -673,7 +638,7 @@ def test_edit_user_permissions_including_authentication_with_email_auth_service(
         SERVICE_ONE_ID,
         permissions={
             "view_activity",
-            "send_messages",
+            # "send_messages",
             "manage_templates",
         },
         folder_permissions=[],
@@ -888,7 +853,7 @@ def test_invite_user(
             "email_address": email_address,
             "permissions_field": [
                 "view_activity",
-                "send_messages",
+                # "send_messages",
                 "manage_templates",
                 "manage_service",
                 "manage_api_keys",
@@ -904,7 +869,7 @@ def test_invite_user(
 
         expected_permissions = {
             "manage_templates",
-            "send_messages",
+            # "send_messages",
             "view_activity",
         }
         app.invite_api_client.create_invite.assert_called_once_with(
@@ -940,7 +905,7 @@ def test_invite_user_when_email_address_is_prefilled(
         user_id=fake_uuid,
         _data={
             # No posted email address
-            "permissions_field": ["send_messages"],
+            "permissions_field": ["view_activity"],
         },
     )
 
@@ -948,7 +913,7 @@ def test_invite_user_when_email_address_is_prefilled(
         active_user_with_permissions["id"],
         SERVICE_ONE_ID,
         active_user_with_permission_to_other_service["email_address"],
-        {"view_activity", "send_messages"},
+        {"view_activity"},
         "sms_auth",
         [],
     )
@@ -1008,7 +973,7 @@ def test_invite_user_with_email_auth_service(
 
         expected_permissions = {
             "manage_templates",
-            "send_messages",
+            # "send_messages",
             "view_activity",
         }
 
@@ -1159,8 +1124,6 @@ def test_cancel_invited_user_doesnt_work_if_user_not_invited_to_this_service(
             "pending",
             (
                 "invited_user@test.gov.uk (invited) "
-                "Can See dashboard "
-                "Can Send messages "
                 "Cannot Add and edit templates "
                 "Cannot Create new alerts "
                 "Cannot Approve alerts "
@@ -1172,8 +1135,6 @@ def test_cancel_invited_user_doesnt_work_if_user_not_invited_to_this_service(
             (
                 "invited_user@test.gov.uk (cancelled invite) "
                 # all permissions are greyed out
-                "Cannot See dashboard "
-                "Cannot Send messages "
                 "Cannot Add and edit templates "
                 "Cannot Create new alerts "
                 "Cannot Approve alerts"
