@@ -59,7 +59,6 @@ from app.formatters import (
     format_notification_status,
     format_notification_status_as_field_status,
     format_notification_status_as_time,
-    format_notification_status_as_url,
     format_notification_type,
     format_number_in_pounds_as_currency,
     format_seconds_duration_as_time,
@@ -105,7 +104,6 @@ from app.notify_client.reports_api_client import reports_api_client
 from app.notify_client.service_api_client import service_api_client
 from app.notify_client.status_api_client import status_api_client
 from app.notify_client.template_folder_api_client import template_folder_api_client
-from app.notify_client.template_statistics_api_client import template_statistics_client
 from app.notify_client.user_api_client import user_api_client
 from app.url_converters import (
     LetterFileExtensionConverter,
@@ -175,7 +173,6 @@ def create_app(application):
         service_api_client,
         status_api_client,
         template_folder_api_client,
-        template_statistics_client,
         user_api_client,
         # External API clients
         antivirus_client,
@@ -513,7 +510,6 @@ def add_template_filters(application):
         format_notification_type,
         format_notification_status_as_time,
         format_notification_status_as_field_status,
-        format_notification_status_as_url,
         format_number_in_pounds_as_currency,
         formatted_list,
         get_lines_with_normalised_whitespace,

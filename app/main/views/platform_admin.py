@@ -13,7 +13,6 @@ from app.extensions import redis_client
 from app.main import main
 from app.main.forms import AdminClearCacheForm, DateFilterForm, PlatformAdminSearch
 from app.notify_client.platform_admin_api_client import admin_api_client
-from app.statistics_utils import get_formatted_percentage
 from app.utils.user import user_is_platform_admin
 
 COMPLAINT_THRESHOLD = 0.02
@@ -66,26 +65,6 @@ def platform_admin():
         api_args["end_date"] = form.end_date.data or datetime.utcnow().date()
 
     return render_template("views/platform-admin/index.html", form=form)
-
-
-def is_over_threshold(number, total, threshold):
-    percentage = number / total * 100 if total else 0
-    return percentage > threshold
-
-
-def get_status_box_data(stats, key, label, threshold=FAILURE_THRESHOLD):
-    return {
-        "number": f"{stats['failures'][key]:,}",
-        "label": label,
-        "failing": is_over_threshold(stats["failures"][key], stats["total"], threshold),
-        "percentage": get_formatted_percentage(stats["failures"][key], stats["total"]),
-    }
-
-
-def get_tech_failure_status_box_data(stats):
-    stats = get_status_box_data(stats, "technical-failure", "technical failures", ZERO_FAILURE_THRESHOLD)
-    stats.pop("percentage")
-    return stats
 
 
 @main.route("/platform-admin/live-services", endpoint="live_services")
@@ -232,7 +211,6 @@ def get_url_for_notify_record(uuid_):
             "service_data_retention": _EndpointSpec(".edit_data_retention", "data_retention_id", with_service_id=True),
             "api_key": _EndpointSpec(".api_keys", with_service_id=True),
             "template_folder": _EndpointSpec(".choose_template", "template_folder_id", with_service_id=True),
-            "service_callback_api": _EndpointSpec(".delivery_status_callback", with_service_id=True),
         }
         if not (spec := url_for_data.get(result["type"])):
             raise KeyError(f"Don't know how to redirect to {result['type']}")

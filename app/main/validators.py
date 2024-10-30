@@ -15,7 +15,6 @@ from wtforms.validators import StopValidation
 
 from app import antivirus_client
 from app.main._commonly_used_passwords import commonly_used_passwords
-from app.models.spreadsheet import Spreadsheet
 from app.utils.user import is_gov_user
 
 
@@ -38,28 +37,12 @@ class LowEntropyPassword:
             raise ValidationError(message)
 
 
-class CsvFileValidator:
-    def __init__(self, message="Not a csv file"):
-        self.message = message
-
-    def __call__(self, form, field):
-        if not Spreadsheet.can_handle(field.data.filename):
-            raise ValidationError("{} is not a spreadsheet that Notify can read".format(field.data.filename))
-
-
 class ValidGovEmail:
     def __call__(self, form, field):
         if field.data == "":
             return
 
-        from flask import url_for
-
-        message = """
-            Enter a public sector email address or
-            <a class="govuk-link govuk-link--no-visited-state" href="{}">find out who can use Notify</a>
-        """.format(
-            url_for("main.who_can_use_notify")
-        )
+        message = "Enter a public sector email address"
         if not is_gov_user(field.data.lower()):
             raise ValidationError(message)
 

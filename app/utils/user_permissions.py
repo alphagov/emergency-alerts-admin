@@ -22,8 +22,6 @@ permission_options = (
 )
 
 broadcast_permission_options = (
-    ("view_activity", "See dashboard"),
-    ("send_messages", "Send messages"),
     ("manage_templates", "Add and edit templates"),
     ("create_broadcasts", "Create new alerts"),
     ("approve_broadcasts", "Approve alerts"),
