@@ -43,7 +43,6 @@ def test_services_pages_that_org_users_are_allowed_to_see(
     client_request,
     mocker,
     api_user_active,
-    mock_get_free_sms_fragment_limit,
     mock_get_service,
     mock_get_invites_for_service,
     mock_get_users_by_service,

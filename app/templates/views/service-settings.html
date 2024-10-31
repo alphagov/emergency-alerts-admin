@@ -253,126 +253,48 @@
           caption_visible=False
         ) %}
 
-          {% if not current_service.has_permission('broadcast') %}
-          {% call row() %}
-            {{ text_field('Live')}}
-            {% if current_service.trial_mode and not current_service.organisation_id %}
-              {{ text_field('No (organisation must be set first)') }}
-              {{ text_field('') }}
-            {% else %}
-              {{ boolean_field(not current_service.trial_mode) }}
-              {{ edit_field('Change', url_for('.service_switch_live', service_id=current_service.id), suffix='service status') }}
-            {% endif %}
-          {% endcall %}
-
-          {% call row() %}
-            {{ text_field('Count in list of live services')}}
-            {{ text_field(current_service.count_as_live|format_yes_no) }}
-            {{ edit_field('Change', url_for('.service_switch_count_as_live', service_id=current_service.id), suffix='if service is counted in list of live services') }}
-          {% endcall %}
-          {% call row() %}
-            {{ text_field('Billing details')}}
-            {{ optional_text_field(current_service.billing_details, default="None", wrap=True) }}
-            {{ edit_field('Change', url_for('.edit_service_billing_details', service_id=current_service.id), suffix='billing details for service') }}
-          {% endcall %}
-          {% endif %}
-
-          {% call row() %}
-            {{ text_field('Notes')}}
-            {{ optional_text_field(current_service.notes, default="None", wrap=True) }}
-            {{ edit_field('Change', url_for('.edit_service_notes', service_id=current_service.id), suffix='the notes for the service') }}
-          {% endcall %}
-
-          {% if not current_service.has_permission('broadcast') %}
-          {% call row() %}
-            {{ text_field('Organisation')}}
-            {% call field() %}
-              {% if current_service.organisation_id %}
-                <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('main.organisation_dashboard', org_id=current_service.organisation_id) }}">
-                  {{ current_service.organisation_name }}
-                </a>
-              {% else %}
-                <span class="table-field-status-default">Not set</span>
-              {% endif %}
-              {% if current_service.organisation_type %}
-                <div class="hint">
-                  {{ current_service.organisation_type_label }}
-                </div>
-              {% endif %}
-            {% endcall %}
-            {{ edit_field('Change', url_for('.link_service_to_organisation', service_id=current_service.id), suffix='organisation for service') }}
-          {% endcall %}
-
-          {% call row() %}
-            {{ text_field('Rate limit')}}
-            {{ text_field('{:,} per minute'.format(current_service.rate_limit)) }}
-            {{ edit_field('Change', url_for('.set_rate_limit', service_id=current_service.id), suffix='rate limit') }}
-          {% endcall %}
-          {% call row() %}
-            {{ text_field('Message limit')}}
-            {{ text_field('{:,} per day'.format(current_service.message_limit)) }}
-            {{ edit_field('Change', url_for('.set_message_limit', service_id=current_service.id), suffix='daily message limit') }}
-          {% endcall %}
-          {% call row() %}
-            {{ text_field('Free text message allowance')}}
-            {{ text_field('{:,} per year'.format(current_service.free_sms_fragment_limit)) }}
-            {{ edit_field('Change', url_for('.set_free_sms_allowance', service_id=current_service.id), suffix='free text message allowance') }}
-          {% endcall %}
-          {% call row() %}
-            {{ text_field('Custom data retention')}}
-            {% call field() %}
-              {% for channel in current_service.data_retention %}
-                {% if loop.first %}
-                  <ul>
-                {% endif %}
-                  <li>{{ channel.notification_type|format_notification_type }} – {{ channel.days_of_retention }} days</li>
-                {% if loop.last %}
-                  </ul>
-                {% endif %}
-              {% else %}
-                <div class="table-field-status-default">Not set</div>
-              {% endfor %}
-            {% endcall %}
-            {{ edit_field('Change', url_for('.data_retention', service_id=current_service.id), suffix='data retention') }}
-          {% endcall %}
-          {% endif %}
-
-          {% for permission in service_permissions %}
-            {% if not service_permissions[permission].requires or current_service.has_permission(service_permissions[permission].requires) %}
-              {% call row() %}
-                {{ text_field(service_permissions[permission].title)}}
-                {{ boolean_field(current_service.has_permission(permission)) }}
-                {{ edit_field(
-                    'Change',
-                    url_for(
-                      service_permissions[permission].endpoint or '.service_set_permission',
-                      service_id=current_service.id,
-                      permission=permission if not service_permissions[permission].endpoint else None
-                    ),
-                    suffix='your settings for ' + service_permissions[permission].title,
-                  ) }}
-              {% endcall %}
-            {% endif %}
-          {% endfor %}
-
-          {% call row() %}
-            {{ text_field('Emergency alerts')}}
-            {% call field(wrap=True) %}
-              {% if not current_service.broadcast_channel %}
-              Off
-              {% else %}
-              {{ broadcast_service_name_tag(current_service.trial_mode, current_service.broadcast_channel, current_service.allowed_broadcast_provider, left_margin=False) }}
-              {% endif %}
-            {% endcall %}
-            {{ edit_field(
-                'Change',
-                url_for('.service_set_broadcast_channel', service_id=current_service.id),
-                suffix='your settings for emergency alerts'
-              )
-            }}
-          {% endcall %}
-
+        {% call row() %}
+          {{ text_field('Notes')}}
+          {{ optional_text_field(current_service.notes, default="None", wrap=True) }}
+          {{ edit_field('Change', url_for('.edit_service_notes', service_id=current_service.id), suffix='the notes for the service') }}
         {% endcall %}
+
+        {% for permission in service_permissions %}
+          {% if not service_permissions[permission].requires or current_service.has_permission(service_permissions[permission].requires) %}
+            {% call row() %}
+              {{ text_field(service_permissions[permission].title)}}
+              {{ boolean_field(current_service.has_permission(permission)) }}
+              {{ edit_field(
+                  'Change',
+                  url_for(
+                    service_permissions[permission].endpoint or '.service_set_permission',
+                    service_id=current_service.id,
+                    permission=permission if not service_permissions[permission].endpoint else None
+                  ),
+                  suffix='your settings for ' + service_permissions[permission].title,
+                ) }}
+            {% endcall %}
+          {% endif %}
+        {% endfor %}
+
+        {% call row() %}
+          {{ text_field('Emergency alerts')}}
+          {% call field(wrap=True) %}
+            {% if not current_service.broadcast_channel %}
+            Off
+            {% else %}
+            {{ broadcast_service_name_tag(current_service.trial_mode, current_service.broadcast_channel, current_service.allowed_broadcast_provider, left_margin=False) }}
+            {% endif %}
+          {% endcall %}
+          {{ edit_field(
+              'Change',
+              url_for('.service_set_broadcast_channel', service_id=current_service.id),
+              suffix='your settings for emergency alerts'
+            )
+          }}
+        {% endcall %}
+
+      {% endcall %}
 
       </div>
 

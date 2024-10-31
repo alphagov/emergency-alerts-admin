@@ -17,7 +17,6 @@ from flask_login import current_user
 from notifications_python_client.errors import HTTPError
 
 from app import (
-    billing_api_client,
     current_service,
     notification_api_client,
     organisations_client,
@@ -37,7 +36,6 @@ from app.main.forms import (
     AdminServiceEditDataRetentionForm,
     AdminServiceMessageLimitForm,
     AdminServiceRateLimitForm,
-    AdminServiceSMSAllowanceForm,
     AdminSetOrganisationForm,
     EstimateUsageForm,
     RenameServiceForm,
@@ -742,22 +740,6 @@ def service_delete_letter_contact(service_id, letter_contact_id):
         letter_contact_id=letter_contact_id,
     )
     return redirect(url_for(".service_letter_contact_details", service_id=current_service.id))
-
-
-@main.route("/services/<uuid:service_id>/service-settings/set-free-sms-allowance", methods=["GET", "POST"])
-@user_is_platform_admin
-def set_free_sms_allowance(service_id):
-    form = AdminServiceSMSAllowanceForm(free_sms_allowance=current_service.free_sms_fragment_limit)
-
-    if form.validate_on_submit():
-        billing_api_client.create_or_update_free_sms_fragment_limit(service_id, form.free_sms_allowance.data)
-
-        return redirect(url_for(".service_settings", service_id=service_id))
-
-    return render_template(
-        "views/service-settings/set-free-sms-allowance.html",
-        form=form,
-    )
 
 
 @main.route("/services/<uuid:service_id>/service-settings/set-message-limit", methods=["GET", "POST"])

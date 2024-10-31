@@ -26,7 +26,6 @@ def test_sign_out_user(
     mock_get_service_templates,
     mock_has_permissions,
     mock_get_service_statistics,
-    mock_get_free_sms_fragment_limit,
 ):
     with client_request.session_transaction() as session:
         assert session.get("user_id") is not None

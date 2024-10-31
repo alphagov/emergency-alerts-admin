@@ -163,7 +163,6 @@ EXCLUDED_ENDPOINTS = tuple(
             "service_verify_reply_to_address",
             "service_verify_reply_to_address_updates",
             "services_or_dashboard",
-            "set_free_sms_allowance",
             "set_message_limit",
             "set_rate_limit",
             "show_accounts_or_dashboard",

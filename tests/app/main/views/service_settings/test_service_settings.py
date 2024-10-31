@@ -10,7 +10,6 @@ from notifications_python_client.errors import HTTPError
 
 import app
 from tests import (
-    find_element_by_tag_and_partial_text,
     invite_json,
     organisation_json,
     sample_uuid,
@@ -37,7 +36,6 @@ FAKE_TEMPLATE_ID = uuid4()
 
 @pytest.fixture
 def mock_get_service_settings_page_common(
-    mock_get_free_sms_fragment_limit,
     mock_get_service_data_retention,
     mock_get_organisation,
 ):
@@ -80,15 +78,7 @@ def mock_get_service_settings_page_common(
                 "Label Value Action",
                 "Send letters Off Change your settings for sending letters",
                 "Label Value Action",
-                "Live Off Change service status",
-                "Count in list of live services Yes Change if service is counted in list of live services",
-                "Billing details None Change billing details for service",
                 "Notes None Change the notes for the service",
-                "Organisation Test organisation Central government Change organisation for service",
-                "Rate limit 3,000 per minute Change rate limit",
-                "Message limit 1,000 per day Change daily message limit",
-                "Free text message allowance 250,000 per year Change free text message allowance",
-                "Custom data retention Email – 7 days Change data retention",
                 "Email authentication Off Change your settings for Email authentication",
                 "Emergency alerts Off Change your settings for emergency alerts",
             ],
@@ -216,26 +206,6 @@ def test_platform_admin_sees_correct_description_of_broadcast_service_setting(
     assert normalize_spaces(broadcast_setting_description) == expected_text
 
 
-def test_organisation_name_links_to_org_dashboard(
-    client_request,
-    platform_admin_user,
-    no_reply_to_email_addresses,
-    no_letter_contact_blocks,
-    single_sms_sender,
-    mock_get_service_settings_page_common,
-    mocker,
-):
-    service_one = service_json(SERVICE_ONE_ID, permissions=["sms", "email"], organisation_id=ORGANISATION_ID)
-    mocker.patch("app.service_api_client.get_service", return_value={"data": service_one})
-
-    client_request.login(platform_admin_user, service_one)
-    response = client_request.get("main.service_settings", service_id=SERVICE_ONE_ID)
-
-    org_row = find_element_by_tag_and_partial_text(response, tag="tr", string="Organisation")
-    assert org_row.find("a")["href"] == url_for("main.organisation_dashboard", org_id=ORGANISATION_ID)
-    assert normalize_spaces(org_row.find("a").text) == "Test organisation"
-
-
 @pytest.mark.parametrize(
     "permissions, expected_rows",
     [
@@ -265,57 +235,6 @@ def test_should_show_overview_for_service_with_more_things_set(
     page = client_request.get("main.service_settings", service_id=service_one["id"])
     for index, row in enumerate(expected_rows):
         assert row == " ".join(page.select("tr")[index + 1].text.split())
-
-
-def test_if_cant_send_letters_then_cant_see_letter_contact_block(
-    client_request,
-    service_one,
-    single_reply_to_email_address,
-    no_letter_contact_blocks,
-    single_sms_sender,
-    mock_get_service_settings_page_common,
-):
-    response = client_request.get("main.service_settings", service_id=service_one["id"])
-    assert "Letter contact block" not in response
-
-
-def test_letter_contact_block_shows_none_if_not_set(
-    client_request,
-    service_one,
-    single_reply_to_email_address,
-    no_letter_contact_blocks,
-    single_sms_sender,
-    mock_get_service_settings_page_common,
-):
-    service_one["permissions"] = ["letter"]
-    page = client_request.get(
-        "main.service_settings",
-        service_id=SERVICE_ONE_ID,
-    )
-
-    div = page.select("tr")[10].select("td")[1].div
-    assert div.text.strip() == "Not set"
-    assert "default" in div.attrs["class"][0]
-
-
-def test_escapes_letter_contact_block(
-    client_request,
-    service_one,
-    mocker,
-    single_reply_to_email_address,
-    single_sms_sender,
-    injected_letter_contact_block,
-    mock_get_service_settings_page_common,
-):
-    service_one["permissions"] = ["letter"]
-    page = client_request.get(
-        "main.service_settings",
-        service_id=SERVICE_ONE_ID,
-    )
-
-    div = str(page.select("tr")[10].select("td")[1].div)
-    assert "foo<br/>bar" in div
-    assert "<script>" not in div
 
 
 def test_should_show_service_name(
@@ -2518,68 +2437,27 @@ def test_does_not_show_research_mode_indicator(
     assert not element
 
 
-@pytest.mark.parametrize("method", ["get", "post"])
+@pytest.mark.parametrize("method", ["get"])
 @pytest.mark.parametrize(
     "endpoint",
     [
-        "main.set_free_sms_allowance",
-        "main.set_message_limit",
-        "main.set_rate_limit",
+        "main.service_settings",
+        "main.api_keys",
     ],
 )
 def test_organisation_type_pages_are_platform_admin_only(
     client_request,
+    active_user_create_broadcasts_permission,
     method,
     endpoint,
 ):
+    client_request.login(active_user_create_broadcasts_permission)
     getattr(client_request, method)(
         endpoint,
         service_id=SERVICE_ONE_ID,
         _expected_status=403,
         _test_page_title=False,
     )
-
-
-def test_should_show_page_to_set_sms_allowance(client_request, platform_admin_user, mock_get_free_sms_fragment_limit):
-    client_request.login(platform_admin_user)
-    page = client_request.get("main.set_free_sms_allowance", service_id=SERVICE_ONE_ID)
-
-    assert normalize_spaces(page.select_one("label").text) == "Numbers of text message fragments per year"
-    mock_get_free_sms_fragment_limit.assert_called_once_with(SERVICE_ONE_ID)
-
-
-@freeze_time("2017-04-01 11:09:00.061258")
-@pytest.mark.parametrize(
-    "given_allowance, expected_api_argument",
-    [
-        ("0", 0),
-        ("1", 1),
-        ("250000", 250000),
-        pytest.param("foo", "foo", marks=pytest.mark.xfail),
-    ],
-)
-def test_should_set_sms_allowance(
-    client_request,
-    platform_admin_user,
-    given_allowance,
-    expected_api_argument,
-    mock_get_free_sms_fragment_limit,
-    mock_create_or_update_free_sms_fragment_limit,
-):
-    client_request.login(platform_admin_user)
-    client_request.post(
-        "main.set_free_sms_allowance",
-        service_id=SERVICE_ONE_ID,
-        _data={
-            "free_sms_allowance": given_allowance,
-        },
-        _expected_redirect=url_for(
-            "main.service_settings",
-            service_id=SERVICE_ONE_ID,
-        ),
-    )
-
-    mock_create_or_update_free_sms_fragment_limit.assert_called_with(SERVICE_ONE_ID, expected_api_argument)
 
 
 def test_should_show_page_to_set_message_limit(
@@ -2668,106 +2546,6 @@ def test_unknown_channel_404s(
         channel="message-in-a-bottle",
         _expected_status=404,
     )
-
-
-@pytest.mark.parametrize(
-    (
-        "channel,"
-        "expected_first_para,"
-        "expected_legend,"
-        "initial_permissions,"
-        "expected_initial_value,"
-        "posted_value,"
-        "expected_updated_permissions"
-    ),
-    [
-        (
-            "letter",
-            "It costs between 41 pence and £1.28 to send a letter using Notify.",
-            "Send letters",
-            ["email", "sms"],
-            "False",
-            "True",
-            ["email", "sms", "letter"],
-        ),
-        (
-            "letter",
-            "It costs between 41 pence and £1.28 to send a letter using Notify.",
-            "Send letters",
-            ["email", "sms", "letter"],
-            "True",
-            "False",
-            ["email", "sms"],
-        ),
-        (
-            "sms",
-            "You have a free allowance of 250,000 text messages each financial year.",
-            "Send text messages",
-            [],
-            "False",
-            "True",
-            ["sms"],
-        ),
-        (
-            "email",
-            "It’s free to send emails through GOV.UK Notify.",
-            "Send emails",
-            [],
-            "False",
-            "True",
-            ["email"],
-        ),
-        (
-            "email",
-            "It’s free to send emails through GOV.UK Notify.",
-            "Send emails",
-            ["email", "sms", "letter"],
-            "True",
-            "True",
-            ["email", "sms", "letter"],
-        ),
-    ],
-)
-def test_switch_service_channels_on_and_off(
-    client_request,
-    service_one,
-    mocker,
-    mock_get_free_sms_fragment_limit,
-    channel,
-    expected_first_para,
-    expected_legend,
-    initial_permissions,
-    expected_initial_value,
-    posted_value,
-    expected_updated_permissions,
-):
-    mocked_fn = mocker.patch("app.service_api_client.update_service", return_value=service_one)
-    service_one["permissions"] = initial_permissions
-
-    page = client_request.get(
-        "main.service_set_channel",
-        service_id=service_one["id"],
-        channel=channel,
-    )
-
-    assert normalize_spaces(page.select_one("main p").text) == expected_first_para
-    assert normalize_spaces(page.select_one("legend").text) == expected_legend
-
-    assert page.select_one("input[checked]")["value"] == expected_initial_value
-    assert len(page.select("input[checked]")) == 1
-
-    client_request.post(
-        "main.service_set_channel",
-        service_id=service_one["id"],
-        channel=channel,
-        _data={"enabled": posted_value},
-        _expected_redirect=url_for(
-            "main.service_settings",
-            service_id=service_one["id"],
-        ),
-    )
-    assert set(mocked_fn.call_args[1]["permissions"]) == set(expected_updated_permissions)
-    assert mocked_fn.call_args[0][0] == service_one["id"]
 
 
 @pytest.mark.parametrize(

@@ -6,7 +6,6 @@ from app.models import JSONModel
 from app.models.organisation import Organisation
 from app.models.user import InvitedUsers, User, Users
 from app.notify_client.api_key_api_client import api_key_api_client
-from app.notify_client.billing_api_client import billing_api_client
 from app.notify_client.invite_api_client import invite_api_client
 from app.notify_client.organisations_api_client import organisations_client
 from app.notify_client.service_api_client import service_api_client
@@ -372,10 +371,6 @@ class Service(JSONModel):
     @property
     def go_live_checklist_completed_as_yes_no(self):
         return "Yes" if self.go_live_checklist_completed else "No"
-
-    @cached_property
-    def free_sms_fragment_limit(self):
-        return billing_api_client.get_free_sms_fragment_limit_for_year(self.id) or 0
 
     @cached_property
     def data_retention(self):
