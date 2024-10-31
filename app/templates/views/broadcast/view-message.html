@@ -17,10 +17,10 @@
   {% include "views/broadcast/partials/area-map-javascripts.html" %}
 {% endblock %}
 
-{% if areas|length == 1 %}
-    {% set label = "Map of the United Kingdom, showing the area for "+areas[0] %}
+{% if broadcast_message.areas|length == 1 %}
+  {% set label = "Map of the United Kingdom, showing the area for "+broadcast_message.areas[0].name %}
 {% else %}
-  {% set label = "Map of the United Kingdom, showing the areas for "+areas[:-1]|join(', ')+' and '+areas[-1] %}
+  {% set label = "Map of the United Kingdom, showing the areas for "+broadcast_message.areas[:-1]|map(attribute='name')|join(', ')+' and '+broadcast_message.areas[-1].name %}
 {% endif %}
 
 {% block service_page_title %}

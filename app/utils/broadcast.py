@@ -313,8 +313,10 @@ def format_area_name(area_name):
 
 
 def format_areas_list(areas_list):
-    return (
-        [format_area_name(area.name) for area in areas_list]
-        if (len(areas_list) == 1 or type(areas_list) is not CustomBroadcastAreas)
-        else [format_area_name(area) for area in areas_list.items]
-    )
+    if isinstance(areas_list, CustomBroadcastAreas):
+        if len(areas_list) == 1:
+            return [format_area_name(area.name) for area in areas_list]
+        else:
+            return [format_area_name(area.name) for area in areas_list.items]
+    else:
+        return [format_area_name(area) if isinstance(area, str) else format_area_name(area.name) for area in areas_list]
