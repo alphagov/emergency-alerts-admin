@@ -258,8 +258,8 @@ def test_format_areas_list_single_custom_area():
 
 def test_format_areas_list_multiple_areas():
     with patch("app.utils.broadcast.CustomBroadcastAreas", MockCustomBroadcastAreas):
-        custom_area1 = MockCustomBroadcastArea("Manchester, City of")
-        custom_area2 = MockCustomBroadcastArea("Yorkshire, County of")
+        custom_area1 = "Manchester, City of"
+        custom_area2 = "Yorkshire, County of"
         custom_areas_list = MockCustomBroadcastAreas([custom_area1, custom_area2])
 
         assert format_areas_list(custom_areas_list) == ["City of Manchester", "County of Yorkshire"]

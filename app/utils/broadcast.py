@@ -316,6 +316,6 @@ def format_areas_list(areas_list):
     if isinstance(areas_list, CustomBroadcastArea):
         return [format_area_name(areas_list.name)]
     elif isinstance(areas_list, CustomBroadcastAreas):
-        return [format_area_name(area.name) for area in areas_list.items]
+        return [format_area_name(area) for area in areas_list.items]
     else:
         return [format_area_name(area) if isinstance(area, str) else format_area_name(area.name) for area in areas_list]
