@@ -26,15 +26,7 @@
   <p class="govuk-body">You should only use an acronym or initialism if your users are already familiar with it.</p>
 
   <div class="form-group">
-    {% if current_service.prefix_sms %}
-      <p class="govuk-body">Users will see your service name:</p>
-      <ul class="govuk-list govuk-list--bullet">
-        <li>at the start of every text message</li>
-        <li>as your email sender name</li>
-      </ul>
-    {% else %}
-      <p class="govuk-body">Users will see your service name as your email sender name.</p>
-    {% endif %}
+    <p class="govuk-body">Users will see your service name as your email sender name.</p>
   </div>
 
   {% call form_wrapper() %}

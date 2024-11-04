@@ -12,7 +12,6 @@ class ServiceAPIClient(NotifyAdminAPIClient):
         self,
         service_name,
         organisation_type,
-        message_limit,
         restricted,
         user_id,
         email_from,
@@ -24,7 +23,6 @@ class ServiceAPIClient(NotifyAdminAPIClient):
             "name": service_name,
             "organisation_type": organisation_type,
             "active": True,
-            "message_limit": message_limit,
             "user_id": user_id,
             "restricted": restricted,
             "email_from": email_from,
@@ -84,12 +82,10 @@ class ServiceAPIClient(NotifyAdminAPIClient):
             "go_live_at",
             "go_live_user",
             "letter_contact_block",
-            "message_limit",
             "name",
             "notes",
             "organisation_type",
             "permissions",
-            "prefix_sms",
             "purchase_order_number",
             "rate_limit",
             "reply_to_email_address",
@@ -110,7 +106,6 @@ class ServiceAPIClient(NotifyAdminAPIClient):
     def update_status(self, service_id, live):
         return self.update_service(
             service_id,
-            message_limit=250000 if live else 50,
             restricted=(not live),
             go_live_at=str(datetime.utcnow()) if live else None,
         )

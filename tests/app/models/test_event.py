@@ -13,8 +13,6 @@ from tests.conftest import sample_uuid
         ("active", True, False, "Deleted this service"),
         ("contact_link", "x", "y", "Set the contact details for this service to ‘y’"),
         ("letter_contact_block", None, sample_uuid(), "Updated the default letter contact block for this service"),
-        ("message_limit", 1, 2, "Increased this service’s daily message limit from 1 to 2"),
-        ("message_limit", 2, 1, "Reduced this service’s daily message limit from 2 to 1"),
         ("name", "Old", "New", "Renamed this service from ‘Old’ to ‘New’"),
         ("permissions", ["a", "b", "c"], ["a", "b", "c", "d"], "Added ‘d’ to this service’s permissions"),
         ("permissions", ["a", "b", "c"], ["a", "b"], "Removed ‘c’ from this service’s permissions"),

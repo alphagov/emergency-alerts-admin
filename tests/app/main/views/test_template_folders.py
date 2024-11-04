@@ -771,7 +771,6 @@ def test_user_access_denied_to_template_folder_actions_without_folder_permission
         "main.confirm_redact_template",
         "main.delete_service_template",
         "main.edit_service_template",
-        "main.edit_template_postage",
     ],
 )
 def test_user_access_denied_to_template_actions_without_folder_permission(

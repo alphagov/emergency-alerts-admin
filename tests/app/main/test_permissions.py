@@ -36,7 +36,6 @@ from tests.conftest import (
         ("main.choose_template", {"template_id": sample_uuid()}),
         ("main.view_template", {"template_id": sample_uuid()}),
         ("main.view_template_versions", {"template_id": sample_uuid()}),
-        ("main.view_template_version", {"template_id": sample_uuid(), "version": 1}),
     ),
 )
 def test_services_pages_that_org_users_are_allowed_to_see(
@@ -53,7 +52,6 @@ def test_services_pages_that_org_users_are_allowed_to_see(
     mock_get_template_versions,
     mock_get_template_version,
     mock_get_api_keys,
-    mock_template_preview,
     user_services,
     user_organisations,
     expected_status,

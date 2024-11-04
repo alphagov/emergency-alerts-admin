@@ -24,7 +24,6 @@ from tests.conftest import (
     create_active_user_with_permissions,
     create_letter_contact_block,
     create_multiple_email_reply_to_addresses,
-    create_multiple_letter_contact_blocks,
     create_platform_admin_user,
     create_reply_to_email_address,
     create_template,
@@ -389,9 +388,7 @@ def test_switch_service_to_live(client_request, platform_admin_user, mock_update
             service_id=SERVICE_ONE_ID,
         ),
     )
-    mock_update_service.assert_called_with(
-        SERVICE_ONE_ID, message_limit=250000, restricted=False, go_live_at="2017-04-01 11:09:00.061258"
-    )
+    mock_update_service.assert_called_with(SERVICE_ONE_ID, restricted=False, go_live_at="2017-04-01 11:09:00.061258")
 
 
 def test_show_live_service(
@@ -427,7 +424,7 @@ def test_switch_service_to_restricted(
             service_id=SERVICE_ONE_ID,
         ),
     )
-    mock_update_service.assert_called_with(SERVICE_ONE_ID, message_limit=50, restricted=True, go_live_at=None)
+    mock_update_service.assert_called_with(SERVICE_ONE_ID, restricted=True, go_live_at=None)
 
 
 @pytest.mark.parametrize(
@@ -1658,79 +1655,6 @@ def test_route_for_platform_admin(
 
 
 @pytest.mark.parametrize(
-    "sender_list_page,endpoint_to_mock,sample_data,expected_items,",
-    [
-        (
-            "main.service_email_reply_to",
-            "app.service_api_client.get_reply_to_email_addresses",
-            create_multiple_email_reply_to_addresses(),
-            [
-                "test@example.com (default) Change test@example.com ID: 1234",
-                "test2@example.com Change test2@example.com ID: 5678",
-                "test3@example.com Change test3@example.com ID: 9457",
-            ],
-        ),
-        (
-            "main.service_letter_contact_details",
-            "app.service_api_client.get_letter_contacts",
-            create_multiple_letter_contact_blocks(),
-            [
-                "Blank Make default",
-                "1 Example Street (default) Change 1 Example Street ID: 1234",
-                "2 Example Street Change 2 Example Street ID: 5678",
-                "foo<bar>baz Change foo <bar> baz ID: 9457",
-            ],
-        ),
-    ],
-)
-def test_default_option_shows_for_default_sender(
-    client_request,
-    mocker,
-    sender_list_page,
-    endpoint_to_mock,
-    sample_data,
-    expected_items,
-):
-    mocker.patch(endpoint_to_mock, return_value=sample_data)
-
-    rows = client_request.get(sender_list_page, service_id=SERVICE_ONE_ID).select(".user-list-item")
-
-    assert [normalize_spaces(row.text) for row in rows] == expected_items
-
-
-def test_remove_default_from_default_letter_contact_block(
-    client_request,
-    mocker,
-    multiple_letter_contact_blocks,
-    mock_update_letter_contact,
-):
-    letter_contact_details_page = url_for(
-        "main.service_letter_contact_details",
-        service_id=SERVICE_ONE_ID,
-    )
-
-    link = client_request.get_url(letter_contact_details_page).select_one(".user-list-item a")
-    assert link.text == "Make default"
-    assert link["href"] == url_for(
-        ".service_make_blank_default_letter_contact",
-        service_id=SERVICE_ONE_ID,
-    )
-
-    client_request.get_url(
-        link["href"],
-        _expected_status=302,
-        _expected_redirect=letter_contact_details_page,
-    )
-
-    mock_update_letter_contact.assert_called_once_with(
-        SERVICE_ONE_ID,
-        letter_contact_id="1234",
-        contact_block="1 Example Street",
-        is_default=False,
-    )
-
-
-@pytest.mark.parametrize(
     "reply_to_input, expected_error",
     [
         ("", "Cannot be empty"),
@@ -1748,26 +1672,6 @@ def test_incorrect_reply_to_email_address_input(
     )
 
     assert expected_error in normalize_spaces(page.select_one(".govuk-error-message").text)
-
-
-@pytest.mark.parametrize(
-    "contact_block_input, expected_error",
-    [
-        ("", "Cannot be empty"),
-        ("1 \n 2 \n 3 \n 4 \n 5 \n 6 \n 7 \n 8 \n 9 \n 0 \n a", "Contains 11 lines, maximum is 10"),
-    ],
-)
-def test_incorrect_letter_contact_block_input(
-    contact_block_input, expected_error, client_request, no_letter_contact_blocks
-):
-    page = client_request.post(
-        "main.service_add_letter_contact",
-        service_id=SERVICE_ONE_ID,
-        _data={"letter_contact_block": contact_block_input},
-        _expected_status=200,
-    )
-
-    assert normalize_spaces(page.select_one(".error-message").text) == expected_error
 
 
 @pytest.mark.parametrize(
@@ -1799,31 +1703,6 @@ def test_add_reply_to_email_address_sends_test_notification(
         + "?is_default={}".format(api_default_args),
     )
     mock_verify.assert_called_once_with(SERVICE_ONE_ID, "test@example.com")
-
-
-def test_service_add_reply_to_email_address_without_verification_for_platform_admin(
-    mocker, client_request, platform_admin_user
-):
-    client_request.login(platform_admin_user)
-
-    mock_update = mocker.patch("app.service_api_client.add_reply_to_email_address")
-    mocker.patch(
-        "app.service_api_client.get_reply_to_email_addresses",
-        return_value=[create_reply_to_email_address(is_default=True)],
-    )
-    data = {"is_default": "y", "email_address": "test@example.gov.uk"}
-
-    client_request.post(
-        "main.service_add_email_reply_to",
-        service_id=SERVICE_ONE_ID,
-        _data=data,
-        _expected_status=302,
-        _expected_redirect=url_for(
-            "main.service_email_reply_to",
-            service_id=SERVICE_ONE_ID,
-        ),
-    )
-    mock_update.assert_called_once_with(SERVICE_ONE_ID, email_address="test@example.gov.uk", is_default=True)
 
 
 @pytest.mark.parametrize("is_default,replace,expected_header", [(True, "&replace=123", "Change"), (False, "", "Add")])
@@ -1921,73 +1800,6 @@ def test_add_reply_to_email_address_fails_if_notification_not_delivered_in_45_se
 
 
 @pytest.mark.parametrize(
-    "letter_contact_blocks, data, api_default_args",
-    [
-        ([], {}, True),  # no existing letter contact blocks
-        (create_multiple_letter_contact_blocks(), {}, False),
-        (create_multiple_letter_contact_blocks(), {"is_default": "y"}, True),
-    ],
-)
-def test_add_letter_contact(
-    letter_contact_blocks, data, api_default_args, mocker, client_request, mock_add_letter_contact
-):
-    mocker.patch("app.service_api_client.get_letter_contacts", return_value=letter_contact_blocks)
-
-    data["letter_contact_block"] = "1 Example Street"
-    client_request.post("main.service_add_letter_contact", service_id=SERVICE_ONE_ID, _data=data)
-
-    mock_add_letter_contact.assert_called_once_with(
-        SERVICE_ONE_ID, contact_block="1 Example Street", is_default=api_default_args
-    )
-
-
-def test_add_letter_contact_when_coming_from_template(
-    no_letter_contact_blocks,
-    client_request,
-    mock_add_letter_contact,
-    fake_uuid,
-    mock_get_service_letter_template,
-    mock_update_service_template_sender,
-):
-    page = client_request.get(
-        "main.service_add_letter_contact",
-        service_id=SERVICE_ONE_ID,
-        from_template=fake_uuid,
-    )
-
-    assert page.select_one(".govuk-back-link")["href"] == url_for(
-        "main.view_template",
-        service_id=SERVICE_ONE_ID,
-        template_id=fake_uuid,
-    )
-
-    client_request.post(
-        "main.service_add_letter_contact",
-        service_id=SERVICE_ONE_ID,
-        _data={
-            "letter_contact_block": "1 Example Street",
-        },
-        from_template=fake_uuid,
-        _expected_redirect=url_for(
-            "main.view_template",
-            service_id=SERVICE_ONE_ID,
-            template_id=fake_uuid,
-        ),
-    )
-
-    mock_add_letter_contact.assert_called_once_with(
-        SERVICE_ONE_ID,
-        contact_block="1 Example Street",
-        is_default=True,
-    )
-    mock_update_service_template_sender.assert_called_once_with(
-        SERVICE_ONE_ID,
-        fake_uuid,
-        "1234",
-    )
-
-
-@pytest.mark.parametrize(
     "reply_to_addresses, checkbox_present",
     [
         ([], False),
@@ -1998,17 +1810,6 @@ def test_default_box_doesnt_show_on_first_email_sender(reply_to_addresses, mocke
     mocker.patch("app.service_api_client.get_reply_to_email_addresses", return_value=reply_to_addresses)
 
     page = client_request.get("main.service_add_email_reply_to", service_id=SERVICE_ONE_ID)
-
-    assert bool(page.select_one("[name=is_default]")) == checkbox_present
-
-
-@pytest.mark.parametrize(
-    "contact_blocks, checkbox_present", [([], False), (create_multiple_letter_contact_blocks(), True)]
-)
-def test_default_box_doesnt_show_on_first_letter_sender(contact_blocks, mocker, checkbox_present, client_request):
-    mocker.patch("app.service_api_client.get_letter_contacts", return_value=contact_blocks)
-
-    page = client_request.get("main.service_add_letter_contact", service_id=SERVICE_ONE_ID)
 
     assert bool(page.select_one("[name=is_default]")) == checkbox_present
 
@@ -2039,33 +1840,6 @@ def test_edit_reply_to_email_address_sends_verification_notification_if_address_
         "main.service_edit_email_reply_to", service_id=SERVICE_ONE_ID, reply_to_email_id=fake_uuid, _data=data
     )
     mock_verify.assert_called_once_with(SERVICE_ONE_ID, "test@example.gov.uk")
-
-
-def test_service_edit_email_reply_to_updates_email_address_without_verification_for_platform_admin(
-    mocker, fake_uuid, client_request, platform_admin_user
-):
-    client_request.login(platform_admin_user)
-
-    mock_update = mocker.patch("app.service_api_client.update_reply_to_email_address")
-    mocker.patch(
-        "app.service_api_client.get_reply_to_email_address", return_value=create_reply_to_email_address(is_default=True)
-    )
-    data = {"is_default": "y", "email_address": "test@example.gov.uk"}
-
-    client_request.post(
-        "main.service_edit_email_reply_to",
-        service_id=SERVICE_ONE_ID,
-        reply_to_email_id=fake_uuid,
-        _data=data,
-        _expected_status=302,
-        _expected_redirect=url_for(
-            "main.service_email_reply_to",
-            service_id=SERVICE_ONE_ID,
-        ),
-    )
-    mock_update.assert_called_once_with(
-        SERVICE_ONE_ID, reply_to_email_id=fake_uuid, email_address="test@example.gov.uk", is_default=True
-    )
 
 
 @pytest.mark.parametrize(
@@ -2127,105 +1901,6 @@ def test_add_edit_reply_to_email_address_goes_straight_to_update_if_address_not_
     assert mock_update_reply_to_email_address.called is False
 
 
-@pytest.mark.parametrize(
-    "reply_to_address, default_choice_and_delete_link_expected",
-    [
-        (
-            create_reply_to_email_address(is_default=False),
-            True,
-        ),
-        (
-            create_reply_to_email_address(is_default=True),
-            False,
-        ),
-    ],
-)
-def test_shows_delete_link_for_get_request_for_edit_email_reply_to_address(
-    mocker,
-    reply_to_address,
-    default_choice_and_delete_link_expected,
-    fake_uuid,
-    client_request,
-):
-    mocker.patch("app.service_api_client.get_reply_to_email_address", return_value=reply_to_address)
-
-    page = client_request.get(
-        "main.service_edit_email_reply_to",
-        service_id=SERVICE_ONE_ID,
-        reply_to_email_id=sample_uuid(),
-    )
-
-    assert page.select_one(".govuk-back-link").text.strip() == "Back"
-    assert page.select_one(".govuk-back-link")["href"] == url_for(
-        ".service_email_reply_to",
-        service_id=SERVICE_ONE_ID,
-    )
-
-    if default_choice_and_delete_link_expected:
-        link = page.select_one(".page-footer a")
-        assert normalize_spaces(link.text) == "Delete"
-        assert link["href"] == url_for(
-            "main.service_confirm_delete_email_reply_to", service_id=SERVICE_ONE_ID, reply_to_email_id=sample_uuid()
-        )
-        assert not page.select_one("input#is_default").has_attr("checked")
-
-    else:
-        assert not page.select(".page-footer a")
-
-
-@pytest.mark.parametrize(
-    "reply_to_address, default_choice_and_delete_link_expected, default_checkbox_checked",
-    [
-        (create_reply_to_email_address(is_default=False), True, False),
-        (create_reply_to_email_address(is_default=False), True, True),
-        (
-            create_reply_to_email_address(is_default=True),
-            False,
-            False,  # not expecting a checkbox to even be shown to be ticked
-        ),
-    ],
-)
-def test_shows_delete_link_for_error_on_post_request_for_edit_email_reply_to_address(
-    mocker,
-    reply_to_address,
-    default_choice_and_delete_link_expected,
-    default_checkbox_checked,
-    fake_uuid,
-    client_request,
-):
-    mocker.patch("app.service_api_client.get_reply_to_email_address", return_value=reply_to_address)
-
-    data = {"email_address": "not a valid email address"}
-    if default_checkbox_checked:
-        data["is_default"] = "y"
-
-    page = client_request.post(
-        "main.service_edit_email_reply_to",
-        service_id=SERVICE_ONE_ID,
-        reply_to_email_id=sample_uuid(),
-        _data=data,
-        _expected_status=200,
-    )
-
-    assert page.select_one(".govuk-back-link").text.strip() == "Back"
-    assert page.select_one(".govuk-back-link")["href"] == url_for(
-        ".service_email_reply_to",
-        service_id=SERVICE_ONE_ID,
-    )
-    assert page.select_one(".govuk-error-message").text.strip() == "Error: Enter a valid email address"
-    assert page.select_one("input#email_address").get("value") == "not a valid email address"
-
-    if default_choice_and_delete_link_expected:
-        link = page.select_one(".page-footer a")
-        assert normalize_spaces(link.text) == "Delete"
-        assert link["href"] == url_for(
-            "main.service_confirm_delete_email_reply_to", service_id=SERVICE_ONE_ID, reply_to_email_id=sample_uuid()
-        )
-        assert page.select_one("input#is_default").has_attr("checked") == default_checkbox_checked
-    else:
-        assert not page.select(".page-footer a")
-
-
 def test_confirm_delete_reply_to_email_address(fake_uuid, client_request, get_non_default_reply_to_email_address):
     page = client_request.get(
         "main.service_confirm_delete_email_reply_to",
@@ -2239,26 +1914,6 @@ def test_confirm_delete_reply_to_email_address(fake_uuid, client_request, get_no
     )
     assert "action" not in page.select_one(".banner-dangerous form")
     assert page.select_one(".banner-dangerous form")["method"] == "post"
-
-
-def test_delete_reply_to_email_address(
-    client_request,
-    service_one,
-    fake_uuid,
-    get_non_default_reply_to_email_address,
-    mocker,
-):
-    mock_delete = mocker.patch("app.service_api_client.delete_reply_to_email_address")
-    client_request.post(
-        ".service_delete_email_reply_to",
-        service_id=SERVICE_ONE_ID,
-        reply_to_email_id=fake_uuid,
-        _expected_redirect=url_for(
-            "main.service_email_reply_to",
-            service_id=SERVICE_ONE_ID,
-        ),
-    )
-    mock_delete.assert_called_once_with(service_id=SERVICE_ONE_ID, reply_to_email_id=fake_uuid)
 
 
 @pytest.mark.parametrize(
@@ -2281,48 +1936,6 @@ def test_edit_letter_contact_block(
 
     mock_update_letter_contact.assert_called_once_with(
         SERVICE_ONE_ID, letter_contact_id=fake_uuid, contact_block="1 Example Street", is_default=api_default_args
-    )
-
-
-def test_confirm_delete_letter_contact_block(
-    fake_uuid,
-    client_request,
-    get_default_letter_contact_block,
-):
-    page = client_request.get(
-        "main.service_confirm_delete_letter_contact",
-        service_id=SERVICE_ONE_ID,
-        letter_contact_id=fake_uuid,
-        _test_page_title=False,
-    )
-
-    assert normalize_spaces(page.select_one(".banner-dangerous").text) == (
-        "Are you sure you want to delete this contact block? Yes, delete"
-    )
-    assert "action" not in page.select_one(".banner-dangerous form")
-    assert page.select_one(".banner-dangerous form")["method"] == "post"
-
-
-def test_delete_letter_contact_block(
-    client_request,
-    service_one,
-    fake_uuid,
-    get_default_letter_contact_block,
-    mocker,
-):
-    mock_delete = mocker.patch("app.service_api_client.delete_letter_contact")
-    client_request.post(
-        ".service_delete_letter_contact",
-        service_id=SERVICE_ONE_ID,
-        letter_contact_id=fake_uuid,
-        _expected_redirect=url_for(
-            "main.service_letter_contact_details",
-            service_id=SERVICE_ONE_ID,
-        ),
-    )
-    mock_delete.assert_called_once_with(
-        service_id=SERVICE_ONE_ID,
-        letter_contact_id=fake_uuid,
     )
 
 
@@ -2387,19 +2000,6 @@ def test_default_box_shows_on_non_default_sender_details_while_editing(
         assert normalize_spaces(page.select_one("form p").text) == (default_message)
 
 
-def test_sender_details_are_escaped(client_request, mocker, fake_uuid):
-    letter_contact_block = create_letter_contact_block(contact_block="foo\n\n<br>\n\nbar")
-    mocker.patch("app.service_api_client.get_letter_contacts", return_value=[letter_contact_block])
-
-    page = client_request.get(
-        "main.service_letter_contact_details",
-        service_id=SERVICE_ONE_ID,
-    )
-
-    # get the second row (first is the default Blank sender)
-    assert "foo<br>bar" in normalize_spaces(page.select(".user-list-item")[1].text)
-
-
 def test_shows_research_mode_indicator(
     client_request,
     service_one,
@@ -2458,191 +2058,6 @@ def test_organisation_type_pages_are_platform_admin_only(
         _expected_status=403,
         _test_page_title=False,
     )
-
-
-def test_should_show_page_to_set_message_limit(
-    client_request,
-    platform_admin_user,
-):
-    client_request.login(platform_admin_user)
-    page = client_request.get("main.set_message_limit", service_id=SERVICE_ONE_ID)
-    assert normalize_spaces(page.select_one("label").text) == (
-        "Number of messages the service is allowed to send each day"
-    )
-    assert normalize_spaces(page.select_one("input[type=text]")["value"]) == "1000"
-
-
-def test_should_show_page_to_set_rate_limit(
-    client_request,
-    platform_admin_user,
-):
-    client_request.login(platform_admin_user)
-    page = client_request.get("main.set_rate_limit", service_id=SERVICE_ONE_ID)
-    assert normalize_spaces(page.select_one("label").text) == (
-        "Number of messages the service can send in a rolling 60 second window"
-    )
-    assert normalize_spaces(page.select_one("input[type=text]")["value"]) == "3000"
-
-
-@pytest.mark.parametrize(
-    "endpoint, field_name",
-    (
-        ("main.set_message_limit", "message_limit"),
-        ("main.set_rate_limit", "rate_limit"),
-    ),
-)
-@pytest.mark.parametrize(
-    "new_limit, expected_api_argument",
-    [
-        ("1", 1),
-        ("250000", 250000),
-        pytest.param("foo", "foo", marks=pytest.mark.xfail),
-    ],
-)
-def test_should_set_message_limit(
-    client_request,
-    platform_admin_user,
-    new_limit,
-    expected_api_argument,
-    mock_update_service,
-    endpoint,
-    field_name,
-):
-    client_request.login(platform_admin_user)
-    client_request.post(
-        endpoint,
-        service_id=SERVICE_ONE_ID,
-        _data={
-            field_name: new_limit,
-        },
-    )
-    mock_update_service.assert_called_once_with(
-        SERVICE_ONE_ID,
-        **{field_name: expected_api_argument},
-    )
-
-
-def test_old_set_letters_page_redirects(
-    client_request,
-):
-    client_request.get(
-        "main.service_set_letters",
-        service_id=SERVICE_ONE_ID,
-        _expected_status=301,
-        _expected_redirect=url_for(
-            "main.service_set_channel",
-            service_id=SERVICE_ONE_ID,
-            channel="letter",
-        ),
-    )
-
-
-def test_unknown_channel_404s(
-    client_request,
-):
-    client_request.get(
-        "main.service_set_channel",
-        service_id=SERVICE_ONE_ID,
-        channel="message-in-a-bottle",
-        _expected_status=404,
-    )
-
-
-@pytest.mark.parametrize(
-    "channel",
-    (
-        "email",
-        "sms",
-        "letter",
-    ),
-)
-def test_broadcast_service_cant_post_to_set_other_channels_endpoint(
-    client_request,
-    service_one,
-    channel,
-):
-    service_one["permissions"] = ["broadcast"]
-
-    client_request.get(
-        "main.service_set_channel",
-        service_id=SERVICE_ONE_ID,
-        channel=channel,
-        _expected_status=403,
-    )
-
-    client_request.post(
-        "main.service_set_channel",
-        service_id=SERVICE_ONE_ID,
-        channel=channel,
-        _data={"enabled": "True"},
-        _expected_status=403,
-    )
-
-
-@pytest.mark.parametrize(
-    "permission, permissions, expected_checked",
-    [
-        ("international_sms", ["international_sms"], "True"),
-        ("international_letters", ["international_letters"], "True"),
-        ("international_sms", [""], "False"),
-        ("international_letters", [""], "False"),
-    ],
-)
-def test_show_international_sms_and_letters_as_radio_button(
-    client_request,
-    service_one,
-    mocker,
-    permission,
-    permissions,
-    expected_checked,
-):
-    service_one["permissions"] = permissions
-
-    checked_radios = client_request.get(
-        f"main.service_set_{permission}",
-        service_id=service_one["id"],
-    ).select(".govuk-radios__item input[checked]")
-
-    assert len(checked_radios) == 1
-    assert checked_radios[0]["value"] == expected_checked
-
-
-@pytest.mark.parametrize(
-    "permission",
-    (
-        "international_sms",
-        "international_letters",
-    ),
-)
-@pytest.mark.parametrize(
-    "post_value, permission_expected_in_api_call",
-    [
-        ("True", True),
-        ("False", False),
-    ],
-)
-def test_switch_service_enable_international_sms_and_letters(
-    client_request,
-    service_one,
-    mocker,
-    permission,
-    post_value,
-    permission_expected_in_api_call,
-):
-    mocked_fn = mocker.patch("app.service_api_client.update_service", return_value=service_one)
-    client_request.post(
-        f"main.service_set_{permission}",
-        service_id=service_one["id"],
-        _data={"enabled": post_value},
-        _expected_redirect=url_for("main.service_settings", service_id=service_one["id"]),
-    )
-
-    if permission_expected_in_api_call:
-        assert permission in mocked_fn.call_args[1]["permissions"]
-    else:
-        assert permission not in mocked_fn.call_args[1]["permissions"]
-
-    assert mocked_fn.call_args[0][0] == service_one["id"]
 
 
 @pytest.mark.parametrize(
@@ -2779,48 +2194,6 @@ def test_invitation_pages(
     )
 
     assert normalize_spaces(page.select("main p")[0].text) == expected_p
-
-
-def test_show_sms_prefixing_setting_page(
-    client_request,
-    mock_update_service,
-):
-    page = client_request.get("main.service_set_sms_prefix", service_id=SERVICE_ONE_ID)
-    assert normalize_spaces(page.select_one("legend").text) == "Start all text messages with ‘service one:’"
-    radios = page.select("input[type=radio]")
-    assert len(radios) == 2
-    assert radios[0]["value"] == "True"
-    assert radios[0]["checked"] == ""
-    assert radios[1]["value"] == "False"
-    with pytest.raises(KeyError):
-        assert radios[1]["checked"]
-
-
-@pytest.mark.parametrize(
-    "post_value",
-    [
-        True,
-        False,
-    ],
-)
-def test_updates_sms_prefixing(
-    client_request,
-    mock_update_service,
-    post_value,
-):
-    client_request.post(
-        "main.service_set_sms_prefix",
-        service_id=SERVICE_ONE_ID,
-        _data={"enabled": post_value},
-        _expected_redirect=url_for(
-            "main.service_settings",
-            service_id=SERVICE_ONE_ID,
-        ),
-    )
-    mock_update_service.assert_called_once_with(
-        SERVICE_ONE_ID,
-        prefix_sms=post_value,
-    )
 
 
 def test_select_organisation(

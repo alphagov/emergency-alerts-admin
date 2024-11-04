@@ -105,14 +105,14 @@ def test_sms_character_validation(client_request, msg):
     [
         (
             "∆ abc 📲 def 📵 ghi",
-            "You cannot use ∆, 📲 or 📵 in text messages. They will not show up properly on everyone’s phones.",
+            "You cannot use ∆, 📲 or 📵 in broadcasts. They will not show up properly on everyone’s phones.",
         ),
-        ("📵", "You cannot use 📵 in text messages. It will not show up properly on everyone’s phones."),
+        ("📵", "You cannot use 📵 in broadcasts. It will not show up properly on everyone’s phones."),
     ],
 )
 def test_non_sms_character_validation(data, err_msg, client_request):
     with pytest.raises(ValidationError) as error:
-        OnlySMSCharacters(template_type="sms")(None, _gen_mock_field(data))
+        OnlySMSCharacters(template_type="broadcast")(None, _gen_mock_field(data))
 
     assert str(error.value) == err_msg
 

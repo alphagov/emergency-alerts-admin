@@ -5,10 +5,8 @@ from itertools import chain
 from numbers import Number
 
 import pytz
-from emergency_alerts_utils.countries.data import Postage
 from emergency_alerts_utils.formatters import strip_all_whitespace
 from emergency_alerts_utils.insensitive_dict import InsensitiveDict
-from emergency_alerts_utils.postal_address import PostalAddress
 from emergency_alerts_utils.recipients import (
     InvalidPhoneError,
     normalise_phone_number,
@@ -17,7 +15,6 @@ from emergency_alerts_utils.recipients import (
 from flask import request
 from flask_login import current_user
 from flask_wtf import FlaskForm as Form
-from flask_wtf.file import FileField as FileField_wtf
 from markupsafe import Markup
 from werkzeug.utils import cached_property
 from wtforms import (
@@ -61,7 +58,6 @@ from app.main.validators import (
     BroadcastLength,
     CharactersNotAllowed,
     CommonlyUsedPassword,
-    FileIsVirusFree,
     IsPostcode,
     LowEntropyPassword,
     MustContainAlphanumericCharacters,
@@ -512,18 +508,6 @@ class StripWhitespaceStringField(GovukTextInputField):
             )
         )
         super(GovukTextInputField, self).__init__(label, **kwargs)
-
-
-class PostalAddressField(TextAreaField):
-    def process_formdata(self, valuelist):
-        if valuelist:
-            self.data = PostalAddress(valuelist[0]).normalised
-
-
-class VirusScannedFileField(FileField_wtf, RequiredValidatorsMixin):
-    required_validators = [
-        FileIsVirusFree(),
-    ]
 
 
 class LoginForm(StripWhitespaceForm):
@@ -1124,26 +1108,6 @@ class AdminNewOrganisationForm(
         self.crown_status.choices = self.crown_status.choices[:-1]
 
 
-class AdminServiceSMSAllowanceForm(StripWhitespaceForm):
-    free_sms_allowance = GovukIntegerField(
-        "Numbers of text message fragments per year", validators=[InputRequired(message="Cannot be empty")]
-    )
-
-
-class AdminServiceMessageLimitForm(StripWhitespaceForm):
-    message_limit = GovukIntegerField(
-        "Number of messages the service is allowed to send each day",
-        validators=[DataRequired(message="Cannot be empty")],
-    )
-
-
-class AdminServiceRateLimitForm(StripWhitespaceForm):
-    rate_limit = GovukIntegerField(
-        "Number of messages the service can send in a rolling 60 second window",
-        validators=[DataRequired(message="Cannot be empty")],
-    )
-
-
 class ConfirmPasswordForm(StripWhitespaceForm):
     def __init__(self, validate_password_func, *args, **kwargs):
         self.validate_password_func = validate_password_func
@@ -1253,53 +1217,6 @@ class BroadcastTemplateForm(SMSTemplateForm):
         OnlySMSCharacters(template_type="broadcast")(None, field)
         NoPlaceholders()(None, field)
         BroadcastLength()(None, field)
-
-
-class EmailTemplateForm(BaseTemplateForm):
-    subject = TextAreaField("Subject", validators=[DataRequired(message="Cannot be empty")])
-
-
-class LetterTemplateForm(EmailTemplateForm):
-    subject = TextAreaField("Main heading", validators=[DataRequired(message="Cannot be empty")])
-
-    template_content = TextAreaField(
-        "Body", validators=[DataRequired(message="Cannot be empty"), NoCommasInPlaceHolders()]
-    )
-
-
-class LetterTemplatePostageForm(StripWhitespaceForm):
-    postage = GovukRadiosField(
-        "Choose the postage for this letter template",
-        choices=[
-            ("first", "First class"),
-            ("second", "Second class"),
-        ],
-        thing="first class or second class",
-        validators=[DataRequired()],
-    )
-
-
-class LetterUploadPostageForm(StripWhitespaceForm):
-    def __init__(self, *args, postage_zone, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        if postage_zone != Postage.UK:
-            self.postage.choices = [(postage_zone, "")]
-            self.postage.data = postage_zone
-
-    @property
-    def show_postage(self):
-        return len(self.postage.choices) > 1
-
-    postage = GovukRadiosField(
-        "Choose the postage for this letter",
-        choices=[
-            ("first", "First class post"),
-            ("second", "Second class post"),
-        ],
-        default="second",
-        validators=[DataRequired()],
-    )
 
 
 class ForgotPasswordForm(StripWhitespaceForm):
@@ -1533,19 +1450,6 @@ class ServiceOnOffSettingForm(StripWhitespaceForm):
         ]
 
     enabled = OnOffField("Choices")
-
-
-class ServiceSwitchChannelForm(ServiceOnOffSettingForm):
-    def __init__(self, channel, *args, **kwargs):
-        name = "Send {}".format(
-            {
-                "email": "emails",
-                "sms": "text messages",
-                "letter": "letters",
-            }.get(channel)
-        )
-
-        super().__init__(name, *args, **kwargs)
 
 
 class EmailFieldInGuestList(GovukEmailField, StripWhitespaceStringField):

@@ -86,7 +86,6 @@ def test_client_creates_service_with_correct_data(
             name="My first service",
             # The rest pass through with the same names
             organisation_type="central_government",
-            message_limit=1,
             restricted=True,
             user_id=fake_uuid,
             email_from="test@example.com",
@@ -542,7 +541,6 @@ def test_client_updates_service_with_allowed_attributes(
         "go_live_at",
         "go_live_user",
         "letter_contact_block",
-        "message_limit",
         "name",
         "notes",
         "organisation_type",

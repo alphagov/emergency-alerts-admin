@@ -66,359 +66,6 @@ def service_two(api_user_active):
 
 
 @pytest.fixture(scope="function")
-def multiple_reply_to_email_addresses(mocker):
-    def _get(service_id):
-        return [
-            {
-                "id": "1234",
-                "service_id": service_id,
-                "email_address": "test@example.com",
-                "is_default": True,
-                "created_at": datetime.utcnow(),
-                "updated_at": None,
-            },
-            {
-                "id": "5678",
-                "service_id": service_id,
-                "email_address": "test2@example.com",
-                "is_default": False,
-                "created_at": datetime.utcnow(),
-                "updated_at": None,
-            },
-            {
-                "id": "9457",
-                "service_id": service_id,
-                "email_address": "test3@example.com",
-                "is_default": False,
-                "created_at": datetime.utcnow(),
-                "updated_at": None,
-            },
-        ]
-
-    return mocker.patch(
-        "app.service_api_client.get_reply_to_email_addresses",
-        side_effect=_get,
-    )
-
-
-@pytest.fixture(scope="function")
-def no_reply_to_email_addresses(mocker):
-    def _get(service_id):
-        return []
-
-    return mocker.patch("app.service_api_client.get_reply_to_email_addresses", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
-def single_reply_to_email_address(mocker):
-    def _get(service_id):
-        return [
-            {
-                "id": "1234",
-                "service_id": service_id,
-                "email_address": "test@example.com",
-                "is_default": True,
-                "created_at": datetime.utcnow(),
-                "updated_at": None,
-            }
-        ]
-
-    return mocker.patch("app.service_api_client.get_reply_to_email_addresses", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
-def get_default_reply_to_email_address(mocker):
-    def _get(service_id, reply_to_email_id):
-        return {
-            "id": "1234",
-            "service_id": service_id,
-            "email_address": "test@example.com",
-            "is_default": True,
-            "created_at": datetime.utcnow(),
-            "updated_at": None,
-        }
-
-    return mocker.patch("app.service_api_client.get_reply_to_email_address", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
-def get_non_default_reply_to_email_address(mocker):
-    def _get(service_id, reply_to_email_id):
-        return {
-            "id": "1234",
-            "service_id": service_id,
-            "email_address": "test@example.com",
-            "is_default": False,
-            "created_at": datetime.utcnow(),
-            "updated_at": None,
-        }
-
-    return mocker.patch("app.service_api_client.get_reply_to_email_address", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
-def mock_add_reply_to_email_address(mocker):
-    def _add_reply_to(service_id, email_address, is_default=False):
-        return
-
-    return mocker.patch("app.service_api_client.add_reply_to_email_address", side_effect=_add_reply_to)
-
-
-@pytest.fixture(scope="function")
-def mock_update_reply_to_email_address(mocker):
-    def _update_reply_to(service_id, reply_to_email_id, email_address=None, active=None, is_default=False):
-        return
-
-    return mocker.patch("app.service_api_client.update_reply_to_email_address", side_effect=_update_reply_to)
-
-
-@pytest.fixture(scope="function")
-def multiple_letter_contact_blocks(mocker):
-    def _get(service_id):
-        return [
-            {
-                "id": "1234",
-                "service_id": service_id,
-                "contact_block": "1 Example Street",
-                "is_default": True,
-                "created_at": datetime.utcnow(),
-                "updated_at": None,
-            },
-            {
-                "id": "5678",
-                "service_id": service_id,
-                "contact_block": "2 Example Street",
-                "is_default": False,
-                "created_at": datetime.utcnow(),
-                "updated_at": None,
-            },
-            {
-                "id": "9457",
-                "service_id": service_id,
-                "contact_block": "3 Example Street",
-                "is_default": False,
-                "created_at": datetime.utcnow(),
-                "updated_at": None,
-            },
-        ]
-
-    return mocker.patch("app.service_api_client.get_letter_contacts", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
-def no_letter_contact_blocks(mocker):
-    def _get(service_id):
-        return []
-
-    return mocker.patch("app.service_api_client.get_letter_contacts", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
-def single_letter_contact_block(mocker):
-    def _get(service_id):
-        return [
-            {
-                "id": "1234",
-                "service_id": service_id,
-                "contact_block": "1 Example Street",
-                "is_default": True,
-                "created_at": datetime.utcnow(),
-                "updated_at": None,
-            }
-        ]
-
-    return mocker.patch("app.service_api_client.get_letter_contacts", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
-def injected_letter_contact_block(mocker):
-    def _get(service_id):
-        return [
-            {
-                "id": "1234",
-                "service_id": service_id,
-                "contact_block": "foo\nbar<script>alert(1);</script>",
-                "is_default": True,
-                "created_at": datetime.utcnow(),
-                "updated_at": None,
-            }
-        ]
-
-    return mocker.patch("app.service_api_client.get_letter_contacts", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
-def get_default_letter_contact_block(mocker):
-    def _get(service_id, letter_contact_id):
-        return {
-            "id": "1234",
-            "service_id": service_id,
-            "contact_block": "1 Example Street",
-            "is_default": True,
-            "created_at": datetime.utcnow(),
-            "updated_at": None,
-        }
-
-    return mocker.patch("app.service_api_client.get_letter_contact", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
-def mock_add_letter_contact(mocker):
-    def _add_letter_contact(service_id, contact_block, is_default=False):
-        return {
-            "data": {
-                "id": "1234",
-                "service_id": service_id,
-                "contact_block": "1 Example Street",
-                "is_default": True,
-                "created_at": str(datetime.utcnow()),
-                "updated_at": None,
-            }
-        }
-
-    return mocker.patch("app.service_api_client.add_letter_contact", side_effect=_add_letter_contact)
-
-
-@pytest.fixture(scope="function")
-def mock_update_letter_contact(mocker):
-    def _update_letter_contact(service_id, letter_contact_id, contact_block, is_default=False):
-        return
-
-    return mocker.patch("app.service_api_client.update_letter_contact", side_effect=_update_letter_contact)
-
-
-@pytest.fixture(scope="function")
-def multiple_sms_senders(mocker):
-    def _get(service_id):
-        return [
-            {
-                "id": "1234",
-                "service_id": service_id,
-                "sms_sender": "Example",
-                "is_default": True,
-                "created_at": datetime.utcnow(),
-                "updated_at": None,
-            },
-            {
-                "id": "5678",
-                "service_id": service_id,
-                "sms_sender": "Example 2",
-                "is_default": False,
-                "created_at": datetime.utcnow(),
-                "updated_at": None,
-            },
-            {
-                "id": "9457",
-                "service_id": service_id,
-                "sms_sender": "Example 3",
-                "is_default": False,
-                "created_at": datetime.utcnow(),
-                "updated_at": None,
-            },
-        ]
-
-    return mocker.patch("app.service_api_client.get_sms_senders", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
-def multiple_sms_senders_with_diff_default(mocker):
-    def _get(service_id):
-        return [
-            {
-                "id": "1234",
-                "service_id": service_id,
-                "sms_sender": "Example",
-                "is_default": True,
-                "created_at": datetime.utcnow(),
-                "updated_at": None,
-            },
-            {
-                "id": "5678",
-                "service_id": service_id,
-                "sms_sender": "Example 2",
-                "is_default": False,
-                "created_at": datetime.utcnow(),
-                "updated_at": None,
-            },
-            {
-                "id": "9457",
-                "service_id": service_id,
-                "sms_sender": "Example 3",
-                "is_default": False,
-                "created_at": datetime.utcnow(),
-                "updated_at": None,
-            },
-        ]
-
-    return mocker.patch("app.service_api_client.get_sms_senders", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
-def multiple_sms_senders_no_inbound(mocker):
-    def _get(service_id):
-        return [
-            {
-                "id": "1234",
-                "service_id": service_id,
-                "sms_sender": "Example",
-                "is_default": True,
-                "created_at": datetime.utcnow(),
-                "updated_at": None,
-            },
-            {
-                "id": "5678",
-                "service_id": service_id,
-                "sms_sender": "Example 2",
-                "is_default": False,
-                "created_at": datetime.utcnow(),
-                "updated_at": None,
-            },
-        ]
-
-    return mocker.patch("app.service_api_client.get_sms_senders", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
-def no_sms_senders(mocker):
-    def _get(service_id):
-        return []
-
-    return mocker.patch("app.service_api_client.get_sms_senders", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
-def single_sms_sender(mocker):
-    def _get(service_id):
-        return [
-            {
-                "id": "1234",
-                "service_id": service_id,
-                "sms_sender": "GOVUK",
-                "is_default": True,
-                "created_at": datetime.utcnow(),
-                "updated_at": None,
-            }
-        ]
-
-    return mocker.patch("app.service_api_client.get_sms_senders", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
-def get_non_default_sms_sender(mocker):
-    def _get(service_id, sms_sender_id):
-        return {
-            "id": "1234",
-            "service_id": service_id,
-            "sms_sender": "GOVUK",
-            "is_default": False,
-            "created_at": datetime.utcnow(),
-            "updated_at": None,
-        }
-
-    return mocker.patch("app.service_api_client.get_sms_sender", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
 def mock_add_sms_sender(mocker):
     def _add_sms_sender(service_id, sms_sender, is_default=False):
         return
@@ -442,7 +89,7 @@ def fake_uuid():
 @pytest.fixture(scope="function")
 def mock_get_service(mocker, api_user_active):
     def _get(service_id):
-        service = service_json(service_id, users=[api_user_active["id"]], message_limit=50)
+        service = service_json(service_id, users=[api_user_active["id"]])
         return {"data": service}
 
     return mocker.patch("app.service_api_client.get_service", side_effect=_get)
@@ -466,7 +113,6 @@ def mock_get_detailed_services(mocker, fake_uuid):
         id_=SERVICE_ONE_ID,
         name="service_one",
         users=[fake_uuid],
-        message_limit=1000,
         active=True,
         restricted=False,
     )
@@ -474,7 +120,6 @@ def mock_get_detailed_services(mocker, fake_uuid):
         id_=fake_uuid,
         name="service_two",
         users=[fake_uuid],
-        message_limit=1000,
         active=True,
         restricted=True,
     )
@@ -507,14 +152,11 @@ def mock_create_service(mocker):
     def _create(
         service_name,
         organisation_type,
-        message_limit,
         restricted,
         user_id,
         email_from,
     ):
-        service = service_json(
-            101, service_name, [user_id], message_limit=message_limit, restricted=restricted, email_from=email_from
-        )
+        service = service_json(101, service_name, [user_id], restricted=restricted, email_from=email_from)
         return service["id"]
 
     return mocker.patch("app.service_api_client.create_service", side_effect=_create)
@@ -528,8 +170,7 @@ def mock_update_service(mocker):
             **{
                 key: kwargs[key]
                 for key in kwargs
-                if key
-                in ["name", "users", "message_limit", "active", "restricted", "email_from", "sms_sender", "permissions"]
+                if key in ["name", "users", "active", "restricted", "email_from", "sms_sender", "permissions"]
             },
         )
         return {"data": service}
@@ -601,32 +242,14 @@ def mock_get_service_template(mocker):
 
 
 @pytest.fixture(scope="function")
-def mock_get_service_template_with_priority(mocker):
-    def _get(service_id, template_id, version=None):
-        template = template_json(
-            service_id,
-            template_id,
-            "Two week reminder",
-            "sms",
-            "Template <em>content</em> with & entity",
-            process_type="priority",
-        )
-        if version:
-            template.update({"version": version})
-        return {"data": template}
-
-    return mocker.patch("app.service_api_client.get_service_template", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
 def mock_get_deleted_template(mocker):
     def _get(service_id, template_id, version=None):
         template = template_json(
             service_id,
             template_id,
-            "Two week reminder",
-            "sms",
-            "Template <em>content</em> with & entity",
+            "Test alert",
+            "broadcast",
+            "This is a test",
             archived=True,
         )
         if version:
@@ -655,58 +278,10 @@ def mock_get_template_versions(mocker, api_user_active):
 
 
 @pytest.fixture(scope="function")
-def mock_get_service_template_with_placeholders(mocker):
-    def _get(service_id, template_id, version=None):
-        template = template_json(
-            service_id, template_id, "Two week reminder", "sms", "((name)), Template <em>content</em> with & entity"
-        )
-        return {"data": template}
-
-    return mocker.patch("app.service_api_client.get_service_template", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
 def mock_get_empty_service_template_with_optional_placeholder(mocker):
     def _get(service_id, template_id, version=None):
         template = template_json(
             service_id, template_id, name="Optional content", content="((show_placeholder??Some content))"
-        )
-        return {"data": template}
-
-    return mocker.patch("app.service_api_client.get_service_template", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
-def mock_get_service_template_with_multiple_placeholders(mocker):
-    def _get(service_id, template_id, version=None):
-        template = template_json(service_id, template_id, "Two week reminder", "sms", "((one)) ((two)) ((three))")
-        return {"data": template}
-
-    return mocker.patch("app.service_api_client.get_service_template", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
-def mock_get_service_template_with_placeholders_same_as_recipient(mocker):
-    def _get(service_id, template_id, version=None):
-        template = template_json(
-            service_id, template_id, "Two week reminder", "sms", "((name)) ((date)) ((PHONENUMBER))"
-        )
-        return {"data": template}
-
-    return mocker.patch("app.service_api_client.get_service_template", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
-def mock_get_service_email_template(mocker):
-    def _get(service_id, template_id, version=None):
-        template = template_json(
-            service_id,
-            template_id,
-            "Two week reminder",
-            "email",
-            "Your vehicle tax expires on ((date))",
-            "Your ((thing)) is due soon",
-            redact_personalisation=False,
         )
         return {"data": template}
 
@@ -725,57 +300,6 @@ def mock_get_broadcast_template(mocker):
         )
         if version:
             template.update({"version": version})
-        return {"data": template}
-
-    return mocker.patch("app.service_api_client.get_service_template", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
-def mock_get_service_email_template_without_placeholders(mocker):
-    def _get(service_id, template_id, version=None):
-        template = template_json(
-            service_id,
-            template_id,
-            name="Two week reminder",
-            type_="email",
-            content="Your vehicle tax expires soon",
-            subject="Your thing is due soon",
-            redact_personalisation=False,
-        )
-        return {"data": template}
-
-    return mocker.patch("app.service_api_client.get_service_template", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
-def mock_get_service_letter_template(mocker):
-    def _get(service_id, template_id, version=None, postage="second"):
-        template = template_json(
-            service_id,
-            template_id,
-            name="Two week reminder",
-            type_="letter",
-            content="Template <em>content</em> with & entity",
-            subject="Subject",
-            postage=postage,
-        )
-        return {"data": template}
-
-    return mocker.patch("app.service_api_client.get_service_template", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
-def mock_get_service_letter_template_with_placeholders(mocker):
-    def _get(service_id, template_id, version=None, postage="second"):
-        template = template_json(
-            service_id,
-            template_id,
-            name="Two week reminder",
-            type_="letter",
-            content="Hello ((name)) your thing is due on ((date))",
-            subject="Subject",
-            postage=postage,
-        )
         return {"data": template}
 
     return mocker.patch("app.service_api_client.get_service_template", side_effect=_get)
@@ -836,12 +360,12 @@ def mock_update_service_template_400_content_too_big(mocker):
 
 
 def create_service_templates(service_id, number_of_templates=6):
-    template_types = ["sms", "sms", "email", "email", "letter", "letter"]
+    template_types = ["broadcast", "broadcast"]
     service_templates = []
 
     for _ in range(1, number_of_templates + 1):
         template_number = "two" if _ % 2 == 0 else "one"
-        template_type = template_types[(_ % 6) - 1]
+        template_type = template_types[(_ % 2) - 1]
 
         service_templates.append(
             template_json(
@@ -850,9 +374,7 @@ def create_service_templates(service_id, number_of_templates=6):
                 "{}_template_{}".format(template_type, template_number),
                 template_type,
                 "{} template {} content".format(template_type, template_number),
-                subject="{} template {} subject".format(template_type, template_number)
-                if template_type in ["email", "letter"]
-                else None,
+                subject=None,
             )
         )
 
@@ -896,7 +418,11 @@ def mock_get_service_templates_when_no_templates_exist(mocker):
 def mock_get_service_templates_with_only_one_template(mocker):
     def _get(service_id):
         return {
-            "data": [template_json(service_id, generate_uuid(), "sms_template_one", "sms", "sms template one content")]
+            "data": [
+                template_json(
+                    service_id, generate_uuid(), "broadcast_template_one", "broadcast", "broadcast template one content"
+                )
+            ]
         }
 
     return mocker.patch("app.service_api_client.get_service_templates", side_effect=_get)
@@ -2318,19 +1844,6 @@ def mock_get_service_history(mocker):
             "events": [],
         },
     )
-
-
-@pytest.fixture
-def mock_template_preview(mocker):
-    content = b'{"count":1}'
-    status_code = 200
-    headers = {}
-    example_response = (content, status_code, headers)
-    mocker.patch("app.template_previews.TemplatePreview.from_database_object", return_value=example_response)
-    mocker.patch("app.template_previews.TemplatePreview.from_valid_pdf_file", return_value=example_response)
-    mocker.patch("app.template_previews.TemplatePreview.from_invalid_pdf_file", return_value=example_response)
-    mocker.patch("app.template_previews.TemplatePreview.from_example_template", return_value=example_response)
-    mocker.patch("app.template_previews.TemplatePreview.from_utils_template", return_value=example_response)
 
 
 def create_api_user_active(with_unique_id=False):

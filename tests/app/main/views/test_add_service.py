@@ -153,7 +153,6 @@ def test_should_add_service_and_redirect_to_index_when_no_services(
     mock_create_service.assert_called_once_with(
         service_name="testing the post",
         organisation_type=persisted,
-        message_limit=50,
         restricted=True,
         user_id=api_user_active["id"],
         email_from="testing.the.post",
@@ -231,7 +230,6 @@ def test_should_add_service_and_redirect_to_dashboard_when_existing_service(
     mock_create_service.assert_called_once_with(
         service_name="testing the post",
         organisation_type=organisation_type,
-        message_limit=notify_admin.config["DEFAULT_SERVICE_LIMIT"],
         restricted=True,
         user_id=api_user_active["id"],
         email_from="testing.the.post",

@@ -1,7 +1,5 @@
 from werkzeug.utils import cached_property
 
-from app import format_notification_type
-
 
 class TemplateList:
     """
@@ -301,7 +299,6 @@ class TemplateListTemplate(TemplateListItem):
             if len(self.content) > (max_length_in_chars + 2):
                 return self.content[:max_length_in_chars].strip() + "…"
             return self.content
-        return format_notification_type(self.template_type) + " template"
 
 
 class TemplateListFolder(TemplateListItem):

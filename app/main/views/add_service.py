@@ -1,4 +1,4 @@
-from flask import abort, current_app, redirect, render_template, session, url_for
+from flask import abort, redirect, render_template, session, url_for
 from flask_login import current_user
 from notifications_python_client.errors import HTTPError
 
@@ -15,7 +15,6 @@ def _create_service(service_name, organisation_type, email_from, form):
         service_id = service_api_client.create_service(
             service_name=service_name,
             organisation_type=organisation_type,
-            message_limit=current_app.config["DEFAULT_SERVICE_LIMIT"],
             restricted=True,
             user_id=session["user_id"],
             email_from=email_from,
