@@ -28,6 +28,7 @@ from app.utils.broadcast import (
     create_postcode_area_slug,
     create_postcode_db_id,
     extract_attributes_from_custom_area,
+    format_areas_list,
     get_centroid_if_postcode_in_db,
     normalising_point,
     parse_coordinate_form_data,
@@ -765,6 +766,7 @@ def view_broadcast(service_id, broadcast_message_id):
             max_phones=broadcast_message.count_of_phones_likely,
         ),
         is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
+        areas=format_areas_list(broadcast_message.areas),
     )
 
 
@@ -813,6 +815,7 @@ def approve_broadcast_message(service_id, broadcast_message_id):
             ),
             form=form,
             is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
+            areas=format_areas_list(broadcast_message.areas),
         )
 
     return redirect(
@@ -890,4 +893,5 @@ def cancel_broadcast_message(service_id, broadcast_message_id):
         broadcast_message=broadcast_message,
         hide_stop_link=True,
         is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
+        areas=format_areas_list(broadcast_message.areas),
     )
