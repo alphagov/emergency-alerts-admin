@@ -479,7 +479,6 @@ def edit_service_template(service_id, template_id):
             "template_type": template["template_type"],
             "id": template["id"],
             "process_type": form.process_type.data,
-            "reply_to_text": template["reply_to_text"],
         }
 
         new_template = get_template(new_template_data, current_service)
