@@ -20,11 +20,8 @@ from . import (
     api_key_json,
     assert_url_expected,
     broadcast_message_json,
-    contact_list_json,
     generate_uuid,
     invite_json,
-    job_json,
-    notification_json,
     org_invite_json,
     organisation_json,
     sample_uuid,
@@ -1298,187 +1295,6 @@ def mock_check_verify_code_code_expired(mocker):
 
 
 @pytest.fixture(scope="function")
-def mock_create_contact_list(mocker, api_user_active):
-    def _create(
-        service_id,
-        upload_id,
-        original_file_name,
-        row_count,
-        template_type,
-    ):
-        return {
-            "service_id": service_id,
-            "upload_id": upload_id,
-            "original_file_name": original_file_name,
-            "row_count": row_count,
-            "template_type": template_type,
-        }
-
-    return mocker.patch(
-        "app.contact_list_api_client.create_contact_list",
-        side_effect=_create,
-    )
-
-
-@pytest.fixture(scope="function")
-def mock_get_contact_lists(mocker, api_user_active, fake_uuid):
-    def _get(service_id, template_type=None):
-        return [
-            contact_list_json(
-                id_=fake_uuid,
-                created_at="2020-06-13T09:59:56.000000Z",
-                service_id=service_id,
-            ),
-            contact_list_json(
-                id_="d7b0bd1a-d1c7-4621-be5c-3c1b4278a2ad",
-                created_at="2020-06-13T12:00:00.000000Z",
-                service_id=service_id,
-                original_file_name="phone number list.csv",
-                row_count=123,
-                recent_job_count=2,
-                template_type="sms",
-            ),
-            contact_list_json(
-                id_=fake_uuid,
-                created_at="2020-05-02T01:00:00.000000Z",
-                original_file_name="UnusedList.tsv",
-                row_count=1,
-                has_jobs=False,
-                service_id=service_id,
-                template_type="sms",
-            ),
-        ]
-
-    return mocker.patch(
-        "app.models.contact_list.ContactLists.client_method",
-        side_effect=_get,
-    )
-
-
-@pytest.fixture(scope="function")
-def mock_get_contact_list(mocker, api_user_active, fake_uuid):
-    def _get(*, service_id, contact_list_id):
-        return contact_list_json(
-            id_=fake_uuid,
-            created_at="2020-06-13T09:59:56.000000Z",
-            service_id=service_id,
-        )
-
-    return mocker.patch(
-        "app.models.contact_list.contact_list_api_client.get_contact_list",
-        side_effect=_get,
-    )
-
-
-@pytest.fixture(scope="function")
-def mock_get_no_contact_list(mocker, api_user_active, fake_uuid):
-    def _get(*, service_id, contact_list_id):
-        raise HTTPError(response=Mock(status_code=404))
-
-    return mocker.patch(
-        "app.models.contact_list.contact_list_api_client.get_contact_list",
-        side_effect=_get,
-    )
-
-
-@pytest.fixture(scope="function")
-def mock_get_no_contact_lists(mocker):
-    return mocker.patch(
-        "app.models.contact_list.ContactLists.client_method",
-        return_value=[],
-    )
-
-
-@pytest.fixture(scope="function")
-def mock_get_notifications(
-    mocker,
-    api_user_active,
-):
-    def _get_notifications(
-        service_id,
-        job_id=None,
-        page=1,
-        page_size=50,
-        count_pages=None,
-        template_type=None,
-        status=None,
-        limit_days=None,
-        rows=5,
-        include_jobs=None,
-        include_from_test_key=None,
-        to=None,
-        include_one_off=None,
-    ):
-        job = None
-        if job_id is not None:
-            job = job_json(service_id, api_user_active, job_id=job_id)
-        if template_type:
-            template = template_json(
-                service_id,
-                id_=str(generate_uuid()),
-                type_=template_type[0],
-                redact_personalisation=False,
-                is_precompiled_letter=False,
-            )
-        else:
-            template = template_json(
-                service_id,
-                id_=str(generate_uuid()),
-                redact_personalisation=False,
-            )
-        return notification_json(
-            service_id,
-            template=template,
-            rows=rows,
-            job=job,
-            with_links=True if count_pages is None else count_pages,
-            created_by_name="Firstname Lastname",
-        )
-
-    return mocker.patch("app.notification_api_client.get_notifications_for_service", side_effect=_get_notifications)
-
-
-@pytest.fixture(scope="function")
-def mock_get_notifications_with_previous_next(mocker):
-    def _get_notifications(
-        service_id,
-        job_id=None,
-        page=1,
-        count_pages=None,
-        template_type=None,
-        status=None,
-        limit_days=None,
-        include_jobs=None,
-        include_from_test_key=None,
-        to=None,
-        include_one_off=None,
-    ):
-        return notification_json(service_id, rows=50, with_links=True if count_pages is None else count_pages)
-
-    return mocker.patch("app.notification_api_client.get_notifications_for_service", side_effect=_get_notifications)
-
-
-@pytest.fixture(scope="function")
-def mock_get_notifications_with_no_notifications(mocker):
-    def _get_notifications(
-        service_id,
-        job_id=None,
-        page=1,
-        count_pages=None,
-        template_type=None,
-        status=None,
-        limit_days=None,
-        include_jobs=None,
-        include_from_test_key=None,
-        to=None,
-        include_one_off=None,
-    ):
-        return notification_json(service_id, rows=0)
-
-    return mocker.patch("app.notification_api_client.get_notifications_for_service", side_effect=_get_notifications)
-
-
-@pytest.fixture(scope="function")
 def mock_has_permissions(mocker):
     def _has_permission(*permissions, restrict_admin_usage=False, allow_org_user=False):
         return True
@@ -1707,37 +1523,6 @@ def mock_update_guest_list(mocker):
 @pytest.fixture(scope="function")
 def mock_reset_failed_login_count(mocker):
     return mocker.patch("app.user_api_client.reset_failed_login_count")
-
-
-@pytest.fixture
-def mock_get_notification(mocker):
-    def _get_notification(
-        service_id,
-        notification_id,
-    ):
-        noti = notification_json(service_id, rows=1, personalisation={"name": "Jo"})["notifications"][0]
-
-        noti["id"] = notification_id
-        noti["created_by"] = {"id": fake_uuid, "name": "Test User", "email_address": "test@user.gov.uk"}
-        noti["template"] = template_json(
-            service_id,
-            "5407f4db-51c7-4150-8758-35412d42186a",
-            content="hello ((name))",
-            subject="blah",
-            redact_personalisation=False,
-            name="sample template",
-        )
-        return noti
-
-    return mocker.patch("app.notification_api_client.get_notification", side_effect=_get_notification)
-
-
-@pytest.fixture
-def mock_send_notification(mocker, fake_uuid):
-    def _send_notification(service_id, *, template_id, recipient, personalisation, sender_id):
-        return {"id": fake_uuid}
-
-    return mocker.patch("app.notification_api_client.send_notification", side_effect=_send_notification)
 
 
 @pytest.fixture(scope="function")
@@ -1992,18 +1777,6 @@ def mock_create_service_data_retention(mocker):
 @pytest.fixture(scope="function")
 def mock_update_service_data_retention(mocker):
     return mocker.patch("app.service_api_client.update_service_data_retention")
-
-
-@pytest.fixture(scope="function")
-def mock_get_free_sms_fragment_limit(mocker):
-    sample_limit = 250000
-    return mocker.patch("app.billing_api_client.get_free_sms_fragment_limit_for_year", return_value=sample_limit)
-
-
-@pytest.fixture(scope="function")
-def mock_create_or_update_free_sms_fragment_limit(mocker):
-    sample_limit = 250000
-    return mocker.patch("app.billing_api_client.create_or_update_free_sms_fragment_limit", return_value=sample_limit)
 
 
 @contextmanager
@@ -2882,85 +2655,6 @@ def create_multiple_letter_contact_blocks(service_id="abcd"):
             "updated_at": None,
         },
     ]
-
-
-def create_notification(
-    notification_id=None,
-    service_id="abcd",
-    notification_status="delivered",
-    redact_personalisation=False,
-    template_type=None,
-    template_name="sample template",
-    is_precompiled_letter=False,
-    key_type=None,
-    postage=None,
-    sent_one_off=True,
-    reply_to_text=None,
-):
-    noti = notification_json(
-        service_id,
-        rows=1,
-        status=notification_status,
-        template_type=template_type,
-        postage=postage,
-        reply_to_text=reply_to_text,
-    )["notifications"][0]
-
-    noti["id"] = notification_id or sample_uuid()
-    if sent_one_off:
-        noti["created_by"] = {"id": sample_uuid(), "name": "Test User", "email_address": "test@user.gov.uk"}
-    noti["personalisation"] = {"name": "Jo"}
-    noti["template"] = template_json(
-        service_id,
-        "5407f4db-51c7-4150-8758-35412d42186a",
-        content="hello ((name))",
-        subject="blah",
-        redact_personalisation=redact_personalisation,
-        type_=template_type,
-        is_precompiled_letter=is_precompiled_letter,
-        name=template_name,
-    )
-    if key_type:
-        noti["key_type"] = key_type
-    return noti
-
-
-def create_notifications(
-    service_id=SERVICE_ONE_ID,
-    template_type="sms",
-    rows=5,
-    status=None,
-    subject="subject",
-    content="content",
-    client_reference=None,
-    personalisation=None,
-    redact_personalisation=False,
-    is_precompiled_letter=False,
-    postage=None,
-    to=None,
-):
-    template = template_json(
-        service_id,
-        id_=str(generate_uuid()),
-        type_=template_type,
-        subject=subject,
-        content=content,
-        redact_personalisation=redact_personalisation,
-        is_precompiled_letter=is_precompiled_letter,
-    )
-
-    return notification_json(
-        service_id,
-        template=template,
-        rows=rows,
-        personalisation=personalisation,
-        template_type=template_type,
-        client_reference=client_reference,
-        status=status,
-        created_by_name="Firstname Lastname",
-        postage=postage,
-        to=to,
-    )
 
 
 def create_folder(id):

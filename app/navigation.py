@@ -177,7 +177,6 @@ class MainNavigation(Navigation):
             "service_verify_reply_to_address",
             "service_verify_reply_to_address_updates",
             "service_settings",
-            "set_free_sms_allowance",
             "set_message_limit",
             "set_rate_limit",
             "submit_request_to_go_live",
