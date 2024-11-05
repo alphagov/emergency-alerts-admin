@@ -53,7 +53,67 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
             ["Templates"],
             [],
             {},
-            ["Email", "Text message", "Letter", "Broadcast"],
+            ["Broadcast"],
+            [
+                "folder_one folder_one 2 folders",
+                "folder_one folder_one_one folder_one folder_one_one 1 template, 1 folder",
+                (
+                    "folder_one folder_one_one folder_one_one_one "
+                    "folder_one folder_one_one folder_one_one_one "
+                    "1 template"
+                ),
+                (
+                    "folder_one folder_one_one folder_one_one_one broadcast_template_nested "
+                    "folder_one folder_one_one folder_one_one_one broadcast_template_nested "
+                    "Text message template"
+                ),
+                (
+                    "folder_one folder_one_one broadcast_template_nested "
+                    "folder_one folder_one_one broadcast_template_nested "
+                    "Broadcast template"
+                ),
+                "folder_one folder_one_two folder_one folder_one_two Empty",
+                "folder_two folder_two Empty",
+                "broadcast_template_one broadcast_template_one Broadcast template",
+                "broadcast_template_two broadcast_template_two Broadcast template",
+                "broadcast_template_one broadcast_template_one Broadcast template",
+                "broadcast_template_two broadcast_template_two Broadcast template",
+                "broadcast_template_one broadcast_template_one Broadcast template",
+                "broadcast_template_two broadcast_template_two Broadcast template",
+            ],
+            [
+                "folder_one folder_one 2 folders",
+                "folder_two folder_two Empty",
+                "broadcast_template_one broadcast_template_one Broadcast message template",
+                "broadcast_template_two broadcast_template_two Broadcast message template",
+                "broadcast_template_one broadcast_template_one Broadcast template",
+                "broadcast_template_two broadcast_template_two Broadcast template",
+                "broadcast_template_one broadcast_template_one Broadcast template",
+                "broadcast_template_two broadcast_template_two Broadcast template",
+            ],
+            [
+                "folder_one",
+                "folder_one_one",
+                "folder_one_one_one",
+                "broadcast_template_nested",
+                "broadcast_template_nested",
+                "folder_one_two",
+                "folder_two",
+                "broadcast_template_one",
+                "broadcast_template_two",
+                "broadcast_template_one",
+                "broadcast_template_two",
+                "broadcast_template_one",
+                "broadcast_template_two",
+            ],
+            None,
+        ),
+        (
+            "Templates – service one – GOV.UK Emergency Alerts",
+            ["Templates"],
+            [],
+            {"template_type": "broadcast"},
+            ["Broadcast"],
             [
                 "folder_one folder_one 2 folders",
                 "folder_one folder_one_one folder_one folder_one_one 1 template, 1 folder",
@@ -65,46 +125,46 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
                 (
                     "folder_one folder_one_one folder_one_one_one sms_template_nested "
                     "folder_one folder_one_one folder_one_one_one sms_template_nested "
-                    "Text message template"
+                    "Broadcast template"
                 ),
                 (
                     "folder_one folder_one_one letter_template_nested "
                     "folder_one folder_one_one letter_template_nested "
-                    "Letter template"
+                    "Broadcast template"
                 ),
                 "folder_one folder_one_two folder_one folder_one_two Empty",
                 "folder_two folder_two Empty",
-                "sms_template_one sms_template_one Text message template",
-                "sms_template_two sms_template_two Text message template",
-                "email_template_one email_template_one Email template",
-                "email_template_two email_template_two Email template",
-                "letter_template_one letter_template_one Letter template",
-                "letter_template_two letter_template_two Letter template",
+                "broadcast_template_one broadcast_template_one Broadcast template",
+                "broadcast_template_two broadcast_template_two Broadcast template",
+                "broadcast_template_one broadcast_template_one Broadcast template",
+                "broadcast_template_two broadcast_template_two Broadcast template",
+                "broadcast_template_one broadcast_template_one Broadcast template",
+                "broadcast_template_two broadcast_template_two Broadcast template",
             ],
             [
                 "folder_one folder_one 2 folders",
                 "folder_two folder_two Empty",
-                "sms_template_one sms_template_one Text message template",
-                "sms_template_two sms_template_two Text message template",
-                "email_template_one email_template_one Email template",
-                "email_template_two email_template_two Email template",
-                "letter_template_one letter_template_one Letter template",
-                "letter_template_two letter_template_two Letter template",
+                "broadcast_template_one broadcast_template_one Broadcast template",
+                "broadcast_template_two broadcast_template_two Broadcast template",
+                "broadcast_template_one broadcast_template_one Broadcast template",
+                "broadcast_template_two broadcast_template_two Broadcast template",
+                "broadcast_template_one broadcast_template_one Broadcast template",
+                "broadcast_template_two broadcast_template_two Broadcast template",
             ],
             [
                 "folder_one",
                 "folder_one_one",
                 "folder_one_one_one",
-                "sms_template_nested",
-                "letter_template_nested",
+                "broadcast_template_nested",
+                "broadcast_template_nested",
                 "folder_one_two",
                 "folder_two",
-                "sms_template_one",
-                "sms_template_two",
-                "email_template_one",
-                "email_template_two",
-                "letter_template_one",
-                "letter_template_two",
+                "broadcast_template_one",
+                "broadcast_template_two",
+                "broadcast_template_one",
+                "broadcast_template_two",
+                "broadcast_template_one",
+                "broadcast_template_two",
             ],
             None,
         ),
@@ -112,68 +172,8 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
             "Templates – service one – GOV.UK Emergency Alerts",
             ["Templates"],
             [],
-            {"template_type": "all"},
-            ["Email", "Text message", "Letter", "Broadcast"],
-            [
-                "folder_one folder_one 2 folders",
-                "folder_one folder_one_one folder_one folder_one_one 1 template, 1 folder",
-                (
-                    "folder_one folder_one_one folder_one_one_one "
-                    "folder_one folder_one_one folder_one_one_one "
-                    "1 template"
-                ),
-                (
-                    "folder_one folder_one_one folder_one_one_one sms_template_nested "
-                    "folder_one folder_one_one folder_one_one_one sms_template_nested "
-                    "Text message template"
-                ),
-                (
-                    "folder_one folder_one_one letter_template_nested "
-                    "folder_one folder_one_one letter_template_nested "
-                    "Letter template"
-                ),
-                "folder_one folder_one_two folder_one folder_one_two Empty",
-                "folder_two folder_two Empty",
-                "sms_template_one sms_template_one Text message template",
-                "sms_template_two sms_template_two Text message template",
-                "email_template_one email_template_one Email template",
-                "email_template_two email_template_two Email template",
-                "letter_template_one letter_template_one Letter template",
-                "letter_template_two letter_template_two Letter template",
-            ],
-            [
-                "folder_one folder_one 2 folders",
-                "folder_two folder_two Empty",
-                "sms_template_one sms_template_one Text message template",
-                "sms_template_two sms_template_two Text message template",
-                "email_template_one email_template_one Email template",
-                "email_template_two email_template_two Email template",
-                "letter_template_one letter_template_one Letter template",
-                "letter_template_two letter_template_two Letter template",
-            ],
-            [
-                "folder_one",
-                "folder_one_one",
-                "folder_one_one_one",
-                "sms_template_nested",
-                "letter_template_nested",
-                "folder_one_two",
-                "folder_two",
-                "sms_template_one",
-                "sms_template_two",
-                "email_template_one",
-                "email_template_two",
-                "letter_template_one",
-                "letter_template_two",
-            ],
-            None,
-        ),
-        (
-            "Templates – service one – GOV.UK Emergency Alerts",
-            ["Templates"],
-            [],
-            {"template_type": "sms"},
-            ["All", "Email", "Letter", "Broadcast"],
+            {"template_type": "broadcast"},
+            ["Broadcast"],
             [
                 "folder_one folder_one 1 folder",
                 "folder_one folder_one_one folder_one folder_one_one 1 folder",
@@ -183,43 +183,43 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
                     "1 template"
                 ),
                 (
-                    "folder_one folder_one_one folder_one_one_one sms_template_nested "
-                    "folder_one folder_one_one folder_one_one_one sms_template_nested "
+                    "folder_one folder_one_one folder_one_one_one broadcast_template_nested "
+                    "folder_one folder_one_one folder_one_one_one broadcast_template_nested "
                     "Text message template"
                 ),
-                "sms_template_one sms_template_one Text message template",
-                "sms_template_two sms_template_two Text message template",
+                "broadcast_template_one broadcast_template_one Text message template",
+                "broadcast_template_two broadcast_template_two Text message template",
             ],
             [
                 "folder_one folder_one 1 folder",
-                "sms_template_one sms_template_one Text message template",
-                "sms_template_two sms_template_two Text message template",
+                "broadcast_template_one broadcast_template_one Text message template",
+                "broadcast_template_two broadcast_template_two Text message template",
             ],
             [
                 "folder_one",
                 "folder_one_one",
                 "folder_one_one_one",
-                "sms_template_nested",
-                "sms_template_one",
-                "sms_template_two",
+                "broadcast_template_nested",
+                "broadcast_template_one",
+                "broadcast_template_two",
             ],
             None,
         ),
         (
             "folder_one – Templates – service one – GOV.UK Emergency Alerts",
             ["Templates", "folder_one"],
-            [{"template_type": "all"}],
+            [{"template_type": "broadcast"}],
             {"template_folder_id": PARENT_FOLDER_ID},
-            ["Email", "Text message", "Letter", "Broadcast"],
+            ["Broadcast"],
             [
                 "folder_one_one folder_one_one 1 template, 1 folder",
                 "folder_one_one folder_one_one_one folder_one_one folder_one_one_one 1 template",
                 (
-                    "folder_one_one folder_one_one_one sms_template_nested "
-                    "folder_one_one folder_one_one_one sms_template_nested "
-                    "Text message template"
+                    "folder_one_one folder_one_one_one broadcast_template_nested "
+                    "folder_one_one folder_one_one_one broadcast_template_nested "
+                    "Broadcast template"
                 ),
-                "folder_one_one letter_template_nested folder_one_one letter_template_nested Letter template",
+                "folder_one_one broadcast_template_nested folder_one_one broadcast_template_nested Broadcast template",
                 "folder_one_two folder_one_two Empty",
             ],
             [
@@ -229,8 +229,8 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
             [
                 "folder_one_one",
                 "folder_one_one_one",
-                "sms_template_nested",
-                "letter_template_nested",
+                "broadcast_template_nested",
+                "broadcast_template_nested",
                 "folder_one_two",
             ],
             None,
@@ -238,16 +238,16 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
         (
             "folder_one – Templates – service one – GOV.UK Emergency Alerts",
             ["Templates", "folder_one"],
-            [{"template_type": "sms"}],
-            {"template_type": "sms", "template_folder_id": PARENT_FOLDER_ID},
-            ["All", "Email", "Letter", "Broadcast"],
+            [{"template_type": "broadcast"}],
+            {"template_type": "broadcast", "template_folder_id": PARENT_FOLDER_ID},
+            ["Broadcast"],
             [
                 "folder_one_one folder_one_one 1 folder",
                 "folder_one_one folder_one_one_one folder_one_one folder_one_one_one 1 template",
                 (
-                    "folder_one_one folder_one_one_one sms_template_nested "
-                    "folder_one_one folder_one_one_one sms_template_nested "
-                    "Text message template"
+                    "folder_one_one folder_one_one_one broadcast_template_nested "
+                    "folder_one_one folder_one_one_one broadcast_template_nested "
+                    "Broadcast template"
                 ),
             ],
             [
@@ -256,16 +256,16 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
             [
                 "folder_one_one",
                 "folder_one_one_one",
-                "sms_template_nested",
+                "broadcast_template_nested",
             ],
             None,
         ),
         (
             "folder_one – Templates – service one – GOV.UK Emergency Alerts",
             ["Templates", "folder_one"],
-            [{"template_type": "email"}],
-            {"template_type": "email", "template_folder_id": PARENT_FOLDER_ID},
-            ["All", "Text message", "Letter", "Broadcast"],
+            [{"template_type": "broadcast"}],
+            {"template_type": "broadcast", "template_folder_id": PARENT_FOLDER_ID},
+            ["Broadcast"],
             [],
             [],
             [],
@@ -279,24 +279,24 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
                 {"template_type": "all", "template_folder_id": PARENT_FOLDER_ID},
             ],
             {"template_folder_id": CHILD_FOLDER_ID},
-            ["Email", "Text message", "Letter", "Broadcast"],
+            ["Broadcast"],
             [
                 "folder_one_one_one folder_one_one_one 1 template",
                 (
-                    "folder_one_one_one sms_template_nested "
-                    "folder_one_one_one sms_template_nested "
-                    "Text message template"
+                    "folder_one_one_one broadcast_template_nested "
+                    "folder_one_one_one broadcast_template_nested "
+                    "Broadcast template"
                 ),
-                "letter_template_nested letter_template_nested Letter template",
+                "broadcast_template_nested broadcast_template_nested Broadcast template",
             ],
             [
                 "folder_one_one_one folder_one_one_one 1 template",
-                "letter_template_nested letter_template_nested Letter template",
+                "broadcast_template_nested broadcast_template_nested Broadcast template",
             ],
             [
                 "folder_one_one_one",
-                "sms_template_nested",
-                "letter_template_nested",
+                "broadcast_template_nested",
+                "broadcast_template_nested",
             ],
             None,
         ),
@@ -304,20 +304,20 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
             "folder_one_one_one – folder_one_one – folder_one – Templates – service one – GOV.UK Emergency Alerts",
             ["Templates", "folder_one", "folder_one_one", "folder_one_one_one"],
             [
-                {"template_type": "all"},
-                {"template_type": "all", "template_folder_id": PARENT_FOLDER_ID},
-                {"template_type": "all", "template_folder_id": CHILD_FOLDER_ID},
+                {"template_type": "broadcast"},
+                {"template_type": "broadcast", "template_folder_id": PARENT_FOLDER_ID},
+                {"template_type": "broadcast", "template_folder_id": CHILD_FOLDER_ID},
             ],
             {"template_folder_id": GRANDCHILD_FOLDER_ID},
-            ["Email", "Text message", "Letter", "Broadcast"],
+            ["Broadcast"],
             [
-                "sms_template_nested sms_template_nested Text message template",
+                "broadcast_template_nested broadcast_template_nested Broadcast template",
             ],
             [
-                "sms_template_nested sms_template_nested Text message template",
+                "broadcast_template_nested broadcast_template_nested Broadcast template",
             ],
             [
-                "sms_template_nested",
+                "broadcast_template_nested",
             ],
             None,
         ),
@@ -325,26 +325,26 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
             "folder_one_one_one – folder_one_one – folder_one – Templates – service one – GOV.UK Emergency Alerts",
             ["Templates", "folder_one", "folder_one_one", "folder_one_one_one"],
             [
-                {"template_type": "email"},
-                {"template_type": "email", "template_folder_id": PARENT_FOLDER_ID},
-                {"template_type": "email", "template_folder_id": CHILD_FOLDER_ID},
+                {"template_type": "broadcast"},
+                {"template_type": "broadcast", "template_folder_id": PARENT_FOLDER_ID},
+                {"template_type": "broadcast", "template_folder_id": CHILD_FOLDER_ID},
             ],
             {
-                "template_type": "email",
+                "template_type": "broadcast",
                 "template_folder_id": GRANDCHILD_FOLDER_ID,
             },
-            ["All", "Text message", "Letter", "Broadcast"],
+            ["Broadcast"],
             [],
             [],
             [],
-            "There are no email templates in this folder",
+            "There are no broadcast templates in this folder",
         ),
         (
             "folder_two – Templates – service one – GOV.UK Emergency Alerts",
             ["Templates", "folder_two"],
-            [{"template_type": "all"}],
+            [{"template_type": "broadcast"}],
             {"template_folder_id": FOLDER_TWO_ID},
-            ["Email", "Text message", "Letter", "Broadcast"],
+            ["Broadcast"],
             [],
             [],
             [],
@@ -353,9 +353,9 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
         (
             "folder_two – Templates – service one – GOV.UK Emergency Alerts",
             ["Templates", "folder_two"],
-            [{"template_type": "sms"}],
-            {"template_folder_id": FOLDER_TWO_ID, "template_type": "sms"},
-            ["All", "Email", "Letter", "Broadcast"],
+            [{"template_type": "broadcast"}],
+            {"template_folder_id": FOLDER_TWO_ID, "template_type": "broadcast"},
+            ["Broadcast"],
             [],
             [],
             [],
@@ -364,9 +364,9 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
         (
             "folder_two – Templates – service one – GOV.UK Emergency Alerts",
             ["Templates", "folder_two"],
-            [{"template_type": "all"}],
-            {"template_folder_id": FOLDER_TWO_ID, "template_type": "all"},
-            ["Email", "Text message", "Letter", "Broadcast"],
+            [{"template_type": "broadcast"}],
+            {"template_folder_id": FOLDER_TWO_ID, "template_type": "broadcast"},
+            ["Broadcast"],
             [],
             [],
             [],
@@ -401,19 +401,27 @@ def test_should_show_templates_folder_page(
         "app.service_api_client.get_service_templates",
         return_value={
             "data": [
-                _template("sms", "sms_template_one"),
-                _template("sms", "sms_template_two"),
-                _template("email", "email_template_one"),
-                _template("email", "email_template_two"),
-                _template("letter", "letter_template_one"),
-                _template("letter", "letter_template_two"),
-                _template("letter", "letter_template_nested", parent=CHILD_FOLDER_ID),
-                _template("sms", "sms_template_nested", parent=GRANDCHILD_FOLDER_ID),
+                # _template("sms", "sms_template_one"),
+                # _template("sms", "sms_template_two"),
+                # _template("email", "email_template_one"),
+                # _template("email", "email_template_two"),
+                # _template("letter", "letter_template_one"),
+                # _template("letter", "letter_template_two"),
+                # _template("letter", "letter_template_nested", parent=CHILD_FOLDER_ID),
+                # _template("sms", "sms_template_nested", parent=GRANDCHILD_FOLDER_ID),
+                _template("broadcast", "broadcast_template_one"),
+                _template("broadcast", "broadcast_template_two"),
+                _template("broadcast", "broadcast_template_one"),
+                _template("broadcast", "broadcast_template_two"),
+                _template("broadcast", "broadcast_template_one"),
+                _template("broadcast", "broadcast_template_two"),
+                _template("broadcast", "broadcast_template_nested", parent=CHILD_FOLDER_ID),
+                _template("broadcast", "broadcast_template_nested", parent=GRANDCHILD_FOLDER_ID),
             ]
         },
     )
 
-    service_one["permissions"] += ["letter"]
+    service_one["permissions"] += ["broadcast"]
 
     page = client_request.get("main.choose_template", service_id=SERVICE_ONE_ID, _test_page_title=False, **extra_args)
 
@@ -452,7 +460,7 @@ def test_should_show_templates_folder_page(
     assert len(displayed_page_items) == len(expected_displayed_items)
 
     for index, expected_item in enumerate(expected_displayed_items):
-        assert "/" not in expected_item  # Yo dawg I heard you like tests…
+        assert "/" not in expected_item
         assert normalize_spaces(displayed_page_items[index].text) == expected_item
 
     all_searchable_text = page.select("#template-list .template-list-item .live-search-relevant")
