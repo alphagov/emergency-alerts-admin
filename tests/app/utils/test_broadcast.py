@@ -1,4 +1,5 @@
 import math
+from unittest.mock import patch
 
 import pytest
 from shapely import Point
@@ -19,6 +20,8 @@ from app.utils.broadcast import (
     create_postcode_area_slug,
     create_postcode_db_id,
     extract_attributes_from_custom_area,
+    format_area_name,
+    format_areas_list,
     get_centroid,
     get_centroid_if_postcode_in_db,
     normalising_point,
@@ -215,3 +218,53 @@ def test_get_centroid_if_postcode_in_db(postcode, expected_centroid):
     if expected_centroid is not None:
         assert centroid.x == expected_centroid[0]
         assert centroid.y == expected_centroid[1]
+
+
+@pytest.mark.parametrize(
+    "area_name, expected_output",
+    [
+        ("Manchester, City of", "City of Manchester"),
+        ("Yorkshire, County of", "County of Yorkshire"),
+        ("London", "London"),
+        ("Lancaster, City of", "City of Lancaster"),
+        ("Oxfordshire, County of", "County of Oxfordshire"),
+    ],
+)
+def test_format_area_name(area_name, expected_output):
+    assert format_area_name(area_name) == expected_output
+
+
+class MockCustomBroadcastArea:
+    def __init__(self, name):
+        self.name = name
+
+
+class MockCustomBroadcastAreas:
+    def __init__(self, items):
+        self.items = items
+
+    def __len__(self):
+        return len(self.items)
+
+    def __iter__(self):
+        return iter(self.items)
+
+
+def test_format_areas_list_single_custom_area():
+    with patch("app.utils.broadcast.CustomBroadcastArea", MockCustomBroadcastArea):
+        custom_area = MockCustomBroadcastArea("Bristol, City of")
+        assert format_areas_list(custom_area) == ["City of Bristol"]
+
+
+def test_format_areas_list_multiple_areas():
+    with patch("app.utils.broadcast.CustomBroadcastAreas", MockCustomBroadcastAreas):
+        custom_area1 = "Manchester, City of"
+        custom_area2 = "Yorkshire, County of"
+        custom_areas_list = MockCustomBroadcastAreas([custom_area1, custom_area2])
+
+        assert format_areas_list(custom_areas_list) == ["City of Manchester", "County of Yorkshire"]
+
+
+def test_format_areas_list_regular_list():
+    areas_list = ["London", "Lancaster, City of", "Oxfordshire, County of"]
+    assert format_areas_list(areas_list) == ["London", "City of Lancaster", "County of Oxfordshire"]
