@@ -307,8 +307,8 @@ def mock_get_broadcast_template(mocker):
 
 @pytest.fixture(scope="function")
 def mock_create_service_template(mocker, fake_uuid):
-    def _create(name, type_, content, service, subject=None, process_type=None, parent_folder_id=None):
-        template = template_json(fake_uuid, name, type_, content, service, process_type, parent_folder_id)
+    def _create(name, type_, content, service, parent_folder_id=None):
+        template = template_json(fake_uuid, name, type_, content, service, parent_folder_id)
         return {"data": template}
 
     return mocker.patch("app.service_api_client.create_service_template", side_effect=_create)
@@ -360,21 +360,17 @@ def mock_update_service_template_400_content_too_big(mocker):
 
 
 def create_service_templates(service_id, number_of_templates=6):
-    template_types = ["broadcast", "broadcast"]
     service_templates = []
 
-    for _ in range(1, number_of_templates + 1):
-        template_number = "two" if _ % 2 == 0 else "one"
-        template_type = template_types[(_ % 2) - 1]
-
+    for num in range(1, number_of_templates + 1):
+        template_type = "broadcast"
         service_templates.append(
             template_json(
                 service_id,
-                TEMPLATE_ONE_ID if _ == 1 else str(generate_uuid()),
-                "{}_template_{}".format(template_type, template_number),
+                TEMPLATE_ONE_ID if num == 1 else str(generate_uuid()),
+                "{}_template_{}".format(template_type, str(num)),
                 template_type,
-                "{} template {} content".format(template_type, template_number),
-                subject=None,
+                "{} template {} content".format(template_type, str(num)),
             )
         )
 
@@ -2178,12 +2174,9 @@ def create_folder(id):
 def create_template(
     service_id=SERVICE_ONE_ID,
     template_id=None,
-    template_type="sms",
+    template_type="broadcast",
     name="sample template",
     content="Template content",
-    subject="Template subject",
-    redact_personalisation=False,
-    postage=None,
     folder=None,
 ):
     return template_json(
@@ -2192,9 +2185,6 @@ def create_template(
         name=name,
         type_=template_type,
         content=content,
-        subject=subject,
-        redact_personalisation=redact_personalisation,
-        postage=postage,
         folder=folder,
     )
 

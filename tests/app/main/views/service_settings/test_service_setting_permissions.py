@@ -13,9 +13,6 @@ def get_service_settings_page(
     platform_admin_user,
     service_one,
     mock_get_organisation,
-    no_reply_to_email_addresses,
-    no_letter_contact_blocks,
-    single_sms_sender,
     mock_get_service_data_retention,
 ):
     client_request.login(platform_admin_user)
@@ -134,10 +131,7 @@ def test_service_settings_links_for_archived_service(
 def test_normal_user_doesnt_see_any_platform_admin_settings(
     client_request,
     service_one,
-    no_reply_to_email_addresses,
-    no_letter_contact_blocks,
     mock_get_organisation,
-    single_sms_sender,
     mock_get_service_data_retention,
 ):
     page = client_request.get("main.service_settings", service_id=service_one["id"])

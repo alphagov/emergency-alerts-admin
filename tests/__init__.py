@@ -282,16 +282,16 @@ def template_json(
     name="sample template",
     type_=None,
     content=None,
-    subject=None,
+    # subject=None,
     version=1,
     archived=False,
-    process_type="normal",
-    redact_personalisation=None,
-    service_letter_contact=None,
-    reply_to=None,
-    reply_to_text=None,
-    is_precompiled_letter=False,
-    postage=None,
+    # process_type="normal",
+    # redact_personalisation=None,
+    # service_letter_contact=None,
+    # reply_to=None,
+    # reply_to_text=None,
+    # is_precompiled_letter=False,
+    # postage=None,
     folder=None,
 ):
     template = {
@@ -303,22 +303,22 @@ def template_json(
         "version": version,
         "updated_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S.%f"),
         "archived": archived,
-        "process_type": process_type,
-        "service_letter_contact": service_letter_contact,
-        "reply_to": reply_to,
-        "reply_to_text": reply_to_text,
-        "is_precompiled_letter": is_precompiled_letter,
+        # "process_type": process_type,
+        # "service_letter_contact": service_letter_contact,
+        # "reply_to": reply_to,
+        # "reply_to_text": reply_to_text,
+        # "is_precompiled_letter": is_precompiled_letter,
         "folder": folder,
-        "postage": postage,
+        # "postage": postage,
     }
     if content is None:
         template["content"] = "template content"
-    if subject is None and type_ != "sms":
-        template["subject"] = "template subject"
-    if subject is not None:
-        template["subject"] = subject
-    if redact_personalisation is not None:
-        template["redact_personalisation"] = redact_personalisation
+    # if subject is None and type_ != "sms":
+    #     template["subject"] = "template subject"
+    # if subject is not None:
+    #     template["subject"] = subject
+    # if redact_personalisation is not None:
+    #     template["redact_personalisation"] = redact_personalisation
     return template
 
 

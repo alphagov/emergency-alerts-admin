@@ -50,15 +50,6 @@ def mock_get_service_settings_page_common(
                 "Label Value Action",
                 "Service name Test Service Change service name",
                 "Sign-in method Text message code Change sign-in method",
-                "Label Value Action",
-                "Send emails On Change your settings for sending emails",
-                "Reply-to email addresses Not set Manage reply-to email addresses",
-                "Label Value Action",
-                "Send text messages On Change your settings for sending text messages",
-                "Start text messages with service name On Change your settings for starting text messages with service name",  # noqa
-                "Send international text messages Off Change your settings for sending international text messages",
-                "Label Value Action",
-                "Send letters Off Change your settings for sending letters",
             ],
         ),
         (
@@ -67,15 +58,6 @@ def mock_get_service_settings_page_common(
                 "Label Value Action",
                 "Service name Test Service Change service name",
                 "Sign-in method Text message code Change sign-in method",
-                "Label Value Action",
-                "Send emails On Change your settings for sending emails",
-                "Reply-to email addresses Not set Manage reply-to email addresses",
-                "Label Value Action",
-                "Send text messages On Change your settings for sending text messages",
-                "Start text messages with service name On Change your settings for starting text messages with service name",  # noqa
-                "Send international text messages Off Change your settings for sending international text messages",
-                "Label Value Action",
-                "Send letters Off Change your settings for sending letters",
                 "Label Value Action",
                 "Notes None Change the notes for the service",
                 "Email authentication Off Change your settings for Email authentication",
@@ -88,9 +70,6 @@ def test_should_show_overview(
     client_request,
     mocker,
     api_user_active,
-    no_reply_to_email_addresses,
-    no_letter_contact_blocks,
-    single_sms_sender,
     user,
     expected_rows,
     mock_get_service_settings_page_common,
@@ -119,9 +98,6 @@ def test_platform_admin_sees_only_relevant_settings_for_broadcast_service(
     client_request,
     mocker,
     api_user_active,
-    no_reply_to_email_addresses,
-    no_letter_contact_blocks,
-    single_sms_sender,
     mock_get_service_settings_page_common,
 ):
     service_one = service_json(
@@ -175,9 +151,6 @@ def test_platform_admin_sees_correct_description_of_broadcast_service_setting(
     client_request,
     mocker,
     api_user_active,
-    no_reply_to_email_addresses,
-    no_letter_contact_blocks,
-    single_sms_sender,
     mock_get_service_settings_page_common,
     has_broadcast_permission,
     service_mode,
@@ -222,9 +195,6 @@ def test_should_show_overview_for_service_with_more_things_set(
     active_user_with_permissions,
     mocker,
     service_one,
-    single_reply_to_email_address,
-    single_letter_contact_block,
-    single_sms_sender,
     mock_get_service_settings_page_common,
     permissions,
     expected_rows,
@@ -245,9 +215,6 @@ def test_should_show_service_name(
     assert (
         page.select_one("main p").text
         == "Your service name should tell users what the message is about as well as who it’s from."
-    )
-    assert normalize_spaces(page.select_one("main ul").text) == (
-        "at the start of every text message as your email sender name"
     )
     app.service_api_client.get_service.assert_called_with(SERVICE_ONE_ID)
 
@@ -359,9 +326,6 @@ def test_show_restricted_service(
 def test_broadcast_service_in_training_mode_doesnt_show_trial_mode_content(
     client_request,
     service_one,
-    single_reply_to_email_address,
-    single_letter_contact_block,
-    single_sms_sender,
     mock_get_service_settings_page_common,
 ):
     service_one["permissions"] = "broadcast"
@@ -394,9 +358,6 @@ def test_switch_service_to_live(client_request, platform_admin_user, mock_update
 def test_show_live_service(
     client_request,
     mock_get_live_service,
-    single_reply_to_email_address,
-    single_letter_contact_block,
-    single_sms_sender,
     mock_get_service_settings_page_common,
 ):
     page = client_request.get(
@@ -539,8 +500,6 @@ def test_should_redirect_after_service_name_change(
 def test_should_check_if_estimated_volumes_provided(
     client_request,
     mocker,
-    single_sms_sender,
-    single_reply_to_email_address,
     mock_get_service_templates,
     mock_get_users_by_service,
     mock_get_organisation,
@@ -588,7 +547,6 @@ def test_should_check_for_reply_to_on_go_live(
     mocker,
     service_one,
     fake_uuid,
-    single_sms_sender,
     volume_email,
     count_of_email_templates,
     reply_to_email_addresses,
@@ -645,7 +603,6 @@ def test_should_check_for_sending_things_right(
     mocker,
     service_one,
     fake_uuid,
-    single_sms_sender,
     count_of_users_with_manage_service,
     count_of_invites_with_manage_service,
     expected_user_checklist_item,
@@ -653,7 +610,6 @@ def test_should_check_for_sending_things_right(
     expected_templates_checklist_item,
     active_user_with_permissions,
     active_user_no_settings_permission,
-    single_reply_to_email_address,
 ):
     mocker.patch(
         "app.service_api_client.get_service_templates",
@@ -714,7 +670,6 @@ def test_should_not_show_go_live_button_if_checklist_not_complete(
     mock_get_users_by_service,
     mock_get_service_organisation,
     mock_get_invites_for_service,
-    single_sms_sender,
     checklist_completed,
     agreement_signed,
     expected_button,
@@ -1171,10 +1126,7 @@ def test_should_redirect_after_request_to_go_live(
     client_request,
     mocker,
     active_user_with_permissions,
-    single_reply_to_email_address,
-    single_letter_contact_block,
     mock_get_organisations_and_services_for_user,
-    single_sms_sender,
     mock_get_service_settings_page_common,
     mock_get_service_templates,
     mock_get_users_by_service,
@@ -1244,10 +1196,7 @@ def test_request_to_go_live_displays_go_live_notes_in_zendesk_ticket(
     client_request,
     mocker,
     active_user_with_permissions,
-    single_reply_to_email_address,
-    single_letter_contact_block,
     mock_get_organisations_and_services_for_user,
-    single_sms_sender,
     mock_get_service_organisation,
     mock_get_service_settings_page_common,
     mock_get_service_templates,
@@ -1316,10 +1265,7 @@ def test_request_to_go_live_displays_mou_signatories(
     mocker,
     fake_uuid,
     active_user_with_permissions,
-    single_reply_to_email_address,
-    single_letter_contact_block,
     mock_get_organisations_and_services_for_user,
-    single_sms_sender,
     mock_get_service_organisation,
     mock_get_service_settings_page_common,
     mock_get_service_templates,
@@ -1357,10 +1303,7 @@ def test_request_to_go_live_displays_mou_signatories(
 def test_should_be_able_to_request_to_go_live_with_no_organisation(
     client_request,
     mocker,
-    single_reply_to_email_address,
-    single_letter_contact_block,
     mock_get_organisations_and_services_for_user,
-    single_sms_sender,
     mock_get_service_settings_page_common,
     mock_get_service_templates,
     mock_get_users_by_service,
@@ -1564,10 +1507,7 @@ def test_route_permissions(
     client_request,
     api_user_active,
     service_one,
-    single_reply_to_email_address,
-    single_letter_contact_block,
     mock_get_invites_for_service,
-    single_sms_sender,
     route,
     mock_get_service_settings_page_common,
     mock_get_service_templates,
@@ -1633,9 +1573,6 @@ def test_route_for_platform_admin(
     client_request,
     platform_admin_user,
     service_one,
-    single_reply_to_email_address,
-    single_letter_contact_block,
-    single_sms_sender,
     route,
     mock_get_service_settings_page_common,
     mock_get_service_templates,
@@ -1661,9 +1598,7 @@ def test_route_for_platform_admin(
         ("testtest", "Enter a valid email address"),
     ],
 )
-def test_incorrect_reply_to_email_address_input(
-    reply_to_input, expected_error, client_request, no_reply_to_email_addresses
-):
+def test_incorrect_reply_to_email_address_input(reply_to_input, expected_error, client_request):
     page = client_request.post(
         "main.service_add_email_reply_to",
         service_id=SERVICE_ONE_ID,
@@ -2004,9 +1939,6 @@ def test_shows_research_mode_indicator(
     client_request,
     service_one,
     mocker,
-    single_reply_to_email_address,
-    single_letter_contact_block,
-    single_sms_sender,
     mock_get_service_settings_page_common,
 ):
     service_one["research_mode"] = True
@@ -2023,9 +1955,6 @@ def test_shows_research_mode_indicator(
 
 def test_does_not_show_research_mode_indicator(
     client_request,
-    single_reply_to_email_address,
-    single_letter_contact_block,
-    single_sms_sender,
     mock_get_service_settings_page_common,
 ):
     page = client_request.get(
@@ -2117,10 +2046,7 @@ def test_archive_service_after_confirm(
 def test_archive_service_prompts_user(
     client_request,
     mocker,
-    single_reply_to_email_address,
-    single_letter_contact_block,
     service_one,
-    single_sms_sender,
     mock_get_service_settings_page_common,
     user,
     is_trial_service,
@@ -2156,9 +2082,6 @@ def test_cant_archive_inactive_service(
     client_request,
     platform_admin_user,
     service_one,
-    single_reply_to_email_address,
-    single_letter_contact_block,
-    single_sms_sender,
     mock_get_service_settings_page_common,
 ):
     service_one["active"] = False
@@ -2182,7 +2105,6 @@ def test_cant_archive_inactive_service(
 def test_invitation_pages(
     client_request,
     service_one,
-    single_sms_sender,
     endpoint,
     permissions,
     expected_p,
@@ -2375,9 +2297,6 @@ def test_service_settings_links_to_edit_service_notes_page_for_platform_admins(
     service_one,
     client_request,
     platform_admin_user,
-    no_reply_to_email_addresses,
-    no_letter_contact_blocks,
-    single_sms_sender,
     mock_get_service_settings_page_common,
 ):
     client_request.login(platform_admin_user)

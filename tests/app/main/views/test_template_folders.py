@@ -424,17 +424,17 @@ def test_template_id_is_searchable_for_services_with_api_keys(
 def test_can_create_email_template_with_parent_folder(client_request, mock_create_service_template):
     data = {
         "name": "new name",
-        "subject": "Food incoming!",
-        "template_content": "here's a burrito 🌯",
-        "template_type": "email",
+        # "subject": "Food incoming!",
+        "template_content": "Broadcast template content",
+        "template_type": "broadcast",
         "service": SERVICE_ONE_ID,
-        "process_type": "normal",
+        # "process_type": "normal",
         "parent_folder_id": PARENT_FOLDER_ID,
     }
     client_request.post(
         ".add_service_template",
         service_id=SERVICE_ONE_ID,
-        template_type="email",
+        template_type="broadcast",
         template_folder_id=PARENT_FOLDER_ID,
         _data=data,
         _expected_redirect=url_for(
@@ -448,8 +448,8 @@ def test_can_create_email_template_with_parent_folder(client_request, mock_creat
         data["template_type"],
         data["template_content"],
         SERVICE_ONE_ID,
-        data["subject"],
-        data["process_type"],
+        # data["subject"],
+        # data["process_type"],
         data["parent_folder_id"],
     )
 
@@ -892,7 +892,6 @@ def test_delete_folder(
     [
         pytest.param(create_active_user_with_permissions()),
         pytest.param(create_active_user_view_permissions(), marks=pytest.mark.xfail(raises=AssertionError)),
-        pytest.param(create_active_caseworking_user(), marks=pytest.mark.xfail(raises=AssertionError)),
     ],
 )
 def test_should_show_checkboxes_for_selecting_templates(
@@ -912,7 +911,7 @@ def test_should_show_checkboxes_for_selecting_templates(
     )
     checkboxes = page.select("input[name=templates_and_folders]")
 
-    assert len(checkboxes) == 4
+    assert len(checkboxes) == 6
 
     assert checkboxes[0]["value"] == TEMPLATE_ONE_ID
     assert checkboxes[0]["id"] == "templates-or-folder-{}".format(TEMPLATE_ONE_ID)
@@ -1229,7 +1228,7 @@ def test_should_be_able_to_move_a_sub_item(
             "templates_and_folders": [],
             "move_to_new_folder_name": "",
             "move_to": PARENT_FOLDER_ID,
-            "add_template_by_template_type": "email",
+            "add_template_by_template_type": "broadcast",
         },
         # add a new template, but also move to root folder
         {
@@ -1237,7 +1236,7 @@ def test_should_be_able_to_move_a_sub_item(
             "templates_and_folders": [],
             "move_to_new_folder_name": "",
             "move_to": ROOT_FOLDER_ID,
-            "add_template_by_template_type": "email",
+            "add_template_by_template_type": "broadcast",
         },
         # add a new template, but don't select anything
         {
@@ -1255,8 +1254,6 @@ def test_no_action_if_user_fills_in_ambiguous_fields(
     mock_get_no_api_keys,
     data,
 ):
-    service_one["permissions"] += ["letter"]
-
     mock_get_template_folders.return_value = [
         _folder("parent_folder", PARENT_FOLDER_ID, None),
         _folder("folder_two", FOLDER_TWO_ID, None),
@@ -1276,9 +1273,6 @@ def test_no_action_if_user_fills_in_ambiguous_fields(
     assert page.select_one("button[value={}]".format(data["operation"]))
 
     assert [
-        "email",
-        "sms",
-        "letter",
         "broadcast",
         "copy-existing",
     ] == [radio["value"] for radio in page.select("#add_new_template_form input[type=radio]")]

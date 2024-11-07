@@ -37,7 +37,7 @@ def view_template(service_id, template_id):
     return render_template(
         "views/templates/template.html",
         template=get_template(template),
-        template_postage=template["postage"],
+        # template_postage=template["postage"],
         user_has_template_permission=user_has_template_permission,
     )
 
@@ -421,16 +421,12 @@ def add_service_template(service_id, template_type, template_folder_id=None):
 
     form = form_objects[template_type]()
     if form.validate_on_submit():
-        if form.process_type.data == "priority":
-            abort_403_if_not_admin_user()
         try:
             new_template = service_api_client.create_service_template(
                 form.name.data,
                 template_type,
                 form.template_content.data,
                 service_id,
-                form.subject.data if hasattr(form, "subject") else None,
-                form.process_type.data,
                 template_folder_id,
             )
         except HTTPError as e:
@@ -467,22 +463,15 @@ def edit_service_template(service_id, template_id):
     template["template_content"] = template["content"]
     form = form_objects[template["template_type"]](**template)
     if form.validate_on_submit():
-        if form.process_type.data != template["process_type"]:
-            abort_403_if_not_admin_user()
-
-        subject = form.subject.data if hasattr(form, "subject") else None
-
         new_template_data = {
             "name": form.name.data,
             "content": form.template_content.data,
-            "subject": subject,
             "template_type": template["template_type"],
             "id": template["id"],
-            "process_type": form.process_type.data,
         }
 
-        new_template = get_template(new_template_data, current_service)
-        template_change = get_template(template, current_service).compare_to(new_template)
+        new_template = get_template(new_template_data)
+        template_change = get_template(template).compare_to(new_template)
 
         if template_change.placeholders_added and not request.form.get("confirm") and current_service.api_keys:
             return render_template(
@@ -498,8 +487,6 @@ def edit_service_template(service_id, template_id):
                 template["template_type"],
                 form.template_content.data,
                 service_id,
-                subject,
-                form.process_type.data,
             )
         except HTTPError as e:
             if e.status_code == 400:
@@ -546,8 +533,7 @@ def count_content_length(service_id, template_type):
             {
                 "template_type": template_type,
                 "content": request.form.get("template_content", ""),
-            },
-            current_service,
+            }
         )
     )
 
