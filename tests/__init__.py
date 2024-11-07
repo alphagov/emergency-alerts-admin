@@ -184,7 +184,7 @@ def service_json(
     if users is None:
         users = []
     if permissions is None:
-        permissions = ["email", "sms", "broadcast"]
+        permissions = ["broadcast"]
     if service_callback_api is None:
         service_callback_api = []
     if inbound_api is None:

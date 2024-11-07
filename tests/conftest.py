@@ -387,6 +387,7 @@ def _template(template_type, name, parent=None, template_id=None):
         "name": name,
         "template_type": template_type,
         "folder": parent,
+        "content": "Broadcast template",
     }
 
 
