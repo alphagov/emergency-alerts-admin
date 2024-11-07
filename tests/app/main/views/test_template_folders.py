@@ -366,8 +366,8 @@ def test_template_id_is_searchable_for_services_with_api_keys(
     mock_get_template_folders.return_value = [
         _folder("folder one", PARENT_FOLDER_ID),
     ]
-    template_1 = _template("sms", "template one")
-    template_2 = _template("sms", "template two", parent=PARENT_FOLDER_ID)
+    template_1 = _template("broadcast", "template one")
+    template_2 = _template("broadcast", "template two", parent=PARENT_FOLDER_ID)
     mocker.patch(
         "app.service_api_client.get_service_templates",
         return_value={
@@ -404,7 +404,7 @@ def test_template_id_is_searchable_for_services_with_api_keys(
         )
     ] == [
         "folder one folder one 1 template",
-        f'template one {template_1["id"]} template one Text message template',
+        f'template one {template_1["id"]} template one Broadcast template',
     ]
 
     assert [
@@ -1439,74 +1439,57 @@ def test_show_custom_error_message(
             [
                 ["folder_A", "folder_A", "1 template, 2 folders"],
                 ["folder_E folder_F folder_G", "folder_E", "folder_F", "folder_G", "1 template"],
-                ["email_template_root", "email_template_root", "Email template"],
+                ["broadcast_template_root", "broadcast_template_root", "Broadcast template"],
             ],
             [
                 ["folder_A", "folder_A", "1 template, 2 folders"],
-                ["folder_A folder_C", "folder_A", "folder_C", "1 template"],
-                ["folder_A folder_C sms_template_C", "folder_A", "folder_C", "sms_template_C", "Text message template"],
+                ["folder_A folder_C", "folder_A", "folder_C", "Empty"],
                 ["folder_A folder_D", "folder_A", "folder_D", "Empty"],
-                ["folder_A sms_template_A", "folder_A", "sms_template_A", "Text message template"],
+                ["folder_A broadcast_template_A", "folder_A", "broadcast_template_A", "Broadcast template"],
                 ["folder_E folder_F folder_G", "folder_E", "folder_F", "folder_G", "1 template"],
                 [
-                    "folder_E folder_F folder_G email_template_G",
+                    "folder_E folder_F folder_G broadcast_template_G",
                     "folder_E",
                     "folder_F",
                     "folder_G",
-                    "email_template_G",
-                    "Email template",
+                    "broadcast_template_G",
+                    "Broadcast template",
                 ],
-                ["email_template_root", "email_template_root", "Email template"],
+                ["broadcast_template_root", "broadcast_template_root", "Broadcast template"],
             ],
             None,
         ),
         (
-            {"template_type": "email"},
+            {"template_type": "broadcast"},
             [
+                ["folder_A", "folder_A", "1 template"],
                 ["folder_E folder_F folder_G", "folder_E", "folder_F", "folder_G", "1 template"],
-                ["email_template_root", "email_template_root", "Email template"],
+                ["broadcast_template_root", "broadcast_template_root", "Broadcast template"],
             ],
             [
+                ["folder_A", "folder_A", "1 template"],
+                ["folder_A broadcast_template_A", "folder_A", "broadcast_template_A", "Broadcast template"],
                 ["folder_E folder_F folder_G", "folder_E", "folder_F", "folder_G", "1 template"],
                 [
-                    "folder_E folder_F folder_G email_template_G",
+                    "folder_E folder_F folder_G broadcast_template_G",
                     "folder_E",
                     "folder_F",
                     "folder_G",
-                    "email_template_G",
-                    "Email template",
+                    "broadcast_template_G",
+                    "Broadcast template",
                 ],
-                ["email_template_root", "email_template_root", "Email template"],
+                ["broadcast_template_root", "broadcast_template_root", "Broadcast template"],
             ],
-            None,
-        ),
-        (
-            {"template_type": "sms"},
-            [
-                ["folder_A", "folder_A", "1 template, 1 folder"],
-            ],
-            [
-                ["folder_A", "folder_A", "1 template, 1 folder"],
-                ["folder_A folder_C", "folder_A", "folder_C", "1 template"],
-                ["folder_A folder_C sms_template_C", "folder_A", "folder_C", "sms_template_C", "Text message template"],
-                ["folder_A sms_template_A", "folder_A", "sms_template_A", "Text message template"],
-            ],
-            None,
-        ),
-        (
-            {"template_type": "letter"},
-            [],
-            [],
             None,
         ),
         (
             {
-                "template_type": "email",
+                "template_type": "broadcast",
                 "template_folder_id": FOLDER_C_ID,
             },
             [],
             [],
-            "There are no email templates in this folder",
+            "This folder is empty",
         ),
         (
             {"template_folder_id": CHILD_FOLDER_ID},
@@ -1515,7 +1498,7 @@ def test_show_custom_error_message(
             "This folder is empty",
         ),
         (
-            {"template_folder_id": CHILD_FOLDER_ID, "template_type": "sms"},
+            {"template_folder_id": CHILD_FOLDER_ID, "template_type": "broadcast"},
             [],
             [],
             "This folder is empty",
@@ -1534,7 +1517,6 @@ def test_should_filter_templates_folder_page_based_on_user_permissions(
     expected_items,
     expected_empty_message,
 ):
-    service_one["permissions"] += ["letter"]
     mock_get_template_folders.return_value = [
         _folder("folder_A", FOLDER_TWO_ID, None, [active_user_with_permissions["id"]]),
         _folder("folder_B", FOLDER_B_ID, FOLDER_TWO_ID, []),
@@ -1548,12 +1530,13 @@ def test_should_filter_templates_folder_page_based_on_user_permissions(
         "app.service_api_client.get_service_templates",
         return_value={
             "data": [
-                _template("email", "email_template_root"),
-                _template("sms", "sms_template_A", parent=FOLDER_TWO_ID),
-                _template("sms", "sms_template_C", parent=FOLDER_C_ID),
-                _template("email", "email_template_B", parent=FOLDER_B_ID),
-                _template("email", "email_template_G", parent=GRANDCHILD_FOLDER_ID),
-                _template("letter", "letter_template_F", parent=CHILD_FOLDER_ID),
+                _template("broadcast", "broadcast_template_root"),
+                _template("broadcast", "broadcast_template_A", parent=FOLDER_TWO_ID),
+                # _template("broadcast", "broadcast_template_C", parent=FOLDER_C_ID),
+                _template("broadcast", "broadcast_template_B", parent=FOLDER_B_ID),
+                _template("broadcast", "broadcast_template_G", parent=GRANDCHILD_FOLDER_ID),
+                # _template("letter", "letter_template_F", parent=CHILD_FOLDER_ID),
+                _template("broadcast", "broadcast_template_F", parent=CHILD_FOLDER_ID),
             ]
         },
     )
