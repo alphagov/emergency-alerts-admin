@@ -38,7 +38,9 @@ read-source-file: write-source-file
 	echo '. "$$NVM_DIR/nvm.sh"' >> ~/.nvm-source;
 
 	@if [[ "$(NVM_DIR)" == "" || ! -f "$(NVM_DIR)/nvm.sh" ]]; then \
+		export NVM_DIR="~/.nvm" \
 		curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v$(NVM_VERSION)/install.sh | bash; \
+		ls $(NVM_DIR) \
 		echo ""; \
 		$(MAKE) write-source-file; \
 		for line in $$(cat ~/.nvm-source); do \
