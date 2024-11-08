@@ -44,10 +44,11 @@ read-source-file: write-source-file
 		for line in $$(cat ~/.nvm-source); do \
 			export $$line; \
 		done; \
-		echo 'NVM_DIR = . $$NVM_DIR/nvm.sh'; \
 		echo '. $$NVM_DIR/nvm.sh' >> ~/.nvm-source; \
 	fi
 
+	@cat ~/.nvm-source
+	@. ~/.nvm-source && nvm --version
 	@current_nvm_version=$$(. ~/.nvm-source && nvm --version); \
 	echo "NVM Versions (current/expected): $$current_nvm_version/$(NVM_VERSION)";
 
