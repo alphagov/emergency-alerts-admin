@@ -37,7 +37,6 @@ def view_template(service_id, template_id):
     return render_template(
         "views/templates/template.html",
         template=get_template(template),
-        # template_postage=template["postage"],
         user_has_template_permission=user_has_template_permission,
     )
 

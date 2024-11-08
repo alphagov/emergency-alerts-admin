@@ -201,14 +201,8 @@ def get_url_for_notify_record(uuid_):
         url_for_data = {
             "organisation": _EndpointSpec(".organisation_dashboard", "org_id"),
             "service": _EndpointSpec(".service_dashboard", "service_id"),
-            "notification": _EndpointSpec("main.view_notification", "notification_id", with_service_id=True),
             "template": _EndpointSpec("main.view_template", "template_id", with_service_id=True),
             "user": _EndpointSpec(".user_information", "user_id"),
-            "provider": _EndpointSpec(".view_provider", "provider_id"),
-            "reply_to_email": _EndpointSpec(".service_edit_email_reply_to", "reply_to_email_id", with_service_id=True),
-            "job": _EndpointSpec(".view_job", "job_id", with_service_id=True),
-            "service_contact_list": _EndpointSpec(".contact_list", "contact_list_id", with_service_id=True),
-            "service_data_retention": _EndpointSpec(".edit_data_retention", "data_retention_id", with_service_id=True),
             "api_key": _EndpointSpec(".api_keys", with_service_id=True),
             "template_folder": _EndpointSpec(".choose_template", "template_folder_id", with_service_id=True),
         }

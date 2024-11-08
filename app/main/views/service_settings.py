@@ -13,8 +13,6 @@ from app.formatters import email_safe
 from app.main import main
 from app.main.forms import (
     AdminNotesForm,
-    AdminServiceAddDataRetentionForm,
-    AdminServiceEditDataRetentionForm,
     AdminSetOrganisationForm,
     RenameServiceForm,
     SearchByNameForm,
@@ -250,42 +248,6 @@ def link_service_to_organisation(service_id):
         has_organisations=all_organisations,
         form=form,
         search_form=SearchByNameForm(),
-    )
-
-
-@main.route("/services/<uuid:service_id>/data-retention", methods=["GET"])
-@user_is_platform_admin
-def data_retention(service_id):
-    return render_template(
-        "views/service-settings/data-retention.html",
-    )
-
-
-@main.route("/services/<uuid:service_id>/data-retention/add", methods=["GET", "POST"])
-@user_is_platform_admin
-def add_data_retention(service_id):
-    form = AdminServiceAddDataRetentionForm()
-    if form.validate_on_submit():
-        service_api_client.create_service_data_retention(
-            service_id, form.notification_type.data, form.days_of_retention.data
-        )
-        return redirect(url_for(".data_retention", service_id=service_id))
-    return render_template("views/service-settings/data-retention/add.html", form=form)
-
-
-@main.route("/services/<uuid:service_id>/data-retention/<uuid:data_retention_id>/edit", methods=["GET", "POST"])
-@user_is_platform_admin
-def edit_data_retention(service_id, data_retention_id):
-    data_retention_item = current_service.get_data_retention_item(data_retention_id)
-    form = AdminServiceEditDataRetentionForm(days_of_retention=data_retention_item["days_of_retention"])
-    if form.validate_on_submit():
-        service_api_client.update_service_data_retention(service_id, data_retention_id, form.days_of_retention.data)
-        return redirect(url_for(".data_retention", service_id=service_id))
-    return render_template(
-        "views/service-settings/data-retention/edit.html",
-        form=form,
-        data_retention_id=data_retention_id,
-        notification_type=data_retention_item["notification_type"],
     )
 
 

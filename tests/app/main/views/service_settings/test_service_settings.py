@@ -54,7 +54,6 @@ def test_should_show_overview(
     api_user_active,
     user,
     expected_rows,
-    mock_get_service_settings_page_common,
 ):
     service_one = service_json(
         SERVICE_ONE_ID,
@@ -80,7 +79,6 @@ def test_platform_admin_sees_only_relevant_settings_for_broadcast_service(
     client_request,
     mocker,
     api_user_active,
-    mock_get_service_settings_page_common,
 ):
     service_one = service_json(
         SERVICE_ONE_ID,
@@ -133,7 +131,6 @@ def test_platform_admin_sees_correct_description_of_broadcast_service_setting(
     client_request,
     mocker,
     api_user_active,
-    mock_get_service_settings_page_common,
     has_broadcast_permission,
     service_mode,
     broadcast_channel,
@@ -177,7 +174,6 @@ def test_should_show_overview_for_service_with_more_things_set(
     active_user_with_permissions,
     mocker,
     service_one,
-    mock_get_service_settings_page_common,
     permissions,
     expected_rows,
 ):
@@ -247,7 +243,6 @@ def test_should_show_service_name_with_no_prefixing(
     client_request,
     service_one,
 ):
-    service_one["prefix_sms"] = False
     page = client_request.get("main.service_name_change", service_id=SERVICE_ONE_ID)
     assert page.select_one("h1").text == "Change your service name"
     assert (
@@ -308,7 +303,6 @@ def test_show_restricted_service(
 def test_broadcast_service_in_training_mode_doesnt_show_trial_mode_content(
     client_request,
     service_one,
-    mock_get_service_settings_page_common,
 ):
     service_one["permissions"] = "broadcast"
     page = client_request.get(
@@ -324,7 +318,6 @@ def test_broadcast_service_in_training_mode_doesnt_show_trial_mode_content(
 def test_show_live_service(
     client_request,
     mock_get_live_service,
-    mock_get_service_settings_page_common,
 ):
     page = client_request.get(
         "main.service_settings",
@@ -387,7 +380,6 @@ def test_route_permissions(
     service_one,
     mock_get_invites_for_service,
     route,
-    mock_get_service_settings_page_common,
     mock_get_service_templates,
 ):
     validate_route_permission(
@@ -447,7 +439,6 @@ def test_route_for_platform_admin(
     platform_admin_user,
     service_one,
     route,
-    mock_get_service_settings_page_common,
     mock_get_service_templates,
     mock_get_invites_for_service,
 ):
@@ -545,7 +536,6 @@ def test_archive_service_prompts_user(
     client_request,
     mocker,
     service_one,
-    mock_get_service_settings_page_common,
     user,
     is_trial_service,
 ):
@@ -580,7 +570,6 @@ def test_cant_archive_inactive_service(
     client_request,
     platform_admin_user,
     service_one,
-    mock_get_service_settings_page_common,
 ):
     service_one["active"] = False
 
@@ -681,121 +670,11 @@ def test_update_service_organisation_does_not_update_if_same_value(
     assert mock_update_service_organisation.called is False
 
 
-def test_show_service_data_retention(
-    client_request,
-    platform_admin_user,
-    service_one,
-    mock_get_service_data_retention,
-):
-    mock_get_service_data_retention.return_value[0]["days_of_retention"] = 5
-
-    client_request.login(platform_admin_user)
-    page = client_request.get(
-        "main.data_retention",
-        service_id=service_one["id"],
-    )
-
-    rows = page.select("tbody tr")
-    assert len(rows) == 1
-    assert normalize_spaces(rows[0].text) == "Email 5 days Change"
-
-
-def test_view_add_service_data_retention(
-    client_request,
-    platform_admin_user,
-    service_one,
-):
-    client_request.login(platform_admin_user)
-    page = client_request.get(
-        "main.add_data_retention",
-        service_id=service_one["id"],
-    )
-    assert normalize_spaces(page.select_one("input")["value"]) == "email"
-    assert page.select_one("input", attrs={"name": "days_of_retention"})
-
-
-def test_add_service_data_retention(
-    client_request, platform_admin_user, service_one, mock_create_service_data_retention
-):
-    client_request.login(platform_admin_user)
-    client_request.post(
-        "main.add_data_retention",
-        service_id=service_one["id"],
-        _data={"notification_type": "email", "days_of_retention": 5},
-        _expected_redirect=url_for(
-            "main.data_retention",
-            service_id=service_one["id"],
-        ),
-    )
-    assert mock_create_service_data_retention.called
-
-
-def test_update_service_data_retention(
-    client_request,
-    platform_admin_user,
-    service_one,
-    fake_uuid,
-    mock_get_service_data_retention,
-    mock_update_service_data_retention,
-):
-    client_request.login(platform_admin_user)
-    client_request.post(
-        "main.edit_data_retention",
-        service_id=service_one["id"],
-        data_retention_id=str(fake_uuid),
-        _data={"days_of_retention": 5},
-        _expected_redirect=url_for(
-            "main.data_retention",
-            service_id=service_one["id"],
-        ),
-    )
-    assert mock_update_service_data_retention.called
-
-
-def test_update_service_data_retention_return_validation_error_for_negative_days_of_retention(
-    client_request,
-    platform_admin_user,
-    service_one,
-    fake_uuid,
-    mock_get_service_data_retention,
-    mock_update_service_data_retention,
-):
-    client_request.login(platform_admin_user)
-    page = client_request.post(
-        "main.edit_data_retention",
-        service_id=service_one["id"],
-        data_retention_id=fake_uuid,
-        _data={"days_of_retention": -5},
-        _expected_status=200,
-    )
-    assert "Must be between 3 and 90" in page.select_one(".govuk-error-message").text
-    assert mock_get_service_data_retention.called
-    assert not mock_update_service_data_retention.called
-
-
-def test_update_service_data_retention_populates_form(
-    client_request,
-    platform_admin_user,
-    service_one,
-    fake_uuid,
-    mock_get_service_data_retention,
-):
-    mock_get_service_data_retention.return_value[0]["days_of_retention"] = 5
-    client_request.login(platform_admin_user)
-    page = client_request.get(
-        "main.edit_data_retention",
-        service_id=service_one["id"],
-        data_retention_id=fake_uuid,
-    )
-    assert page.select_one("input", attrs={"name": "days_of_retention"})["value"] == "5"
-
-
 def test_service_settings_links_to_edit_service_notes_page_for_platform_admins(
     mocker,
     service_one,
     client_request,
     platform_admin_user,
-    mock_get_service_settings_page_common,
 ):
     client_request.login(platform_admin_user)
     page = client_request.get(

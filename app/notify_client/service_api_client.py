@@ -12,9 +12,7 @@ class ServiceAPIClient(NotifyAdminAPIClient):
         self,
         service_name,
         organisation_type,
-        restricted,
         user_id,
-        email_from,
     ):
         """
         Create a service and return the json.
@@ -24,8 +22,6 @@ class ServiceAPIClient(NotifyAdminAPIClient):
             "organisation_type": organisation_type,
             "active": True,
             "user_id": user_id,
-            "restricted": restricted,
-            "email_from": email_from,
         }
         data = _attach_current_user(data)
         return self.post("/service", data)["data"]["id"]
@@ -89,7 +85,7 @@ class ServiceAPIClient(NotifyAdminAPIClient):
             "purchase_order_number",
             "rate_limit",
             "reply_to_email_address",
-            "research_mode",
+            "",
             "restricted",
             "sms_sender",
             "volume_email",

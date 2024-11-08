@@ -1182,15 +1182,6 @@ class BaseTemplateForm(StripWhitespaceForm):
     template_content = TextAreaField(
         "Alert message", validators=[DataRequired(message="Alert message cannot be empty"), NoCommasInPlaceHolders()]
     )
-    # process_type = GovukRadiosField(
-    #     "Use priority queue?",
-    #     choices=[
-    #         ("priority", "Yes"),
-    #         ("normal", "No"),
-    #     ],
-    #     thing="yes or no",
-    #     default="normal",
-    # )
 
 
 class ChooseDurationForm(StripWhitespaceForm):

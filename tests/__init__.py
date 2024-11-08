@@ -157,27 +157,14 @@ def service_json(
     name="Test Service",
     users=None,
     active=True,
-    restricted=True,
-    email_from=None,
-    reply_to_email_address=None,
-    sms_sender="GOVUK",
-    research_mode=False,
-    branding="govuk",
     created_at=None,
-    letter_contact_block=None,
     inbound_api=None,
     service_callback_api=None,
     permissions=None,
     organisation_type="central",
-    prefix_sms=True,
     contact_link=None,
     organisation_id=None,
-    rate_limit=3000,
     notes=None,
-    billing_contact_email_addresses=None,
-    billing_contact_names=None,
-    billing_reference=None,
-    purchase_order_number=None,
     broadcast_channel=None,
     allowed_broadcast_provider=None,
 ):
@@ -193,33 +180,16 @@ def service_json(
         "id": id_,
         "name": name,
         "users": users,
-        "rate_limit": rate_limit,
         "active": active,
-        "restricted": restricted,
-        "email_from": email_from,
-        "reply_to_email_address": reply_to_email_address,
-        "sms_sender": sms_sender,
-        "research_mode": research_mode,
         "organisation_type": organisation_type,
-        "branding": branding,
         "created_at": created_at or str(datetime.utcnow()),
-        "letter_contact_block": letter_contact_block,
         "permissions": permissions,
         "inbound_api": inbound_api,
         "service_callback_api": service_callback_api,
-        "prefix_sms": prefix_sms,
         "contact_link": contact_link,
-        "volume_email": 111111,
-        "volume_sms": 222222,
-        "volume_letter": 333333,
-        "consent_to_research": True,
         "count_as_live": True,
         "organisation": organisation_id,
         "notes": notes,
-        "billing_contact_email_addresses": billing_contact_email_addresses,
-        "billing_contact_names": billing_contact_names,
-        "billing_reference": billing_reference,
-        "purchase_order_number": purchase_order_number,
         "broadcast_channel": broadcast_channel,
         "allowed_broadcast_provider": allowed_broadcast_provider,
     }
@@ -240,12 +210,7 @@ def organisation_json(
     agreement_signed_on_behalf_of_name=None,
     agreement_signed_on_behalf_of_email_address=None,
     organisation_type="central",
-    request_to_go_live_notes=None,
     notes=None,
-    billing_contact_email_addresses=None,
-    billing_contact_names=None,
-    billing_reference=None,
-    purchase_order_number=None,
 ):
     if users is None:
         users = []
@@ -266,13 +231,8 @@ def organisation_json(
         "agreement_signed_on_behalf_of_name": agreement_signed_on_behalf_of_name,
         "agreement_signed_on_behalf_of_email_address": agreement_signed_on_behalf_of_email_address,
         "domains": domains or [],
-        "request_to_go_live_notes": request_to_go_live_notes,
         "count_of_live_services": len(services),
         "notes": notes,
-        "billing_contact_email_addresses": billing_contact_email_addresses,
-        "billing_contact_names": billing_contact_names,
-        "billing_reference": billing_reference,
-        "purchase_order_number": purchase_order_number,
     }
 
 
@@ -282,16 +242,8 @@ def template_json(
     name="sample template",
     type_=None,
     content=None,
-    # subject=None,
     version=1,
     archived=False,
-    # process_type="normal",
-    # redact_personalisation=None,
-    # service_letter_contact=None,
-    # reply_to=None,
-    # reply_to_text=None,
-    # is_precompiled_letter=False,
-    # postage=None,
     folder=None,
 ):
     template = {
@@ -303,22 +255,10 @@ def template_json(
         "version": version,
         "updated_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S.%f"),
         "archived": archived,
-        # "process_type": process_type,
-        # "service_letter_contact": service_letter_contact,
-        # "reply_to": reply_to,
-        # "reply_to_text": reply_to_text,
-        # "is_precompiled_letter": is_precompiled_letter,
         "folder": folder,
-        # "postage": postage,
     }
     if content is None:
         template["content"] = "template content"
-    # if subject is None and type_ != "sms":
-    #     template["subject"] = "template subject"
-    # if subject is not None:
-    #     template["subject"] = subject
-    # if redact_personalisation is not None:
-    #     template["redact_personalisation"] = redact_personalisation
     return template
 
 

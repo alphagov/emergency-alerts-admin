@@ -71,10 +71,7 @@ def test_client_creates_service_with_correct_data(
     client.create_service(
         "My first service",
         "central_government",
-        1,
-        True,
         fake_uuid,
-        "test@example.com",
     )
     mock_post.assert_called_once_with(
         "/service",
@@ -86,9 +83,7 @@ def test_client_creates_service_with_correct_data(
             name="My first service",
             # The rest pass through with the same names
             organisation_type="central_government",
-            restricted=True,
             user_id=fake_uuid,
-            email_from="test@example.com",
         ),
     )
 
@@ -533,27 +528,12 @@ def test_client_updates_service_with_allowed_attributes(
 
     allowed_attributes = [
         "active",
-        "consent_to_research",
         "contact_link",
         "count_as_live",
-        "email_from",
-        "free_sms_fragment_limit",
-        "go_live_at",
-        "go_live_user",
-        "letter_contact_block",
         "name",
         "notes",
         "organisation_type",
         "permissions",
-        "prefix_sms",
-        "rate_limit",
-        "reply_to_email_address",
-        "research_mode",
-        "restricted",
-        "sms_sender",
-        "volume_email",
-        "volume_letter",
-        "volume_sms",
     ]
 
     attrs_dict = {}

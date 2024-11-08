@@ -107,20 +107,17 @@ def test_live_trial_services_with_date_filter(
     )
 
 
-@pytest.mark.parametrize(
-    "endpoint, restricted", [("main.live_services", False), ("main.trial_services", True)], ids=["live", "trial"]
-)
+@pytest.mark.parametrize("endpoint", ["main.live_services", "main.trial_services"], ids=["live", "trial"])
 def test_should_show_archived_services_last(
     endpoint,
     client_request,
     platform_admin_user,
     mock_get_detailed_services,
-    restricted,
 ):
     services = [
-        service_json(name="C", restricted=restricted, active=False, created_at="2002-02-02 12:00:00"),
-        service_json(name="B", restricted=restricted, active=True, created_at="2001-01-01 12:00:00"),
-        service_json(name="A", restricted=restricted, active=True, created_at="2003-03-03 12:00:00"),
+        service_json(name="C", active=False, created_at="2002-02-02 12:00:00"),
+        service_json(name="B", active=True, created_at="2001-01-01 12:00:00"),
+        service_json(name="A", active=True, created_at="2003-03-03 12:00:00"),
     ]
 
     mock_get_detailed_services.return_value = {"data": services}
@@ -137,22 +134,18 @@ def test_should_show_archived_services_last(
     assert normalize_spaces(services[2].text) == "C Archived"
 
 
-@pytest.mark.parametrize(
-    "endpoint, restricted, research_mode", [("main.trial_services", True, False), ("main.live_services", False, False)]
-)
+@pytest.mark.parametrize("endpoint", ["main.trial_services", "main.live_services"])
 def test_should_order_services_by_usage_with_inactive_last(
     endpoint,
-    restricted,
-    research_mode,
     client_request,
     platform_admin_user,
     mock_get_detailed_services,
     fake_uuid,
 ):
     services = [
-        service_json(fake_uuid, "My Service 1", [], restricted=restricted, research_mode=research_mode),
-        service_json(fake_uuid, "My Service 2", [], restricted=restricted, research_mode=research_mode),
-        service_json(fake_uuid, "My Service 3", [], restricted=restricted, research_mode=research_mode, active=False),
+        service_json(fake_uuid, "My Service 1", []),
+        service_json(fake_uuid, "My Service 2", []),
+        service_json(fake_uuid, "My Service 3", [], active=False),
     ]
 
     mock_get_detailed_services.return_value = {"data": services}
