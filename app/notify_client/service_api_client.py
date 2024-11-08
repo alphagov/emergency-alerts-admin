@@ -12,6 +12,7 @@ class ServiceAPIClient(NotifyAdminAPIClient):
         self,
         service_name,
         organisation_type,
+        restricted,
         user_id,
     ):
         """
@@ -21,6 +22,7 @@ class ServiceAPIClient(NotifyAdminAPIClient):
             "name": service_name,
             "organisation_type": organisation_type,
             "active": True,
+            "restricted": restricted,
             "user_id": user_id,
         }
         data = _attach_current_user(data)
@@ -85,7 +87,6 @@ class ServiceAPIClient(NotifyAdminAPIClient):
             "purchase_order_number",
             "rate_limit",
             "reply_to_email_address",
-            "",
             "restricted",
             "sms_sender",
             "volume_email",

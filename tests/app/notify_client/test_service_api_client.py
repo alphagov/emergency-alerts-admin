@@ -83,6 +83,7 @@ def test_client_creates_service_with_correct_data(
             name="My first service",
             # The rest pass through with the same names
             organisation_type="central_government",
+            restricted=True,
             user_id=fake_uuid,
         ),
     )
@@ -534,6 +535,7 @@ def test_client_updates_service_with_allowed_attributes(
         "notes",
         "organisation_type",
         "permissions",
+        "restricted",
     ]
 
     attrs_dict = {}

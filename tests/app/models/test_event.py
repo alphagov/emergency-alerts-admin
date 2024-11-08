@@ -7,6 +7,8 @@ from tests.conftest import sample_uuid
 @pytest.mark.parametrize(
     "key, value_from, value_to, expected",
     (
+        ("restricted", True, False, "Made this service live"),
+        ("restricted", False, True, "Put this service back into trial mode"),
         ("active", False, True, "Unsuspended this service"),
         ("active", True, False, "Deleted this service"),
         ("name", "Old", "New", "Renamed this service from ‘Old’ to ‘New’"),
