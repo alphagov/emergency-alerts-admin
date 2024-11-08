@@ -875,80 +875,47 @@ def test_route_invalid_permissions(
     )
 
 
-@pytest.mark.parametrize(
-    "template_type, expected",
-    (("broadcast", "New template"),),
-)
 def test_add_template_page_furniture(
     client_request,
-    service_one,
-    template_type,
-    expected,
 ):
-    service_one["permissions"] += [template_type]
     page = client_request.get(
         ".add_service_template",
         service_id=SERVICE_ONE_ID,
-        template_type=template_type,
+        template_type="broadcast",
     )
-    assert normalize_spaces(page.select_one("h1").text) == expected
+    assert normalize_spaces(page.select_one("h1").text) == "New template"
 
     back_link = page.select_one(".govuk-back-link")
     assert back_link["href"] == url_for("main.choose_template", service_id=SERVICE_ONE_ID, template_folder_id=None)
 
 
-@pytest.mark.parametrize(
-    "template_type, expected_error",
-    (("broadcast", "You cannot use 🍜 in broadcasts."),),
-)
 def test_should_not_create_sms_or_broadcast_template_with_emoji(
     client_request,
-    service_one,
     mock_create_service_template,
-    template_type,
-    expected_error,
 ):
-    service_one["permissions"] += [template_type]
     page = client_request.post(
         ".add_service_template",
         service_id=SERVICE_ONE_ID,
-        template_type=template_type,
+        template_type="broadcast",
         _data={
             "name": "new name",
             "template_content": "here are some noodles 🍜",
-            "template_type": "sms",
+            "template_type": "broadcast",
             "service": SERVICE_ONE_ID,
             "process_type": "normal",
         },
         _expected_status=200,
     )
-    assert expected_error in page.text
+    assert "You cannot use 🍜 in broadcasts." in page.text
     assert mock_create_service_template.called is False
 
 
-@pytest.mark.parametrize(
-    "template_type, expected_error",
-    (("broadcast", "You cannot use 🍔 in broadcasts."),),
-)
-def test_should_not_update_sms_template_with_emoji(
-    mocker,
+def test_should_not_update_broadcast_template_with_emoji(
     client_request,
-    service_one,
     mock_get_service_template,
     mock_update_service_template,
     fake_uuid,
-    template_type,
-    expected_error,
 ):
-    service_one["permissions"] += [template_type]
-    return mocker.patch(
-        "app.service_api_client.get_service_template",
-        return_value=template_json(
-            SERVICE_ONE_ID,
-            fake_uuid,
-            type_=template_type,
-        ),
-    )
     page = client_request.post(
         ".edit_service_template",
         service_id=SERVICE_ONE_ID,
@@ -958,18 +925,16 @@ def test_should_not_update_sms_template_with_emoji(
             "name": "new name",
             "template_content": "here's a burger 🍔",
             "service": SERVICE_ONE_ID,
-            "template_type": template_type,
-            "process_type": "normal",
+            "template_type": "broadcast",
         },
         _expected_status=200,
     )
-    assert expected_error in page.text
+    assert "You cannot use 🍔 in broadcasts." in page.text
     assert mock_update_service_template.called is False
 
 
 def test_should_create_broadcast_template_without_downgrading_unicode_characters(
     client_request,
-    service_one,
     mock_create_service_template,
 ):
     msg = "here:\tare some “fancy quotes” and non\u200Bbreaking\u200Bspaces"

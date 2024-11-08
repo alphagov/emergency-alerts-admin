@@ -154,9 +154,8 @@ def mock_create_service(mocker):
         organisation_type,
         restricted,
         user_id,
-        email_from,
     ):
-        service = service_json(101, service_name, [user_id], restricted=restricted, email_from=email_from)
+        service = service_json(101, service_name, [user_id], restricted=restricted)
         return service["id"]
 
     return mocker.patch("app.service_api_client.create_service", side_effect=_create)
@@ -167,11 +166,7 @@ def mock_update_service(mocker):
     def _update(service_id, **kwargs):
         service = service_json(
             service_id,
-            **{
-                key: kwargs[key]
-                for key in kwargs
-                if key in ["name", "users", "active", "restricted", "email_from", "sms_sender", "permissions"]
-            },
+            **{key: kwargs[key] for key in kwargs if key in ["name", "users", "active", "restricted", "permissions"]},
         )
         return {"data": service}
 

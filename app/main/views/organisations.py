@@ -7,22 +7,13 @@ from notifications_python_client.errors import HTTPError
 # from werkzeug import Response
 from werkzeug.exceptions import abort
 
-from app import (
-    current_organisation,
-    current_service,
-    org_invite_api_client,
-    organisations_client,
-)
+from app import current_organisation, org_invite_api_client, organisations_client
 from app.main import main
 from app.main.forms import (
-    AddGPOrganisationForm,
-    AddNHSLocalOrganisationForm,
     AdminNewOrganisationForm,
     AdminNotesForm,
     AdminOrganisationDomainsForm,
-    AdminOrganisationGoLiveNotesForm,
     InviteOrgUserForm,
-    OrganisationAgreementSignedForm,
     OrganisationCrownStatusForm,
     OrganisationOrganisationTypeForm,
     RenameOrganisationForm,
@@ -65,53 +56,6 @@ def add_organisation():
                 raise e
 
     return render_template("views/organisations/add-organisation.html", form=form)
-
-
-@main.route("/services/<uuid:service_id>/add-gp-organisation", methods=["GET", "POST"])
-@user_has_permissions("manage_service")
-def add_organisation_from_gp_service(service_id):
-    if (not current_service.organisation_type == Organisation.TYPE_NHS_GP) or current_service.organisation:
-        abort(403)
-
-    form = AddGPOrganisationForm(service_name=current_service.name)
-
-    if form.validate_on_submit():
-        Organisation.create(
-            form.get_organisation_name(),
-            crown=False,
-            organisation_type="nhs_gp",
-            agreement_signed=False,
-        ).associate_service(service_id)
-        return redirect(url_for(".index"))
-
-    return render_template("views/organisations/add-gp-organisation.html", form=form)
-
-
-@main.route("/services/<uuid:service_id>/add-nhs-local-organisation", methods=["GET", "POST"])
-@user_has_permissions("manage_service")
-def add_organisation_from_nhs_local_service(service_id):
-    if (not current_service.organisation_type == Organisation.TYPE_NHS_LOCAL) or current_service.organisation:
-        abort(403)
-
-    form = AddNHSLocalOrganisationForm(
-        organisation_choices=[
-            (organisation.id, organisation.name)
-            for organisation in sorted(AllOrganisations())
-            if organisation.organisation_type == Organisation.TYPE_NHS_LOCAL
-        ]
-    )
-
-    search_form = SearchByNameForm()
-
-    if form.validate_on_submit():
-        Organisation.from_id(form.organisations.data).associate_service(service_id)
-        return redirect(url_for(".index"))
-
-    return render_template(
-        "views/organisations/add-nhs-local-organisation.html",
-        form=form,
-        search_form=search_form,
-    )
 
 
 @main.route("/organisations/<uuid:org_id>", methods=["GET"])
@@ -268,34 +212,6 @@ def edit_organisation_crown_status(org_id):
     )
 
 
-@main.route("/organisations/<uuid:org_id>/settings/edit-agreement", methods=["GET", "POST"])
-@user_is_platform_admin
-def edit_organisation_agreement(org_id):
-    form = OrganisationAgreementSignedForm(
-        agreement_signed={
-            True: "yes",
-            False: "no",
-            None: "unknown",
-        }.get(current_organisation.agreement_signed)
-    )
-
-    if form.validate_on_submit():
-        organisations_client.update_organisation(
-            current_organisation.id,
-            agreement_signed={
-                "yes": True,
-                "no": False,
-                "unknown": None,
-            }.get(form.agreement_signed.data),
-        )
-        return redirect(url_for(".organisation_settings", org_id=org_id))
-
-    return render_template(
-        "views/organisations/organisation/settings/edit-agreement.html",
-        form=form,
-    )
-
-
 @main.route("/organisations/<uuid:org_id>/settings/edit-organisation-domains", methods=["GET", "POST"])
 @user_is_platform_admin
 def edit_organisation_domains(org_id):
@@ -324,24 +240,6 @@ def edit_organisation_domains(org_id):
 
     return render_template(
         "views/organisations/organisation/settings/edit-domains.html",
-        form=form,
-    )
-
-
-@main.route("/organisations/<uuid:org_id>/settings/edit-go-live-notes", methods=["GET", "POST"])
-@user_is_platform_admin
-def edit_organisation_go_live_notes(org_id):
-    form = AdminOrganisationGoLiveNotesForm()
-
-    if form.validate_on_submit():
-        organisations_client.update_organisation(org_id, request_to_go_live_notes=form.request_to_go_live_notes.data)
-        return redirect(url_for(".organisation_settings", org_id=org_id))
-
-    org = organisations_client.get_organisation(org_id)
-    form.request_to_go_live_notes.data = org["request_to_go_live_notes"]
-
-    return render_template(
-        "views/organisations/organisation/settings/edit-go-live-notes.html",
         form=form,
     )
 

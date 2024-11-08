@@ -71,6 +71,7 @@ def test_client_creates_service_with_correct_data(
     client.create_service(
         "My first service",
         "central_government",
+        True,
         fake_uuid,
     )
     mock_post.assert_called_once_with(
@@ -529,8 +530,6 @@ def test_client_updates_service_with_allowed_attributes(
 
     allowed_attributes = [
         "active",
-        "contact_link",
-        "count_as_live",
         "name",
         "notes",
         "organisation_type",
@@ -550,10 +549,6 @@ def test_client_updates_service_with_allowed_attributes(
     "err_data, expected_message",
     (
         ({"name": "Service name error"}, "This service name is already in use"),
-        (
-            {"email_from": "email_from disallowed characters"},
-            "Service name must not include characters from a non-Latin alphabet",
-        ),
         ({"other": "blah"}, None),
     ),
 )

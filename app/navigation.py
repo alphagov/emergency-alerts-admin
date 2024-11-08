@@ -117,7 +117,6 @@ class MainNavigation(Navigation):
             "add_service_template",
             "choose_template",
             "choose_template_to_copy",
-            "confirm_redact_template",
             "copy_template",
             "delete_service_template",
             "edit_service_template",
@@ -148,8 +147,6 @@ class MainNavigation(Navigation):
             "remove_user_from_service",
         },
         "settings": {
-            "add_organisation_from_gp_service",
-            "add_organisation_from_nhs_local_service",
             "link_service_to_organisation",
             "service_name_change",
             "service_set_auth_type",
@@ -187,11 +184,9 @@ class OrgNavigation(Navigation):
         },
         "settings": {
             "archive_organisation",
-            "edit_organisation_agreement",
             "edit_organisation_crown_status",
             "edit_organisation_domains",
             "edit_organisation_domains",
-            "edit_organisation_go_live_notes",
             "edit_organisation_name",
             "edit_organisation_notes",
             "edit_organisation_type",

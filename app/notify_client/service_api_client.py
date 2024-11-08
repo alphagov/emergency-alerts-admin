@@ -68,30 +68,12 @@ class ServiceAPIClient(NotifyAdminAPIClient):
         data = _attach_current_user(kwargs)
         disallowed_attributes = set(data.keys()) - {
             "active",
-            "billing_contact_email_addresses",
-            "billing_contact_names",
-            "billing_reference",
-            "consent_to_research",
-            "contact_link",
             "created_by",
-            "count_as_live",
-            "email_from",
-            "free_sms_fragment_limit",
-            "go_live_at",
-            "go_live_user",
-            "letter_contact_block",
             "name",
             "notes",
             "organisation_type",
             "permissions",
-            "purchase_order_number",
-            "rate_limit",
-            "reply_to_email_address",
             "restricted",
-            "sms_sender",
-            "volume_email",
-            "volume_letter",
-            "volume_sms",
         }
         if disallowed_attributes:
             raise TypeError("Not allowed to update service attributes: {}".format(", ".join(disallowed_attributes)))
@@ -441,10 +423,7 @@ class ServiceAPIClient(NotifyAdminAPIClient):
     @classmethod
     def parse_edit_service_http_error(cls, http_error):
         """Inspect the HTTPError from a create_service/update_service call and return a human-friendly error message"""
-        if http_error.message.get("email_from"):
-            return "Service name must not include characters from a non-Latin alphabet"
-
-        elif http_error.message.get("name"):
+        if http_error.message.get("name"):
             return "This service name is already in use"
 
         return None

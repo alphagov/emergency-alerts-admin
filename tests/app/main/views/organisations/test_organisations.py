@@ -476,11 +476,6 @@ def test_organisation_settings_for_platform_admin(
         "Name Test organisation Change organisation name",
         "Sector Central government Change sector for the organisation",
         "Crown organisation Yes Change organisation crown status",
-        (
-            "Data sharing and financial agreement "
-            "Not signed Change data sharing and financial agreement for the organisation"
-        ),
-        "Request to go live notes None Change go live notes for the organisation",
         "Notes None Change the notes for the organisation",
         "Known email domains None Change known email domains for the organisation",
     ]
@@ -657,27 +652,6 @@ def test_archive_organisation_does_not_allow_orgs_with_team_members_or_services_
             ),
             "crown",
         ),
-        (
-            ".edit_organisation_agreement",
-            (
-                {
-                    "value": "yes",
-                    "label": "Yes",
-                    "hint": "Users will be told their organisation has already signed the agreement",
-                },
-                {
-                    "value": "no",
-                    "label": "No",
-                    "hint": "Users will be prompted to sign the agreement before they can go live",
-                },
-                {
-                    "value": "unknown",
-                    "label": "No (but we have some service-specific agreements in place)",
-                    "hint": "Users will not be prompted to sign the agreement",
-                },
-            ),
-            "no",
-        ),
     ),
 )
 @pytest.mark.parametrize(
@@ -754,21 +728,6 @@ def test_view_organisation_settings(
             ".edit_organisation_crown_status",
             {"crown_status": "unknown"},
             {"cached_service_ids": [], "crown": None},
-        ),
-        (
-            ".edit_organisation_agreement",
-            {"agreement_signed": "yes"},
-            {"agreement_signed": True},
-        ),
-        (
-            ".edit_organisation_agreement",
-            {"agreement_signed": "no"},
-            {"agreement_signed": False},
-        ),
-        (
-            ".edit_organisation_agreement",
-            {"agreement_signed": "unknown"},
-            {"agreement_signed": None},
         ),
     ),
 )
@@ -1136,55 +1095,6 @@ def test_update_organisation_with_non_unique_name(
     )
 
     assert "This organisation name is already in use" in page.select_one(".govuk-error-message").text
-
-
-def test_get_edit_organisation_go_live_notes_page(
-    client_request,
-    platform_admin_user,
-    mock_get_organisation,
-    organisation_one,
-):
-    client_request.login(platform_admin_user)
-    page = client_request.get(
-        ".edit_organisation_go_live_notes",
-        org_id=organisation_one["id"],
-    )
-    assert page.select_one("textarea", id="request_to_go_live_notes")
-
-
-@pytest.mark.parametrize("input_note,saved_note", [("Needs permission", "Needs permission"), ("  ", None)])
-def test_post_edit_organisation_go_live_notes_updates_go_live_notes(
-    client_request,
-    platform_admin_user,
-    mock_get_organisation,
-    mock_update_organisation,
-    organisation_one,
-    input_note,
-    saved_note,
-):
-    client_request.login(platform_admin_user)
-    client_request.post(
-        ".edit_organisation_go_live_notes",
-        org_id=organisation_one["id"],
-        _data={"request_to_go_live_notes": input_note},
-        _expected_redirect=url_for(
-            ".organisation_settings",
-            org_id=organisation_one["id"],
-        ),
-    )
-    mock_update_organisation.assert_called_once_with(organisation_one["id"], request_to_go_live_notes=saved_note)
-
-
-def test_organisation_settings_links_to_edit_organisation_notes_page(
-    mocker,
-    mock_get_organisation,
-    organisation_one,
-    client_request,
-    platform_admin_user,
-):
-    client_request.login(platform_admin_user)
-    page = client_request.get(".organisation_settings", org_id=organisation_one["id"])
-    assert len(page.select(f"""a[href="/organisations/{organisation_one['id']}/settings/notes"]""")) == 1
 
 
 def test_view_edit_organisation_notes(

@@ -42,19 +42,8 @@ class Organisation(JSONModel):
         "active",
         "crown",
         "organisation_type",
-        "agreement_signed",
-        "agreement_signed_at",
-        "agreement_signed_by_id",
-        "agreement_signed_version",
-        "agreement_signed_on_behalf_of_name",
-        "agreement_signed_on_behalf_of_email_address",
         "domains",
-        "request_to_go_live_notes",
         "count_of_live_services",
-        "billing_contact_email_addresses",
-        "billing_contact_names",
-        "billing_reference",
-        "purchase_order_number",
         "notes",
     }
 
@@ -107,7 +96,6 @@ class Organisation(JSONModel):
             self.agreement_signed = None
             self.domains = []
             self.organisation_type = None
-            self.request_to_go_live_notes = None
 
     @property
     def organisation_type_label(self):

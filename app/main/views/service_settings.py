@@ -9,7 +9,6 @@ from app.event_handlers import (
     create_archive_service_event,
     create_broadcast_account_type_change_event,
 )
-from app.formatters import email_safe
 from app.main import main
 from app.main.forms import (
     AdminNotesForm,
@@ -48,7 +47,6 @@ def service_name_change(service_id):
         try:
             current_service.update(
                 name=form.name.data,
-                email_from=email_safe(form.name.data),
             )
         except HTTPError as http_error:
             if http_error.status_code == 400:
