@@ -38,19 +38,17 @@ read-source-file: write-source-file
 	echo '. "$$NVM_DIR/nvm.sh"' >> ~/.nvm-source;
 
 	@if [[ "$(NVM_DIR)" == "" || ! -f "$(NVM_DIR)/nvm.sh" ]]; then \
-		mkdir -p $(NVM_DIR); \
+		mkdir -p ~/.nvm;
+		export NVM_DIR="~/.nvm"
 		curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v$(NVM_VERSION)/install.sh | bash; \
-		ls $(NVM_DIR); \
 		echo ""; \
 		$(MAKE) write-source-file; \
 		for line in $$(cat ~/.nvm-source); do \
 			export $$line; \
 		done; \
-		echo '. $$NVM_DIR/nvm.sh' >> ~/.nvm-source; \
+		echo '. "$$NVM_DIR/nvm.sh"' >> ~/.nvm-source; \
 	fi
 
-	@cat ~/.nvm-source
-	@. ~/.nvm-source && nvm --version
 	@current_nvm_version=$$(. ~/.nvm-source && nvm --version); \
 	echo "NVM Versions (current/expected): $$current_nvm_version/$(NVM_VERSION)";
 
