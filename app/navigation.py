@@ -150,16 +150,13 @@ class MainNavigation(Navigation):
         "settings": {
             "add_organisation_from_gp_service",
             "add_organisation_from_nhs_local_service",
-            "estimate_usage",
             "link_service_to_organisation",
-            "request_to_go_live",
             "service_name_change",
             "service_set_auth_type",
             "service_confirm_broadcast_account_type",
             "service_set_broadcast_channel",
             "service_set_broadcast_network",
             "service_settings",
-            "submit_request_to_go_live",
         },
         "api-integration": {
             "api_keys",
