@@ -36,7 +36,6 @@ class Config(object):
     ADMIN_CLIENT_USER_NAME = "notify-admin"
 
     AWS_REGION = os.environ.get("AWS_REGION", "eu-west-2")
-    # DEFAULT_SERVICE_LIMIT = 50
 
     EMAIL_EXPIRY_SECONDS = 3600  # 1 hour
     INVITATION_EXPIRY_SECONDS = 3600 * 24 * 2  # 2 days - also set on api

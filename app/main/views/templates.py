@@ -105,7 +105,6 @@ def choose_template(service_id, template_type="all", template_folder_id=None):
         template_folder_path=current_service.get_template_folder_path(template_folder_id),
         template_list=template_list,
         show_search_box=current_service.count_of_templates_and_folders > 7,
-        # show_template_nav=(current_service.has_multiple_template_types and (len(current_service.all_templates) > 2)),
         template_nav_items=get_template_nav_items(template_folder_id),
         template_type=template_type,
         search_form=SearchTemplatesForm(current_service.api_keys),
