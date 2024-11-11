@@ -1,12 +1,12 @@
 .pill {
 
     display: flex;
-
+  
     &-item__container {
       width: 25%;
       flex-grow: 1;
       text-align: left;
-
+  
       /*
         For browsers that don’t support flexbox, use float instead.
         Float does not create floating of flex item, and do not take it
@@ -22,7 +22,7 @@
       */
       display: flex;
     }
-
+  
     &-item,
     &-item--selected {
       display: flex; // float causes display: block in browsers without flexbox
@@ -33,7 +33,7 @@
       width: 100%;
       padding: 10px 0;
     }
-
+  
     &-item {
       $background: $govuk-link-colour;
       background: $background; // text colour is set in the HTML by the govuk-link--inverse class
@@ -41,7 +41,7 @@
       position: relative;
       text-decoration: none;
       cursor: pointer;
-
+  
       // give :active links the :focus style
       &:active,
       &:focus {
@@ -54,23 +54,23 @@
         padding: 12px 2px; /* compensate for lack of border with padding */
       }
     }
-
+  
     &-item--selected {
       background: inherit;
       border: 2px solid $govuk-input-border-colour;
       outline: 1px solid rgba(govuk-colour("white"), 0.1);
       position: relative;
       z-index: 10;
-
+  
       &:link,
       &:visited {
         color: $govuk-text-colour;
       }
-
+  
       &:hover {
         color: govuk-tint($govuk-text-colour, 25%);
       }
-
+  
       // give :active links the :focus style
       &:active,
       &:focus {
@@ -80,51 +80,51 @@
         padding: 10px 0px; /* reset padding to default */
         box-shadow: inset 0 -2px $govuk-focus-text-colour; /* remove bottom border from underline */
       }
-
+  
     }
-
+  
     &-item__label {
-
+  
       @include govuk-link-decoration;
       // reduce padding until screen is above 420px / zoomed below 300%
       padding-left: govuk-spacing(1);
-
+  
       @include govuk-media-query($from: 420px) {
         padding-left: govuk-spacing(2);
       }
-
+  
     }
-
+  
     &-item,
     &-item--selected {
       &:hover .pill-item__label {
         @include govuk-link-hover-decoration;
       }
-
+  
       &:active .pill-item__label,
       &:focus .pill-item__label {
         text-decoration: none;
       }
     }
-
+  
     &-item--centered {
       text-align: center;
       padding-left: 0;
     }
-
+  
   }
-
+  
   .pill-separate {
-
+  
     &-item {
-
+  
       display: block;
       text-align: left;
       background-color: $govuk-link-colour; // text colour is set in the HTML by govuk-link--inverse
       padding: 9px (govuk-spacing(3) - 1);
       border: 1px solid transparent;
       text-align: center;
-
+  
       // give :active links the :focus style
       &:active,
       &:focus {
@@ -134,7 +134,7 @@
         /* override default focus style to inset bottom underline */
         box-shadow: inset 0 -4px $govuk-focus-text-colour;
       }
-
+  
     }
-
+  
   }
