@@ -996,25 +996,6 @@ class OrganisationCrownStatusForm(StripWhitespaceForm):
     )
 
 
-class OrganisationAgreementSignedForm(StripWhitespaceForm):
-    agreement_signed = GovukRadiosField(
-        "Has this organisation signed the agreement?",
-        choices=[
-            ("yes", "Yes"),
-            ("no", "No"),
-            ("unknown", "No (but we have some service-specific agreements in place)"),
-        ],
-        thing="whether this organisation has signed the agreement",
-        param_extensions={
-            "items": [
-                {"hint": {"text": "Users will be told their organisation has already signed the agreement"}},
-                {"hint": {"text": "Users will be prompted to sign the agreement before they can go live"}},
-                {"hint": {"text": "Users will not be prompted to sign the agreement"}},
-            ]
-        },
-    )
-
-
 class AdminOrganisationDomainsForm(StripWhitespaceForm):
     def populate(self, domains_list):
         for index, value in enumerate(domains_list):
@@ -1046,13 +1027,6 @@ class CreateServiceForm(StripWhitespaceForm):
         ],
     )
     organisation_type = OrganisationTypeField("Who runs this service?")
-
-
-class CreateNhsServiceForm(CreateServiceForm):
-    organisation_type = OrganisationTypeField(
-        "Who runs this service?",
-        include_only={"nhs_central", "nhs_local", "nhs_gp"},
-    )
 
 
 class AdminNewOrganisationForm(
@@ -1290,42 +1264,6 @@ class Triage(StripWhitespaceForm):
     )
 
 
-class EstimateUsageForm(StripWhitespaceForm):
-    volume_email = ForgivingIntegerField(
-        "How many emails do you expect to send in the next year?",
-        things="emails",
-        format_error_suffix="you expect to send",
-    )
-    volume_sms = ForgivingIntegerField(
-        "How many text messages do you expect to send in the next year?",
-        things="text messages",
-        format_error_suffix="you expect to send",
-    )
-    volume_letter = ForgivingIntegerField(
-        "How many letters do you expect to send in the next year?",
-        things="letters",
-        format_error_suffix="you expect to send",
-    )
-    consent_to_research = GovukRadiosField(
-        "Can we contact you when we’re doing user research?",
-        choices=[
-            ("yes", "Yes"),
-            ("no", "No"),
-        ],
-        thing="yes or no",
-        param_extensions={"hint": {"text": "You do not have to take part and you can unsubscribe at any time"}},
-    )
-
-    at_least_one_volume_filled = True
-
-    def validate(self, *args, **kwargs):
-        if self.volume_email.data == self.volume_sms.data == self.volume_letter.data == 0:
-            self.at_least_one_volume_filled = False
-            return False
-
-        return super().validate(*args, **kwargs)
-
-
 class ServiceContactDetailsForm(StripWhitespaceForm):
     contact_details_type = GovukRadiosField(
         "Type of contact details",
@@ -1371,24 +1309,6 @@ class AdminNotesForm(StripWhitespaceForm):
     notes = TextAreaField(validators=[])
 
 
-class AdminBillingDetailsForm(StripWhitespaceForm):
-    billing_contact_email_addresses = GovukTextInputField("Contact email addresses")
-    billing_contact_names = GovukTextInputField("Contact names")
-    billing_reference = GovukTextInputField("Reference")
-    purchase_order_number = GovukTextInputField("Purchase order number")
-    notes = TextAreaField(validators=[])
-
-
-class ServiceLetterContactBlockForm(StripWhitespaceForm):
-    letter_contact_block = TextAreaField(validators=[DataRequired(message="Cannot be empty"), NoCommasInPlaceHolders()])
-    is_default = GovukCheckboxField("Set as your default address")
-
-    def validate_letter_contact_block(self, field):
-        line_count = field.data.strip().count("\n")
-        if line_count >= 10:
-            raise ValidationError("Contains {} lines, maximum is 10".format(line_count + 1))
-
-
 class ServiceOnOffSettingForm(StripWhitespaceForm):
     def __init__(self, name, *args, truthy="On", falsey="Off", **kwargs):
         super().__init__(*args, **kwargs)
@@ -1399,38 +1319,6 @@ class ServiceOnOffSettingForm(StripWhitespaceForm):
         ]
 
     enabled = OnOffField("Choices")
-
-
-class EmailFieldInGuestList(GovukEmailField, StripWhitespaceStringField):
-    pass
-
-
-class InternationalPhoneNumberInGuestList(InternationalPhoneNumber, StripWhitespaceStringField):
-    pass
-
-
-class GuestList(StripWhitespaceForm):
-    def populate(self, email_addresses, phone_numbers):
-        for form_field, existing_guest_list in (
-            (self.email_addresses, email_addresses),
-            (self.phone_numbers, phone_numbers),
-        ):
-            for index, value in enumerate(existing_guest_list):
-                form_field[index].data = value
-
-    email_addresses = FieldList(
-        EmailFieldInGuestList("", validators=[Optional(), ValidEmail()], default=""),
-        min_entries=5,
-        max_entries=5,
-        label="Email addresses",
-    )
-
-    phone_numbers = FieldList(
-        InternationalPhoneNumberInGuestList("", validators=[Optional()], default=""),
-        min_entries=5,
-        max_entries=5,
-        label="Mobile numbers",
-    )
 
 
 class DateFilterForm(StripWhitespaceForm):

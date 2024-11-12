@@ -16,7 +16,7 @@ def test_sets_value_in_cache(mocker):
 
     mock_redis_get = mocker.patch("app.extensions.RedisClient.get", return_value=None)
     mock_api_get = mocker.patch(
-        "app.notify_client.NotifyAdminAPIClient.get",
+        "app.notify_client.AdminAPIClient.get",
         return_value={"data_from": "api"},
     )
     mock_redis_set = mocker.patch(
@@ -38,7 +38,7 @@ def test_returns_value_from_cache(mocker):
         return_value=b'{"data_from": "cache"}',
     )
     mock_api_get = mocker.patch(
-        "app.notify_client.NotifyAdminAPIClient.get",
+        "app.notify_client.AdminAPIClient.get",
     )
     mock_redis_set = mocker.patch(
         "app.extensions.RedisClient.set",

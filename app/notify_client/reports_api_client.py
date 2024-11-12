@@ -1,9 +1,9 @@
 import json
 
-from app.notify_client import NotifyAdminAPIClient
+from app.notify_client import AdminAPIClient
 
 
-class SecurityReportApiClient(NotifyAdminAPIClient):
+class SecurityReportApiClient(AdminAPIClient):
     def post_report(self, data):
         return self.post("/reports", json.loads(data))
 

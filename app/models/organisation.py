@@ -107,19 +107,6 @@ class Organisation(JSONModel):
             abort(404)
         return self.crown
 
-    @property
-    def billing_details(self):
-        billing_details = [
-            self.billing_contact_email_addresses,
-            self.billing_contact_names,
-            self.billing_reference,
-            self.purchase_order_number,
-        ]
-        if any(billing_details):
-            return billing_details
-        else:
-            return None
-
     @cached_property
     def services(self):
         from app.models.service import Services

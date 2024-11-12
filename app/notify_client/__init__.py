@@ -13,7 +13,7 @@ def _attach_current_user(data):
     return dict(created_by=current_user.id, **data)
 
 
-class NotifyAdminAPIClient(BaseAPIClient):
+class AdminAPIClient(BaseAPIClient):
     def __init__(self):
         super().__init__("a" * 73, "b")
 

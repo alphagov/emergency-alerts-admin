@@ -3,10 +3,10 @@ from itertools import chain
 from notifications_python_client.errors import HTTPError
 
 from app.extensions import redis_client
-from app.notify_client import NotifyAdminAPIClient, cache
+from app.notify_client import AdminAPIClient, cache
 
 
-class OrganisationsClient(NotifyAdminAPIClient):
+class OrganisationsClient(AdminAPIClient):
     @cache.set("organisations")
     def get_organisations(self):
         return self.get(url="/organisations")

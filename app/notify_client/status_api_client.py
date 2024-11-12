@@ -1,7 +1,7 @@
-from app.notify_client import NotifyAdminAPIClient, cache
+from app.notify_client import AdminAPIClient, cache
 
 
-class StatusApiClient(NotifyAdminAPIClient):
+class StatusApiClient(AdminAPIClient):
     def get_status(self, *params):
         return self.get(url="/_api_status", *params)
 

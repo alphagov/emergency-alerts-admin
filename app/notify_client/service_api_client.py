@@ -3,10 +3,10 @@ from datetime import datetime
 from emergency_alerts_utils.clients.redis import daily_limit_cache_key
 
 from app.extensions import redis_client
-from app.notify_client import NotifyAdminAPIClient, _attach_current_user, cache
+from app.notify_client import AdminAPIClient, _attach_current_user, cache
 
 
-class ServiceAPIClient(NotifyAdminAPIClient):
+class ServiceAPIClient(AdminAPIClient):
     @cache.delete("user-{user_id}")
     def create_service(
         self,
@@ -87,13 +87,6 @@ class ServiceAPIClient(NotifyAdminAPIClient):
             service_id,
             restricted=(not live),
             go_live_at=str(datetime.utcnow()) if live else None,
-        )
-
-    @cache.delete("live-service-and-organisation-counts")
-    def update_count_as_live(self, service_id, count_as_live):
-        return self.update_service(
-            service_id,
-            count_as_live=count_as_live,
         )
 
     # This method is not cached because it calls through to one which is

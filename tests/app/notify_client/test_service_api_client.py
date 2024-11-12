@@ -12,7 +12,7 @@ FAKE_TEMPLATE_ID = uuid4()
 
 @pytest.fixture(autouse=True)
 def mock_notify_client_check_inactive_service(mocker):
-    mocker.patch("app.notify_client.NotifyAdminAPIClient.check_inactive_service")
+    mocker.patch("app.notify_client.AdminAPIClient.check_inactive_service")
 
 
 def test_client_posts_archived_true_when_deleting_template(mocker):
@@ -303,7 +303,7 @@ def test_returns_value_from_cache(
         return_value=cache_value,
     )
     mock_api_get = mocker.patch(
-        "app.notify_client.NotifyAdminAPIClient.get",
+        "app.notify_client.AdminAPIClient.get",
         return_value={"data_from": "api"},
     )
     mock_redis_set = mocker.patch(

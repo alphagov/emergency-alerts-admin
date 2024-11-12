@@ -1,7 +1,7 @@
 from flask import abort
 from notifications_python_client.errors import HTTPError
 
-from app.notify_client import NotifyAdminAPIClient, cache
+from app.notify_client import AdminAPIClient, cache
 from app.utils.user_permissions import translate_permissions_from_ui_to_db
 
 ALLOWED_ATTRIBUTES = {
@@ -15,7 +15,7 @@ ALLOWED_ATTRIBUTES = {
 }
 
 
-class UserApiClient(NotifyAdminAPIClient):
+class UserApiClient(AdminAPIClient):
     def init_app(self, app):
         super().init_app(app)
         self.admin_url = app.config["ADMIN_EXTERNAL_URL"]

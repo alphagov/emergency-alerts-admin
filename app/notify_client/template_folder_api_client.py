@@ -1,8 +1,8 @@
 from app.extensions import redis_client
-from app.notify_client import NotifyAdminAPIClient, cache
+from app.notify_client import AdminAPIClient, cache
 
 
-class TemplateFolderAPIClient(NotifyAdminAPIClient):
+class TemplateFolderAPIClient(AdminAPIClient):
     @cache.delete("service-{service_id}-template-folders")
     def create_template_folder(self, service_id, name, parent_id=None):
         data = {"name": name, "parent_id": parent_id}

@@ -6,7 +6,7 @@ import werkzeug
 from flask import g
 
 from app.models.service import Service
-from app.notify_client import NotifyAdminAPIClient
+from app.notify_client import AdminAPIClient
 from app.notify_client.notification_api_client import notification_api_client
 from tests import service_json
 from tests.conftest import (
@@ -27,7 +27,7 @@ from tests.conftest import (
 )
 @pytest.mark.parametrize("service", [service_json(active=True), None], ids=["active_service", "no_service"])
 def test_active_service_can_be_modified(notify_admin, method, user, service):
-    api_client = NotifyAdminAPIClient()
+    api_client = AdminAPIClient()
 
     with notify_admin.test_request_context(), notify_admin.test_client() as client:
         client.login(user)
@@ -42,7 +42,7 @@ def test_active_service_can_be_modified(notify_admin, method, user, service):
 
 @pytest.mark.parametrize("method", ["put", "post", "delete"])
 def test_inactive_service_cannot_be_modified_by_normal_user(notify_admin, api_user_active, method):
-    api_client = NotifyAdminAPIClient()
+    api_client = AdminAPIClient()
 
     with notify_admin.test_request_context(), notify_admin.test_client() as client:
         client.login(api_user_active)
@@ -57,7 +57,7 @@ def test_inactive_service_cannot_be_modified_by_normal_user(notify_admin, api_us
 
 @pytest.mark.parametrize("method", ["put", "post", "delete"])
 def test_inactive_service_can_be_modified_by_platform_admin(notify_admin, platform_admin_user, method):
-    api_client = NotifyAdminAPIClient()
+    api_client = AdminAPIClient()
 
     with notify_admin.test_request_context(), notify_admin.test_client() as client:
         client.login(platform_admin_user)
@@ -71,7 +71,7 @@ def test_inactive_service_can_be_modified_by_platform_admin(notify_admin, platfo
 
 
 def test_generate_headers_sets_standard_headers(notify_admin):
-    api_client = NotifyAdminAPIClient()
+    api_client = AdminAPIClient()
     with set_config(notify_admin, "ROUTE_SECRET_KEY_1", "proxy-secret"):
         api_client.init_app(notify_admin)
 
@@ -91,7 +91,7 @@ def test_generate_headers_sets_standard_headers(notify_admin):
 
 
 def test_generate_headers_sets_request_id_if_in_request_context(notify_admin):
-    api_client = NotifyAdminAPIClient()
+    api_client = AdminAPIClient()
     api_client.init_app(notify_admin)
 
     with notify_admin.test_request_context() as request_context:

@@ -28,9 +28,7 @@ def test_create_template_folder_calls_correct_api_endpoint(mocker, parent_id):
 def test_get_template_folders_calls_correct_api_endpoint(mocker):
     mock_redis_get = mocker.patch("app.extensions.RedisClient.get", return_value=None)
     mock_redis_set = mocker.patch("app.extensions.RedisClient.set")
-    mock_api_get = mocker.patch(
-        "app.notify_client.NotifyAdminAPIClient.get", return_value={"template_folders": {"a": "b"}}
-    )
+    mock_api_get = mocker.patch("app.notify_client.AdminAPIClient.get", return_value={"template_folders": {"a": "b"}})
 
     some_service_id = uuid.uuid4()
     expected_url = "/service/{}/template-folder".format(some_service_id)
@@ -49,7 +47,7 @@ def test_get_template_folders_calls_correct_api_endpoint(mocker):
 
 def test_move_templates_and_folders(mocker):
     mock_redis_delete = mocker.patch("app.extensions.RedisClient.delete")
-    mock_api_post = mocker.patch("app.notify_client.NotifyAdminAPIClient.post")
+    mock_api_post = mocker.patch("app.notify_client.AdminAPIClient.post")
 
     some_service_id = uuid.uuid4()
     some_folder_id = uuid.uuid4()
@@ -80,7 +78,7 @@ def test_move_templates_and_folders(mocker):
 
 
 def test_move_templates_and_folders_to_root(mocker):
-    mock_api_post = mocker.patch("app.notify_client.NotifyAdminAPIClient.post")
+    mock_api_post = mocker.patch("app.notify_client.AdminAPIClient.post")
 
     some_service_id = uuid.uuid4()
 

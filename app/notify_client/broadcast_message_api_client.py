@@ -1,7 +1,7 @@
-from app.notify_client import NotifyAdminAPIClient, _attach_current_user, cache
+from app.notify_client import AdminAPIClient, _attach_current_user, cache
 
 
-class BroadcastMessageAPIClient(NotifyAdminAPIClient):
+class BroadcastMessageAPIClient(AdminAPIClient):
     def create_broadcast_message(
         self,
         *,
