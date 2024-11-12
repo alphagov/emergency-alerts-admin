@@ -49,7 +49,6 @@ EXCLUDED_ENDPOINTS = tuple(
             "choose_service",
             "choose_template",
             "choose_template_to_copy",
-            "clear_cache",
             "confirm_edit_user_email",
             "confirm_edit_user_mobile_number",
             "confirm_redact_template",

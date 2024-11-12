@@ -92,9 +92,6 @@ def user_json(
         permissions = {
             str(generate_uuid()): [
                 "view_activity",
-                "send_texts",
-                "send_emails",
-                "send_letters",
                 "manage_users",
                 "manage_templates",
                 "manage_settings",

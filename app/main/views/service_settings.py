@@ -198,11 +198,7 @@ def archive_service(service_id):
     if not current_service.active or not (current_service.trial_mode or current_user.platform_admin):
         abort(403)
     if request.method == "POST":
-        # We need to purge the cache for the services users as otherwise, although they will have had their permissions
-        # removed in the DB, they would still have permissions in the cache to view/edit/manage this service
-        cached_service_user_ids = [user.id for user in current_service.active_users]
-
-        service_api_client.archive_service(service_id, cached_service_user_ids)
+        service_api_client.archive_service(service_id)
         create_archive_service_event(service_id=service_id, archived_by_id=current_user.id)
 
         flash(

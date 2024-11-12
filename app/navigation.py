@@ -62,7 +62,6 @@ class HeaderNavigation(Navigation):
         "platform-admin": {
             "archive_user",
             "change_user_auth",
-            "clear_cache",
             "find_services_by_name",
             "find_users_by_email",
             "live_services",

@@ -38,15 +38,9 @@ def test_get_broadcast_message(mocker):
         "app.notify_client.broadcast_message_api_client.BroadcastMessageAPIClient.get",
         return_value={"abc": "def"},
     )
-    mock_redis_set = mocker.patch("app.extensions.RedisClient.set")
     client.get_broadcast_message(service_id="12345", broadcast_message_id="67890")
     mock_get.assert_called_once_with(
         "/service/12345/broadcast-message/67890",
-    )
-    mock_redis_set.assert_called_once_with(
-        "service-12345-broadcast-message-67890",
-        '{"abc": "def"}',
-        ex=604_800,
     )
 
 
@@ -54,7 +48,6 @@ def test_update_broadcast_message(mocker):
     client = BroadcastMessageAPIClient()
     mocker.patch("app.notify_client.current_user", id="1")
     mock_post = mocker.patch("app.notify_client.broadcast_message_api_client.BroadcastMessageAPIClient.post")
-    mock_redis_delete = mocker.patch("app.extensions.RedisClient.delete")
     client.update_broadcast_message(
         service_id="12345",
         broadcast_message_id="67890",
@@ -64,14 +57,12 @@ def test_update_broadcast_message(mocker):
         "/service/12345/broadcast-message/67890",
         data={"abc": "def"},
     )
-    mock_redis_delete.assert_called_once_with("service-12345-broadcast-message-67890")
 
 
 def test_update_broadcast_message_status(mocker):
     client = BroadcastMessageAPIClient()
     mocker.patch("app.notify_client.current_user", id="1")
     mock_post = mocker.patch("app.notify_client.broadcast_message_api_client.BroadcastMessageAPIClient.post")
-    mock_redis_delete = mocker.patch("app.extensions.RedisClient.delete")
     client.update_broadcast_message_status(
         "cancelled",
         service_id="12345",
@@ -81,4 +72,3 @@ def test_update_broadcast_message_status(mocker):
         "/service/12345/broadcast-message/67890/status",
         data={"created_by": "1", "status": "cancelled"},
     )
-    mock_redis_delete.assert_called_once_with("service-12345-broadcast-message-67890")

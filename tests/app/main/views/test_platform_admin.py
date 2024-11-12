@@ -1,6 +1,6 @@
 import datetime
 from functools import partial
-from unittest.mock import ANY, call
+from unittest.mock import ANY
 
 import pytest
 from flask import url_for
@@ -166,98 +166,6 @@ def test_should_order_services_by_usage_with_inactive_last(
     assert normalize_spaces(services[2].text) == "My Service 3 Archived"
 
 
-def test_clear_cache_shows_form(
-    client_request,
-    platform_admin_user,
-    mocker,
-):
-    redis = mocker.patch("app.main.views.platform_admin.redis_client")
-    client_request.login(platform_admin_user)
-
-    page = client_request.get("main.clear_cache")
-
-    assert not redis.delete_by_pattern.called
-    radios = {el["value"] for el in page.select("input[type=checkbox]")}
-
-    assert radios == {"user", "service", "template", "organisation", "broadcast"}
-
-
-@pytest.mark.parametrize(
-    "model_type, expected_calls, expected_confirmation",
-    (
-        (
-            "template",
-            [
-                call("service-????????-????-????-????-????????????-templates"),
-                call(
-                    "service-????????-????-????-????-????????????-template-????????-????-????-????-????????????-version-*"  # noqa
-                ),
-                call(
-                    "service-????????-????-????-????-????????????-template-????????-????-????-????-????????????-versions"  # noqa
-                ),
-            ],
-            "Removed 6 objects across 3 key formats for template",
-        ),
-        (
-            ["service", "organisation"],
-            [
-                call("has_jobs-????????-????-????-????-????????????"),
-                call("service-????????-????-????-????-????????????"),
-                call("service-????????-????-????-????-????????????-templates"),
-                call("service-????????-????-????-????-????????????-data-retention"),
-                call("service-????????-????-????-????-????????????-template-folders"),
-                call("organisations"),
-                call("domains"),
-                call("live-service-and-organisation-counts"),
-                call("organisation-????????-????-????-????-????????????-name"),
-            ],
-            "Removed 18 objects across 9 key formats for service, organisation",
-        ),
-        (
-            "broadcast",
-            [
-                call(
-                    "service-????????-????-????-????-????????????-broadcast-message-????????-????-????-????-????????????"  # noqa
-                ),
-            ],
-            "Removed 2 objects across 1 key formats for broadcast",
-        ),
-    ),
-)
-def test_clear_cache_submits_and_tells_you_how_many_things_were_deleted(
-    client_request,
-    platform_admin_user,
-    mocker,
-    model_type,
-    expected_calls,
-    expected_confirmation,
-):
-    redis = mocker.patch("app.main.views.platform_admin.redis_client")
-    redis.delete_by_pattern.return_value = 2
-    client_request.login(platform_admin_user)
-
-    page = client_request.post("main.clear_cache", _data={"model_type": model_type}, _expected_status=200)
-
-    assert redis.delete_by_pattern.call_args_list == expected_calls
-
-    flash_banner = page.select_one("div.banner-default")
-    assert flash_banner.text.strip() == expected_confirmation
-
-
-def test_clear_cache_requires_option(
-    client_request,
-    platform_admin_user,
-    mocker,
-):
-    redis = mocker.patch("app.main.views.platform_admin.redis_client")
-    client_request.login(platform_admin_user)
-
-    page = client_request.post("main.clear_cache", _data={}, _expected_status=200)
-
-    assert normalize_spaces(page.select_one(".govuk-error-message").text) == "Error: Select at least one option"
-    assert not redis.delete_by_pattern.called
-
-
 class TestPlatformAdminSearch:
     def test_page_requires_platform_admin(self, client_request):
         client_request.get(".platform_admin_search", _expected_status=403)
@@ -266,10 +174,12 @@ class TestPlatformAdminSearch:
         client_request.login(platform_admin_user)
         client_request.get(".platform_admin_search")
 
-    def test_can_search_for_user(self, mocker, client_request, platform_admin_user, active_caseworking_user):
+    def test_can_search_for_user(
+        self, mocker, client_request, platform_admin_user, active_user_create_broadcasts_permission
+    ):
         mocker.patch(
             "app.main.views.platform_admin.user_api_client.find_users_by_full_or_partial_email",
-            return_value={"data": [active_caseworking_user]},
+            return_value={"data": [active_user_create_broadcasts_permission]},
         )
         mocker.patch(
             "app.main.views.platform_admin.service_api_client.find_services_by_name",
@@ -283,7 +193,7 @@ class TestPlatformAdminSearch:
         assert normalize_spaces(response.select(".govuk-tabs ul")[0]) == "Users (1)"
 
         found_user_links = response.select(".govuk-tabs ul")[1].select("a")
-        assert found_user_links[0].text == "caseworker@example.gov.uk"
+        assert found_user_links[0].text == "test@user.gov.uk"
         assert found_user_links[0].get("href") == "/users/6ce466d0-fd6a-11e5-82f5-e0accb9d11a6"
 
     def test_can_search_for_services(self, mocker, client_request, platform_admin_user, service_one, service_two):
@@ -309,11 +219,17 @@ class TestPlatformAdminSearch:
         assert found_service_links[1].get("href") == "/services/147ad62a-2951-4fa1-9ca0-093cd1a52c52"
 
     def test_shows_results_from_all_categories(
-        self, mocker, client_request, platform_admin_user, active_caseworking_user, service_one, service_two
+        self,
+        mocker,
+        client_request,
+        platform_admin_user,
+        active_user_create_broadcasts_permission,
+        service_one,
+        service_two,
     ):
         mocker.patch(
             "app.main.views.platform_admin.user_api_client.find_users_by_full_or_partial_email",
-            return_value={"data": [active_caseworking_user]},
+            return_value={"data": [active_user_create_broadcasts_permission]},
         )
         mocker.patch(
             "app.main.views.platform_admin.service_api_client.find_services_by_name",
@@ -327,7 +243,7 @@ class TestPlatformAdminSearch:
         assert normalize_spaces(response.select(".govuk-tabs ul")[0]) == "Users (1) Services (2)"
 
         found_user_links = response.select(".govuk-tabs ul")[1].select("a")
-        assert found_user_links[0].text == "caseworker@example.gov.uk"
+        assert found_user_links[0].text == "test@user.gov.uk"
         assert found_user_links[0].get("href") == "/users/6ce466d0-fd6a-11e5-82f5-e0accb9d11a6"
 
         found_service_links = response.select(".govuk-tabs ul")[2].select("a")

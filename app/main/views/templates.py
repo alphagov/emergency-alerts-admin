@@ -15,7 +15,7 @@ from app.main.forms import (
 )
 from app.models.service import Service
 from app.models.template_list import TemplateList, UserTemplateList, UserTemplateLists
-from app.utils import NOTIFICATION_TYPES, should_skip_template_page
+from app.utils import BROADCAST_TYPE
 from app.utils.templates import get_template
 from app.utils.user import user_has_permissions
 
@@ -31,8 +31,6 @@ def view_template(service_id, template_id):
     template_folder = current_service.get_template_folder(template["folder"])
 
     user_has_template_permission = current_user.has_template_folder_permission(template_folder)
-    if should_skip_template_page(template):
-        return redirect(url_for(".index"))
 
     return render_template(
         "views/templates/template.html",
@@ -70,10 +68,7 @@ def choose_template(service_id, template_type="all", template_folder_id=None):
     )
     option_hints = {template_folder_id: "current folder"}
 
-    single_notification_channel = None
-    notification_channels = list(set(current_service.permissions).intersection(NOTIFICATION_TYPES))
-    if len(notification_channels) == 1:
-        single_notification_channel = notification_channels[0]
+    single_notification_channel = BROADCAST_TYPE
 
     if request.method == "POST" and templates_and_folders_form.validate_on_submit():
         if not current_user.has_permissions("manage_templates"):

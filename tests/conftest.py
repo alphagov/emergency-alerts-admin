@@ -452,9 +452,6 @@ def platform_admin_user(fake_uuid):
     return create_platform_admin_user(
         permissions={
             SERVICE_ONE_ID: [
-                "send_texts",
-                "send_emails",
-                "send_letters",
                 "manage_users",
                 "manage_templates",
                 "manage_settings",
@@ -523,9 +520,6 @@ def active_user_approve_broadcasts_permission():
 @pytest.fixture(scope="function")
 def active_user_with_permission_to_two_services(fake_uuid):
     permissions = [
-        "send_texts",
-        "send_emails",
-        "send_letters",
         "manage_users",
         "manage_templates",
         "manage_settings",
@@ -551,11 +545,6 @@ def active_user_with_permission_to_other_service(active_user_with_permission_to_
     active_user_with_permission_to_two_services["name"] = "Service Two User"
     active_user_with_permission_to_two_services["email_address"] = "service-two-user@test.gov.uk"
     return active_user_with_permission_to_two_services
-
-
-@pytest.fixture(scope="function")
-def active_caseworking_user():
-    return create_active_caseworking_user()
 
 
 @pytest.fixture
@@ -876,7 +865,7 @@ def sample_invite(mocker, service_one):
     from_user = service_one["users"][0]
     email_address = "invited_user@test.gov.uk"
     service_id = service_one["id"]
-    permissions = "view_activity,send_emails,send_letters,send_texts,manage_settings,manage_users,manage_api_keys"
+    permissions = "view_activity,manage_settings,manage_users,manage_api_keys"
     created_at = str(datetime.utcnow())
     auth_type = "sms_auth"
     folder_permissions = []
@@ -922,7 +911,7 @@ def mock_get_invites_without_manage_permission(mocker, service_one, sample_invit
                 from_user=service_one["users"][0],
                 email_address="invited_user@test.gov.uk",
                 service_id=service_one["id"],
-                permissions="view_activity,send_messages,manage_api_keys",
+                permissions="view_activity,create_broadcasts,manage_api_keys",
                 created_at=str(datetime.utcnow()),
                 auth_type="sms_auth",
                 folder_permissions=[],
@@ -1906,21 +1895,6 @@ def create_active_user_approve_broadcasts_permissions(with_unique_id=False):
     )
 
 
-def create_active_caseworking_user(with_unique_id=False):
-    return create_user(
-        id=str(uuid4()) if with_unique_id else sample_uuid(),
-        email_address="caseworker@example.gov.uk",
-        permissions={
-            SERVICE_ONE_ID: [
-                "send_texts",
-                "send_emails",
-                "send_letters",
-            ]
-        },
-        services=[SERVICE_ONE_ID],
-    )
-
-
 def create_active_user_no_api_key_permission(with_unique_id=False):
     return create_service_one_user(
         id=str(uuid4()) if with_unique_id else sample_uuid(),
@@ -1979,9 +1953,6 @@ def create_service_one_admin(**overrides):
     user_data = {
         "permissions": {
             SERVICE_ONE_ID: [
-                "send_texts",
-                "send_emails",
-                "send_letters",
                 "manage_users",
                 "manage_templates",
                 "manage_settings",

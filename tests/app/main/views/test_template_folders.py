@@ -10,7 +10,7 @@ from tests.conftest import (
     SERVICE_ONE_ID,
     TEMPLATE_ONE_ID,
     _template,
-    create_active_caseworking_user,
+    create_active_new_user_view_permissions,
     create_active_user_view_permissions,
     create_active_user_with_permissions,
     create_template,
@@ -530,9 +530,6 @@ def test_get_manage_folder_viewing_permissions_for_users_not_visible_when_no_man
     client_request, active_user_with_permissions, service_one, mock_get_template_folders, mocker
 ):
     active_user_with_permissions["permissions"][SERVICE_ONE_ID] = [
-        "send_texts",
-        "send_emails",
-        "send_letters",
         "manage_templates",
         "manage_api_keys",
         "view_activity",
@@ -745,9 +742,6 @@ def test_manage_folder_users_doesnt_change_permissions_current_user_cannot_manag
     client_request, active_user_with_permissions, service_one, mock_get_template_folders, mocker
 ):
     active_user_with_permissions["permissions"][SERVICE_ONE_ID] = [
-        "send_texts",
-        "send_emails",
-        "send_letters",
         "manage_templates",
         "manage_api_keys",
         "view_activity",
@@ -925,7 +919,7 @@ def test_should_show_checkboxes_for_selecting_templates(
     "user",
     [
         create_active_user_view_permissions(),
-        create_active_caseworking_user(),
+        create_active_new_user_view_permissions(),
         pytest.param(
             create_active_user_with_permissions(),
             marks=pytest.mark.xfail(raises=AssertionError),

@@ -1613,16 +1613,6 @@ class TemplateAndFoldersSelectionForm(Form):
     )
 
 
-class AdminClearCacheForm(StripWhitespaceForm):
-    model_type = GovukCheckboxesField(
-        "What do you want to clear today",
-    )
-
-    def validate_model_type(self, field):
-        if not field.data:
-            raise ValidationError("Select at least one option")
-
-
 class ServiceBroadcastAccountTypeField(GovukRadiosField):
     # After validation we split the value back into its parts of service_mode
     # broadcast_channel and provider_restriction to be used by the flask route to send to the

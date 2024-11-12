@@ -175,7 +175,6 @@ def edit_organisation_type(org_id):
     if form.validate_on_submit():
         current_organisation.update(
             organisation_type=form.organisation_type.data,
-            delete_services_cache=True,
         )
         return redirect(url_for(".organisation_settings", org_id=org_id))
 
@@ -203,7 +202,7 @@ def edit_organisation_crown_status(org_id):
             "unknown": None,
         }.get(form.crown_status.data)
 
-        current_organisation.update(crown=crown_data, delete_services_cache=True)
+        current_organisation.update(crown=crown_data)
         return redirect(url_for(".organisation_settings", org_id=org_id))
 
     return render_template(

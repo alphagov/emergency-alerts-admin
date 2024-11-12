@@ -11,7 +11,7 @@ from app.utils.user import user_has_permissions
         pytest.param(
             [
                 # Route has a permission which the user doesn’t have
-                "send_messages"
+                "create_broadcasts"
             ],
             marks=pytest.mark.xfail(raises=Forbidden),
         ),
@@ -27,7 +27,7 @@ from app.utils.user import user_has_permissions
         [
             # Route has one of the permissions which the user has, and one they do not
             "manage_service",
-            "send_messages",
+            "create_broadcasts",
         ],
         [
             # Route has no specific permissions required

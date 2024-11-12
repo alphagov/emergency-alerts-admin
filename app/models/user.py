@@ -98,14 +98,6 @@ class User(BaseUser, UserMixin):
     def permissions(self, permissions_by_service):
         """
         Permissions is a dict {'service_id': ['permission a', 'permission b', 'permission c']}
-
-        The api currently returns some granular permissions that we don't set or use separately (but may want
-        to in the future):
-        * send_texts, send_letters and send_emails become send_messages
-        * manage_user and manage_settings become
-        users either have all three permissions for a service or none of them, they're not helpful to distinguish
-        between on the front end. So lets collapse them into "send_messages" and "manage_service". If we want to split
-        them out later, we'll need to rework this function.
         """
         self._permissions = {
             service: translate_permissions_from_db_to_ui(permissions)
@@ -660,7 +652,7 @@ class Users(ModelList):
                 return user.name
         # The user may not exist in the list of users for this service if they are
         # a platform admin or if they have since left the team. In this case, we fall
-        # back to getting the user from the API (or Redis if it is in the cache)
+        # back to getting the user from the API
         user = User.from_id(id)
         if user and user.name:
             return user.name

@@ -578,18 +578,12 @@ def test_archive_organisation_after_confirmation(
     mock_get_service_and_organisation_counts,
 ):
     mock_api = mocker.patch("app.organisations_client.post")
-    redis_delete_mock = mocker.patch("app.notify_client.organisations_api_client.redis_client.delete")
 
     client_request.login(platform_admin_user)
     page = client_request.post("main.archive_organisation", org_id=organisation_one["id"], _follow_redirects=True)
     mock_api.assert_called_once_with(url=f"/organisations/{organisation_one['id']}/archive", data=None)
     assert normalize_spaces(page.select_one("h1").text) == "Choose service"
     assert normalize_spaces(page.select_one(".banner-default-with-tick").text) == "‘Test organisation’ was deleted"
-    assert redis_delete_mock.call_args_list == [
-        mocker.call(f'organisation-{organisation_one["id"]}-name'),
-        mocker.call("domains"),
-        mocker.call("organisations"),
-    ]
 
 
 @pytest.mark.parametrize(
@@ -702,32 +696,32 @@ def test_view_organisation_settings(
         (
             ".edit_organisation_type",
             {"organisation_type": "central"},
-            {"cached_service_ids": [], "organisation_type": "central"},
+            {"organisation_type": "central"},
         ),
         (
             ".edit_organisation_type",
             {"organisation_type": "local"},
-            {"cached_service_ids": [], "organisation_type": "local"},
+            {"organisation_type": "local"},
         ),
         (
             ".edit_organisation_type",
             {"organisation_type": "nhs_local"},
-            {"cached_service_ids": [], "organisation_type": "nhs_local"},
+            {"organisation_type": "nhs_local"},
         ),
         (
             ".edit_organisation_crown_status",
             {"crown_status": "crown"},
-            {"cached_service_ids": [], "crown": True},
+            {"crown": True},
         ),
         (
             ".edit_organisation_crown_status",
             {"crown_status": "non-crown"},
-            {"cached_service_ids": [], "crown": False},
+            {"crown": False},
         ),
         (
             ".edit_organisation_crown_status",
             {"crown_status": "unknown"},
-            {"cached_service_ids": [], "crown": None},
+            {"crown": None},
         ),
     ),
 )
@@ -793,9 +787,7 @@ def test_update_organisation_sector_sends_service_id_data_to_api_client(
         ),
     )
 
-    mock_update_organisation.assert_called_once_with(
-        organisation_one["id"], cached_service_ids=["12345", "67890", SERVICE_ONE_ID], organisation_type="central"
-    )
+    mock_update_organisation.assert_called_once_with(organisation_one["id"], organisation_type="central")
 
 
 @pytest.mark.parametrize(
@@ -1045,7 +1037,6 @@ def test_update_organisation_name(
     mock_update_organisation.assert_called_once_with(
         fake_uuid,
         name="TestNewOrgName",
-        cached_service_ids=None,
     )
 
 
@@ -1130,7 +1121,7 @@ def test_update_organisation_notes(
             org_id=organisation_one["id"],
         ),
     )
-    mock_update_organisation.assert_called_with(organisation_one["id"], cached_service_ids=None, notes="Very fluffy")
+    mock_update_organisation.assert_called_with(organisation_one["id"], notes="Very fluffy")
 
 
 def test_update_organisation_notes_errors_when_user_not_platform_admin(

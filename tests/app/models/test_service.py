@@ -26,45 +26,7 @@ def test_organisation_type_when_service_and_its_org_both_have_an_org_type(mocker
     assert service.organisation_type == "local"
 
 
-def test_organisation_name_comes_from_cache(mocker, service_one):
-    mock_redis_get = mocker.patch(
-        "app.extensions.RedisClient.get",
-        return_value=b'"Borchester Council"',
-    )
-    mock_get_organisation = mocker.patch("app.organisations_client.get_organisation")
-    service = Service(service_one)
-    service._dict["organisation"] = ORGANISATION_ID
-
-    assert service.organisation_name == "Borchester Council"
-    mock_redis_get.assert_called_once_with(f"organisation-{ORGANISATION_ID}-name")
-    assert mock_get_organisation.called is False
-
-
-def test_organisation_name_goes_into_cache(mocker, service_one):
-    mocker.patch(
-        "app.extensions.RedisClient.get",
-        return_value=None,
-    )
-    mock_redis_set = mocker.patch(
-        "app.extensions.RedisClient.set",
-    )
-    mocker.patch(
-        "app.organisations_client.get_organisation",
-        return_value=organisation_json(),
-    )
-    service = Service(service_one)
-    service._dict["organisation"] = ORGANISATION_ID
-
-    assert service.organisation_name == "Test Organisation"
-    mock_redis_set.assert_called_once_with(
-        f"organisation-{ORGANISATION_ID}-name",
-        '"Test Organisation"',
-        ex=604800,
-    )
-
-
 def test_service_without_organisation_doesnt_need_org_api(mocker, service_one):
-    mock_redis_get = mocker.patch("app.extensions.RedisClient.get")
     mock_get_organisation = mocker.patch("app.organisations_client.get_organisation")
     service = Service(service_one)
     service._dict["organisation"] = None
@@ -73,7 +35,6 @@ def test_service_without_organisation_doesnt_need_org_api(mocker, service_one):
     assert service.organisation_name is None
     assert isinstance(service.organisation, Organisation)
 
-    assert mock_redis_get.called is False
     assert mock_get_organisation.called is False
 
 

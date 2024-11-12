@@ -1,16 +1,10 @@
-from unittest.mock import call
 from uuid import uuid4
 
 import pytest
 from flask import url_for
 
 import app
-from tests import (
-    organisation_json,
-    sample_uuid,
-    service_json,
-    validate_route_permission,
-)
+from tests import organisation_json, service_json, validate_route_permission
 from tests.conftest import (
     ORGANISATION_ID,
     SERVICE_ONE_ID,
@@ -502,8 +496,6 @@ def test_archive_service_after_confirm(
     service_one["restricted"] = is_trial_service
     mock_api = mocker.patch("app.service_api_client.post")
     mock_event = mocker.patch("app.main.views.service_settings.create_archive_service_event")
-    redis_delete_mock = mocker.patch("app.notify_client.service_api_client.redis_client.delete")
-    mocker.patch("app.notify_client.service_api_client.redis_client.delete_by_pattern")
 
     client_request.login(user)
     page = client_request.post(
@@ -517,8 +509,6 @@ def test_archive_service_after_confirm(
 
     assert normalize_spaces(page.select_one("h1").text) == "Choose service"
     assert normalize_spaces(page.select_one(".banner-default-with-tick").text) == "‘service one’ was deleted"
-    # The one user which is part of this service has the sample_uuid as it's user ID
-    assert call(f"user-{sample_uuid()}") in redis_delete_mock.call_args_list
 
 
 @pytest.mark.parametrize(
