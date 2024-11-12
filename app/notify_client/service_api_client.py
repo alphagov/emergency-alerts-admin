@@ -97,9 +97,7 @@ class ServiceAPIClient(AdminAPIClient):
         data = _attach_current_user({})
         return self.delete(endpoint, data)
 
-    def create_service_template(
-        self, name, type_, content, service_id, subject=None, process_type="normal", parent_folder_id=None
-    ):
+    def create_service_template(self, name, type_, content, service_id, parent_folder_id=None):
         """
         Create a service template.
         """
@@ -108,25 +106,18 @@ class ServiceAPIClient(AdminAPIClient):
             "template_type": type_,
             "content": content,
             "service": service_id,
-            "process_type": process_type,
         }
-        if subject:
-            data.update({"subject": subject})
         if parent_folder_id:
             data.update({"parent_folder_id": parent_folder_id})
         data = _attach_current_user(data)
         endpoint = "/service/{0}/template".format(service_id)
         return self.post(endpoint, data)
 
-    def update_service_template(self, id_, name, type_, content, service_id, subject=None, process_type=None):
+    def update_service_template(self, id_, name, type_, content, service_id):
         """
         Update a service template.
         """
         data = {"id": id_, "name": name, "template_type": type_, "content": content, "service": service_id}
-        if subject:
-            data.update({"subject": subject})
-        if process_type:
-            data.update({"process_type": process_type})
         data = _attach_current_user(data)
         endpoint = "/service/{0}/template/{1}".format(service_id, id_)
         return self.post(endpoint, data)

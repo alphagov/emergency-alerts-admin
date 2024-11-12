@@ -698,7 +698,6 @@ def test_should_not_create_too_big_template_for_broadcasts(
             "template_content": content,
             "template_type": "broadcast",
             "service": SERVICE_ONE_ID,
-            "process_type": "normal",
         },
         _expected_status=200,
     )
@@ -884,7 +883,6 @@ def test_should_not_create_sms_or_broadcast_template_with_emoji(
             "template_content": "here are some noodles 🍜",
             "template_type": "broadcast",
             "service": SERVICE_ONE_ID,
-            "process_type": "normal",
         },
         _expected_status=200,
     )
