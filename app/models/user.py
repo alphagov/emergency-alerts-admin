@@ -77,7 +77,7 @@ class User(BaseUser, UserMixin):
 
     @staticmethod
     def already_registered(email_address):
-        return bool(User.from_email_address_or_none(email_address))
+        return bool(user_api_client.check_user_exists(email_address))
 
     @classmethod
     def from_email_address_and_password_or_none(cls, email_address, password):

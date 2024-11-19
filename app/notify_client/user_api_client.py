@@ -49,6 +49,16 @@ class UserApiClient(NotifyAdminAPIClient):
                 abort(429)
             raise e
 
+    def check_user_exists(self, email_address):
+        try:
+            return self.post("/user/email-in-db", data={"email": email_address})
+        except HTTPError as e:
+            if e.status_code == 404:
+                return None
+            elif e.status_code == 429:
+                abort(429)
+            raise e
+
     def get_user_by_email_or_none(self, email_address):
         try:
             return self.get_user_by_email(email_address)
