@@ -1218,6 +1218,11 @@ def mock_check_user_exists_for_nonexistent_user(mocker):
 
 
 @pytest.fixture(scope="function")
+def mock_check_user_exists_for_existing_user(mocker):
+    return mocker.patch("app.user_api_client.check_user_exists", return_value=True)
+
+
+@pytest.fixture(scope="function")
 def mock_revoke_api_key(mocker):
     def _revoke(service_id, key_id):
         return {}
