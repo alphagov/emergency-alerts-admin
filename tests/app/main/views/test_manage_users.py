@@ -1405,7 +1405,7 @@ def test_edit_user_email_redirects_to_confirmation(
     client_request,
     active_user_with_permissions,
     mock_get_users_by_service,
-    mock_get_user_by_email_not_found,
+    mock_check_user_exists_for_nonexistent_user,
 ):
     client_request.post(
         "main.edit_user_email",
@@ -1447,7 +1447,7 @@ def test_edit_user_email_without_changing_goes_back_to_team_members(
 def test_edit_user_email_can_change_any_email_address_to_a_gov_email_address(
     client_request,
     active_user_with_permissions,
-    mock_get_user_by_email_not_found,
+    mock_check_user_exists_for_nonexistent_user,
     mock_get_users_by_service,
     mock_update_user_attribute,
     mock_get_organisations,
@@ -1472,7 +1472,7 @@ def test_edit_user_email_can_change_any_email_address_to_a_gov_email_address(
 def test_edit_user_email_can_change_a_non_gov_email_address_to_another_non_gov_email_address(
     client_request,
     active_user_with_permissions,
-    mock_get_user_by_email_not_found,
+    mock_check_user_exists_for_nonexistent_user,
     mock_get_users_by_service,
     mock_update_user_attribute,
     mock_get_organisations,
