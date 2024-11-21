@@ -19,35 +19,23 @@ from tests.conftest import (
     normalize_spaces,
 )
 
+MAX_BROADCAST_CHAR_COUNT = 1395
 
-@pytest.mark.parametrize(
-    "permissions, expected_message",
-    (
-        (["email"], "You need a template before you can send emails, text messages or letters."),
-        (["sms"], "You need a template before you can send emails, text messages or letters."),
-        (["letter"], "You need a template before you can send emails, text messages or letters."),
-        (["email", "sms", "letter"], "You need a template before you can send emails, text messages or letters."),
-        (["broadcast"], "You haven’t added any templates yet."),
-    ),
-)
+
 def test_should_show_empty_page_when_no_templates(
     client_request,
     service_one,
     mock_get_service_templates_when_no_templates_exist,
     mock_get_template_folders,
     mock_get_no_api_keys,
-    permissions,
-    expected_message,
 ):
-    service_one["permissions"] = permissions
-
     page = client_request.get(
         "main.choose_template",
         service_id=service_one["id"],
     )
 
     assert normalize_spaces(page.select_one("h1").text) == "Templates"
-    assert normalize_spaces(page.select_one("main p").text) == (expected_message)
+    assert normalize_spaces(page.select_one("main p").text) == ("You haven’t added any templates yet.")
     assert page.select_one("#add_new_folder_form")
     assert page.select_one("#add_new_template_form")
 
@@ -1016,19 +1004,19 @@ def test_should_not_create_broadcast_template_with_placeholders(
         ),
         (
             "broadcast",
-            "a" * 1395,
+            "a" * MAX_BROADCAST_CHAR_COUNT,
             "You have 0 characters remaining",
             None,
         ),
         (
             "broadcast",
-            "a" * 1396,
+            "a" * (MAX_BROADCAST_CHAR_COUNT + 1),
             "You have 1 character too many",
             "govuk-error-message",
         ),
         (
             "broadcast",
-            "a" * 1397,
+            "a" * (MAX_BROADCAST_CHAR_COUNT + 2),
             "You have 2 characters too many",
             "govuk-error-message",
         ),
