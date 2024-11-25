@@ -95,7 +95,7 @@ def test_should_show_email_page(
 def test_should_redirect_after_email_change(
     client_request,
     mock_login,
-    mock_email_is_not_already_in_use,
+    mock_check_user_exists_for_nonexistent_user,
 ):
     client_request.post(
         "main.user_profile_email",
@@ -106,7 +106,24 @@ def test_should_redirect_after_email_change(
         ),
     )
 
-    assert mock_email_is_not_already_in_use.called
+    assert mock_check_user_exists_for_nonexistent_user.called
+
+
+def test_should_show_error_if_email_already_in_use(
+    client_request,
+    mock_login,
+    mock_check_user_exists_for_existing_user,
+):
+    page = client_request.post(
+        "main.user_profile_email",
+        _data={"email_address": "new_notify@notify.gov.uk"},
+        _expected_status=200,
+    )
+
+    assert mock_check_user_exists_for_existing_user.called
+    assert (
+        normalize_spaces(page.select_one(".govuk-error-message").text) == "Error: The email address is already in use"
+    )
 
 
 @pytest.mark.parametrize(
