@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime
 from unittest.mock import patch
 from urllib.parse import parse_qs, urlparse
 
@@ -186,7 +186,6 @@ def service_json(
         "inbound_api": inbound_api,
         "service_callback_api": service_callback_api,
         "contact_link": contact_link,
-        "count_as_live": True,
         "organisation": organisation_id,
         "notes": notes,
         "broadcast_channel": broadcast_channel,
@@ -306,29 +305,29 @@ def org_invite_json(id_, invited_by, org_id, email_address, created_at, status):
     }
 
 
-def inbound_sms_json():
-    return {
-        "has_next": True,
-        "data": [
-            {
-                "user_number": phone_number,
-                "notify_number": "07900000002",
-                "content": f"message-{index + 1}",
-                "created_at": (datetime.utcnow() - timedelta(minutes=60 * hours_ago, seconds=index)).isoformat(),
-                "id": sample_uuid(),
-            }
-            for index, hours_ago, phone_number in (
-                (0, 1, "447900900000"),
-                (1, 1, "07900900000"),
-                (2, 1, "07900900000"),
-                (3, 3, "07900900002"),
-                (4, 5, "33(0)1 12345678"),  # France
-                (5, 7, "1-202-555-0104"),  # USA in one format
-                (6, 9, "+12025550104"),  # USA in another format
-                (7, 9, "+68212345"),  # Cook Islands
-            )
-        ],
-    }
+# def inbound_sms_json():
+#     return {
+#         "has_next": True,
+#         "data": [
+#             {
+#                 "user_number": phone_number,
+#                 "notify_number": "07900000002",
+#                 "content": f"message-{index + 1}",
+#                 "created_at": (datetime.utcnow() - timedelta(minutes=60 * hours_ago, seconds=index)).isoformat(),
+#                 "id": sample_uuid(),
+#             }
+#             for index, hours_ago, phone_number in (
+#                 (0, 1, "447900900000"),
+#                 (1, 1, "07900900000"),
+#                 (2, 1, "07900900000"),
+#                 (3, 3, "07900900002"),
+#                 (4, 5, "33(0)1 12345678"),  # France
+#                 (5, 7, "1-202-555-0104"),  # USA in one format
+#                 (6, 9, "+12025550104"),  # USA in another format
+#                 (7, 9, "+68212345"),  # Cook Islands
+#             )
+#         ],
+#     }
 
 
 TEST_USER_EMAIL = "test@user.gov.uk"
