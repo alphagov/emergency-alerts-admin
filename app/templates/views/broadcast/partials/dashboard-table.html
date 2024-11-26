@@ -44,6 +44,13 @@
         {% endif %} -->
       </div>
     </div>
+    <div>
+      {% if item.status == 'rejected' and item.rejection_reason %}
+        <p class="govuk-body">
+          Rejection reason: {{ item.rejection_reason}}
+        </p>
+      {% endif %}
+    </div>
   </div>
   {% if loop.last %}
     <div class="keyline-block">
