@@ -39,9 +39,12 @@ class BroadcastMessage(JSONModel):
         "approved_at",
         "cancelled_at",
         "updated_at",
+        "rejected_at",
         "created_by_id",
         "approved_by_id",
         "cancelled_by_id",
+        "rejected_by_id",
+        "rejection_reason",
     }
 
     libraries = broadcast_area_libraries
@@ -213,6 +216,10 @@ class BroadcastMessage(JSONModel):
         if not self.cancelled_by_id:
             return "an API call"
         return User.from_id(self.cancelled_by_id).name
+
+    @cached_property
+    def rejected_by(self):
+        return User.from_id(self.rejected_by_id).name if self.rejected_by_id else None
 
     @cached_property
     def count_of_phones(self):
@@ -392,6 +399,11 @@ class BroadcastMessage(JSONModel):
 
     def reject_broadcast(self):
         self._set_status_to("rejected")
+
+    def reject_broadcast_with_reason(self, rejection_reason):
+        broadcast_message_api_client.update_broadcast_message_status(
+            "rejected", broadcast_message_id=self.id, service_id=self.service_id, rejection_reason=rejection_reason
+        )
 
     def cancel_broadcast(self):
         self._set_status_to("cancelled")
