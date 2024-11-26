@@ -45,10 +45,11 @@ class BroadcastMessageAPIClient(NotifyAdminAPIClient):
         )
 
     @cache.delete("service-{service_id}-broadcast-message-{broadcast_message_id}")
-    def update_broadcast_message_status(self, status, *, service_id, broadcast_message_id):
+    def update_broadcast_message_status(self, status, *, service_id, broadcast_message_id, rejection_reason=None):
         data = _attach_current_user(
             {
                 "status": status,
+                **({"rejection_reason": rejection_reason} if rejection_reason else {}),
             }
         )
         self.post(
