@@ -89,6 +89,7 @@
 
           {% set rejection_reason_details %}
             <div class="govuk-!-margin-top-3">
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-3">Give a reason for rejecting alert</h3>
               {% call form_wrapper(action=url_for('main.reject_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
                 {{ rejection_form.rejection_reason }}
                 {{ page_footer(
@@ -107,7 +108,7 @@
           <div class="govuk-!-margin-top-1">
             {{ govukDetails({
               "classes": "govuk-!-margin-bottom-0",
-              "summaryText": "Rejection reason",
+              "summaryText": "Reject this alert",
               "html": rejection_reason_details
             }) }}
           </div>
@@ -125,33 +126,52 @@
         {% endif %}
       </div>
     {% elif current_user.has_permissions('approve_broadcasts', restrict_admin_usage=True) %}
-      {% call form_wrapper(class="banner govuk-!-margin-bottom-6") %}
-        <h1 class="govuk-heading-m govuk-!-margin-top-0 govuk-!-margin-bottom-3">
-          {% if broadcast_message.created_by %}
-            {{ broadcast_message.created_by.name }}
+      <div class="banner govuk-!-margin-bottom-6">
+        {% call form_wrapper(class="govuk-!-margin-bottom-2") %}
+          <h1 class="govuk-heading-m govuk-!-margin-top-0 govuk-!-margin-bottom-3">
+            {% if broadcast_message.created_by %}
+              {{ broadcast_message.created_by.name }}
+            {% else %}
+              An API call
+            {% endif %}
+            wants to broadcast
+            {{ broadcast_message.template.name }}
+          </h1>
+          {% if current_service.live %}
+            {{ form.confirm(param_extensions={
+              'formGroup': {
+                'classes': 'govuk-!-margin-bottom-4'
+              }
+            }) }}
           {% else %}
-            An API call
+            <p class="govuk-body govuk-!-margin-bottom-3">
+              No phones will get this alert.
+            </p>
           {% endif %}
-          wants to broadcast
-          {{ broadcast_message.template.name }}
-        </h1>
-        {% if current_service.live %}
-          {{ form.confirm(param_extensions={
-            'formGroup': {
-              'classes': 'govuk-!-margin-bottom-4'
-            }
+          {{ page_footer(
+            "Start broadcasting now"
+          ) }}
+        {% endcall %}
+        {% set rejection_reason_details %}
+          <div class="govuk-!-margin-top-3">
+            <h3 class="govuk-heading-s govuk-!-margin-bottom-3">Give a reason for rejecting alert</h3>
+            {% call form_wrapper(action=url_for('main.reject_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
+              {{ rejection_form.rejection_reason }}
+              {{ page_footer(
+                'Reject this alert',
+                destructive=True,
+              ) }}
+            {% endcall %}
+          </div>
+        {% endset %}
+        <div class="govuk-!-margin-top-1">
+          {{ govukDetails({
+            "classes": "govuk-!-margin-bottom-0",
+            "summaryText": "Reject this alert",
+            "html": rejection_reason_details
           }) }}
-        {% else %}
-          <p class="govuk-body govuk-!-margin-bottom-3">
-            No phones will get this alert.
-          </p>
-        {% endif %}
-        {{ page_footer(
-          "Start broadcasting now",
-          delete_link=url_for('main.reject_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
-          delete_link_text='Reject this alert'
-        ) }}
-      {% endcall %}
+        </div>
+      </div>
     {% elif current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) %}
       <div class="banner govuk-!-margin-bottom-6">
         <h1 class="govuk-heading-m govuk-!-margin-bottom-3">This alert is waiting for approval</h1>
