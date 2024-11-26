@@ -11,6 +11,7 @@ from app.main.forms import (
     ConfirmBroadcastForm,
     NewBroadcastForm,
     PostcodeForm,
+    RejectionReasonForm,
     SearchByNameForm,
 )
 from app.models.broadcast_message import BroadcastMessage, BroadcastMessages
@@ -765,6 +766,7 @@ def view_broadcast(service_id, broadcast_message_id):
             channel=current_service.broadcast_channel,
             max_phones=broadcast_message.count_of_phones_likely,
         ),
+        rejection_form=RejectionReasonForm(),
         is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
         areas=format_areas_list(broadcast_message.areas),
     )
@@ -814,6 +816,7 @@ def approve_broadcast_message(service_id, broadcast_message_id):
                 service_id=current_service.id,
             ),
             form=form,
+            rejection_form=RejectionReasonForm(),
             is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
             areas=format_areas_list(broadcast_message.areas),
         )
@@ -827,14 +830,16 @@ def approve_broadcast_message(service_id, broadcast_message_id):
     )
 
 
-@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/reject")
+@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/reject", methods=["POST"])
 @user_has_permissions("create_broadcasts", "approve_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
-def reject_broadcast_message(service_id, broadcast_message_id):
+def reject_broadcast_message(service_id, broadcast_message_id, rejection_reason=None):
     broadcast_message = BroadcastMessage.from_id(
         broadcast_message_id,
         service_id=current_service.id,
     )
+    form = RejectionReasonForm()
+    rejection_reason = form.rejection_reason.data
 
     if broadcast_message.status != "pending-approval":
         return redirect(
@@ -845,7 +850,7 @@ def reject_broadcast_message(service_id, broadcast_message_id):
             )
         )
 
-    broadcast_message.reject_broadcast()
+    broadcast_message.reject_broadcast_with_reason(rejection_reason=rejection_reason)
 
     return redirect(
         url_for(
@@ -892,6 +897,7 @@ def cancel_broadcast_message(service_id, broadcast_message_id):
         "views/broadcast/view-message.html",
         broadcast_message=broadcast_message,
         hide_stop_link=True,
+        rejection_form=RejectionReasonForm(),
         is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
         areas=format_areas_list(broadcast_message.areas),
     )
