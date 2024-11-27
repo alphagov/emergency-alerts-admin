@@ -51,6 +51,7 @@
 {% block maincolumn_content %}
 
   {% if broadcast_message.status == 'pending-approval' %}
+    {{ page_header(broadcast_message.template.name) }}
     {% if broadcast_message.created_by and broadcast_message.created_by == current_user
       and current_user.has_permissions('create_broadcasts', 'approve_broadcasts', restrict_admin_usage=True) %}
       <div class="banner govuk-!-margin-bottom-6">
@@ -71,7 +72,7 @@
             your team to approve your alert.
           </p>
           {% set approve_details %}
-            <div class="govuk-!-margin-bottom-2">
+            <div class="govuk-!-margin-bottom-5">
               {% call form_wrapper() %}
               <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-3">
                 Because you’re in training mode you can approve
@@ -89,11 +90,11 @@
 
           {% set rejection_reason_details %}
             <div class="govuk-!-margin-top-3">
-              <h3 class="govuk-heading-s govuk-!-margin-bottom-3">Give a reason for rejecting alert</h3>
+              <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for rejecting alert</h1>
               {% call form_wrapper(action=url_for('main.reject_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
                 {{ rejection_form.rejection_reason }}
                 {{ page_footer(
-                  'Reject this alert',
+                  'Reject alert',
                   destructive=True,
                 ) }}
               {% endcall %}
@@ -127,7 +128,7 @@
       </div>
     {% elif current_user.has_permissions('approve_broadcasts', restrict_admin_usage=True) %}
       <div class="banner govuk-!-margin-bottom-6">
-        {% call form_wrapper(class="govuk-!-margin-bottom-2") %}
+        {% call form_wrapper(class="govuk-!-margin-bottom-5") %}
           <h1 class="govuk-heading-m govuk-!-margin-top-0 govuk-!-margin-bottom-3">
             {% if broadcast_message.created_by %}
               {{ broadcast_message.created_by.name }}
@@ -154,11 +155,11 @@
         {% endcall %}
         {% set rejection_reason_details %}
           <div class="govuk-!-margin-top-3">
-            <h3 class="govuk-heading-s govuk-!-margin-bottom-3">Give a reason for rejecting alert</h3>
+            <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for rejecting alert</h1>
             {% call form_wrapper(action=url_for('main.reject_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
               {{ rejection_form.rejection_reason }}
               {{ page_footer(
-                'Reject this alert',
+                'Reject alert',
                 destructive=True,
               ) }}
             {% endcall %}
