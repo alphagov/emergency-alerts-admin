@@ -1099,7 +1099,6 @@ def test_service_confirm_broadcast_account_type_posts_data_to_api_and_redirects(
         service_mode=service_mode,
         broadcast_channel=broadcast_channel,
         provider_restriction=allowed_broadcast_provider,
-        cached_service_user_ids=[fake_uuid],
     )
     mock_event_handler.assert_called_once_with(
         service_id=SERVICE_ONE_ID,
