@@ -25,12 +25,12 @@
 
 {% block service_page_title %}
   {% if broadcast_message.status == 'pending-approval' %}
-    {% if broadcast_message.created_by and broadcast_message.created_by == current_user
+    {% if broadcast_message.created_by and broadcast_message.created_by_id == current_user.id
       and current_user.has_permissions('create_broadcasts', 'approve_broadcasts', restrict_admin_usage=True) %}
       {{ broadcast_message.template.name }} is waiting for approval
     {% elif current_user.has_permissions('approve_broadcasts', restrict_admin_usage=True) %}
       {% if broadcast_message.created_by %}
-        {{ broadcast_message.created_by.name }}
+        {{ broadcast_message.created_by }}
       {% else %}
         An API call
       {% endif %}
@@ -52,7 +52,7 @@
 
   {% if broadcast_message.status == 'pending-approval' %}
     {{ page_header(broadcast_message.template.name) }}
-    {% if broadcast_message.created_by and broadcast_message.created_by == current_user
+    {% if broadcast_message.created_by and broadcast_message.created_by_id == current_user.id
       and current_user.has_permissions('create_broadcasts', 'approve_broadcasts', restrict_admin_usage=True) %}
       <div class="banner govuk-!-margin-bottom-6">
         <h1 class="govuk-heading-m govuk-!-margin-bottom-3">
@@ -131,7 +131,7 @@
         {% call form_wrapper(class="govuk-!-margin-bottom-5") %}
           <h1 class="govuk-heading-m govuk-!-margin-top-0 govuk-!-margin-bottom-3">
             {% if broadcast_message.created_by %}
-              {{ broadcast_message.created_by.name }}
+              {{ broadcast_message.created_by }}
             {% else %}
               An API call
             {% endif %}
@@ -217,6 +217,12 @@
         {{ broadcast_message.updated_at|format_datetime_human }}
         by {{broadcast_message.rejected_by}}.
       </p>
+      {% if broadcast_message.rejection_reason %}
+        <div class="govuk-!-margin-bottom-4">
+          <p class="govuk-!-margin-right-2 dashboard-table govuk-!-font-weight-bold">Reason: </p>
+          {{broadcast_message.rejection_reason}}
+        </div>
+      {% endif %}
     {% else %}
       <p class="govuk-body govuk-!-margin-bottom-4">
         Sent
@@ -244,13 +250,6 @@
     </div>
   {% endif %}
 
-  {% if broadcast_message.rejection_reason %}
-    <div>
-      <p class="govuk-!-margin-right-2 area-list">Rejection reason: </p>
-      {{broadcast_message.rejection_reason}}
-    </div>
-  {% endif %}
-
   <div class="area-list-map-details">
     {{ govukDetails({
       "summaryText": "Show map of areas",
@@ -261,12 +260,12 @@
   {% if broadcast_message.status != 'pending-approval' %}
     <p class="govuk-body govuk-!-margin-bottom-3">
       {% if broadcast_message.created_by %}
-        Created by {{ broadcast_message.created_by.name }}
+        Created by {{ broadcast_message.created_by }}
       {%- else %}
         Created from an API call
       {%- endif %}
       {%- if broadcast_message.approved_by %}
-        and approved by {{ broadcast_message.approved_by.name }}
+        and approved by {{ broadcast_message.approved_by }}
       {%- endif %}
       {{- '.' }}
     </p>
