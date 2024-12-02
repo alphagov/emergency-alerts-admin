@@ -508,6 +508,10 @@ def broadcast_message_json(
     reference=None,
     cap_event=None,
     template_name="Example template",
+    created_by=None,
+    approved_by=None,
+    rejected_by=None,
+    cancelled_by=None,
 ):
     return {
         "id": id_,
@@ -535,4 +539,8 @@ def broadcast_message_json(
         "created_by_id": created_by_id,
         "approved_by_id": approved_by_id,
         "cancelled_by_id": cancelled_by_id,
+        "created_by": created_by,
+        "approved_by": approved_by,
+        "rejected_by": rejected_by,
+        "cancelled_by": cancelled_by,
     }
