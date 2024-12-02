@@ -69,6 +69,14 @@ def terms():
     )
 
 
+@main.route("/features/training-mode")
+def training_mode():
+    return render_template(
+        "views/training-mode.html",
+        navigation_links=features_nav(),
+    )
+
+
 # --- Redirects --- #
 
 

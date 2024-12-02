@@ -44,6 +44,7 @@ class HeaderNavigation(Navigation):
         "features": {
             "security",
             "terms",
+            "training_mode",
         },
         "user-profile": {
             "user_profile",
