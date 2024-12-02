@@ -52,7 +52,7 @@
 
   {% if broadcast_message.status == 'pending-approval' %}
     {{ page_header(broadcast_message.template.name) }}
-    {% if broadcast_message.created_by and broadcast_message.created_by_id == current_user.id
+    {% if broadcast_message.created_by_id and broadcast_message.created_by_id == current_user.id
       and current_user.has_permissions('create_broadcasts', 'approve_broadcasts', restrict_admin_usage=True) %}
       <div class="banner govuk-!-margin-bottom-6">
         <h1 class="govuk-heading-m govuk-!-margin-bottom-3">
