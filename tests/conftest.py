@@ -2868,7 +2868,7 @@ def mock_update_broadcast_message_status(
     mocker,
     fake_uuid,
 ):
-    def _update(status, *, service_id, broadcast_message_id):
+    def _update(status, *, service_id, broadcast_message_id, rejection_reason=None):
         pass
 
     return mocker.patch(
