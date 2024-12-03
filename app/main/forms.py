@@ -1954,6 +1954,5 @@ class RejectionReasonForm(StripWhitespaceForm):
         For example, "Alert message has spelling mistakes"."""
 
     rejection_reason = GovukTextareaField(
-        validators=[DataRequired(message="Enter rejection reason")],
         param_extensions={"hint": {"text": hint}, "rows": 3},
     )
