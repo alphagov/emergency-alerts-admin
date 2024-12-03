@@ -7,13 +7,10 @@ from emergency_alerts_utils.formatters import formatted_list
 from emergency_alerts_utils.recipients import InvalidEmailError, validate_email_address
 from emergency_alerts_utils.sanitise_text import SanitiseSMS
 from emergency_alerts_utils.template import BroadcastMessageTemplate
-from flask import current_app
 from orderedset import OrderedSet
 from postcode_validator.uk.uk_postcode_regex import postcode_regex
 from wtforms import ValidationError
-from wtforms.validators import StopValidation
 
-from app import antivirus_client
 from app.main._commonly_used_passwords import commonly_used_passwords
 from app.utils.user import is_gov_user
 
@@ -110,7 +107,6 @@ class OnlySMSCharacters:
                     formatted_list(non_sms_characters, conjunction="or", before_each="", after_each=""),
                     {
                         "broadcast": "broadcasts",
-                        "sms": "text messages",
                     }.get(self._template_type),
                     ("It" if len(non_sms_characters) == 1 else "They"),
                 )
@@ -207,18 +203,6 @@ class StringsNotAllowed:
                 if self.message:
                     raise ValidationError(self.message)
                 raise ValidationError(f"Cannot {'contain' if self.match_on_substrings else 'be'} ‘{not_allowed}’")
-
-
-class FileIsVirusFree:
-    def __call__(self, form, field):
-        if field.data:
-            if current_app.config["ANTIVIRUS_ENABLED"]:
-                try:
-                    virus_free = antivirus_client.scan(field.data)
-                    if not virus_free:
-                        raise StopValidation("Your file contains a virus")
-                finally:
-                    field.data.seek(0)
 
 
 class Only2DecimalPlaces:

@@ -16,8 +16,7 @@
             {% for link_text, url in [
               ('Search', url_for('main.platform_admin_search')),
               ('Live services', url_for('main.live_services')),
-              ('Trial mode services', url_for('main.trial_services')),
-              ('Clear cache', url_for('main.clear_cache'))
+              ('Trial mode services', url_for('main.trial_services'))
             ] %}
               <li>
                 <a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline" href="{{ url }}">

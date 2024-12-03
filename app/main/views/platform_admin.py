@@ -1,17 +1,14 @@
 import dataclasses
-import itertools
 import uuid
-from collections import OrderedDict
 from datetime import datetime
 from typing import Optional
 
-from flask import flash, redirect, render_template, request, url_for
+from flask import redirect, render_template, request, url_for
 from notifications_python_client.errors import HTTPError
 
 from app import service_api_client, user_api_client
-from app.extensions import redis_client
 from app.main import main
-from app.main.forms import AdminClearCacheForm, DateFilterForm, PlatformAdminSearch
+from app.main.forms import DateFilterForm, PlatformAdminSearch
 from app.notify_client.platform_admin_api_client import admin_api_client
 from app.utils.user import user_is_platform_admin
 
@@ -108,72 +105,6 @@ def platform_admin_services():
     )
 
 
-@main.route("/platform-admin/clear-cache", methods=["GET", "POST"])
-@user_is_platform_admin
-def clear_cache():
-    # note: `service-{uuid}-templates` cache is cleared for both services and templates.
-    CACHE_KEYS = OrderedDict(
-        [
-            (
-                "user",
-                [
-                    "user-????????-????-????-????-????????????",
-                ],
-            ),
-            (
-                "service",
-                [
-                    "has_jobs-????????-????-????-????-????????????",
-                    "service-????????-????-????-????-????????????",
-                    "service-????????-????-????-????-????????????-templates",
-                    "service-????????-????-????-????-????????????-data-retention",
-                    "service-????????-????-????-????-????????????-template-folders",
-                ],
-            ),
-            (
-                "template",
-                [
-                    "service-????????-????-????-????-????????????-templates",
-                    "service-????????-????-????-????-????????????-template-????????-????-????-????-????????????-version-*",  # noqa
-                    "service-????????-????-????-????-????????????-template-????????-????-????-????-????????????-versions",  # noqa
-                ],
-            ),
-            (
-                "organisation",
-                [
-                    "organisations",
-                    "domains",
-                    "live-service-and-organisation-counts",
-                    "organisation-????????-????-????-????-????????????-name",
-                ],
-            ),
-            (
-                "broadcast",
-                [
-                    "service-????????-????-????-????-????????????-broadcast-message-????????-????-????-????-????????????",  # noqa
-                ],
-            ),
-        ]
-    )
-
-    form = AdminClearCacheForm()
-
-    form.model_type.choices = [(key, key.replace("_", " ").title()) for key in CACHE_KEYS]
-
-    if form.validate_on_submit():
-        group_keys = form.model_type.data
-        groups = map(CACHE_KEYS.get, group_keys)
-        patterns = list(itertools.chain(*groups))
-
-        num_deleted = sum(redis_client.delete_by_pattern(pattern) for pattern in patterns)
-
-        msg = f"Removed {num_deleted} objects across {len(patterns)} key formats " f'for {", ".join(group_keys)}'
-
-        flash(msg, category="default")
-
-    return render_template("views/platform-admin/clear-cache.html", form=form)
-
-
 def get_url_for_notify_record(uuid_):
     @dataclasses.dataclass
     class _EndpointSpec:
@@ -201,14 +132,8 @@ def get_url_for_notify_record(uuid_):
         url_for_data = {
             "organisation": _EndpointSpec(".organisation_dashboard", "org_id"),
             "service": _EndpointSpec(".service_dashboard", "service_id"),
-            "notification": _EndpointSpec("main.view_notification", "notification_id", with_service_id=True),
             "template": _EndpointSpec("main.view_template", "template_id", with_service_id=True),
             "user": _EndpointSpec(".user_information", "user_id"),
-            "provider": _EndpointSpec(".view_provider", "provider_id"),
-            "reply_to_email": _EndpointSpec(".service_edit_email_reply_to", "reply_to_email_id", with_service_id=True),
-            "job": _EndpointSpec(".view_job", "job_id", with_service_id=True),
-            "service_contact_list": _EndpointSpec(".contact_list", "contact_list_id", with_service_id=True),
-            "service_data_retention": _EndpointSpec(".edit_data_retention", "data_retention_id", with_service_id=True),
             "api_key": _EndpointSpec(".api_keys", with_service_id=True),
             "template_folder": _EndpointSpec(".choose_template", "template_folder_id", with_service_id=True),
         }

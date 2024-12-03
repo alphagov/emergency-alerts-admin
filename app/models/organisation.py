@@ -42,19 +42,8 @@ class Organisation(JSONModel):
         "active",
         "crown",
         "organisation_type",
-        "agreement_signed",
-        "agreement_signed_at",
-        "agreement_signed_by_id",
-        "agreement_signed_version",
-        "agreement_signed_on_behalf_of_name",
-        "agreement_signed_on_behalf_of_email_address",
         "domains",
-        "request_to_go_live_notes",
         "count_of_live_services",
-        "billing_contact_email_addresses",
-        "billing_contact_names",
-        "billing_reference",
-        "purchase_order_number",
         "notes",
     }
 
@@ -107,7 +96,6 @@ class Organisation(JSONModel):
             self.agreement_signed = None
             self.domains = []
             self.organisation_type = None
-            self.request_to_go_live_notes = None
 
     @property
     def organisation_type_label(self):
@@ -118,19 +106,6 @@ class Organisation(JSONModel):
         if self.crown is None:
             abort(404)
         return self.crown
-
-    @property
-    def billing_details(self):
-        billing_details = [
-            self.billing_contact_email_addresses,
-            self.billing_contact_names,
-            self.billing_reference,
-            self.purchase_order_number,
-        ]
-        if any(billing_details):
-            return billing_details
-        else:
-            return None
 
     @cached_property
     def services(self):
@@ -173,10 +148,8 @@ class Organisation(JSONModel):
 
             return User.from_id(self.agreement_signed_by_id)
 
-    def update(self, delete_services_cache=False, **kwargs):
-        organisations_client.update_organisation(
-            self.id, cached_service_ids=self.service_ids if delete_services_cache else None, **kwargs
-        )
+    def update(self, **kwargs):
+        organisations_client.update_organisation(self.id, **kwargs)
 
     def associate_service(self, service_id):
         organisations_client.update_service_organisation(service_id, self.id)

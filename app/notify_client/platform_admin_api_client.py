@@ -1,7 +1,7 @@
-from app.notify_client import NotifyAdminAPIClient
+from app.notify_client import AdminAPIClient
 
 
-class AdminApiClient(NotifyAdminAPIClient):
+class AdminApiClient(AdminAPIClient):
     """API client for looking up arbitrary API objects based on incomplete information, eg just a UUID"""
 
     def find_by_uuid(self, uuid_):

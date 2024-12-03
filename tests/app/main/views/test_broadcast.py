@@ -4181,7 +4181,7 @@ def test_cancel_broadcast(
     user,
 ):
     """
-    users with 'send_messages' permissions and platform admins should be able to cancel broadcasts.
+    users with 'create/approve_broadcasts' permissions and platform admins should be able to cancel broadcasts.
     """
     service_one["permissions"] += ["broadcast"]
 

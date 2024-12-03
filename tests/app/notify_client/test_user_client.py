@@ -1,6 +1,6 @@
 import os
 import uuid
-from unittest.mock import Mock, call
+from unittest.mock import Mock
 
 import pytest
 from notifications_python_client.errors import HTTPError
@@ -15,7 +15,7 @@ user_id = sample_uuid()
 
 @pytest.fixture(autouse=True)
 def mock_notify_client_check_inactive_service(mocker):
-    mocker.patch("app.notify_client.NotifyAdminAPIClient.check_inactive_service")
+    mocker.patch("app.notify_client.AdminAPIClient.check_inactive_service")
 
 
 def test_client_gets_all_users_for_service(
@@ -107,13 +107,13 @@ def test_client_passes_admin_url_when_sending_email_auth(
 def test_client_converts_admin_permissions_to_db_permissions_on_edit(notify_admin, mocker):
     mock_post = mocker.patch("app.notify_client.user_api_client.UserApiClient.post")
 
-    user_api_client.set_user_permissions("user_id", "service_id", permissions={"send_messages", "view_activity"})
+    user_api_client.set_user_permissions("user_id", "service_id", permissions={"approve_broadcasts", "view_activity"})
 
     assert sorted(mock_post.call_args[1]["data"]["permissions"], key=lambda x: x["permission"]) == sorted(
         [
-            {"permission": "send_texts"},
-            {"permission": "send_emails"},
-            {"permission": "send_letters"},
+            {"permission": "approve_broadcasts"},
+            {"permission": "cancel_broadcasts"},
+            {"permission": "reject_broadcasts"},
             {"permission": "view_activity"},
         ],
         key=lambda x: x["permission"],
@@ -124,71 +124,18 @@ def test_client_converts_admin_permissions_to_db_permissions_on_add_to_service(n
     mock_post = mocker.patch("app.notify_client.user_api_client.UserApiClient.post", return_value={"data": {}})
 
     user_api_client.add_user_to_service(
-        "service_id", "user_id", permissions={"send_messages", "view_activity"}, folder_permissions=[]
+        "service_id", "user_id", permissions={"approve_broadcasts", "view_activity"}, folder_permissions=[]
     )
 
     assert sorted(mock_post.call_args[1]["data"]["permissions"], key=lambda x: x["permission"]) == sorted(
         [
-            {"permission": "send_texts"},
-            {"permission": "send_emails"},
-            {"permission": "send_letters"},
+            {"permission": "approve_broadcasts"},
+            {"permission": "cancel_broadcasts"},
+            {"permission": "reject_broadcasts"},
             {"permission": "view_activity"},
         ],
         key=lambda x: x["permission"],
     )
-
-
-@pytest.mark.parametrize(
-    (
-        "expected_cache_get_calls,"
-        "cache_value,"
-        "expected_api_calls,"
-        "expected_cache_set_calls,"
-        "expected_return_value,"
-    ),
-    [
-        (
-            [call("user-{}".format(user_id))],
-            b'{"data": "from cache"}',
-            [],
-            [],
-            "from cache",
-        ),
-        (
-            [call("user-{}".format(user_id))],
-            None,
-            [call("/user/{}".format(user_id))],
-            [call("user-{}".format(user_id), '{"data": "from api"}', ex=604800)],
-            "from api",
-        ),
-    ],
-)
-def test_returns_value_from_cache(
-    notify_admin,
-    mocker,
-    expected_cache_get_calls,
-    cache_value,
-    expected_return_value,
-    expected_api_calls,
-    expected_cache_set_calls,
-):
-    mock_redis_get = mocker.patch(
-        "app.extensions.RedisClient.get",
-        return_value=cache_value,
-    )
-    mock_api_get = mocker.patch(
-        "app.notify_client.NotifyAdminAPIClient.get",
-        return_value={"data": "from api"},
-    )
-    mock_redis_set = mocker.patch(
-        "app.extensions.RedisClient.set",
-    )
-
-    user_api_client.get_user(user_id)
-
-    assert mock_redis_get.call_args_list == expected_cache_get_calls
-    assert mock_api_get.call_args_list == expected_api_calls
-    assert mock_redis_set.call_args_list == expected_cache_set_calls
 
 
 @pytest.mark.parametrize(
@@ -213,24 +160,20 @@ def test_returns_value_from_cache(
         (user_api_client, "activate_user", [user_id], {}),
         (user_api_client, "archive_user", [user_id], {}),
         (service_api_client, "remove_user_from_service", [SERVICE_ONE_ID, user_id], {}),
-        (service_api_client, "create_service", ["", "", 0, False, user_id, sample_uuid()], {}),
+        (service_api_client, "create_service", ["", "", True, user_id], {}),
         (invite_api_client, "accept_invite", [SERVICE_ONE_ID, user_id], {}),
     ],
 )
 def test_deletes_user_cache(notify_admin, mock_get_user, mocker, client, method, extra_args, extra_kwargs):
     mocker.patch("app.notify_client.current_user", id="1")
-    mock_redis_delete = mocker.patch("app.extensions.RedisClient.delete")
     mock_request = mocker.patch("notifications_python_client.base.BaseAPIClient.request")
 
     getattr(client, method)(*extra_args, **extra_kwargs)
 
-    assert call("user-{}".format(user_id)) in mock_redis_delete.call_args_list
     assert len(mock_request.call_args_list) == 1
 
 
 def test_add_user_to_service_calls_correct_endpoint_and_deletes_keys_from_cache(mocker):
-    mock_redis_delete = mocker.patch("app.extensions.RedisClient.delete")
-
     service_id = uuid.uuid4()
     user_id = uuid.uuid4()
     folder_id = uuid.uuid4()
@@ -243,11 +186,6 @@ def test_add_user_to_service_calls_correct_endpoint_and_deletes_keys_from_cache(
     user_api_client.add_user_to_service(service_id, user_id, [], [folder_id])
 
     mock_post.assert_called_once_with(expected_url, data=data)
-    assert mock_redis_delete.call_args_list == [
-        call("user-{user_id}".format(user_id=user_id)),
-        call("service-{service_id}-template-folders".format(service_id=service_id)),
-        call("service-{service_id}".format(service_id=service_id)),
-    ]
 
 
 def test_get_webauthn_credentials_for_user(mocker, webauthn_credential, fake_uuid):

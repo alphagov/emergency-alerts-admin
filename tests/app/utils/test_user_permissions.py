@@ -26,8 +26,8 @@ from app.utils.user_permissions import (
             set(),
         ),
         (
-            ["send_texts", "send_emails", "send_letters", "manage_templates", "some_unknown_permission"],
-            {"send_messages", "manage_templates", "some_unknown_permission"},
+            ["manage_templates", "some_unknown_permission"],
+            {"manage_templates", "some_unknown_permission"},
         ),
     ],
 )
@@ -40,13 +40,10 @@ def test_translate_permissions_from_db_to_ui(
 
 
 def test_translate_permissions_from_ui_to_db():
-    ui_permissions = ["send_messages", "manage_templates", "some_unknown_permission"]
+    ui_permissions = ["manage_templates", "some_unknown_permission"]
     db_permissions = translate_permissions_from_ui_to_db(ui_permissions)
 
     assert db_permissions == {
-        "send_texts",
-        "send_emails",
-        "send_letters",
         "manage_templates",
         "some_unknown_permission",
     }

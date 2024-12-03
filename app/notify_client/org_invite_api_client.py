@@ -1,7 +1,7 @@
-from app.notify_client import NotifyAdminAPIClient, _attach_current_user
+from app.notify_client import AdminAPIClient, _attach_current_user
 
 
-class OrgInviteApiClient(NotifyAdminAPIClient):
+class OrgInviteApiClient(AdminAPIClient):
     def init_app(self, app):
         super().init_app(app)
 

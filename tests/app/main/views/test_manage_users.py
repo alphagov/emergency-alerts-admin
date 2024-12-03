@@ -145,12 +145,12 @@ def test_should_show_change_details_link(
     mock_get_template_folders,
     service_one,
     active_user_with_permissions,
-    active_caseworking_user,
+    active_user_create_broadcasts_permission,
     state,
 ):
     current_user = active_user_with_permissions
 
-    other_user = active_caseworking_user
+    other_user = active_user_create_broadcasts_permission
     other_user["id"] = uuid.uuid4()
     other_user["email_address"] = "zzzzzzz@example.gov.uk"
     other_user["state"] = state
@@ -167,7 +167,9 @@ def test_should_show_change_details_link(
     page = client_request.get("main.manage_users", service_id=SERVICE_ONE_ID)
     link = page.select(".user-list-item")[-1].select_one("a")
 
-    assert normalize_spaces(link.text) == "Change details for Test User zzzzzzz@example.gov.uk"
+    assert normalize_spaces(link.text) == (
+        "Change details for Test User " "Create Broadcasts Permission zzzzzzz@example.gov.uk"
+    )
     assert link["href"] == url_for(
         ".edit_user_permissions",
         service_id=SERVICE_ONE_ID,
@@ -214,19 +216,19 @@ def test_should_show_live_search_if_more_than_7_users(
     assert normalize_spaces(page.select_one("label[for=search]").text) == "Search and filter by name or email address"
 
 
-def test_should_show_caseworker_on_overview_page(
+def test_should_show_other_user_on_overview_page(
     client_request,
     mocker,
     mock_get_invites_for_service,
     mock_get_template_folders,
     service_one,
     active_user_view_permissions,
-    active_caseworking_user,
+    active_new_user_with_permissions,
 ):
     service_one["permissions"].append("caseworking")
     current_user = active_user_view_permissions
 
-    other_user = active_caseworking_user
+    other_user = active_new_user_with_permissions
     other_user["id"] = uuid.uuid4()
     other_user["email_address"] = "zzzzzzz@example.gov.uk"
 
@@ -248,9 +250,9 @@ def test_should_show_caseworker_on_overview_page(
         "Cannot Create new alerts "
         "Cannot Approve alerts"
     )
-    # [1:5] are invited users
     assert normalize_spaces(page.select(".user-list-item")[6].text) == (
-        "Test User zzzzzzz@example.gov.uk "
+        "Test User With Permissions "
+        "zzzzzzz@example.gov.uk "
         "Cannot Add and edit templates "
         "Cannot Create new alerts "
         "Cannot Approve alerts"
@@ -569,7 +571,6 @@ def test_cant_edit_user_folder_permissions_for_platform_admin_users(
             "manage_api_keys",
             "manage_service",
             "manage_templates",
-            "send_messages",
             "view_activity",
         },
         folder_permissions=None,
@@ -744,7 +745,7 @@ def test_should_show_page_if_prefilled_user_is_already_a_team_member(
     mock_get_template_folders,
     fake_uuid,
     active_user_with_permissions,
-    active_caseworking_user,
+    active_user_create_broadcasts_permission,
 ):
     mocker.patch(
         "app.models.user.user_api_client.get_user",
@@ -752,7 +753,7 @@ def test_should_show_page_if_prefilled_user_is_already_a_team_member(
             # First call is to get the current user
             active_user_with_permissions,
             # Second call gets the user to invite
-            active_caseworking_user,
+            active_user_create_broadcasts_permission,
         ],
     )
     page = client_request.get(
@@ -945,7 +946,6 @@ def test_invite_user_with_email_auth_service(
             "email_address": email_address,
             "permissions_field": [
                 "view_activity",
-                "send_messages",
                 "manage_templates",
                 "manage_service",
                 "manage_api_keys",
@@ -1052,7 +1052,6 @@ def test_invite_non_govt_user_to_broadcast_service_fails_validation(
     mocker.patch("app.invite_api_client.create_invite", return_value=sample_invite)
     post_data = {
         "permissions_field": [
-            "send_messages",
             "manage_templates",
             "manage_service",
         ],
@@ -1186,7 +1185,7 @@ def test_user_cant_invite_themselves(
         service_id=SERVICE_ONE_ID,
         _data={
             "email_address": active_user_with_permissions["email_address"],
-            "permissions_field": ["send_messages", "manage_service", "manage_api_keys"],
+            "permissions_field": ["manage_service", "manage_api_keys"],
         },
         _follow_redirects=True,
         _expected_status=200,

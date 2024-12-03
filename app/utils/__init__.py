@@ -1,25 +1,9 @@
 from functools import wraps
-from itertools import chain
 
-from flask import abort, g, make_response, request
-from flask_login import current_user
-from orderedset._orderedset import OrderedSet
-from werkzeug.datastructures import MultiDict
+from flask import abort, g, make_response
 from werkzeug.routing import RequestRedirect
 
-SENDING_STATUSES = ["created", "pending", "sending", "pending-virus-check"]
-DELIVERED_STATUSES = ["delivered", "sent"]
-FAILURE_STATUSES = [
-    "failed",
-    "temporary-failure",
-    "permanent-failure",
-    "technical-failure",
-    "virus-scan-failed",
-    "validation-failed",
-]
-REQUESTED_STATUSES = SENDING_STATUSES + DELIVERED_STATUSES + FAILURE_STATUSES
-
-NOTIFICATION_TYPES = ["sms", "email", "letter", "broadcast"]
+BROADCAST_TYPE = "broadcast"
 
 
 def service_has_permission(permission):
@@ -50,49 +34,6 @@ def service_belongs_to_org_type(org_type):
         return wrap_func
 
     return wrap
-
-
-def get_help_argument():
-    return request.args.get("help") if request.args.get("help") in ("1", "2", "3") else None
-
-
-def parse_filter_args(filter_dict):
-    if not isinstance(filter_dict, MultiDict):
-        filter_dict = MultiDict(filter_dict)
-
-    return MultiDict(
-        (key, (",".join(filter_dict.getlist(key))).split(","))
-        for key in filter_dict.keys()
-        if "".join(filter_dict.getlist(key))
-    )
-
-
-def set_status_filters(filter_args):
-    status_filters = filter_args.get("status", [])
-    return list(
-        OrderedSet(
-            chain(
-                (status_filters or REQUESTED_STATUSES),
-                DELIVERED_STATUSES if "delivered" in status_filters else [],
-                SENDING_STATUSES if "sending" in status_filters else [],
-                FAILURE_STATUSES if "failed" in status_filters else [],
-            )
-        )
-    )
-
-
-def unicode_truncate(s, length):
-    encoded = s.encode("utf-8")[:length]
-    return encoded.decode("utf-8", "ignore")
-
-
-def should_skip_template_page(db_template):
-    return (
-        current_user.has_permissions("send_messages")
-        and not current_user.has_permissions("manage_templates", "manage_api_keys")
-        and db_template["template_type"] != "letter"
-        and not db_template["archived"]
-    )
 
 
 class PermanentRedirect(RequestRedirect):

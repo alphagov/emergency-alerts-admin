@@ -1,7 +1,7 @@
-from app.notify_client import NotifyAdminAPIClient, _attach_current_user
+from app.notify_client import AdminAPIClient, _attach_current_user
 
 
-class NotificationApiClient(NotifyAdminAPIClient):
+class NotificationApiClient(AdminAPIClient):
     def get_notifications_for_service(
         self,
         service_id,

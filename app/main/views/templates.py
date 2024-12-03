@@ -9,25 +9,17 @@ from app.formatters import character_count
 from app.main import main
 from app.main.forms import (
     BroadcastTemplateForm,
-    EmailTemplateForm,
-    LetterTemplateForm,
-    LetterTemplatePostageForm,
     SearchTemplatesForm,
-    SMSTemplateForm,
     TemplateAndFoldersSelectionForm,
     TemplateFolderForm,
 )
 from app.models.service import Service
 from app.models.template_list import TemplateList, UserTemplateList, UserTemplateLists
-from app.template_previews import TemplatePreview, get_page_count_for_letter
-from app.utils import NOTIFICATION_TYPES, should_skip_template_page
+from app.utils import BROADCAST_TYPE
 from app.utils.templates import get_template
 from app.utils.user import user_has_permissions
 
 form_objects = {
-    "email": EmailTemplateForm,
-    "sms": SMSTemplateForm,
-    "letter": LetterTemplateForm,
     "broadcast": BroadcastTemplateForm,
 }
 
@@ -39,22 +31,11 @@ def view_template(service_id, template_id):
     template_folder = current_service.get_template_folder(template["folder"])
 
     user_has_template_permission = current_user.has_template_folder_permission(template_folder)
-    if should_skip_template_page(template):
-        return redirect(url_for(".index"))
-
-    page_count = get_page_count_for_letter(template)
 
     return render_template(
         "views/templates/template.html",
-        template=get_template(
-            template,
-            current_service,
-            show_recipient=True,
-            page_count=page_count,
-        ),
-        template_postage=template["postage"],
+        template=get_template(template),
         user_has_template_permission=user_has_template_permission,
-        page_count=page_count,
     )
 
 
@@ -87,10 +68,7 @@ def choose_template(service_id, template_type="all", template_folder_id=None):
     )
     option_hints = {template_folder_id: "current folder"}
 
-    single_notification_channel = None
-    notification_channels = list(set(current_service.permissions).intersection(NOTIFICATION_TYPES))
-    if len(notification_channels) == 1:
-        single_notification_channel = notification_channels[0]
+    single_notification_channel = BROADCAST_TYPE
 
     if request.method == "POST" and templates_and_folders_form.validate_on_submit():
         if not current_user.has_permissions("manage_templates"):
@@ -122,7 +100,6 @@ def choose_template(service_id, template_type="all", template_folder_id=None):
         template_folder_path=current_service.get_template_folder_path(template_folder_id),
         template_list=template_list,
         show_search_box=current_service.count_of_templates_and_folders > 7,
-        show_template_nav=(current_service.has_multiple_template_types and (len(current_service.all_templates) > 2)),
         template_nav_items=get_template_nav_items(template_folder_id),
         template_type=template_type,
         search_form=SearchTemplatesForm(current_service.api_keys),
@@ -160,10 +137,6 @@ def process_folder_management_form(form, current_folder_id):
 
 def get_template_nav_label(value):
     return {
-        "all": "All",
-        "sms": "Text message",
-        "email": "Email",
-        "letter": "Letter",
         "broadcast": "Broadcast",
     }[value]
 
@@ -171,45 +144,23 @@ def get_template_nav_label(value):
 def get_template_nav_items(template_folder_id):
     return [
         (
-            get_template_nav_label(key),
-            key,
+            get_template_nav_label("broadcast"),
+            "broadcast",
             url_for(
                 ".choose_template",
                 service_id=current_service.id,
-                template_type=key,
+                template_type="broadcast",
                 template_folder_id=template_folder_id,
             ),
             "",
         )
-        for key in ["all"] + current_service.available_template_types
     ]
-
-
-@main.route("/services/<uuid:service_id>/templates/<uuid:template_id>.<filetype>")
-@user_has_permissions(allow_org_user=True)
-def view_letter_template_preview(service_id, template_id, filetype):
-    if filetype not in ("pdf", "png"):
-        abort(404)
-
-    db_template = current_service.get_template(template_id)
-
-    return TemplatePreview.from_database_object(db_template, filetype, page=request.args.get("page"))
 
 
 def _view_template_version(service_id, template_id, version, letters_as_pdf=False):
     return dict(
         template=get_template(
             current_service.get_template(template_id, version=version),
-            current_service,
-            letter_preview_url=url_for(
-                ".view_template_version_preview",
-                service_id=service_id,
-                template_id=template_id,
-                version=version,
-                filetype="png",
-            )
-            if not letters_as_pdf
-            else None,
         )
     )
 
@@ -221,13 +172,6 @@ def view_template_version(service_id, template_id, version):
         "views/templates/template_history.html",
         **_view_template_version(service_id=service_id, template_id=template_id, version=version),
     )
-
-
-@main.route("/services/<uuid:service_id>/templates/<uuid:template_id>/version/<int:version>.<filetype>")
-@user_has_permissions(allow_org_user=True)
-def view_template_version_preview(service_id, template_id, version, filetype):
-    db_template = current_service.get_template(template_id, version=version)
-    return TemplatePreview.from_database_object(db_template, filetype)
 
 
 def _add_template_by_type(template_type, template_folder_id):
@@ -470,16 +414,12 @@ def add_service_template(service_id, template_type, template_folder_id=None):
 
     form = form_objects[template_type]()
     if form.validate_on_submit():
-        if form.process_type.data == "priority":
-            abort_403_if_not_admin_user()
         try:
             new_template = service_api_client.create_service_template(
                 form.name.data,
                 template_type,
                 form.template_content.data,
                 service_id,
-                form.subject.data if hasattr(form, "subject") else None,
-                form.process_type.data,
                 template_folder_id,
             )
         except HTTPError as e:
@@ -516,22 +456,15 @@ def edit_service_template(service_id, template_id):
     template["template_content"] = template["content"]
     form = form_objects[template["template_type"]](**template)
     if form.validate_on_submit():
-        if form.process_type.data != template["process_type"]:
-            abort_403_if_not_admin_user()
-
-        subject = form.subject.data if hasattr(form, "subject") else None
-
         new_template_data = {
             "name": form.name.data,
             "content": form.template_content.data,
-            "subject": subject,
             "template_type": template["template_type"],
             "id": template["id"],
-            "process_type": form.process_type.data,
         }
 
-        new_template = get_template(new_template_data, current_service)
-        template_change = get_template(template, current_service).compare_to(new_template)
+        new_template = get_template(new_template_data)
+        template_change = get_template(template).compare_to(new_template)
 
         if template_change.placeholders_added and not request.form.get("confirm") and current_service.api_keys:
             return render_template(
@@ -547,8 +480,6 @@ def edit_service_template(service_id, template_id):
                 template["template_type"],
                 form.template_content.data,
                 service_id,
-                subject,
-                form.process_type.data,
             )
         except HTTPError as e:
             if e.status_code == 400:
@@ -587,7 +518,7 @@ def edit_service_template(service_id, template_id):
 )
 @user_has_permissions()
 def count_content_length(service_id, template_type):
-    if template_type not in {"sms", "broadcast"}:
+    if template_type != "broadcast":
         abort(404)
 
     error, message = _get_content_count_error_and_message_for_template(
@@ -595,8 +526,7 @@ def count_content_length(service_id, template_type):
             {
                 "template_type": template_type,
                 "content": request.form.get("template_content", ""),
-            },
-            current_service,
+            }
         )
     )
 
@@ -650,14 +580,6 @@ def delete_service_template(service_id, template_id):
         "views/templates/template.html",
         template=get_template(
             template,
-            current_service,
-            letter_preview_url=url_for(
-                ".view_letter_template_preview",
-                service_id=service_id,
-                template_id=template["id"],
-                filetype="png",
-            ),
-            show_recipient=True,
         ),
         user_has_template_permission=True,
     )
@@ -672,14 +594,6 @@ def confirm_redact_template(service_id, template_id):
         "views/templates/template.html",
         template=get_template(
             template,
-            current_service,
-            letter_preview_url=url_for(
-                ".view_letter_template_preview",
-                service_id=service_id,
-                template_id=template_id,
-                filetype="png",
-            ),
-            show_recipient=True,
         ),
         user_has_template_permission=True,
         show_redaction_message=True,
@@ -710,37 +624,7 @@ def view_template_versions(service_id, template_id):
         versions=[
             get_template(
                 template,
-                current_service,
-                letter_preview_url=url_for(
-                    ".view_template_version_preview",
-                    service_id=service_id,
-                    template_id=template_id,
-                    version=template["version"],
-                    filetype="png",
-                ),
             )
             for template in service_api_client.get_service_template_versions(service_id, template_id)["data"]
         ],
-    )
-
-
-@main.route("/services/<uuid:service_id>/templates/<uuid:template_id>/edit-postage", methods=["GET", "POST"])
-@user_has_permissions("manage_templates")
-def edit_template_postage(service_id, template_id):
-    template = current_service.get_template_with_user_permission_or_403(template_id, current_user)
-    if template["template_type"] != "letter":
-        abort(404)
-    form = LetterTemplatePostageForm(**template)
-    if form.validate_on_submit():
-        postage = form.postage.data
-        service_api_client.update_service_template_postage(service_id, template_id, postage)
-
-        return redirect(url_for(".view_template", service_id=service_id, template_id=template_id))
-
-    return render_template(
-        "views/templates/edit-template-postage.html",
-        form=form,
-        service_id=service_id,
-        template_id=template_id,
-        template_postage=template["postage"],
     )

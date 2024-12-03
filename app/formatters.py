@@ -193,52 +193,6 @@ def valid_phone_number(phone_number):
         return False
 
 
-def format_notification_type(notification_type):
-    return {"email": "Email", "sms": "Text message", "letter": "Letter"}[notification_type]
-
-
-def format_notification_status(status, template_type):
-    return {
-        "email": {
-            "failed": "Failed",
-            "technical-failure": "Technical failure",
-            "temporary-failure": "Inbox not accepting messages right now",
-            "permanent-failure": "Email address does not exist",
-            "delivered": "Delivered",
-            "sending": "Sending",
-            "created": "Sending",
-            "sent": "Delivered",
-        },
-        "sms": {
-            "failed": "Failed",
-            "technical-failure": "Technical failure",
-            "temporary-failure": "Phone not accepting messages right now",
-            "permanent-failure": "Not delivered",
-            "delivered": "Delivered",
-            "sending": "Sending",
-            "created": "Sending",
-            "pending": "Sending",
-            "sent": "Sent to an international number",
-        },
-        "letter": {
-            "failed": "",
-            "technical-failure": "Technical failure",
-            "temporary-failure": "",
-            "permanent-failure": "Permanent failure",
-            "delivered": "",
-            "received": "",
-            "accepted": "",
-            "sending": "",
-            "created": "",
-            "sent": "",
-            "pending-virus-check": "",
-            "virus-scan-failed": "Virus detected",
-            "cancelled": "",
-            "validation-failed": "Validation failed",
-        },
-    }[template_type].get(status, status)
-
-
 def format_notification_status_as_time(status, created, updated):
     return dict.fromkeys({"created", "pending", "sending"}, " since {}".format(created)).get(status, updated)
 
@@ -269,7 +223,7 @@ def format_notification_status_as_field_status(status, notification_type):
                 "temporary-failure": "error",
                 "permanent-failure": "error",
                 "delivered": None,
-                "sent": "sent-international" if notification_type == "sms" else None,
+                "sent": None,
                 "sending": "default",
                 "created": "default",
                 "pending": "default",
@@ -406,15 +360,6 @@ def message_count_label(count, template_type, suffix="sent"):
 def message_count_noun(count, template_type):
     singular = count == 1
 
-    if template_type == "sms":
-        return "text message" if singular else "text messages"
-
-    if template_type == "email":
-        return "email" if singular else "emails"
-
-    if template_type == "letter":
-        return "letter" if singular else "letters"
-
     if template_type == "broadcast":
         return "broadcast" if singular else "broadcasts"
 
@@ -423,25 +368,6 @@ def message_count_noun(count, template_type):
 
 def message_count(count, template_type):
     return f"{format_thousands(count)} {message_count_noun(count, template_type)}"
-
-
-def recipient_count_label(count, template_type):
-    singular = count == 1
-
-    if template_type == "sms":
-        return "phone number" if singular else "phone numbers"
-
-    if template_type == "email":
-        return "email address" if singular else "email addresses"
-
-    if template_type == "letter":
-        return "address" if singular else "addresses"
-
-    return "recipient" if singular else "recipients"
-
-
-def recipient_count(count, template_type):
-    return f"{format_thousands(count)} {recipient_count_label(count, template_type)}"
 
 
 def iteration_count(count):

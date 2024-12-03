@@ -1,7 +1,6 @@
 from itertools import chain
 
 permission_mappings = {
-    "send_messages": ["send_texts", "send_emails", "send_letters"],
     "manage_templates": ["manage_templates"],
     "manage_service": ["manage_users", "manage_settings"],
     "manage_api_keys": ["manage_api_keys"],
@@ -15,7 +14,6 @@ all_db_permissions = set(chain(*permission_mappings.values()))
 
 permission_options = (
     ("view_activity", "See dashboard"),
-    ("send_messages", "Send messages"),
     ("manage_templates", "Add and edit templates"),
     ("manage_service", "Manage settings, team and usage"),
     ("manage_api_keys", "Manage API integration"),

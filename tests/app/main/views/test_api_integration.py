@@ -47,11 +47,10 @@ def test_should_show_api_keys_page(
 
 
 @pytest.mark.parametrize(
-    "restricted, can_send_letters, expected_options",
+    "restricted, expected_options",
     [
         (
             True,
-            False,
             [
                 ("Live – sends to anyone", "Not available because your service is in trial mode"),
                 "Team and guest list – limits who you can send to",
@@ -60,7 +59,6 @@ def test_should_show_api_keys_page(
         ),
         (
             False,
-            False,
             [
                 "Live – sends to anyone",
                 "Team and guest list – limits who you can send to",
@@ -69,10 +67,9 @@ def test_should_show_api_keys_page(
         ),
         (
             False,
-            True,
             [
                 "Live – sends to anyone",
-                ("Team and guest list – limits who you can send to", "Cannot be used to send letters"),
+                "Team and guest list – limits who you can send to",
                 "Test – pretends to send messages",
             ],
         ),
@@ -84,16 +81,11 @@ def test_should_show_create_api_key_page(
     api_user_active,
     mock_get_api_keys,
     restricted,
-    can_send_letters,
     expected_options,
     service_one,
 ):
     service_one["restricted"] = restricted
-    if can_send_letters:
-        service_one["permissions"].append("letter")
-
     mocker.patch("app.service_api_client.get_service", return_value={"data": service_one})
-
     page = client_request.get("main.create_api_key", service_id=SERVICE_ONE_ID)
 
     for index, option in enumerate(expected_options):
