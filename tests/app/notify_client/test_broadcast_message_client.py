@@ -72,3 +72,34 @@ def test_update_broadcast_message_status(mocker):
         "/service/12345/broadcast-message/67890/status",
         data={"created_by": "1", "status": "cancelled"},
     )
+
+
+def test_reject_broadcast_message_status(mocker):
+    client = BroadcastMessageAPIClient()
+    mocker.patch("app.notify_client.current_user", id="1")
+    mock_post = mocker.patch("app.notify_client.broadcast_message_api_client.BroadcastMessageAPIClient.post")
+    client.update_broadcast_message_status(
+        "cancelled",
+        service_id="12345",
+        broadcast_message_id="67890",
+    )
+    mock_post.assert_called_once_with(
+        "/service/12345/broadcast-message/67890/status",
+        data={"created_by": "1", "status": "cancelled"},
+    )
+
+
+def test_reject_broadcast_message_status_with_rejection_reason(mocker):
+    client = BroadcastMessageAPIClient()
+    mocker.patch("app.notify_client.current_user", id="1")
+    mock_post = mocker.patch("app.notify_client.broadcast_message_api_client.BroadcastMessageAPIClient.post")
+    client.update_broadcast_message_status(
+        "cancelled",
+        service_id="12345",
+        broadcast_message_id="67890",
+        rejection_reason="This is a test rejection reason.",
+    )
+    mock_post.assert_called_once_with(
+        "/service/12345/broadcast-message/67890/status",
+        data={"created_by": "1", "status": "cancelled", "rejection_reason": "This is a test rejection reason."},
+    )
