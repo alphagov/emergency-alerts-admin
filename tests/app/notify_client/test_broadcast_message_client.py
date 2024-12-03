@@ -27,7 +27,7 @@ def test_get_broadcast_messages(mocker):
     mock_get = mocker.patch("app.notify_client.broadcast_message_api_client.BroadcastMessageAPIClient.get")
     client.get_broadcast_messages("12345")
     mock_get.assert_called_once_with(
-        "/service/12345/broadcast-message",
+        "/service/12345/broadcast-message/messages",
     )
 
 
@@ -40,7 +40,7 @@ def test_get_broadcast_message(mocker):
     )
     client.get_broadcast_message(service_id="12345", broadcast_message_id="67890")
     mock_get.assert_called_once_with(
-        "/service/12345/broadcast-message/67890",
+        "/service/12345/broadcast-message/message=67890",
     )
 
 
