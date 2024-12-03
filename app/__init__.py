@@ -5,11 +5,6 @@ from time import monotonic
 
 import jinja2
 from emergency_alerts_utils import logging, request_helper
-from emergency_alerts_utils.formatters import (
-    formatted_list,
-    get_lines_with_normalised_whitespace,
-)
-from emergency_alerts_utils.recipients import format_phone_number_human_readable
 from emergency_alerts_utils.sanitise_text import SanitiseASCII
 from flask import (
     current_app,
@@ -35,7 +30,7 @@ from werkzeug.local import LocalProxy
 from app import proxy_fix, webauthn_server
 from app.asset_fingerprinter import asset_fingerprinter
 from app.config import configs
-from app.extensions import antivirus_client, redis_client, zendesk_client
+from app.extensions import zendesk_client
 from app.formatters import (
     convert_to_boolean,
     format_auth_type,
@@ -56,10 +51,8 @@ from app.formatters import (
     format_delta_days,
     format_list_items,
     format_mobile_network,
-    format_notification_status,
     format_notification_status_as_field_status,
     format_notification_status_as_time,
-    format_notification_type,
     format_number_in_pounds_as_currency,
     format_seconds_duration_as_time,
     format_thousands,
@@ -72,8 +65,6 @@ from app.formatters import (
     message_count_label,
     message_count_noun,
     nl2br,
-    recipient_count,
-    recipient_count_label,
     redact_mobile_number,
     round_to_significant_figures,
     square_metres_to_square_miles,
@@ -103,7 +94,6 @@ from app.notify_client.status_api_client import status_api_client
 from app.notify_client.template_folder_api_client import template_folder_api_client
 from app.notify_client.user_api_client import user_api_client
 from app.url_converters import (
-    LetterFileExtensionConverter,
     SimpleDateTypeConverter,
     TemplateTypeConverter,
     TicketTypeConverter,
@@ -169,8 +159,6 @@ def create_app(application):
         template_folder_api_client,
         user_api_client,
         # External API clients
-        antivirus_client,
-        redis_client,
         zendesk_client,
     ):
         client.init_app(application)
@@ -182,9 +170,6 @@ def create_app(application):
     login_manager.login_message_category = "default"
     login_manager.session_protection = None
     login_manager.anonymous_user = AnonymousUser
-
-    # make sure we handle unicode correctly
-    redis_client.redis_store.decode_responses = True
 
     setup_blueprints(application)
 
@@ -244,7 +229,6 @@ def init_app(application):
     application.url_map.converters["uuid"].to_python = lambda self, value: value
     application.url_map.converters["template_type"] = TemplateTypeConverter
     application.url_map.converters["ticket_type"] = TicketTypeConverter
-    application.url_map.converters["letter_file_extension"] = LetterFileExtensionConverter
     application.url_map.converters["simple_date"] = SimpleDateTypeConverter
 
 
@@ -500,22 +484,15 @@ def add_template_filters(application):
         format_day_of_week,
         format_delta,
         format_delta_days,
-        format_notification_status,
-        format_notification_type,
         format_notification_status_as_time,
         format_notification_status_as_field_status,
         format_number_in_pounds_as_currency,
-        formatted_list,
-        get_lines_with_normalised_whitespace,
         nl2br,
-        format_phone_number_human_readable,
         format_thousands,
         id_safe,
         convert_to_boolean,
         format_list_items,
         iteration_count,
-        recipient_count,
-        recipient_count_label,
         redact_mobile_number,
         round_to_significant_figures,
         message_count_label,

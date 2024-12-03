@@ -1,7 +1,7 @@
 from flask import abort
 from notifications_python_client.errors import HTTPError
 
-from app.notify_client import NotifyAdminAPIClient, cache
+from app.notify_client import AdminAPIClient
 from app.utils.user_permissions import translate_permissions_from_ui_to_db
 
 ALLOWED_ATTRIBUTES = {
@@ -15,7 +15,7 @@ ALLOWED_ATTRIBUTES = {
 }
 
 
-class UserApiClient(NotifyAdminAPIClient):
+class UserApiClient(AdminAPIClient):
     def init_app(self, app):
         super().init_app(app)
         self.admin_url = app.config["ADMIN_EXTERNAL_URL"]
@@ -34,7 +34,6 @@ class UserApiClient(NotifyAdminAPIClient):
     def get_user(self, user_id):
         return self._get_user(user_id)["data"]
 
-    @cache.set("user-{user_id}")
     def _get_user(self, user_id):
         return self.get("/user/{}".format(user_id))
 
@@ -62,7 +61,6 @@ class UserApiClient(NotifyAdminAPIClient):
                 abort(429)
             raise e
 
-    @cache.delete("user-{user_id}")
     def update_user_attribute(self, user_id, **kwargs):
         data = dict(kwargs)
         disallowed_attributes = set(data.keys()) - ALLOWED_ATTRIBUTES
@@ -73,24 +71,20 @@ class UserApiClient(NotifyAdminAPIClient):
         user_data = self.post(url, data=data)
         return user_data["data"]
 
-    @cache.delete("user-{user_id}")
     def archive_user(self, user_id):
         return self.post("/user/{}/archive".format(user_id), data=None)
 
-    @cache.delete("user-{user_id}")
     def reset_failed_login_count(self, user_id):
         url = "/user/{}/reset-failed-login-count".format(user_id)
         user_data = self.post(url, data={})
         return user_data["data"]
 
-    @cache.delete("user-{user_id}")
     def update_password(self, user_id, password):
         data = {"_password": password}
         url = "/user/{}/update-password".format(user_id)
         user_data = self.post(url, data=data)
         return user_data["data"]
 
-    @cache.delete("user-{user_id}")
     def check_password_is_valid(self, user_id, password):
         endpoint = f"/user/{user_id}/check-password-validity"
         data = {
@@ -99,7 +93,6 @@ class UserApiClient(NotifyAdminAPIClient):
 
         self.post(endpoint, data=data)
 
-    @cache.delete("user-{user_id}")
     def verify_password(self, user_id, password):
         try:
             url = "/user/{}/verify/password".format(user_id)
@@ -132,7 +125,6 @@ class UserApiClient(NotifyAdminAPIClient):
         endpoint = "/user/{0}/email-already-registered".format(user_id)
         self.post(endpoint, data=data)
 
-    @cache.delete("user-{user_id}")
     def check_verify_code(self, user_id, code, code_type):
         data = {"code_type": code_type, "code": code}
         endpoint = "/user/{}/verify/code".format(user_id)
@@ -146,7 +138,6 @@ class UserApiClient(NotifyAdminAPIClient):
                 abort(429)
             raise e
 
-    @cache.delete("user-{user_id}")
     def complete_webauthn_login_attempt(self, user_id, is_successful, webauthn_credential_id):
         data = {"successful": is_successful, "webauthn_credential_id": webauthn_credential_id}
         endpoint = f"/user/{user_id}/complete/webauthn-login"
@@ -166,9 +157,6 @@ class UserApiClient(NotifyAdminAPIClient):
         endpoint = "/organisations/{}/users".format(org_id)
         return self.get(endpoint)["data"]
 
-    @cache.delete("service-{service_id}")
-    @cache.delete("service-{service_id}-template-folders")
-    @cache.delete("user-{user_id}")
     def add_user_to_service(self, service_id, user_id, permissions, folder_permissions):
         # permissions passed in are the combined UI permissions, not DB permissions
         endpoint = "/service/{}/users/{}".format(service_id, user_id)
@@ -179,13 +167,10 @@ class UserApiClient(NotifyAdminAPIClient):
 
         self.post(endpoint, data=data)
 
-    @cache.delete("user-{user_id}")
     def add_user_to_organisation(self, org_id, user_id):
         resp = self.post("/organisations/{}/users/{}".format(org_id, user_id), data={})
         return resp["data"]
 
-    @cache.delete("service-{service_id}-template-folders")
-    @cache.delete("user-{user_id}")
     def set_user_permissions(self, user_id, service_id, permissions, folder_permissions=None):
         # permissions passed in are the combined UI permissions, not DB permissions
         data = {
@@ -214,7 +199,6 @@ class UserApiClient(NotifyAdminAPIClient):
         users = self.post(endpoint, data=data)
         return users
 
-    @cache.delete("user-{user_id}")
     def activate_user(self, user_id):
         return self.post("/user/{}/activate".format(user_id), data=None)
 

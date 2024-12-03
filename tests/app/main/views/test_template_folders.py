@@ -10,7 +10,7 @@ from tests.conftest import (
     SERVICE_ONE_ID,
     TEMPLATE_ONE_ID,
     _template,
-    create_active_caseworking_user,
+    create_active_new_user_view_permissions,
     create_active_user_view_permissions,
     create_active_user_with_permissions,
     create_template,
@@ -52,10 +52,10 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
             "Templates – service one – GOV.UK Emergency Alerts",
             ["Templates"],
             [],
-            {},
-            ["Email", "Text message", "Letter", "Broadcast"],
+            {"template_type": "broadcast"},
+            ["Broadcast"],
             [
-                "folder_one folder_one 2 folders",
+                "folder_one folder_one 1 folder",
                 "folder_one folder_one_one folder_one folder_one_one 1 template, 1 folder",
                 (
                     "folder_one folder_one_one folder_one_one_one "
@@ -63,145 +63,31 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
                     "1 template"
                 ),
                 (
-                    "folder_one folder_one_one folder_one_one_one sms_template_nested "
-                    "folder_one folder_one_one folder_one_one_one sms_template_nested "
-                    "Text message template"
+                    "folder_one folder_one_one folder_one_one_one broadcast_template_nested_two "
+                    "folder_one folder_one_one folder_one_one_one broadcast_template_nested_two "
+                    "Broadcast template"
                 ),
                 (
-                    "folder_one folder_one_one letter_template_nested "
-                    "folder_one folder_one_one letter_template_nested "
-                    "Letter template"
+                    "folder_one folder_one_one broadcast_template_nested_one "
+                    "folder_one folder_one_one broadcast_template_nested_one "
+                    "Broadcast template"
                 ),
-                "folder_one folder_one_two folder_one folder_one_two Empty",
-                "folder_two folder_two Empty",
-                "sms_template_one sms_template_one Text message template",
-                "sms_template_two sms_template_two Text message template",
-                "email_template_one email_template_one Email template",
-                "email_template_two email_template_two Email template",
-                "letter_template_one letter_template_one Letter template",
-                "letter_template_two letter_template_two Letter template",
-            ],
-            [
-                "folder_one folder_one 2 folders",
-                "folder_two folder_two Empty",
-                "sms_template_one sms_template_one Text message template",
-                "sms_template_two sms_template_two Text message template",
-                "email_template_one email_template_one Email template",
-                "email_template_two email_template_two Email template",
-                "letter_template_one letter_template_one Letter template",
-                "letter_template_two letter_template_two Letter template",
-            ],
-            [
-                "folder_one",
-                "folder_one_one",
-                "folder_one_one_one",
-                "sms_template_nested",
-                "letter_template_nested",
-                "folder_one_two",
-                "folder_two",
-                "sms_template_one",
-                "sms_template_two",
-                "email_template_one",
-                "email_template_two",
-                "letter_template_one",
-                "letter_template_two",
-            ],
-            None,
-        ),
-        (
-            "Templates – service one – GOV.UK Emergency Alerts",
-            ["Templates"],
-            [],
-            {"template_type": "all"},
-            ["Email", "Text message", "Letter", "Broadcast"],
-            [
-                "folder_one folder_one 2 folders",
-                "folder_one folder_one_one folder_one folder_one_one 1 template, 1 folder",
-                (
-                    "folder_one folder_one_one folder_one_one_one "
-                    "folder_one folder_one_one folder_one_one_one "
-                    "1 template"
-                ),
-                (
-                    "folder_one folder_one_one folder_one_one_one sms_template_nested "
-                    "folder_one folder_one_one folder_one_one_one sms_template_nested "
-                    "Text message template"
-                ),
-                (
-                    "folder_one folder_one_one letter_template_nested "
-                    "folder_one folder_one_one letter_template_nested "
-                    "Letter template"
-                ),
-                "folder_one folder_one_two folder_one folder_one_two Empty",
-                "folder_two folder_two Empty",
-                "sms_template_one sms_template_one Text message template",
-                "sms_template_two sms_template_two Text message template",
-                "email_template_one email_template_one Email template",
-                "email_template_two email_template_two Email template",
-                "letter_template_one letter_template_one Letter template",
-                "letter_template_two letter_template_two Letter template",
-            ],
-            [
-                "folder_one folder_one 2 folders",
-                "folder_two folder_two Empty",
-                "sms_template_one sms_template_one Text message template",
-                "sms_template_two sms_template_two Text message template",
-                "email_template_one email_template_one Email template",
-                "email_template_two email_template_two Email template",
-                "letter_template_one letter_template_one Letter template",
-                "letter_template_two letter_template_two Letter template",
-            ],
-            [
-                "folder_one",
-                "folder_one_one",
-                "folder_one_one_one",
-                "sms_template_nested",
-                "letter_template_nested",
-                "folder_one_two",
-                "folder_two",
-                "sms_template_one",
-                "sms_template_two",
-                "email_template_one",
-                "email_template_two",
-                "letter_template_one",
-                "letter_template_two",
-            ],
-            None,
-        ),
-        (
-            "Templates – service one – GOV.UK Emergency Alerts",
-            ["Templates"],
-            [],
-            {"template_type": "sms"},
-            ["All", "Email", "Letter", "Broadcast"],
-            [
-                "folder_one folder_one 1 folder",
-                "folder_one folder_one_one folder_one folder_one_one 1 folder",
-                (
-                    "folder_one folder_one_one folder_one_one_one "
-                    "folder_one folder_one_one folder_one_one_one "
-                    "1 template"
-                ),
-                (
-                    "folder_one folder_one_one folder_one_one_one sms_template_nested "
-                    "folder_one folder_one_one folder_one_one_one sms_template_nested "
-                    "Text message template"
-                ),
-                "sms_template_one sms_template_one Text message template",
-                "sms_template_two sms_template_two Text message template",
+                "broadcast_template_one broadcast_template_one Broadcast template",
+                "broadcast_template_two broadcast_template_two Broadcast template",
             ],
             [
                 "folder_one folder_one 1 folder",
-                "sms_template_one sms_template_one Text message template",
-                "sms_template_two sms_template_two Text message template",
+                "broadcast_template_one broadcast_template_one Broadcast template",
+                "broadcast_template_two broadcast_template_two Broadcast template",
             ],
             [
                 "folder_one",
                 "folder_one_one",
                 "folder_one_one_one",
-                "sms_template_nested",
-                "sms_template_one",
-                "sms_template_two",
+                "broadcast_template_nested_two",
+                "broadcast_template_nested_one",
+                "broadcast_template_one",
+                "broadcast_template_two",
             ],
             None,
         ),
@@ -210,16 +96,20 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
             ["Templates", "folder_one"],
             [{"template_type": "all"}],
             {"template_folder_id": PARENT_FOLDER_ID},
-            ["Email", "Text message", "Letter", "Broadcast"],
+            ["Broadcast"],
             [
                 "folder_one_one folder_one_one 1 template, 1 folder",
                 "folder_one_one folder_one_one_one folder_one_one folder_one_one_one 1 template",
                 (
-                    "folder_one_one folder_one_one_one sms_template_nested "
-                    "folder_one_one folder_one_one_one sms_template_nested "
-                    "Text message template"
+                    "folder_one_one folder_one_one_one broadcast_template_nested_two "
+                    "folder_one_one folder_one_one_one broadcast_template_nested_two "
+                    "Broadcast template"
                 ),
-                "folder_one_one letter_template_nested folder_one_one letter_template_nested Letter template",
+                (
+                    "folder_one_one broadcast_template_nested_one "
+                    "folder_one_one broadcast_template_nested_one "
+                    "Broadcast template"
+                ),
                 "folder_one_two folder_one_two Empty",
             ],
             [
@@ -229,8 +119,8 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
             [
                 "folder_one_one",
                 "folder_one_one_one",
-                "sms_template_nested",
-                "letter_template_nested",
+                "broadcast_template_nested_two",
+                "broadcast_template_nested_one",
                 "folder_one_two",
             ],
             None,
@@ -238,38 +128,44 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
         (
             "folder_one – Templates – service one – GOV.UK Emergency Alerts",
             ["Templates", "folder_one"],
-            [{"template_type": "sms"}],
-            {"template_type": "sms", "template_folder_id": PARENT_FOLDER_ID},
-            ["All", "Email", "Letter", "Broadcast"],
+            [{"template_type": "broadcast"}],
+            {"template_type": "broadcast", "template_folder_id": PARENT_FOLDER_ID},
+            ["Broadcast"],
             [
-                "folder_one_one folder_one_one 1 folder",
+                "folder_one_one folder_one_one 1 template, 1 folder",
                 "folder_one_one folder_one_one_one folder_one_one folder_one_one_one 1 template",
                 (
-                    "folder_one_one folder_one_one_one sms_template_nested "
-                    "folder_one_one folder_one_one_one sms_template_nested "
-                    "Text message template"
+                    "folder_one_one folder_one_one_one broadcast_template_nested_two "
+                    "folder_one_one folder_one_one_one broadcast_template_nested_two "
+                    "Broadcast template"
+                ),
+                (
+                    "folder_one_one broadcast_template_nested_one "
+                    "folder_one_one broadcast_template_nested_one "
+                    "Broadcast template"
                 ),
             ],
             [
-                "folder_one_one folder_one_one 1 folder",
+                "folder_one_one folder_one_one 1 template, 1 folder",
             ],
             [
                 "folder_one_one",
                 "folder_one_one_one",
-                "sms_template_nested",
+                "broadcast_template_nested_two",
+                "broadcast_template_nested_one",
             ],
             None,
         ),
         (
             "folder_one – Templates – service one – GOV.UK Emergency Alerts",
             ["Templates", "folder_one"],
-            [{"template_type": "email"}],
-            {"template_type": "email", "template_folder_id": PARENT_FOLDER_ID},
-            ["All", "Text message", "Letter", "Broadcast"],
+            [{"template_type": "broadcast"}],
+            {"template_type": "broadcast", "template_folder_id": PARENT_FOLDER_ID},
+            ["Broadcast"],
             [],
             [],
             [],
-            "There are no email templates in this folder",
+            "There are no broadcast templates in this folder",
         ),
         (
             "folder_one_one – folder_one – Templates – service one – GOV.UK Emergency Alerts",
@@ -279,24 +175,24 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
                 {"template_type": "all", "template_folder_id": PARENT_FOLDER_ID},
             ],
             {"template_folder_id": CHILD_FOLDER_ID},
-            ["Email", "Text message", "Letter", "Broadcast"],
+            ["Broadcast"],
             [
                 "folder_one_one_one folder_one_one_one 1 template",
                 (
-                    "folder_one_one_one sms_template_nested "
-                    "folder_one_one_one sms_template_nested "
-                    "Text message template"
+                    "folder_one_one_one broadcast_template_nested_two "
+                    "folder_one_one_one broadcast_template_nested_two "
+                    "Broadcast template"
                 ),
-                "letter_template_nested letter_template_nested Letter template",
+                "broadcast_template_nested_one broadcast_template_nested_one Broadcast template",
             ],
             [
                 "folder_one_one_one folder_one_one_one 1 template",
-                "letter_template_nested letter_template_nested Letter template",
+                "broadcast_template_nested_one broadcast_template_nested_one Broadcast template",
             ],
             [
                 "folder_one_one_one",
-                "sms_template_nested",
-                "letter_template_nested",
+                "broadcast_template_nested_two",
+                "broadcast_template_nested_one",
             ],
             None,
         ),
@@ -309,42 +205,54 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
                 {"template_type": "all", "template_folder_id": CHILD_FOLDER_ID},
             ],
             {"template_folder_id": GRANDCHILD_FOLDER_ID},
-            ["Email", "Text message", "Letter", "Broadcast"],
-            [
-                "sms_template_nested sms_template_nested Text message template",
-            ],
-            [
-                "sms_template_nested sms_template_nested Text message template",
-            ],
-            [
-                "sms_template_nested",
-            ],
+            ["Broadcast"],
+            ["broadcast_template_nested_two broadcast_template_nested_two Broadcast template"],
+            ["broadcast_template_nested_two broadcast_template_nested_two Broadcast template"],
+            ["broadcast_template_nested_two"],
             None,
         ),
         (
             "folder_one_one_one – folder_one_one – folder_one – Templates – service one – GOV.UK Emergency Alerts",
             ["Templates", "folder_one", "folder_one_one", "folder_one_one_one"],
             [
-                {"template_type": "email"},
-                {"template_type": "email", "template_folder_id": PARENT_FOLDER_ID},
-                {"template_type": "email", "template_folder_id": CHILD_FOLDER_ID},
+                {"template_type": "broadcast"},
+                {"template_type": "broadcast", "template_folder_id": PARENT_FOLDER_ID},
+                {"template_type": "broadcast", "template_folder_id": CHILD_FOLDER_ID},
             ],
             {
-                "template_type": "email",
+                "template_type": "broadcast",
                 "template_folder_id": GRANDCHILD_FOLDER_ID,
             },
-            ["All", "Text message", "Letter", "Broadcast"],
-            [],
-            [],
-            [],
-            "There are no email templates in this folder",
+            ["Broadcast"],
+            ["broadcast_template_nested_two broadcast_template_nested_two Broadcast template"],
+            ["broadcast_template_nested_two broadcast_template_nested_two Broadcast template"],
+            ["broadcast_template_nested_two"],
+            None,
+        ),
+        (
+            "folder_one_one_one – folder_one_one – folder_one – Templates – service one – GOV.UK Emergency Alerts",
+            ["Templates", "folder_one", "folder_one_one", "folder_one_one_one"],
+            [
+                {"template_type": "all"},
+                {"template_type": "all", "template_folder_id": PARENT_FOLDER_ID},
+                {"template_type": "all", "template_folder_id": CHILD_FOLDER_ID},
+            ],
+            {
+                "template_type": "all",
+                "template_folder_id": GRANDCHILD_FOLDER_ID,
+            },
+            ["Broadcast"],
+            ["broadcast_template_nested_two broadcast_template_nested_two Broadcast template"],
+            ["broadcast_template_nested_two broadcast_template_nested_two Broadcast template"],
+            ["broadcast_template_nested_two"],
+            None,
         ),
         (
             "folder_two – Templates – service one – GOV.UK Emergency Alerts",
             ["Templates", "folder_two"],
             [{"template_type": "all"}],
             {"template_folder_id": FOLDER_TWO_ID},
-            ["Email", "Text message", "Letter", "Broadcast"],
+            ["Broadcast"],
             [],
             [],
             [],
@@ -353,20 +261,9 @@ def _folder(name, folder_id=None, parent=None, users_with_permission=None):
         (
             "folder_two – Templates – service one – GOV.UK Emergency Alerts",
             ["Templates", "folder_two"],
-            [{"template_type": "sms"}],
-            {"template_folder_id": FOLDER_TWO_ID, "template_type": "sms"},
-            ["All", "Email", "Letter", "Broadcast"],
-            [],
-            [],
-            [],
-            "This folder is empty",
-        ),
-        (
-            "folder_two – Templates – service one – GOV.UK Emergency Alerts",
-            ["Templates", "folder_two"],
-            [{"template_type": "all"}],
-            {"template_folder_id": FOLDER_TWO_ID, "template_type": "all"},
-            ["Email", "Text message", "Letter", "Broadcast"],
+            [{"template_type": "broadcast"}],
+            {"template_folder_id": FOLDER_TWO_ID, "template_type": "broadcast"},
+            ["Broadcast"],
             [],
             [],
             [],
@@ -397,23 +294,20 @@ def test_should_show_templates_folder_page(
         _folder("folder_one_one", CHILD_FOLDER_ID, parent=PARENT_FOLDER_ID),
         _folder("folder_one_one_one", GRANDCHILD_FOLDER_ID, parent=CHILD_FOLDER_ID),
     ]
+    mock_template_data = (
+        []
+        if len(expected_items) == 0
+        else [
+            _template("broadcast", "broadcast_template_one"),
+            _template("broadcast", "broadcast_template_two"),
+            _template("broadcast", "broadcast_template_nested_one", parent=CHILD_FOLDER_ID),
+            _template("broadcast", "broadcast_template_nested_two", parent=GRANDCHILD_FOLDER_ID),
+        ]
+    )
     mock_get_service_templates = mocker.patch(
         "app.service_api_client.get_service_templates",
-        return_value={
-            "data": [
-                _template("sms", "sms_template_one"),
-                _template("sms", "sms_template_two"),
-                _template("email", "email_template_one"),
-                _template("email", "email_template_two"),
-                _template("letter", "letter_template_one"),
-                _template("letter", "letter_template_two"),
-                _template("letter", "letter_template_nested", parent=CHILD_FOLDER_ID),
-                _template("sms", "sms_template_nested", parent=GRANDCHILD_FOLDER_ID),
-            ]
-        },
+        return_value={"data": mock_template_data},
     )
-
-    service_one["permissions"] += ["letter"]
 
     page = client_request.get("main.choose_template", service_id=SERVICE_ONE_ID, _test_page_title=False, **extra_args)
 
@@ -426,13 +320,6 @@ def test_should_show_templates_folder_page(
         assert parent_link["href"] == url_for(
             "main.choose_template", service_id=SERVICE_ONE_ID, **expected_parent_link_args[index]
         )
-
-    links_in_page = page.select(".pill a:not(.pill-item--selected)")
-
-    assert len(links_in_page) == len(expected_nav_links)
-
-    for index, expected_link in enumerate(expected_nav_links):
-        assert links_in_page[index].text.strip() == expected_link
 
     all_page_items = page.select(".template-list-item")
     all_page_items_styled_with_checkboxes = page.select(".template-list-item.govuk-checkboxes__item")
@@ -452,7 +339,7 @@ def test_should_show_templates_folder_page(
     assert len(displayed_page_items) == len(expected_displayed_items)
 
     for index, expected_item in enumerate(expected_displayed_items):
-        assert "/" not in expected_item  # Yo dawg I heard you like tests…
+        assert "/" not in expected_item
         assert normalize_spaces(displayed_page_items[index].text) == expected_item
 
     all_searchable_text = page.select("#template-list .template-list-item .live-search-relevant")
@@ -479,8 +366,8 @@ def test_template_id_is_searchable_for_services_with_api_keys(
     mock_get_template_folders.return_value = [
         _folder("folder one", PARENT_FOLDER_ID),
     ]
-    template_1 = _template("sms", "template one")
-    template_2 = _template("sms", "template two", parent=PARENT_FOLDER_ID)
+    template_1 = _template("broadcast", "template one")
+    template_2 = _template("broadcast", "template two", parent=PARENT_FOLDER_ID)
     mocker.patch(
         "app.service_api_client.get_service_templates",
         return_value={
@@ -517,7 +404,7 @@ def test_template_id_is_searchable_for_services_with_api_keys(
         )
     ] == [
         "folder one folder one 1 template",
-        f'template one {template_1["id"]} template one Text message template',
+        f'template one {template_1["id"]} template one Broadcast template',
     ]
 
     assert [
@@ -537,17 +424,15 @@ def test_template_id_is_searchable_for_services_with_api_keys(
 def test_can_create_email_template_with_parent_folder(client_request, mock_create_service_template):
     data = {
         "name": "new name",
-        "subject": "Food incoming!",
-        "template_content": "here's a burrito 🌯",
-        "template_type": "email",
+        "template_content": "Broadcast template content",
+        "template_type": "broadcast",
         "service": SERVICE_ONE_ID,
-        "process_type": "normal",
         "parent_folder_id": PARENT_FOLDER_ID,
     }
     client_request.post(
         ".add_service_template",
         service_id=SERVICE_ONE_ID,
-        template_type="email",
+        template_type="broadcast",
         template_folder_id=PARENT_FOLDER_ID,
         _data=data,
         _expected_redirect=url_for(
@@ -561,8 +446,6 @@ def test_can_create_email_template_with_parent_folder(client_request, mock_creat
         data["template_type"],
         data["template_content"],
         SERVICE_ONE_ID,
-        data["subject"],
-        data["process_type"],
         data["parent_folder_id"],
     )
 
@@ -643,9 +526,6 @@ def test_get_manage_folder_viewing_permissions_for_users_not_visible_when_no_man
     client_request, active_user_with_permissions, service_one, mock_get_template_folders, mocker
 ):
     active_user_with_permissions["permissions"][SERVICE_ONE_ID] = [
-        "send_texts",
-        "send_emails",
-        "send_letters",
         "manage_templates",
         "manage_api_keys",
         "view_activity",
@@ -771,7 +651,6 @@ def test_user_access_denied_to_template_folder_actions_without_folder_permission
         "main.confirm_redact_template",
         "main.delete_service_template",
         "main.edit_service_template",
-        "main.edit_template_postage",
     ],
 )
 def test_user_access_denied_to_template_actions_without_folder_permission(
@@ -859,9 +738,6 @@ def test_manage_folder_users_doesnt_change_permissions_current_user_cannot_manag
     client_request, active_user_with_permissions, service_one, mock_get_template_folders, mocker
 ):
     active_user_with_permissions["permissions"][SERVICE_ONE_ID] = [
-        "send_texts",
-        "send_emails",
-        "send_letters",
         "manage_templates",
         "manage_api_keys",
         "view_activity",
@@ -1006,7 +882,6 @@ def test_delete_folder(
     [
         pytest.param(create_active_user_with_permissions()),
         pytest.param(create_active_user_view_permissions(), marks=pytest.mark.xfail(raises=AssertionError)),
-        pytest.param(create_active_caseworking_user(), marks=pytest.mark.xfail(raises=AssertionError)),
     ],
 )
 def test_should_show_checkboxes_for_selecting_templates(
@@ -1026,7 +901,7 @@ def test_should_show_checkboxes_for_selecting_templates(
     )
     checkboxes = page.select("input[name=templates_and_folders]")
 
-    assert len(checkboxes) == 4
+    assert len(checkboxes) == 6
 
     assert checkboxes[0]["value"] == TEMPLATE_ONE_ID
     assert checkboxes[0]["id"] == "templates-or-folder-{}".format(TEMPLATE_ONE_ID)
@@ -1040,7 +915,7 @@ def test_should_show_checkboxes_for_selecting_templates(
     "user",
     [
         create_active_user_view_permissions(),
-        create_active_caseworking_user(),
+        create_active_new_user_view_permissions(),
         pytest.param(
             create_active_user_with_permissions(),
             marks=pytest.mark.xfail(raises=AssertionError),
@@ -1343,7 +1218,7 @@ def test_should_be_able_to_move_a_sub_item(
             "templates_and_folders": [],
             "move_to_new_folder_name": "",
             "move_to": PARENT_FOLDER_ID,
-            "add_template_by_template_type": "email",
+            "add_template_by_template_type": "broadcast",
         },
         # add a new template, but also move to root folder
         {
@@ -1351,7 +1226,7 @@ def test_should_be_able_to_move_a_sub_item(
             "templates_and_folders": [],
             "move_to_new_folder_name": "",
             "move_to": ROOT_FOLDER_ID,
-            "add_template_by_template_type": "email",
+            "add_template_by_template_type": "broadcast",
         },
         # add a new template, but don't select anything
         {
@@ -1369,8 +1244,6 @@ def test_no_action_if_user_fills_in_ambiguous_fields(
     mock_get_no_api_keys,
     data,
 ):
-    service_one["permissions"] += ["letter"]
-
     mock_get_template_folders.return_value = [
         _folder("parent_folder", PARENT_FOLDER_ID, None),
         _folder("folder_two", FOLDER_TWO_ID, None),
@@ -1390,9 +1263,6 @@ def test_no_action_if_user_fills_in_ambiguous_fields(
     assert page.select_one("button[value={}]".format(data["operation"]))
 
     assert [
-        "email",
-        "sms",
-        "letter",
         "broadcast",
         "copy-existing",
     ] == [radio["value"] for radio in page.select("#add_new_template_form input[type=radio]")]
@@ -1553,74 +1423,57 @@ def test_show_custom_error_message(
             [
                 ["folder_A", "folder_A", "1 template, 2 folders"],
                 ["folder_E folder_F folder_G", "folder_E", "folder_F", "folder_G", "1 template"],
-                ["email_template_root", "email_template_root", "Email template"],
+                ["broadcast_template_root", "broadcast_template_root", "Broadcast template"],
             ],
             [
                 ["folder_A", "folder_A", "1 template, 2 folders"],
-                ["folder_A folder_C", "folder_A", "folder_C", "1 template"],
-                ["folder_A folder_C sms_template_C", "folder_A", "folder_C", "sms_template_C", "Text message template"],
+                ["folder_A folder_C", "folder_A", "folder_C", "Empty"],
                 ["folder_A folder_D", "folder_A", "folder_D", "Empty"],
-                ["folder_A sms_template_A", "folder_A", "sms_template_A", "Text message template"],
+                ["folder_A broadcast_template_A", "folder_A", "broadcast_template_A", "Broadcast template"],
                 ["folder_E folder_F folder_G", "folder_E", "folder_F", "folder_G", "1 template"],
                 [
-                    "folder_E folder_F folder_G email_template_G",
+                    "folder_E folder_F folder_G broadcast_template_G",
                     "folder_E",
                     "folder_F",
                     "folder_G",
-                    "email_template_G",
-                    "Email template",
+                    "broadcast_template_G",
+                    "Broadcast template",
                 ],
-                ["email_template_root", "email_template_root", "Email template"],
+                ["broadcast_template_root", "broadcast_template_root", "Broadcast template"],
             ],
             None,
         ),
         (
-            {"template_type": "email"},
+            {"template_type": "broadcast"},
             [
+                ["folder_A", "folder_A", "1 template"],
                 ["folder_E folder_F folder_G", "folder_E", "folder_F", "folder_G", "1 template"],
-                ["email_template_root", "email_template_root", "Email template"],
+                ["broadcast_template_root", "broadcast_template_root", "Broadcast template"],
             ],
             [
+                ["folder_A", "folder_A", "1 template"],
+                ["folder_A broadcast_template_A", "folder_A", "broadcast_template_A", "Broadcast template"],
                 ["folder_E folder_F folder_G", "folder_E", "folder_F", "folder_G", "1 template"],
                 [
-                    "folder_E folder_F folder_G email_template_G",
+                    "folder_E folder_F folder_G broadcast_template_G",
                     "folder_E",
                     "folder_F",
                     "folder_G",
-                    "email_template_G",
-                    "Email template",
+                    "broadcast_template_G",
+                    "Broadcast template",
                 ],
-                ["email_template_root", "email_template_root", "Email template"],
+                ["broadcast_template_root", "broadcast_template_root", "Broadcast template"],
             ],
-            None,
-        ),
-        (
-            {"template_type": "sms"},
-            [
-                ["folder_A", "folder_A", "1 template, 1 folder"],
-            ],
-            [
-                ["folder_A", "folder_A", "1 template, 1 folder"],
-                ["folder_A folder_C", "folder_A", "folder_C", "1 template"],
-                ["folder_A folder_C sms_template_C", "folder_A", "folder_C", "sms_template_C", "Text message template"],
-                ["folder_A sms_template_A", "folder_A", "sms_template_A", "Text message template"],
-            ],
-            None,
-        ),
-        (
-            {"template_type": "letter"},
-            [],
-            [],
             None,
         ),
         (
             {
-                "template_type": "email",
+                "template_type": "broadcast",
                 "template_folder_id": FOLDER_C_ID,
             },
             [],
             [],
-            "There are no email templates in this folder",
+            "This folder is empty",
         ),
         (
             {"template_folder_id": CHILD_FOLDER_ID},
@@ -1629,7 +1482,7 @@ def test_show_custom_error_message(
             "This folder is empty",
         ),
         (
-            {"template_folder_id": CHILD_FOLDER_ID, "template_type": "sms"},
+            {"template_folder_id": CHILD_FOLDER_ID, "template_type": "broadcast"},
             [],
             [],
             "This folder is empty",
@@ -1648,7 +1501,6 @@ def test_should_filter_templates_folder_page_based_on_user_permissions(
     expected_items,
     expected_empty_message,
 ):
-    service_one["permissions"] += ["letter"]
     mock_get_template_folders.return_value = [
         _folder("folder_A", FOLDER_TWO_ID, None, [active_user_with_permissions["id"]]),
         _folder("folder_B", FOLDER_B_ID, FOLDER_TWO_ID, []),
@@ -1662,12 +1514,13 @@ def test_should_filter_templates_folder_page_based_on_user_permissions(
         "app.service_api_client.get_service_templates",
         return_value={
             "data": [
-                _template("email", "email_template_root"),
-                _template("sms", "sms_template_A", parent=FOLDER_TWO_ID),
-                _template("sms", "sms_template_C", parent=FOLDER_C_ID),
-                _template("email", "email_template_B", parent=FOLDER_B_ID),
-                _template("email", "email_template_G", parent=GRANDCHILD_FOLDER_ID),
-                _template("letter", "letter_template_F", parent=CHILD_FOLDER_ID),
+                _template("broadcast", "broadcast_template_root"),
+                _template("broadcast", "broadcast_template_A", parent=FOLDER_TWO_ID),
+                # _template("broadcast", "broadcast_template_C", parent=FOLDER_C_ID),
+                _template("broadcast", "broadcast_template_B", parent=FOLDER_B_ID),
+                _template("broadcast", "broadcast_template_G", parent=GRANDCHILD_FOLDER_ID),
+                # _template("letter", "letter_template_F", parent=CHILD_FOLDER_ID),
+                _template("broadcast", "broadcast_template_F", parent=CHILD_FOLDER_ID),
             ]
         },
     )

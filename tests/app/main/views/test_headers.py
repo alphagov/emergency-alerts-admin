@@ -35,10 +35,6 @@ def test_headers_non_ascii_characters_are_replaced(
     mock_get_service_and_organisation_counts,
 ):
     client_request.logout()
-    mocker.patch.dict(
-        "app.current_app.config",
-        values={"LOGO_CDN_DOMAIN": "static-logos€æ.test.com"},
-    )
 
     response = client_request.get_response("main.sign_in")
 

@@ -210,7 +210,7 @@ def test_register_from_email_auth_invite(
     mock_add_user_to_service.assert_called_once_with(
         sample_invite["service"],
         fake_uuid,  # This ID matches the return value of mock_register_user
-        {"manage_api_keys", "manage_service", "send_messages", "view_activity"},
+        {"manage_api_keys", "manage_service", "view_activity"},
         [],
     )
 

@@ -52,7 +52,7 @@ def test_existing_user_accept_invite_calls_api_and_redirects_to_tour(
 ):
     client_request.logout()
     expected_service = service_one["id"]
-    expected_permissions = {"view_activity", "send_messages", "manage_service", "manage_api_keys"}
+    expected_permissions = {"view_activity", "manage_service", "manage_api_keys"}
 
     client_request.get(
         "main.accept_invite",
@@ -336,7 +336,7 @@ def test_existing_signed_out_user_accept_invite_redirects_to_sign_in(
 ):
     client_request.logout()
     expected_service = service_one["id"]
-    expected_permissions = {"view_activity", "send_messages", "manage_service", "manage_api_keys"}
+    expected_permissions = {"view_activity", "manage_service", "manage_api_keys"}
 
     page = client_request.get(
         "main.accept_invite",
@@ -648,7 +648,7 @@ def test_new_invited_user_verifies_and_added_to_service(
 
     # when they post codes back to admin user should be added to
     # service and sent on to dash board
-    expected_permissions = {"view_activity", "send_messages", "manage_service", "manage_api_keys"}
+    expected_permissions = {"view_activity", "manage_service", "manage_api_keys"}
 
     with client_request.session_transaction() as session:
         assert "invited_user_id" not in session

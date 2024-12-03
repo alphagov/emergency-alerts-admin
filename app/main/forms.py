@@ -5,10 +5,8 @@ from itertools import chain
 from numbers import Number
 
 import pytz
-from emergency_alerts_utils.countries.data import Postage
 from emergency_alerts_utils.formatters import strip_all_whitespace
 from emergency_alerts_utils.insensitive_dict import InsensitiveDict
-from emergency_alerts_utils.postal_address import PostalAddress
 from emergency_alerts_utils.recipients import (
     InvalidPhoneError,
     normalise_phone_number,
@@ -17,7 +15,6 @@ from emergency_alerts_utils.recipients import (
 from flask import request
 from flask_login import current_user
 from flask_wtf import FlaskForm as Form
-from flask_wtf.file import FileField as FileField_wtf
 from markupsafe import Markup
 from werkzeug.utils import cached_property
 from wtforms import (
@@ -61,7 +58,6 @@ from app.main.validators import (
     BroadcastLength,
     CharactersNotAllowed,
     CommonlyUsedPassword,
-    FileIsVirusFree,
     IsPostcode,
     LowEntropyPassword,
     MustContainAlphanumericCharacters,
@@ -512,18 +508,6 @@ class StripWhitespaceStringField(GovukTextInputField):
             )
         )
         super(GovukTextInputField, self).__init__(label, **kwargs)
-
-
-class PostalAddressField(TextAreaField):
-    def process_formdata(self, valuelist):
-        if valuelist:
-            self.data = PostalAddress(valuelist[0]).normalised
-
-
-class VirusScannedFileField(FileField_wtf, RequiredValidatorsMixin):
-    required_validators = [
-        FileIsVirusFree(),
-    ]
 
 
 class LoginForm(StripWhitespaceForm):
@@ -996,48 +980,6 @@ class RenameOrganisationForm(StripWhitespaceForm):
     )
 
 
-class AddGPOrganisationForm(StripWhitespaceForm):
-    def __init__(self, *args, service_name="unknown", **kwargs):
-        super().__init__(*args, **kwargs)
-        self.same_as_service_name.label.text = "Is your GP practice called ‘{}’?".format(service_name)
-        self.service_name = service_name
-
-    def get_organisation_name(self):
-        if self.same_as_service_name.data:
-            return self.service_name
-        return self.name.data
-
-    same_as_service_name = OnOffField(
-        "Is your GP practice called the same name as your service?",
-        choices=(
-            (True, "Yes"),
-            (False, "No"),
-        ),
-    )
-
-    name = GovukTextInputField(
-        "What’s your practice called?",
-    )
-
-    def validate_name(self, field):
-        if self.same_as_service_name.data is False:
-            if not field.data:
-                raise ValidationError("Cannot be empty")
-        else:
-            field.data = ""
-
-
-class AddNHSLocalOrganisationForm(StripWhitespaceForm):
-    def __init__(self, *args, organisation_choices=None, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.organisations.choices = organisation_choices
-
-    organisations = GovukRadiosField(
-        "Which NHS Trust or Clinical Commissioning Group do you work for?",
-        thing="an NHS Trust or Clinical Commissioning Group",
-    )
-
-
 class OrganisationOrganisationTypeForm(StripWhitespaceForm):
     organisation_type = OrganisationTypeField("What type of organisation is this?")
 
@@ -1051,25 +993,6 @@ class OrganisationCrownStatusForm(StripWhitespaceForm):
             ("unknown", "Not sure"),
         ],
         thing="whether this organisation is a crown body",
-    )
-
-
-class OrganisationAgreementSignedForm(StripWhitespaceForm):
-    agreement_signed = GovukRadiosField(
-        "Has this organisation signed the agreement?",
-        choices=[
-            ("yes", "Yes"),
-            ("no", "No"),
-            ("unknown", "No (but we have some service-specific agreements in place)"),
-        ],
-        thing="whether this organisation has signed the agreement",
-        param_extensions={
-            "items": [
-                {"hint": {"text": "Users will be told their organisation has already signed the agreement"}},
-                {"hint": {"text": "Users will be prompted to sign the agreement before they can go live"}},
-                {"hint": {"text": "Users will not be prompted to sign the agreement"}},
-            ]
-        },
     )
 
 
@@ -1106,13 +1029,6 @@ class CreateServiceForm(StripWhitespaceForm):
     organisation_type = OrganisationTypeField("Who runs this service?")
 
 
-class CreateNhsServiceForm(CreateServiceForm):
-    organisation_type = OrganisationTypeField(
-        "Who runs this service?",
-        include_only={"nhs_central", "nhs_local", "nhs_gp"},
-    )
-
-
 class AdminNewOrganisationForm(
     RenameOrganisationForm,
     OrganisationOrganisationTypeForm,
@@ -1122,26 +1038,6 @@ class AdminNewOrganisationForm(
         super().__init__(*args, **kwargs)
         # Don’t offer the ‘not sure’ choice
         self.crown_status.choices = self.crown_status.choices[:-1]
-
-
-class AdminServiceSMSAllowanceForm(StripWhitespaceForm):
-    free_sms_allowance = GovukIntegerField(
-        "Numbers of text message fragments per year", validators=[InputRequired(message="Cannot be empty")]
-    )
-
-
-class AdminServiceMessageLimitForm(StripWhitespaceForm):
-    message_limit = GovukIntegerField(
-        "Number of messages the service is allowed to send each day",
-        validators=[DataRequired(message="Cannot be empty")],
-    )
-
-
-class AdminServiceRateLimitForm(StripWhitespaceForm):
-    rate_limit = GovukIntegerField(
-        "Number of messages the service can send in a rolling 60 second window",
-        validators=[DataRequired(message="Cannot be empty")],
-    )
 
 
 class ConfirmPasswordForm(StripWhitespaceForm):
@@ -1218,15 +1114,6 @@ class BaseTemplateForm(StripWhitespaceForm):
     template_content = TextAreaField(
         "Alert message", validators=[DataRequired(message="Alert message cannot be empty"), NoCommasInPlaceHolders()]
     )
-    process_type = GovukRadiosField(
-        "Use priority queue?",
-        choices=[
-            ("priority", "Yes"),
-            ("normal", "No"),
-        ],
-        thing="yes or no",
-        default="normal",
-    )
 
 
 class ChooseDurationForm(StripWhitespaceForm):
@@ -1253,53 +1140,6 @@ class BroadcastTemplateForm(SMSTemplateForm):
         OnlySMSCharacters(template_type="broadcast")(None, field)
         NoPlaceholders()(None, field)
         BroadcastLength()(None, field)
-
-
-class EmailTemplateForm(BaseTemplateForm):
-    subject = TextAreaField("Subject", validators=[DataRequired(message="Cannot be empty")])
-
-
-class LetterTemplateForm(EmailTemplateForm):
-    subject = TextAreaField("Main heading", validators=[DataRequired(message="Cannot be empty")])
-
-    template_content = TextAreaField(
-        "Body", validators=[DataRequired(message="Cannot be empty"), NoCommasInPlaceHolders()]
-    )
-
-
-class LetterTemplatePostageForm(StripWhitespaceForm):
-    postage = GovukRadiosField(
-        "Choose the postage for this letter template",
-        choices=[
-            ("first", "First class"),
-            ("second", "Second class"),
-        ],
-        thing="first class or second class",
-        validators=[DataRequired()],
-    )
-
-
-class LetterUploadPostageForm(StripWhitespaceForm):
-    def __init__(self, *args, postage_zone, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        if postage_zone != Postage.UK:
-            self.postage.choices = [(postage_zone, "")]
-            self.postage.data = postage_zone
-
-    @property
-    def show_postage(self):
-        return len(self.postage.choices) > 1
-
-    postage = GovukRadiosField(
-        "Choose the postage for this letter",
-        choices=[
-            ("first", "First class post"),
-            ("second", "Second class post"),
-        ],
-        default="second",
-        validators=[DataRequired()],
-    )
 
 
 class ForgotPasswordForm(StripWhitespaceForm):
@@ -1424,42 +1264,6 @@ class Triage(StripWhitespaceForm):
     )
 
 
-class EstimateUsageForm(StripWhitespaceForm):
-    volume_email = ForgivingIntegerField(
-        "How many emails do you expect to send in the next year?",
-        things="emails",
-        format_error_suffix="you expect to send",
-    )
-    volume_sms = ForgivingIntegerField(
-        "How many text messages do you expect to send in the next year?",
-        things="text messages",
-        format_error_suffix="you expect to send",
-    )
-    volume_letter = ForgivingIntegerField(
-        "How many letters do you expect to send in the next year?",
-        things="letters",
-        format_error_suffix="you expect to send",
-    )
-    consent_to_research = GovukRadiosField(
-        "Can we contact you when we’re doing user research?",
-        choices=[
-            ("yes", "Yes"),
-            ("no", "No"),
-        ],
-        thing="yes or no",
-        param_extensions={"hint": {"text": "You do not have to take part and you can unsubscribe at any time"}},
-    )
-
-    at_least_one_volume_filled = True
-
-    def validate(self, *args, **kwargs):
-        if self.volume_email.data == self.volume_sms.data == self.volume_letter.data == 0:
-            self.at_least_one_volume_filled = False
-            return False
-
-        return super().validate(*args, **kwargs)
-
-
 class ServiceContactDetailsForm(StripWhitespaceForm):
     contact_details_type = GovukRadiosField(
         "Type of contact details",
@@ -1505,24 +1309,6 @@ class AdminNotesForm(StripWhitespaceForm):
     notes = TextAreaField(validators=[])
 
 
-class AdminBillingDetailsForm(StripWhitespaceForm):
-    billing_contact_email_addresses = GovukTextInputField("Contact email addresses")
-    billing_contact_names = GovukTextInputField("Contact names")
-    billing_reference = GovukTextInputField("Reference")
-    purchase_order_number = GovukTextInputField("Purchase order number")
-    notes = TextAreaField(validators=[])
-
-
-class ServiceLetterContactBlockForm(StripWhitespaceForm):
-    letter_contact_block = TextAreaField(validators=[DataRequired(message="Cannot be empty"), NoCommasInPlaceHolders()])
-    is_default = GovukCheckboxField("Set as your default address")
-
-    def validate_letter_contact_block(self, field):
-        line_count = field.data.strip().count("\n")
-        if line_count >= 10:
-            raise ValidationError("Contains {} lines, maximum is 10".format(line_count + 1))
-
-
 class ServiceOnOffSettingForm(StripWhitespaceForm):
     def __init__(self, name, *args, truthy="On", falsey="Off", **kwargs):
         super().__init__(*args, **kwargs)
@@ -1533,51 +1319,6 @@ class ServiceOnOffSettingForm(StripWhitespaceForm):
         ]
 
     enabled = OnOffField("Choices")
-
-
-class ServiceSwitchChannelForm(ServiceOnOffSettingForm):
-    def __init__(self, channel, *args, **kwargs):
-        name = "Send {}".format(
-            {
-                "email": "emails",
-                "sms": "text messages",
-                "letter": "letters",
-            }.get(channel)
-        )
-
-        super().__init__(name, *args, **kwargs)
-
-
-class EmailFieldInGuestList(GovukEmailField, StripWhitespaceStringField):
-    pass
-
-
-class InternationalPhoneNumberInGuestList(InternationalPhoneNumber, StripWhitespaceStringField):
-    pass
-
-
-class GuestList(StripWhitespaceForm):
-    def populate(self, email_addresses, phone_numbers):
-        for form_field, existing_guest_list in (
-            (self.email_addresses, email_addresses),
-            (self.phone_numbers, phone_numbers),
-        ):
-            for index, value in enumerate(existing_guest_list):
-                form_field[index].data = value
-
-    email_addresses = FieldList(
-        EmailFieldInGuestList("", validators=[Optional(), ValidEmail()], default=""),
-        min_entries=5,
-        max_entries=5,
-        label="Email addresses",
-    )
-
-    phone_numbers = FieldList(
-        InternationalPhoneNumberInGuestList("", validators=[Optional()], default=""),
-        min_entries=5,
-        max_entries=5,
-        label="Mobile numbers",
-    )
 
 
 class DateFilterForm(StripWhitespaceForm):
@@ -1869,23 +1610,6 @@ class TemplateAndFoldersSelectionForm(Form):
             Optional(),
         ],
         required_message="Select the type of template you want to add",
-    )
-
-
-class AdminClearCacheForm(StripWhitespaceForm):
-    model_type = GovukCheckboxesField(
-        "What do you want to clear today",
-    )
-
-    def validate_model_type(self, field):
-        if not field.data:
-            raise ValidationError("Select at least one option")
-
-
-class AdminOrganisationGoLiveNotesForm(StripWhitespaceForm):
-    request_to_go_live_notes = TextAreaField(
-        "Go live notes",
-        filters=[lambda x: x or None],
     )
 
 

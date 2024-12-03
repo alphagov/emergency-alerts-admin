@@ -205,204 +205,6 @@ def test_create_new_organisation_fails_with_duplicate_name(
     assert error_message in page.select_one(".govuk-error-message").text
 
 
-@pytest.mark.parametrize(
-    "organisation_type, organisation, expected_status",
-    (
-        ("nhs_gp", None, 200),
-        ("central", None, 403),
-        ("nhs_gp", organisation_json(organisation_type="nhs_gp"), 403),
-    ),
-)
-def test_gps_can_create_own_organisations(
-    client_request,
-    mocker,
-    mock_get_service_organisation,
-    service_one,
-    organisation_type,
-    organisation,
-    expected_status,
-):
-    mocker.patch("app.organisations_client.get_organisation", return_value=organisation)
-    service_one["organisation_type"] = organisation_type
-
-    page = client_request.get(
-        ".add_organisation_from_gp_service",
-        service_id=SERVICE_ONE_ID,
-        _expected_status=expected_status,
-    )
-
-    if expected_status == 403:
-        return
-
-    assert page.select_one("input[type=text]")["name"] == "name"
-    assert normalize_spaces(page.select_one("label[for=name]").text) == "What’s your practice called?"
-
-
-@pytest.mark.parametrize(
-    "organisation_type, organisation, expected_status",
-    (
-        ("nhs_local", None, 200),
-        ("nhs_gp", None, 403),
-        ("central", None, 403),
-        ("nhs_local", organisation_json(organisation_type="nhs_local"), 403),
-    ),
-)
-def test_nhs_local_can_create_own_organisations(
-    client_request,
-    mocker,
-    mock_get_service_organisation,
-    service_one,
-    organisation_type,
-    organisation,
-    expected_status,
-):
-    mocker.patch("app.organisations_client.get_organisation", return_value=organisation)
-    mocker.patch(
-        "app.models.organisation.AllOrganisations.client_method",
-        return_value=[
-            organisation_json("t2", "Trust 2", organisation_type="nhs_local"),
-            organisation_json("t1", "Trust 1", organisation_type="nhs_local"),
-            organisation_json("gp1", "GP 1", organisation_type="nhs_gp"),
-            organisation_json("c1", "Central 1"),
-        ],
-    )
-    service_one["organisation_type"] = organisation_type
-
-    page = client_request.get(
-        ".add_organisation_from_nhs_local_service",
-        service_id=SERVICE_ONE_ID,
-        _expected_status=expected_status,
-    )
-
-    if expected_status == 403:
-        return
-
-    assert normalize_spaces(page.select_one("main p").text) == (
-        "Which NHS Trust or Clinical Commissioning Group do you work for?"
-    )
-    assert page.select_one("[data-notify-module=live-search]")["data-targets"] == ".govuk-radios__item"
-    assert [
-        (normalize_spaces(radio.select_one("label").text), radio.select_one("input")["value"])
-        for radio in page.select(".govuk-radios__item")
-    ] == [
-        ("Trust 1", "t1"),
-        ("Trust 2", "t2"),
-    ]
-    assert normalize_spaces(page.select_one(".js-stick-at-bottom-when-scrolling button").text) == "Continue"
-
-
-@pytest.mark.parametrize(
-    "data, expected_service_name",
-    (
-        (
-            {
-                "same_as_service_name": False,
-                "name": "Dr. Example",
-            },
-            "Dr. Example",
-        ),
-        (
-            {
-                "same_as_service_name": True,
-                "name": "This is ignored",
-            },
-            "service one",
-        ),
-    ),
-)
-def test_gps_can_name_their_organisation(
-    client_request,
-    mocker,
-    service_one,
-    mock_update_service_organisation,
-    data,
-    expected_service_name,
-):
-    service_one["organisation_type"] = "nhs_gp"
-    mock_create_organisation = mocker.patch(
-        "app.organisations_client.create_organisation",
-        return_value=organisation_json(ORGANISATION_ID),
-    )
-
-    client_request.post(
-        ".add_organisation_from_gp_service",
-        service_id=SERVICE_ONE_ID,
-        _data=data,
-        _expected_status=302,
-        _expected_redirect=url_for(".index"),
-    )
-
-    mock_create_organisation.assert_called_once_with(
-        name=expected_service_name,
-        organisation_type="nhs_gp",
-        agreement_signed=False,
-        crown=False,
-    )
-    mock_update_service_organisation.assert_called_once_with(SERVICE_ONE_ID, ORGANISATION_ID)
-
-
-@pytest.mark.parametrize(
-    "data, expected_error",
-    (
-        (
-            {
-                "name": "Dr. Example",
-            },
-            "Select yes or no",
-        ),
-        (
-            {
-                "same_as_service_name": False,
-                "name": "",
-            },
-            "Cannot be empty",
-        ),
-    ),
-)
-def test_validation_of_gps_creating_organisations(
-    client_request,
-    mocker,
-    service_one,
-    data,
-    expected_error,
-):
-    service_one["organisation_type"] = "nhs_gp"
-    page = client_request.post(
-        ".add_organisation_from_gp_service",
-        service_id=SERVICE_ONE_ID,
-        _data=data,
-        _expected_status=200,
-    )
-    assert expected_error in page.select_one(".govuk-error-message, .error-message").text
-
-
-def test_nhs_local_assigns_to_selected_organisation(
-    client_request,
-    mocker,
-    service_one,
-    mock_get_organisation,
-    mock_update_service_organisation,
-):
-    mocker.patch(
-        "app.models.organisation.AllOrganisations.client_method",
-        return_value=[
-            organisation_json(ORGANISATION_ID, "Trust 1", organisation_type="nhs_local"),
-        ],
-    )
-    service_one["organisation_type"] = "nhs_local"
-
-    client_request.post(
-        ".add_organisation_from_nhs_local_service",
-        service_id=SERVICE_ONE_ID,
-        _data={
-            "organisations": ORGANISATION_ID,
-        },
-        _expected_status=302,
-        _expected_redirect=url_for(".index"),
-    )
-    mock_update_service_organisation.assert_called_once_with(SERVICE_ONE_ID, ORGANISATION_ID)
-
-
 @freeze_time("2020-02-20 20:20")
 def test_organisation_services_shows_live_services_and_usage_with_count_of_1(
     client_request,
@@ -674,11 +476,6 @@ def test_organisation_settings_for_platform_admin(
         "Name Test organisation Change organisation name",
         "Sector Central government Change sector for the organisation",
         "Crown organisation Yes Change organisation crown status",
-        (
-            "Data sharing and financial agreement "
-            "Not signed Change data sharing and financial agreement for the organisation"
-        ),
-        "Request to go live notes None Change go live notes for the organisation",
         "Notes None Change the notes for the organisation",
         "Known email domains None Change known email domains for the organisation",
     ]
@@ -781,18 +578,12 @@ def test_archive_organisation_after_confirmation(
     mock_get_service_and_organisation_counts,
 ):
     mock_api = mocker.patch("app.organisations_client.post")
-    redis_delete_mock = mocker.patch("app.notify_client.organisations_api_client.redis_client.delete")
 
     client_request.login(platform_admin_user)
     page = client_request.post("main.archive_organisation", org_id=organisation_one["id"], _follow_redirects=True)
     mock_api.assert_called_once_with(url=f"/organisations/{organisation_one['id']}/archive", data=None)
     assert normalize_spaces(page.select_one("h1").text) == "Choose service"
     assert normalize_spaces(page.select_one(".banner-default-with-tick").text) == "‘Test organisation’ was deleted"
-    assert redis_delete_mock.call_args_list == [
-        mocker.call(f'organisation-{organisation_one["id"]}-name'),
-        mocker.call("domains"),
-        mocker.call("organisations"),
-    ]
 
 
 @pytest.mark.parametrize(
@@ -855,27 +646,6 @@ def test_archive_organisation_does_not_allow_orgs_with_team_members_or_services_
             ),
             "crown",
         ),
-        (
-            ".edit_organisation_agreement",
-            (
-                {
-                    "value": "yes",
-                    "label": "Yes",
-                    "hint": "Users will be told their organisation has already signed the agreement",
-                },
-                {
-                    "value": "no",
-                    "label": "No",
-                    "hint": "Users will be prompted to sign the agreement before they can go live",
-                },
-                {
-                    "value": "unknown",
-                    "label": "No (but we have some service-specific agreements in place)",
-                    "hint": "Users will not be prompted to sign the agreement",
-                },
-            ),
-            "no",
-        ),
     ),
 )
 @pytest.mark.parametrize(
@@ -926,47 +696,32 @@ def test_view_organisation_settings(
         (
             ".edit_organisation_type",
             {"organisation_type": "central"},
-            {"cached_service_ids": [], "organisation_type": "central"},
+            {"organisation_type": "central"},
         ),
         (
             ".edit_organisation_type",
             {"organisation_type": "local"},
-            {"cached_service_ids": [], "organisation_type": "local"},
+            {"organisation_type": "local"},
         ),
         (
             ".edit_organisation_type",
             {"organisation_type": "nhs_local"},
-            {"cached_service_ids": [], "organisation_type": "nhs_local"},
+            {"organisation_type": "nhs_local"},
         ),
         (
             ".edit_organisation_crown_status",
             {"crown_status": "crown"},
-            {"cached_service_ids": [], "crown": True},
+            {"crown": True},
         ),
         (
             ".edit_organisation_crown_status",
             {"crown_status": "non-crown"},
-            {"cached_service_ids": [], "crown": False},
+            {"crown": False},
         ),
         (
             ".edit_organisation_crown_status",
             {"crown_status": "unknown"},
-            {"cached_service_ids": [], "crown": None},
-        ),
-        (
-            ".edit_organisation_agreement",
-            {"agreement_signed": "yes"},
-            {"agreement_signed": True},
-        ),
-        (
-            ".edit_organisation_agreement",
-            {"agreement_signed": "no"},
-            {"agreement_signed": False},
-        ),
-        (
-            ".edit_organisation_agreement",
-            {"agreement_signed": "unknown"},
-            {"agreement_signed": None},
+            {"crown": None},
         ),
     ),
 )
@@ -1032,9 +787,7 @@ def test_update_organisation_sector_sends_service_id_data_to_api_client(
         ),
     )
 
-    mock_update_organisation.assert_called_once_with(
-        organisation_one["id"], cached_service_ids=["12345", "67890", SERVICE_ONE_ID], organisation_type="central"
-    )
+    mock_update_organisation.assert_called_once_with(organisation_one["id"], organisation_type="central")
 
 
 @pytest.mark.parametrize(
@@ -1284,7 +1037,6 @@ def test_update_organisation_name(
     mock_update_organisation.assert_called_once_with(
         fake_uuid,
         name="TestNewOrgName",
-        cached_service_ids=None,
     )
 
 
@@ -1336,55 +1088,6 @@ def test_update_organisation_with_non_unique_name(
     assert "This organisation name is already in use" in page.select_one(".govuk-error-message").text
 
 
-def test_get_edit_organisation_go_live_notes_page(
-    client_request,
-    platform_admin_user,
-    mock_get_organisation,
-    organisation_one,
-):
-    client_request.login(platform_admin_user)
-    page = client_request.get(
-        ".edit_organisation_go_live_notes",
-        org_id=organisation_one["id"],
-    )
-    assert page.select_one("textarea", id="request_to_go_live_notes")
-
-
-@pytest.mark.parametrize("input_note,saved_note", [("Needs permission", "Needs permission"), ("  ", None)])
-def test_post_edit_organisation_go_live_notes_updates_go_live_notes(
-    client_request,
-    platform_admin_user,
-    mock_get_organisation,
-    mock_update_organisation,
-    organisation_one,
-    input_note,
-    saved_note,
-):
-    client_request.login(platform_admin_user)
-    client_request.post(
-        ".edit_organisation_go_live_notes",
-        org_id=organisation_one["id"],
-        _data={"request_to_go_live_notes": input_note},
-        _expected_redirect=url_for(
-            ".organisation_settings",
-            org_id=organisation_one["id"],
-        ),
-    )
-    mock_update_organisation.assert_called_once_with(organisation_one["id"], request_to_go_live_notes=saved_note)
-
-
-def test_organisation_settings_links_to_edit_organisation_notes_page(
-    mocker,
-    mock_get_organisation,
-    organisation_one,
-    client_request,
-    platform_admin_user,
-):
-    client_request.login(platform_admin_user)
-    page = client_request.get(".organisation_settings", org_id=organisation_one["id"])
-    assert len(page.select(f"""a[href="/organisations/{organisation_one['id']}/settings/notes"]""")) == 1
-
-
 def test_view_edit_organisation_notes(
     client_request,
     platform_admin_user,
@@ -1418,7 +1121,7 @@ def test_update_organisation_notes(
             org_id=organisation_one["id"],
         ),
     )
-    mock_update_organisation.assert_called_with(organisation_one["id"], cached_service_ids=None, notes="Very fluffy")
+    mock_update_organisation.assert_called_with(organisation_one["id"], notes="Very fluffy")
 
 
 def test_update_organisation_notes_errors_when_user_not_platform_admin(

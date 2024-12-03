@@ -101,24 +101,24 @@ def test_show_different_page_if_user_org_type_is_local(
 
 
 @pytest.mark.parametrize(
-    "inherited, posted, persisted, sms_limit",
+    "inherited, posted, persisted",
     (
-        (None, "central", "central", 150_000),
-        (None, "nhs_central", "nhs_central", 150_000),
-        (None, "nhs_gp", "nhs_gp", 10_000),
-        (None, "nhs_local", "nhs_local", 25_000),
-        (None, "local", "local", 25_000),
-        (None, "emergency_service", "emergency_service", 25_000),
-        (None, "school_or_college", "school_or_college", 10_000),
-        (None, "other", "other", 10_000),
-        ("central", None, "central", 150_000),
-        ("nhs_central", None, "nhs_central", 150_000),
-        ("nhs_local", None, "nhs_local", 25_000),
-        ("local", None, "local", 25_000),
-        ("emergency_service", None, "emergency_service", 25_000),
-        ("school_or_college", None, "school_or_college", 10_000),
-        ("other", None, "other", 10_000),
-        ("central", "local", "central", 150_000),
+        (None, "central", "central"),
+        (None, "nhs_central", "nhs_central"),
+        (None, "nhs_gp", "nhs_gp"),
+        (None, "nhs_local", "nhs_local"),
+        (None, "local", "local"),
+        (None, "emergency_service", "emergency_service"),
+        (None, "school_or_college", "school_or_college"),
+        (None, "other", "other"),
+        ("central", None, "central"),
+        ("nhs_central", None, "nhs_central"),
+        ("nhs_local", None, "nhs_local"),
+        ("local", None, "local"),
+        ("emergency_service", None, "emergency_service"),
+        ("school_or_college", None, "school_or_college"),
+        ("other", None, "other"),
+        ("central", "local", "central"),
     ),
 )
 @freeze_time("2021-01-01")
@@ -133,7 +133,6 @@ def test_should_add_service_and_redirect_to_index_when_no_services(
     platform_admin_user_no_service_permissions,
     posted,
     persisted,
-    sms_limit,
 ):
     client_request.login(platform_admin_user_no_service_permissions)
     mocker.patch(
@@ -153,10 +152,8 @@ def test_should_add_service_and_redirect_to_index_when_no_services(
     mock_create_service.assert_called_once_with(
         service_name="testing the post",
         organisation_type=persisted,
-        message_limit=50,
         restricted=True,
         user_id=api_user_active["id"],
-        email_from="testing.the.post",
     )
     with client_request.session_transaction() as session:
         assert session["service_id"] == 101
@@ -231,10 +228,8 @@ def test_should_add_service_and_redirect_to_dashboard_when_existing_service(
     mock_create_service.assert_called_once_with(
         service_name="testing the post",
         organisation_type=organisation_type,
-        message_limit=notify_admin.config["DEFAULT_SERVICE_LIMIT"],
         restricted=True,
         user_id=api_user_active["id"],
-        email_from="testing.the.post",
     )
     assert len(mock_create_service_template.call_args_list) == 0
     with client_request.session_transaction() as session:

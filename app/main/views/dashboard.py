@@ -7,7 +7,7 @@ from app.utils.user import user_has_permissions
 
 
 @main.route("/services/<uuid:service_id>/dashboard")
-@user_has_permissions("view_activity", "send_messages")
+@user_has_permissions("view_activity")
 def old_service_dashboard(service_id):
     return redirect(url_for(".service_dashboard", service_id=service_id))
 

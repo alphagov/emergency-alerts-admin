@@ -1,10 +1,8 @@
-import pytest
 from emergency_alerts_utils.template import Template
 
-from app.utils.templates import get_sample_template
+from app.utils.templates import get_template
 
 
-@pytest.mark.parametrize("template_type", ["sms", "letter", "email"])
-def test_get_sample_template_returns_template(template_type):
-    template = get_sample_template(template_type)
+def test_get_template_returns_template():
+    template = get_template({"template_type": "broadcast", "content": "some content"})
     assert isinstance(template, Template)

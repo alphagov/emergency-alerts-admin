@@ -1,5 +1,5 @@
 from emergency_alerts_utils.serialised_model import SerialisedModelCollection
-from flask import abort, current_app
+from flask import abort
 from werkzeug.utils import cached_property
 
 from app.models import JSONModel
@@ -16,45 +16,20 @@ class Service(JSONModel):
     ALLOWED_PROPERTIES = {
         "active",
         "allowed_broadcast_provider",
-        "billing_contact_email_addresses",
-        "billing_contact_names",
-        "billing_reference",
         "broadcast_channel",
-        "consent_to_research",
-        "contact_link",
-        "count_as_live",
-        "email_from",
-        "go_live_at",
-        "go_live_user",
         "id",
-        "message_limit",
-        "rate_limit",
         "name",
         "notes",
-        "prefix_sms",
-        "purchase_order_number",
-        "research_mode",
         "service_callback_api",
-        "volume_email",
-        "volume_sms",
-        "volume_letter",
     }
 
     __sort_attribute__ = "name"
 
-    TEMPLATE_TYPES = (
-        "email",
-        "sms",
-        "letter",
-        "broadcast",
-    )
+    TEMPLATE_TYPES = ("broadcast",)
 
     ALL_PERMISSIONS = TEMPLATE_TYPES + (
         "edit_folder_permissions",
         "email_auth",
-        "international_letters",
-        "international_sms",
-        "upload_document",
         "broadcast",
     )
 
@@ -66,24 +41,8 @@ class Service(JSONModel):
     def permissions(self):
         return self._dict.get("permissions", self.TEMPLATE_TYPES)
 
-    @property
-    def billing_details(self):
-        billing_details = [
-            self.billing_contact_email_addresses,
-            self.billing_contact_names,
-            self.billing_reference,
-            self.purchase_order_number,
-        ]
-        if any(billing_details):
-            return billing_details
-        else:
-            return None
-
     def update(self, **kwargs):
         return service_api_client.update_service(self.id, **kwargs)
-
-    def update_count_as_live(self, count_as_live):
-        return service_api_client.update_count_as_live(self.id, count_as_live=count_as_live)
 
     def update_status(self, live):
         return service_api_client.update_status(self.id, live=live)
@@ -103,9 +62,6 @@ class Service(JSONModel):
 
     def update_permissions(self, permissions):
         return self.update(permissions=list(permissions))
-
-    def toggle_research_mode(self):
-        self.update(research_mode=not self.research_mode)
 
     @property
     def trial_mode(self):
@@ -195,194 +151,8 @@ class Service(JSONModel):
     def has_folders(self):
         return bool(self.all_template_folders)
 
-    @property
-    def has_multiple_template_types(self):
-        return len({template["template_type"] for template in self.all_templates}) > 1
-
-    @property
-    def has_estimated_usage(self):
-        return self.consent_to_research is not None and any(
-            (
-                self.volume_email,
-                self.volume_sms,
-                self.volume_letter,
-            )
-        )
-
     def has_templates_of_type(self, template_type):
         return any(template for template in self.all_templates if template["template_type"] == template_type)
-
-    @property
-    def has_email_templates(self):
-        return self.has_templates_of_type("email")
-
-    @property
-    def has_sms_templates(self):
-        return self.has_templates_of_type("sms")
-
-    @property
-    def intending_to_send_email(self):
-        if self.volume_email is None:
-            return self.has_email_templates
-        return self.volume_email > 0
-
-    @property
-    def intending_to_send_sms(self):
-        if self.volume_sms is None:
-            return self.has_sms_templates
-        return self.volume_sms > 0
-
-    @cached_property
-    def email_reply_to_addresses(self):
-        return service_api_client.get_reply_to_email_addresses(self.id)
-
-    @property
-    def has_email_reply_to_address(self):
-        return bool(self.email_reply_to_addresses)
-
-    @property
-    def count_email_reply_to_addresses(self):
-        return len(self.email_reply_to_addresses)
-
-    @property
-    def default_email_reply_to_address(self):
-        return next((x["email_address"] for x in self.email_reply_to_addresses if x["is_default"]), None)
-
-    def get_email_reply_to_address(self, id):
-        return service_api_client.get_reply_to_email_address(self.id, id)
-
-    @property
-    def needs_to_add_email_reply_to_address(self):
-        return self.intending_to_send_email and not self.has_email_reply_to_address
-
-    @property
-    def shouldnt_use_govuk_as_sms_sender(self):
-        return self.organisation_type != Organisation.TYPE_CENTRAL
-
-    @cached_property
-    def sms_senders(self):
-        return service_api_client.get_sms_senders(self.id)
-
-    @property
-    def sms_senders_with_hints(self):
-        def attach_hint(sender):
-            hints = []
-            if sender["is_default"]:
-                hints += ["default"]
-            if hints:
-                sender["hint"] = "(" + " and ".join(hints) + ")"
-            return sender
-
-        return [attach_hint(sender) for sender in self.sms_senders]
-
-    @property
-    def count_sms_senders(self):
-        return len(self.sms_senders)
-
-    @property
-    def sms_sender_is_govuk(self):
-        return self.default_sms_sender in {"GOVUK", "None"}
-
-    def get_sms_sender(self, id):
-        return service_api_client.get_sms_sender(self.id, id)
-
-    @property
-    def needs_to_change_sms_sender(self):
-        return all(
-            (
-                self.intending_to_send_sms,
-                self.shouldnt_use_govuk_as_sms_sender,
-                self.sms_sender_is_govuk,
-            )
-        )
-
-    @cached_property
-    def letter_contact_details(self):
-        return service_api_client.get_letter_contacts(self.id)
-
-    @property
-    def count_letter_contact_details(self):
-        return len(self.letter_contact_details)
-
-    @property
-    def default_letter_contact_block(self):
-        return next(
-            (
-                letter_contact_block
-                for letter_contact_block in self.letter_contact_details
-                if letter_contact_block["is_default"]
-            ),
-            None,
-        )
-
-    @property
-    def default_letter_contact_block_html(self):
-        # import in the function to prevent cyclical imports
-        from app import nl2br
-
-        if self.default_letter_contact_block:
-            return nl2br(self.default_letter_contact_block["contact_block"])
-        return ""
-
-    def edit_letter_contact_block(self, id, contact_block, is_default):
-        service_api_client.update_letter_contact(
-            self.id,
-            letter_contact_id=id,
-            contact_block=contact_block,
-            is_default=is_default,
-        )
-
-    def remove_default_letter_contact_block(self):
-        if self.default_letter_contact_block:
-            self.edit_letter_contact_block(
-                self.default_letter_contact_block["id"],
-                self.default_letter_contact_block["contact_block"],
-                is_default=False,
-            )
-
-    def get_letter_contact_block(self, id):
-        return service_api_client.get_letter_contact(self.id, id)
-
-    @property
-    def volumes(self):
-        return sum(
-            filter(
-                None,
-                (
-                    self.volume_email,
-                    self.volume_sms,
-                    self.volume_letter,
-                ),
-            )
-        )
-
-    @property
-    def go_live_checklist_completed(self):
-        return all(
-            (
-                bool(self.volumes),
-                self.has_team_members,
-                self.has_templates,
-                not self.needs_to_add_email_reply_to_address,
-                not self.needs_to_change_sms_sender,
-            )
-        )
-
-    @property
-    def go_live_checklist_completed_as_yes_no(self):
-        return "Yes" if self.go_live_checklist_completed else "No"
-
-    @cached_property
-    def data_retention(self):
-        return service_api_client.get_service_data_retention(self.id)
-
-    def get_data_retention_item(self, id):
-        return next((dr for dr in self.data_retention if dr["id"] == id), None)
-
-    def get_days_of_retention(self, notification_type):
-        return next((dr for dr in self.data_retention if dr["notification_type"] == notification_type), {}).get(
-            "days_of_retention", current_app.config["ACTIVITY_STATS_LIMIT_DAYS"]
-        )
 
     @cached_property
     def organisation(self):

@@ -1,19 +1,14 @@
-from emergency_alerts_utils.clients.redis import RequestCache
 from flask import abort, has_request_context, request
 from flask_login import current_user
 from notifications_python_client import __version__
 from notifications_python_client.base import BaseAPIClient
-
-from app.extensions import redis_client
-
-cache = RequestCache(redis_client)
 
 
 def _attach_current_user(data):
     return dict(created_by=current_user.id, **data)
 
 
-class NotifyAdminAPIClient(BaseAPIClient):
+class AdminAPIClient(BaseAPIClient):
     def __init__(self):
         super().__init__("a" * 73, "b")
 

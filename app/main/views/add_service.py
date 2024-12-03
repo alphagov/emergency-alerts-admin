@@ -1,24 +1,21 @@
-from flask import abort, current_app, redirect, render_template, session, url_for
+from flask import abort, redirect, render_template, session, url_for
 from flask_login import current_user
 from notifications_python_client.errors import HTTPError
 
 from app import service_api_client
-from app.formatters import email_safe
 from app.main import main
 from app.main.forms import CreateServiceForm
 from app.models.service import Service
 from app.utils.user import user_is_gov_user, user_is_logged_in
 
 
-def _create_service(service_name, organisation_type, email_from, form):
+def _create_service(service_name, organisation_type, form):
     try:
         service_id = service_api_client.create_service(
             service_name=service_name,
             organisation_type=organisation_type,
-            message_limit=current_app.config["DEFAULT_SERVICE_LIMIT"],
             restricted=True,
             user_id=session["user_id"],
-            email_from=email_from,
         )
         session["service_id"] = service_id
 
@@ -43,13 +40,11 @@ def add_service():
 
     if current_user.platform_admin:
         if form.validate_on_submit():
-            email_from = email_safe(form.name.data)
             service_name = form.name.data
 
             service_id, error = _create_service(
                 service_name,
                 default_organisation_type or form.organisation_type.data,
-                email_from,
                 form,
             )
             if error:
