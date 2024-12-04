@@ -136,6 +136,7 @@ EXCLUDED_ENDPOINTS = tuple(
             "support_public",
             "terms",
             "thanks",
+            "training_mode",
             "triage",
             "trial_services",
             "two_factor_sms",

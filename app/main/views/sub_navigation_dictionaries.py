@@ -8,4 +8,8 @@ def features_nav():
             "name": "Terms of use",
             "link": "main.terms",
         },
+        {
+            "name": "Training Mode",
+            "link": "main.training_mode",
+        },
     ]
