@@ -3215,7 +3215,7 @@ def test_start_broadcasting(
                 "cancelled_at": "2020-02-21T21:21:21.000000",
                 "created_by": "Alice",
                 "approved_by": "Bob",
-                "cancelled_by_id": sample_uuid,
+                "cancelled_by_id": None,
             },
             [
                 "Sent on 20 February at 8:20pm.",
@@ -3458,18 +3458,14 @@ def test_view_pending_broadcast(
     )
     assert not page.select(".banner input[type=checkbox]")
 
-    form = page.select_one("form.banner")
-    assert form["method"] == "post"
-    assert "action" not in form
-    assert form.select_one("button")
+    approval_form = page.select_one("form#approve")
+    assert approval_form["method"] == "post"
+    assert "action" not in approval_form
+    assert approval_form.select_one("button")
 
-    link = form.select_one("a.govuk-link.govuk-link--destructive")
-    assert link.text == "Reject this alert"
-    assert link["href"] == url_for(
-        ".reject_broadcast_message",
-        service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
-    )
+    rejection_form = page.select_one("form#reject")
+    button = rejection_form.select_one("button.govuk-button.govuk-button--warning")
+    assert normalize_spaces(button.text) == "Reject alert"
 
 
 @pytest.mark.parametrize(
@@ -3630,12 +3626,15 @@ def test_checkbox_to_confirm_non_training_broadcasts(
         _test_page_title=False,
     )
 
-    label = page.select_one("form.banner label")
-
+    label = page.select_one("form#approve label")
     assert label["for"] == "confirm"
-    assert (normalize_spaces(page.select_one("form.banner label").text)) == expected_label_text
-    assert page.select_one("form.banner input[type=checkbox]")["name"] == "confirm"
-    assert page.select_one("form.banner input[type=checkbox]")["value"] == "y"
+    assert (normalize_spaces(label.text)) == expected_label_text
+    assert page.select_one("form#approve input[type=checkbox]")["name"] == "confirm"
+    assert page.select_one("form#approve input[type=checkbox]")["value"] == "y"
+
+    rejection_form = page.select_one("form#reject")
+    button = rejection_form.select_one("button.govuk-button.govuk-button--warning")
+    assert normalize_spaces(button.text) == "Reject alert"
 
 
 def test_confirm_approve_non_training_broadcasts_errors_if_not_ticked(
@@ -3670,7 +3669,7 @@ def test_confirm_approve_non_training_broadcasts_errors_if_not_ticked(
         _data={},
         _expected_status=200,
     )
-    error_message = page.select_one("form.banner .govuk-error-message")
+    error_message = page.select_one("form#approve .govuk-error-message")
     assert error_message
     assert error_message["id"] == "confirm-error"
     assert normalize_spaces(error_message.text) == "Error: You need to confirm that you understand"
