@@ -31,10 +31,10 @@ class BroadcastMessageAPIClient(AdminAPIClient):
         return broadcast_message
 
     def get_broadcast_messages(self, service_id):
-        return self.get(f"/service/{service_id}/broadcast-message")["broadcast_messages"]
+        return self.get(f"/service/{service_id}/broadcast-message/messages")["broadcast_messages"]
 
     def get_broadcast_message(self, *, service_id, broadcast_message_id):
-        return self.get(f"/service/{service_id}/broadcast-message/{broadcast_message_id}")
+        return self.get(f"/service/{service_id}/broadcast-message/message={broadcast_message_id}")
 
     def update_broadcast_message(self, *, service_id, broadcast_message_id, data):
         self.post(
@@ -42,10 +42,11 @@ class BroadcastMessageAPIClient(AdminAPIClient):
             data=data,
         )
 
-    def update_broadcast_message_status(self, status, *, service_id, broadcast_message_id):
+    def update_broadcast_message_status(self, status, *, service_id, broadcast_message_id, rejection_reason=None):
         data = _attach_current_user(
             {
                 "status": status,
+                **({"rejection_reason": rejection_reason} if rejection_reason else {}),
             }
         )
         self.post(
