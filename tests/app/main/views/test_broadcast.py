@@ -4168,6 +4168,56 @@ def test_reject_broadcast(
 
 @pytest.mark.parametrize(
     "user",
+    (
+        create_active_user_create_broadcasts_permissions(),
+        create_active_user_approve_broadcasts_permissions(),
+    ),
+)
+@freeze_time("2020-02-22T22:22:22.000000")
+def test_reject_broadcast_with_reason(
+    mocker,
+    client_request,
+    service_one,
+    fake_uuid,
+    mock_update_broadcast_message,
+    mock_update_broadcast_message_status,
+    user,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            finishes_at="2020-02-23T23:23:23.000000",
+            status="pending-approval",
+        ),
+    )
+    service_one["permissions"] += ["broadcast"]
+
+    client_request.login(user)
+    client_request.post(
+        ".reject_broadcast_message",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        _expected_redirect=url_for(
+            ".broadcast_dashboard",
+            service_id=SERVICE_ONE_ID,
+        ),
+        _data={"rejection_reason": "TEST"},
+    )
+
+    assert mock_update_broadcast_message.called is False
+    assert mock_update_broadcast_message_status.called
+
+    mock_update_broadcast_message_status.assert_called_once_with(
+        "rejected", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid, rejection_reason="TEST"
+    )
+
+
+@pytest.mark.parametrize(
+    "user",
     [
         create_active_user_create_broadcasts_permissions(),
         create_active_user_approve_broadcasts_permissions(),
