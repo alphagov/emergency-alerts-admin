@@ -52,7 +52,7 @@ def test_should_show_api_keys_page(
         (
             True,
             [
-                ("Live – sends to anyone", "Not available because your service is in trial mode"),
+                ("Live – sends to anyone", "Not available because your service is in training mode"),
                 "Team and guest list – limits who you can send to",
                 "Test – pretends to send messages",
             ],
