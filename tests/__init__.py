@@ -453,5 +453,5 @@ def broadcast_message_json(
         "created_by": created_by,
         "approved_by": approved_by,
         "rejected_by": rejected_by,
-        "cancelled_by": cancelled_by,
+        "cancelled_by": cancelled_by or "an API call",
     }
