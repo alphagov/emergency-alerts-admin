@@ -3776,7 +3776,7 @@ def test_cant_approve_own_broadcast_if_service_is_live(
     link = page.select_one(".banner a.govuk-link.govuk-link--destructive")
     assert link.text == "Discard this alert"
     assert link["href"] == url_for(
-        ".reject_broadcast_message",
+        ".discard_broadcast_message",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
     )
@@ -3967,7 +3967,7 @@ def test_user_without_approve_permission_cant_approve_broadcast_they_created(
     link = page.select_one("a.govuk-link.govuk-link--destructive")
     assert link.text == "Discard this alert"
     assert link["href"] == url_for(
-        ".reject_broadcast_message",
+        ".discard_broadcast_message",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
     )
@@ -4120,19 +4120,16 @@ def test_confirm_approve_broadcast(
 
 @pytest.mark.parametrize(
     "user",
-    (
-        create_active_user_create_broadcasts_permissions(),
-        create_active_user_approve_broadcasts_permissions(),
-    ),
+    (create_active_user_approve_broadcasts_permissions(),),
 )
 @freeze_time("2020-02-22T22:22:22.000000")
-def test_reject_broadcast(
+def test_reject_broadcast_displays_error_when_no_reason_provided(
     mocker,
     client_request,
     service_one,
     fake_uuid,
     mock_update_broadcast_message,
-    mock_update_broadcast_message_status,
+    mock_update_broadcast_message_status_with_reason,
     user,
 ):
     mocker.patch(
@@ -4149,21 +4146,61 @@ def test_reject_broadcast(
     service_one["permissions"] += ["broadcast"]
 
     client_request.login(user)
-    client_request.get(
+    page = client_request.post(
         ".reject_broadcast_message",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
-        _expected_redirect=url_for(
-            ".broadcast_dashboard",
+        _expected_status=200,
+        _data={"rejection_reason": ""},
+    )
+
+    assert normalize_spaces(page.select_one(".govuk-error-message").text) == "Error: Enter rejection reason"
+
+    assert mock_update_broadcast_message.called is False
+    assert mock_update_broadcast_message_status_with_reason.called is False
+
+
+@pytest.mark.parametrize(
+    "user",
+    (create_active_user_create_broadcasts_permissions(),),
+)
+@freeze_time("2020-02-22T22:22:22.000000")
+def test_discard_broadcast(
+    mocker,
+    client_request,
+    service_one,
+    fake_uuid,
+    mock_update_broadcast_message,
+    mock_update_broadcast_message_status_with_reason,
+    user,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
             service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            finishes_at="2020-02-23T23:23:23.000000",
+            status="pending-approval",
         ),
+    )
+    service_one["permissions"] += ["broadcast"]
+
+    client_request.login(user)
+    page = client_request.post(
+        ".reject_broadcast_message", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid, _expected_status=200
+    )
+    link = page.select_one(".banner a.govuk-link.govuk-link--destructive")
+    assert link.text == "Discard this alert"
+    assert link["href"] == url_for(
+        ".discard_broadcast_message",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
     )
 
     assert mock_update_broadcast_message.called is False
-
-    mock_update_broadcast_message_status.assert_called_once_with(
-        "rejected", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid, rejection_reason=None
-    )
+    assert mock_update_broadcast_message_status_with_reason.called is False
 
 
 @pytest.mark.parametrize(
@@ -4180,7 +4217,7 @@ def test_reject_broadcast_with_reason(
     service_one,
     fake_uuid,
     mock_update_broadcast_message,
-    mock_update_broadcast_message_status,
+    mock_update_broadcast_message_status_with_reason,
     user,
 ):
     mocker.patch(
@@ -4209,9 +4246,9 @@ def test_reject_broadcast_with_reason(
     )
 
     assert mock_update_broadcast_message.called is False
-    assert mock_update_broadcast_message_status.called
+    assert mock_update_broadcast_message_status_with_reason.called
 
-    mock_update_broadcast_message_status.assert_called_once_with(
+    mock_update_broadcast_message_status_with_reason.assert_called_once_with(
         "rejected", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid, rejection_reason="TEST"
     )
 

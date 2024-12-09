@@ -56,6 +56,7 @@ EXCLUDED_ENDPOINTS = tuple(
             "copy_template",
             "count_content_length",
             "create_api_key",
+            "discard_broadcast_message",
             "delete_service_template",
             "delete_template_folder",
             "edit_organisation_crown_status",

@@ -2338,11 +2338,25 @@ def mock_update_broadcast_message_status(
     mocker,
     fake_uuid,
 ):
-    def _update(status, *, service_id, broadcast_message_id, rejection_reason=None):
+    def _update(status, *, service_id, broadcast_message_id):
         pass
 
     return mocker.patch(
         "app.broadcast_message_api_client.update_broadcast_message_status",
+        side_effect=_update,
+    )
+
+
+@pytest.fixture(scope="function")
+def mock_update_broadcast_message_status_with_reason(
+    mocker,
+    fake_uuid,
+):
+    def _update(status, *, service_id, broadcast_message_id, rejection_reason):
+        pass
+
+    return mocker.patch(
+        "app.broadcast_message_api_client.update_broadcast_message_status_with_reason",
         side_effect=_update,
     )
 
