@@ -390,7 +390,7 @@ class BroadcastMessage(JSONModel):
         self._set_status_to("rejected")
 
     def reject_broadcast_with_reason(self, rejection_reason):
-        broadcast_message_api_client.update_broadcast_message_status(
+        broadcast_message_api_client.update_broadcast_message_status_with_reason(
             "rejected", broadcast_message_id=self.id, service_id=self.service_id, rejection_reason=rejection_reason
         )
 
