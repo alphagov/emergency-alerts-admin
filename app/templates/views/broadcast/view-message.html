@@ -63,7 +63,7 @@
             You need another member of your team to approve your alert.
           </p>
           {{ page_footer(
-            delete_link=url_for('main.reject_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
+            delete_link=url_for('main.discard_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
             delete_link_text='Discard this alert'
           ) }}
         {% elif current_user.has_permissions('approve_broadcasts', restrict_admin_usage=True) %}
@@ -122,7 +122,7 @@
             This service is in training mode. No real alerts will be sent.
           </p>
           {{ page_footer(
-            delete_link=url_for('main.reject_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
+            delete_link=url_for('main.discard_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
             delete_link_text='Discard this alert'
           ) }}
         {% endif %}
