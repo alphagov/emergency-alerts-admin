@@ -110,7 +110,8 @@
             {{ govukDetails({
               "classes": "govuk-!-margin-bottom-0",
               "summaryText": "Reject this alert",
-              "html": rejection_reason_details
+              "html": rejection_reason_details,
+              "open": rejection_form.rejection_reason.errors | convert_to_boolean
             }) }}
           </div>
         {% elif current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) %}
@@ -169,7 +170,8 @@
           {{ govukDetails({
             "classes": "govuk-!-margin-bottom-0",
             "summaryText": "Reject this alert",
-            "html": rejection_reason_details
+            "html": rejection_reason_details,
+            "open": rejection_form.rejection_reason.errors | convert_to_boolean
           }) }}
         </div>
       </div>
