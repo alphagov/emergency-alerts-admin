@@ -90,7 +90,7 @@
 
           {% set rejection_reason_details %}
             <div class="govuk-!-margin-top-3">
-              <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for rejecting alert</h1>
+              <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for rejecting the alert</h1>
               {% call form_wrapper(id='reject', action=url_for('main.reject_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
                 {{ rejection_form.rejection_reason }}
                 {{ page_footer(
@@ -111,7 +111,8 @@
               "classes": "govuk-!-margin-bottom-0",
               "summaryText": "Reject this alert",
               "html": rejection_reason_details,
-              "open": rejection_form.rejection_reason.errors | convert_to_boolean
+              "open": rejection_form.rejection_reason.errors | convert_to_boolean,
+              "id": "rejection_reason_details"
             }) }}
           </div>
         {% elif current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) %}
@@ -156,7 +157,7 @@
         {% endcall %}
         {% set rejection_reason_details %}
           <div class="govuk-!-margin-top-3">
-            <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for rejecting alert</h1>
+            <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for rejecting the alert</h1>
             {% call form_wrapper(id='reject',action=url_for('main.reject_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
               {{ rejection_form.rejection_reason }}
               {{ page_footer(
@@ -171,7 +172,8 @@
             "classes": "govuk-!-margin-bottom-0",
             "summaryText": "Reject this alert",
             "html": rejection_reason_details,
-            "open": rejection_form.rejection_reason.errors | convert_to_boolean
+            "open": rejection_form.rejection_reason.errors | convert_to_boolean,
+            "id": "rejection_reason_details"
           }) }}
         </div>
       </div>

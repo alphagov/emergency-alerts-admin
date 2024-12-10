@@ -1951,9 +1951,9 @@ class ChooseCoordinateTypeForm(StripWhitespaceForm):
 
 class RejectionReasonForm(StripWhitespaceForm):
     hint = """ Detailed reason for why the alert was rejected, including how it may be reworked.
-        For example, "Alert message has spelling mistakes"."""
+        For example, "The alert message has spelling mistakes"."""
 
     rejection_reason = GovukTextareaField(
-        validators=[DataRequired(message="Enter rejection reason")],
+        validators=[DataRequired(message="Enter the reason for rejecting the alert")],
         param_extensions={"hint": {"text": hint}, "rows": 3},
     )

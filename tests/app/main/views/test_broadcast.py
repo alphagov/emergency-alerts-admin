@@ -3451,9 +3451,9 @@ def test_view_pending_broadcast(
         "No phones will get this alert. "
         "Start broadcasting now "
         "Reject this alert "
-        "Give a reason for rejecting alert "
+        "Give a reason for rejecting the alert "
         "Detailed reason for why the alert was rejected, including how it may be reworked. "
-        'For example, "Alert message has spelling mistakes". '
+        'For example, "The alert message has spelling mistakes". '
         "Reject alert"
     )
     assert not page.select(".banner input[type=checkbox]")
@@ -3478,9 +3478,9 @@ def test_view_pending_broadcast(
                 "No phones will get this alert. "
                 "Start broadcasting now "
                 "Reject this alert "
-                "Give a reason for rejecting alert "
+                "Give a reason for rejecting the alert "
                 "Detailed reason for why the alert was rejected, including how it may be reworked. "
-                'For example, "Alert message has spelling mistakes". '
+                'For example, "The alert message has spelling mistakes". '
                 "Reject alert"
             ),
         ),
@@ -3491,9 +3491,9 @@ def test_view_pending_broadcast(
                 "No phones will get this alert. "
                 "Start broadcasting now "
                 "Reject this alert "
-                "Give a reason for rejecting alert "
+                "Give a reason for rejecting the alert "
                 "Detailed reason for why the alert was rejected, including how it may be reworked. "
-                'For example, "Alert message has spelling mistakes". '
+                'For example, "The alert message has spelling mistakes". '
                 "Reject alert"
             ),
         ),
@@ -3577,9 +3577,9 @@ def test_view_pending_broadcast_from_api_call(
         "No phones will get this alert. "
         "Start broadcasting now "
         "Reject this alert "
-        "Give a reason for rejecting alert "
+        "Give a reason for rejecting the alert "
         "Detailed reason for why the alert was rejected, including how it may be reworked. "
-        'For example, "Alert message has spelling mistakes". '
+        'For example, "The alert message has spelling mistakes". '
         "Reject alert"
     )
     assert (normalize_spaces(page.select_one(".broadcast-message-wrapper").text)) == "Emergency alert Uh-oh"
@@ -4154,7 +4154,10 @@ def test_reject_broadcast_displays_error_when_no_reason_provided(
         _data={"rejection_reason": ""},
     )
 
-    assert normalize_spaces(page.select_one(".govuk-error-message").text) == "Error: Enter rejection reason"
+    assert (
+        normalize_spaces(page.select_one(".govuk-error-message").text)
+        == "Error: Enter the reason for rejecting the alert"
+    )
 
     assert mock_update_broadcast_message.called is False
     assert mock_update_broadcast_message_status_with_reason.called is False

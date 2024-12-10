@@ -875,7 +875,7 @@ def reject_broadcast_message(service_id, broadcast_message_id):
         )
     except HTTPError as e:
         if e.status_code == 400:
-            form.rejection_reason.errors = ["Enter rejection reason."]
+            form.rejection_reason.errors = ["Enter the reason for rejecting the alert."]
         return render_template(
             "views/broadcast/view-message.html",
             broadcast_message=broadcast_message,
