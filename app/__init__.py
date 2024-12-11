@@ -68,7 +68,6 @@ from app.formatters import (
     redact_mobile_number,
     round_to_significant_figures,
     square_metres_to_square_miles,
-    valid_phone_number,
 )
 from app.models.organisation import Organisation
 from app.models.service import Service
@@ -472,7 +471,6 @@ def add_template_filters(application):
         format_datetime_normal,
         format_datetime_short,
         format_time,
-        valid_phone_number,
         linkable_name,
         format_date,
         format_date_human,
