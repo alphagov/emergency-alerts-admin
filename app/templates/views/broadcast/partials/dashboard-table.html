@@ -77,7 +77,11 @@
         <div class="govuk-!-margin-bottom-2">
           <p class="govuk-!-margin-right-1 dashboard-table govuk-!-font-weight-bold">Created by: </p>
           <p class="govuk-body dashboard-table">
-            {{item.created_by}}
+            {% if item.created_by %}
+              {{item.created_by}}.
+            {% else %}
+              an API call.
+            {% endif %}
           </p>
         </div>
         <div>
