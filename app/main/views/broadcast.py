@@ -858,6 +858,11 @@ def reject_broadcast_message(service_id, broadcast_message_id):
             "views/broadcast/view-message.html",
             broadcast_message=broadcast_message,
             rejection_form=form,
+            form=ConfirmBroadcastForm(
+                service_is_live=current_service.live,
+                channel=current_service.broadcast_channel,
+                max_phones=broadcast_message.count_of_phones_likely,
+            ),
             is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
             areas=format_areas_list(broadcast_message.areas),
             back_link=url_for(
@@ -880,6 +885,11 @@ def reject_broadcast_message(service_id, broadcast_message_id):
             "views/broadcast/view-message.html",
             broadcast_message=broadcast_message,
             rejection_form=form,
+            form=ConfirmBroadcastForm(
+                service_is_live=current_service.live,
+                channel=current_service.broadcast_channel,
+                max_phones=broadcast_message.count_of_phones_likely,
+            ),
             is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
             areas=format_areas_list(broadcast_message.areas),
             back_link=url_for(
@@ -955,6 +965,11 @@ def cancel_broadcast_message(service_id, broadcast_message_id):
         broadcast_message=broadcast_message,
         hide_stop_link=True,
         rejection_form=RejectionReasonForm(),
+        form=ConfirmBroadcastForm(
+            service_is_live=current_service.live,
+            channel=current_service.broadcast_channel,
+            max_phones=broadcast_message.count_of_phones_likely,
+        ),
         is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
         areas=format_areas_list(broadcast_message.areas),
     )
