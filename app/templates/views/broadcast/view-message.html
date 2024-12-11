@@ -223,7 +223,7 @@
       </p>
       {% if broadcast_message.rejection_reason %}
         <div class="govuk-!-margin-bottom-4">
-          <p class="govuk-!-margin-right-2 govuk-heading-m">Reason: </p>
+          <p class="govuk-!-margin-right-2 govuk-heading-m govuk-!-margin-bottom-1">Reason </p>
           {{broadcast_message.rejection_reason}}
         </div>
       {% endif %}
@@ -281,7 +281,11 @@
     </p>
   {% elif broadcast_message.status == 'cancelled' %}
     <p class="govuk-body">
-      Stopped by {{ broadcast_message.cancelled_by }}
+      {% if broadcast_message.cancelled_by_id %}
+        Stopped by {{ broadcast_message.cancelled_by }}
+      {%- else %}
+        Stopped by an API call
+      {%- endif %}
       {{ broadcast_message.cancelled_at|format_datetime_human }}.
     </p>
   {% elif broadcast_message.status == 'completed' %}
