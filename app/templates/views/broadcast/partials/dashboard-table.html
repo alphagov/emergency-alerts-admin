@@ -59,7 +59,11 @@
           <p class="govuk-body dashboard-table">
             Rejected
             {{ item.updated_at|format_datetime_human }}
-            by {{item.rejected_by}}.
+            {% if item.rejected_by_id %}
+              by {{item.rejected_by}}.
+            {% else %}
+              by an API call.
+            {% endif %}
           </p>
         </div>
         {% if item.rejection_reason %}

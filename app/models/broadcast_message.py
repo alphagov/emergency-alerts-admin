@@ -207,10 +207,6 @@ class BroadcastMessage(JSONModel):
         return self._dict["status"]
 
     @cached_property
-    def cancelled_by(self):
-        return self.cancelled_by if self.cancelled_by_id else "an API call"
-
-    @cached_property
     def count_of_phones(self):
         return round_to_significant_figures(sum(area.count_of_phones for area in self.areas), 1)
 
