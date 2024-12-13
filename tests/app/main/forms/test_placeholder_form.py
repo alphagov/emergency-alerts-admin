@@ -16,26 +16,19 @@ def test_form_class_not_mutated(notify_admin):
 
 
 @pytest.mark.parametrize(
-    "service_can_send_international_sms, placeholder_name, template_type, value, expected_error",
+    "placeholder_name, template_type, value, expected_error",
     [
-        (False, "email address", "email", "", "Cannot be empty"),
-        (False, "email address", "email", "12345", "Enter a valid email address"),
-        (False, "email address", "email", "“bad”@email-address.com", "Enter a valid email address"),
-        (False, "email address", "email", "test@example.com", None),
-        (False, "email address", "email", "test@example.gov.uk", None),
-        (False, "phone number", "sms", "", "Cannot be empty"),
-        (False, "phone number", "sms", "+1-2345-678890", "Not a UK mobile number"),
-        (False, "phone number", "sms", "07900900123", None),
-        (False, "phone number", "sms", "+44(0)7900 900-123", None),
-        (True, "phone number", "sms", "+123", "Not enough digits"),
-        (True, "phone number", "sms", "+44(0)7900 900-123", None),
-        (True, "phone number", "sms", "+1-2345-678890", None),
-        (False, "anything else", "sms", "", "Cannot be empty"),
-        (False, "anything else", "email", "", "Cannot be empty"),
-        (True, "phone number", "sms", "invalid", "Must not contain letters or symbols"),
-        (True, "phone number", "email", "invalid", None),
-        (True, "phone number", "letter", "invalid", None),
-        (True, "email address", "sms", "invalid", None),
+        ("email address", "email", "", "Cannot be empty"),
+        ("email address", "email", "12345", "Enter a valid email address"),
+        ("email address", "email", "“bad”@email-address.com", "Enter a valid email address"),
+        ("email address", "email", "test@example.com", None),
+        ("email address", "email", "test@example.gov.uk", None),
+        ("phone number", "sms", "", "Cannot be empty"),
+        ("phone number", "sms", "+1-2345-678890", "Not a UK mobile number"),
+        ("phone number", "sms", "07900900123", None),
+        ("phone number", "sms", "+44(0)7900 900-123", None),
+        ("anything else", "sms", "", "Cannot be empty"),
+        ("anything else", "email", "", "Cannot be empty"),
     ],
 )
 def test_validates_recipients(
@@ -43,7 +36,6 @@ def test_validates_recipients(
     placeholder_name,
     template_type,
     value,
-    service_can_send_international_sms,
     expected_error,
 ):
     with notify_admin.test_request_context(method="POST", data={"placeholder_value": value}):
@@ -51,7 +43,6 @@ def test_validates_recipients(
             placeholder_name,
             {},
             template_type,
-            allow_international_phone_numbers=service_can_send_international_sms,
         )
 
         if expected_error:

@@ -79,7 +79,7 @@ def test_should_render_correct_resend_template_for_pending_user(
     "phone_number_to_register_with",
     [
         "+447700900460",
-        "+1800-555-555",
+        "07700900461",
     ],
 )
 def test_should_resend_verify_code_and_update_mobile_for_pending_user(

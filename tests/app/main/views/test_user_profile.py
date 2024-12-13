@@ -257,7 +257,7 @@ def test_delete_mobile_number(client_request, api_user_active_email_auth, mocker
     "phone_number_to_register_with",
     [
         "+4407700900460",
-        "+1800-555-555",
+        "07700900460",
     ],
 )
 def test_should_redirect_after_mobile_number_change(
