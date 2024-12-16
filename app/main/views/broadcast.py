@@ -853,50 +853,34 @@ def reject_broadcast_message(service_id, broadcast_message_id):
     form = RejectionReasonForm()
     rejection_reason = form.rejection_reason.data
 
-    if not form.validate_on_submit():
-        return render_template(
-            "views/broadcast/view-message.html",
-            broadcast_message=broadcast_message,
-            rejection_form=form,
-            form=ConfirmBroadcastForm(
-                service_is_live=current_service.live,
-                channel=current_service.broadcast_channel,
-                max_phones=broadcast_message.count_of_phones_likely,
-            ),
-            is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
-            areas=format_areas_list(broadcast_message.areas),
-            back_link=url_for(
-                _get_back_link_from_view_broadcast_endpoint(),
-                service_id=current_service.id,
-            ),
-        )
-    try:
-        broadcast_message.reject_broadcast_with_reason(rejection_reason)
-        return redirect(
-            url_for(
-                ".broadcast_dashboard",
-                service_id=current_service.id,
+    if form.validate_on_submit():
+        try:
+            broadcast_message.reject_broadcast_with_reason(rejection_reason)
+            return redirect(
+                url_for(
+                    ".broadcast_dashboard",
+                    service_id=current_service.id,
+                )
             )
-        )
-    except HTTPError as e:
-        if e.status_code == 400:
-            form.rejection_reason.errors = ["Enter the reason for rejecting the alert."]
-        return render_template(
-            "views/broadcast/view-message.html",
-            broadcast_message=broadcast_message,
-            rejection_form=form,
-            form=ConfirmBroadcastForm(
-                service_is_live=current_service.live,
-                channel=current_service.broadcast_channel,
-                max_phones=broadcast_message.count_of_phones_likely,
-            ),
-            is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
-            areas=format_areas_list(broadcast_message.areas),
-            back_link=url_for(
-                _get_back_link_from_view_broadcast_endpoint(),
-                service_id=current_service.id,
-            ),
-        )
+        except HTTPError as e:
+            if e.status_code == 400:
+                form.rejection_reason.errors = ["Enter the reason for rejecting the alert."]
+    return render_template(
+        "views/broadcast/view-message.html",
+        broadcast_message=broadcast_message,
+        rejection_form=form,
+        form=ConfirmBroadcastForm(
+            service_is_live=current_service.live,
+            channel=current_service.broadcast_channel,
+            max_phones=broadcast_message.count_of_phones_likely,
+        ),
+        is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
+        areas=format_areas_list(broadcast_message.areas),
+        back_link=url_for(
+            _get_back_link_from_view_broadcast_endpoint(),
+            service_id=current_service.id,
+        ),
+    )
 
 
 @main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/discard", methods=["GET", "POST"])
