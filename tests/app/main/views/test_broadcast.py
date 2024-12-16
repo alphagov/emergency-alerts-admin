@@ -705,7 +705,7 @@ def test_rejected_broadcasts_page(
     assert normalize_spaces(page.select_one("main h1").text) == "Rejected alerts"
     assert len(page.select(".ajax-block-container")) == 1
     assert [normalize_spaces(row.text) for row in page.select(".ajax-block-container")[0].select(".file-list")] == [
-        "Example template This is a test Today at 1:20am Area: England Scotland",
+        "Example template rejected today at 1:20am This is a test",
     ]
 
 
@@ -3127,6 +3127,8 @@ def test_start_broadcasting(
             {
                 "status": "broadcasting",
                 "finishes_at": "2020-02-23T23:23:23.000000",
+                "created_by": "Alice",
+                "approved_by": "Bob",
             },
             [
                 "live since 20 February at 8:20pm Stop sending",
@@ -3137,10 +3139,7 @@ def test_start_broadcasting(
         (
             ".view_current_broadcast",
             True,
-            {
-                "status": "broadcasting",
-                "finishes_at": "2020-02-23T23:23:23.000000",
-            },
+            {"status": "broadcasting", "finishes_at": "2020-02-23T23:23:23.000000", "approved_by": "Alice"},
             [
                 "live since 20 February at 8:20pm Stop sending",
                 "Created from an API call and approved by Alice.",
@@ -3153,6 +3152,8 @@ def test_start_broadcasting(
             {
                 "status": "broadcasting",
                 "finishes_at": "2020-02-22T22:20:20.000000",  # 2 mins before now()
+                "created_by": "Alice",
+                "approved_by": "Bob",
             },
             [
                 "Sent on 20 February at 8:20pm.",
@@ -3166,6 +3167,7 @@ def test_start_broadcasting(
             {
                 "status": "broadcasting",
                 "finishes_at": "2020-02-22T22:20:20.000000",  # 2 mins before now()
+                "approved_by": "Alice",
             },
             [
                 "Sent on 20 February at 8:20pm.",
@@ -3179,6 +3181,8 @@ def test_start_broadcasting(
             {
                 "status": "completed",
                 "finishes_at": "2020-02-21T21:21:21.000000",
+                "created_by": "Alice",
+                "approved_by": "Bob",
             },
             [
                 "Sent on 20 February at 8:20pm.",
@@ -3193,6 +3197,9 @@ def test_start_broadcasting(
                 "status": "cancelled",
                 "cancelled_by_id": sample_uuid,
                 "cancelled_at": "2020-02-21T21:21:21.000000",
+                "created_by": "Alice",
+                "approved_by": "Bob",
+                "cancelled_by": "Carol",
             },
             [
                 "Sent on 20 February at 8:20pm.",
@@ -3205,25 +3212,15 @@ def test_start_broadcasting(
             False,
             {
                 "status": "cancelled",
-                "cancelled_by_id": None,
                 "cancelled_at": "2020-02-21T21:21:21.000000",
+                "created_by": "Alice",
+                "approved_by": "Bob",
+                "cancelled_by_id": None,
             },
             [
                 "Sent on 20 February at 8:20pm.",
                 "Created by Alice and approved by Bob.",
                 "Stopped by an API call yesterday at 9:21pm.",
-            ],
-        ),
-        (
-            ".view_rejected_broadcast",
-            False,
-            {
-                "status": "rejected",
-                "updated_at": "2020-02-21T21:21:21.000000",
-            },
-            [
-                "Rejected yesterday at 9:21pm.",
-                "Created by Alice and approved by Bob.",
             ],
         ),
     ),
@@ -3248,6 +3245,63 @@ def test_view_broadcast_message_page(
             template_id=fake_uuid,
             created_by_id=None if created_by_api else fake_uuid,
             approved_by_id=fake_uuid,
+            starts_at="2020-02-20T20:20:20.000000",
+            **extra_fields,
+        ),
+    )
+    service_one["permissions"] += ["broadcast"]
+
+    client_request.login(active_user_view_permissions)
+
+    page = client_request.get(
+        endpoint,
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+    )
+
+    assert [normalize_spaces(p.text) for p in page.select("main p.govuk-body")] == expected_paragraphs
+
+
+@pytest.mark.parametrize(
+    "endpoint, created_by_api, extra_fields, expected_paragraphs",
+    (
+        (
+            ".view_rejected_broadcast",
+            False,
+            {
+                "status": "rejected",
+                "updated_at": "2020-02-21T21:21:21.000000",
+            },
+            [
+                "Rejected yesterday at 9:21pm by Carol.",
+                "Created by Alice and approved by Bob.",
+            ],
+        ),
+    ),
+)
+@freeze_time("2020-02-22T22:22:22.000000")
+def test_view_rejected_broadcast_message_page(
+    mocker,
+    client_request,
+    service_one,
+    active_user_view_permissions,
+    fake_uuid,
+    endpoint,
+    created_by_api,
+    extra_fields,
+    expected_paragraphs,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=None if created_by_api else fake_uuid,
+            approved_by_id=fake_uuid,
+            created_by="Alice",
+            approved_by="Bob",
+            rejected_by="Carol",
             starts_at="2020-02-20T20:20:20.000000",
             **extra_fields,
         ),
@@ -3343,7 +3397,11 @@ def test_view_broadcast_message_shows_correct_highlighted_navigation(
 
     client_request.login(active_user_approve_broadcasts_permission)
     page = client_request.get(
-        endpoint, service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid, _follow_redirects=True
+        endpoint,
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        _follow_redirects=True,
+        _test_page_title=False,
     )
 
     assert normalize_spaces(page.select_one(".navigation .selected").text) == (expected_highlighted_navigation_item)
@@ -3369,6 +3427,7 @@ def test_view_pending_broadcast(
             service_id=SERVICE_ONE_ID,
             template_id=fake_uuid,
             created_by_id=broadcast_creator["id"],
+            created_by="Test User Create Broadcasts Permission",
             finishes_at=None,
             status="pending-approval",
         ),
@@ -3384,27 +3443,29 @@ def test_view_pending_broadcast(
         ".view_current_broadcast",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
+        _test_page_title=False,
     )
 
     assert (normalize_spaces(page.select_one(".banner").text)) == (
         "Test User Create Broadcasts Permission wants to broadcast Example template "
         "No phones will get this alert. "
-        "Start broadcasting now Reject this alert"
+        "Start broadcasting now "
+        "Reject this alert "
+        "Give a reason for rejecting the alert "
+        "Detailed reason for rejecting the alert, including how it may be reworked. "
+        'For example, "The alert message has spelling mistakes". '
+        "Reject alert"
     )
     assert not page.select(".banner input[type=checkbox]")
 
-    form = page.select_one("form.banner")
-    assert form["method"] == "post"
-    assert "action" not in form
-    assert form.select_one("button")
+    approval_form = page.select_one("form#approve")
+    assert approval_form["method"] == "post"
+    assert "action" not in approval_form
+    assert approval_form.select_one("button")
 
-    link = form.select_one("a.govuk-link.govuk-link--destructive")
-    assert link.text == "Reject this alert"
-    assert link["href"] == url_for(
-        ".reject_broadcast_message",
-        service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
-    )
+    rejection_form = page.select_one("form#reject")
+    button = rejection_form.select_one("button.govuk-button.govuk-button--warning")
+    assert normalize_spaces(button.text) == "Reject alert"
 
 
 @pytest.mark.parametrize(
@@ -3415,7 +3476,12 @@ def test_view_pending_broadcast(
             (
                 "Test User Create Broadcasts Permission wants to broadcast ABC123 "
                 "No phones will get this alert. "
-                "Start broadcasting now Reject this alert"
+                "Start broadcasting now "
+                "Reject this alert "
+                "Give a reason for rejecting the alert "
+                "Detailed reason for rejecting the alert, including how it may be reworked. "
+                'For example, "The alert message has spelling mistakes". '
+                "Reject alert"
             ),
         ),
         (
@@ -3423,7 +3489,12 @@ def test_view_pending_broadcast(
             (
                 "Test User Create Broadcasts Permission wants to broadcast Severe flood warning "
                 "No phones will get this alert. "
-                "Start broadcasting now Reject this alert"
+                "Start broadcasting now "
+                "Reject this alert "
+                "Give a reason for rejecting the alert "
+                "Detailed reason for rejecting the alert, including how it may be reworked. "
+                'For example, "The alert message has spelling mistakes". '
+                "Reject alert"
             ),
         ),
     ),
@@ -3445,6 +3516,7 @@ def test_view_pending_broadcast_without_template(
             service_id=SERVICE_ONE_ID,
             template_id=None,
             created_by_id=broadcast_creator["id"],
+            created_by="Test User Create Broadcasts Permission",
             finishes_at=None,
             status="pending-approval",
             content="Uh-oh",
@@ -3462,6 +3534,7 @@ def test_view_pending_broadcast_without_template(
         ".view_current_broadcast",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
+        _test_page_title=False,
     )
 
     assert (normalize_spaces(page.select_one(".banner").text)) == expected_banner_text
@@ -3496,12 +3569,18 @@ def test_view_pending_broadcast_from_api_call(
         ".view_current_broadcast",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
+        _test_page_title=False,
     )
 
     assert (normalize_spaces(page.select_one(".banner").text)) == (
         "An API call wants to broadcast abc123 "
         "No phones will get this alert. "
-        "Start broadcasting now Reject this alert"
+        "Start broadcasting now "
+        "Reject this alert "
+        "Give a reason for rejecting the alert "
+        "Detailed reason for rejecting the alert, including how it may be reworked. "
+        'For example, "The alert message has spelling mistakes". '
+        "Reject alert"
     )
     assert (normalize_spaces(page.select_one(".broadcast-message-wrapper").text)) == "Emergency alert Uh-oh"
 
@@ -3544,14 +3623,18 @@ def test_checkbox_to_confirm_non_training_broadcasts(
         ".view_current_broadcast",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
+        _test_page_title=False,
     )
 
-    label = page.select_one("form.banner label")
-
+    label = page.select_one("form#approve label")
     assert label["for"] == "confirm"
-    assert (normalize_spaces(page.select_one("form.banner label").text)) == expected_label_text
-    assert page.select_one("form.banner input[type=checkbox]")["name"] == "confirm"
-    assert page.select_one("form.banner input[type=checkbox]")["value"] == "y"
+    assert (normalize_spaces(label.text)) == expected_label_text
+    assert page.select_one("form#approve input[type=checkbox]")["name"] == "confirm"
+    assert page.select_one("form#approve input[type=checkbox]")["value"] == "y"
+
+    rejection_form = page.select_one("form#reject")
+    button = rejection_form.select_one("button.govuk-button.govuk-button--warning")
+    assert normalize_spaces(button.text) == "Reject alert"
 
 
 def test_confirm_approve_non_training_broadcasts_errors_if_not_ticked(
@@ -3563,7 +3646,7 @@ def test_confirm_approve_non_training_broadcasts_errors_if_not_ticked(
     mock_update_broadcast_message_status,
     active_user_approve_broadcasts_permission,
 ):
-    mocker.patch(
+    page = mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
         return_value=broadcast_message_json(
             id_=fake_uuid,
@@ -3586,8 +3669,8 @@ def test_confirm_approve_non_training_broadcasts_errors_if_not_ticked(
         _data={},
         _expected_status=200,
     )
-
-    error_message = page.select_one("form.banner .govuk-error-message")
+    error_message = page.select_one("form#approve .govuk-error-message")
+    assert error_message
     assert error_message["id"] == "confirm-error"
     assert normalize_spaces(error_message.text) == "Error: You need to confirm that you understand"
 
@@ -3621,6 +3704,7 @@ def test_can_approve_own_broadcast_in_training_mode(
         ".view_current_broadcast",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
+        _test_page_title=False,
     )
 
     assert (normalize_spaces(page.select_one(".banner h1").text)) == "Example template is waiting for approval"
@@ -3633,8 +3717,7 @@ def test_can_approve_own_broadcast_in_training_mode(
         "Because you’re in training mode you can approve your own "
         "alerts, to see how it works. "
         "No real alerts will be broadcast to anyone’s phone. "
-        "Start broadcasting now "
-        "Reject this alert"
+        "Start broadcasting now"
     )
 
     form = page.select_one(".banner details form")
@@ -3642,13 +3725,8 @@ def test_can_approve_own_broadcast_in_training_mode(
     assert "action" not in form
     assert normalize_spaces(form.select_one("button").text) == "Start broadcasting now"
 
-    link = page.select_one(".banner a.govuk-link.govuk-link--destructive")
-    assert link.text == "Reject this alert"
-    assert link["href"] == url_for(
-        ".reject_broadcast_message",
-        service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
-    )
+    button = page.select_one(".banner button.govuk-button.govuk-button--warning")
+    assert (normalize_spaces(button.text)) == "Reject alert"
 
 
 @freeze_time("2020-02-22T22:22:22.000000")
@@ -3676,6 +3754,7 @@ def test_cant_approve_own_broadcast_if_service_is_live(
             created_by_id=fake_uuid,
             finishes_at="2020-02-23T23:23:23.000000",
             status="pending-approval",
+            created_by="Test",
         ),
     )
     client_request.login(user)
@@ -3685,6 +3764,7 @@ def test_cant_approve_own_broadcast_if_service_is_live(
         ".view_current_broadcast",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
+        _test_page_title=False,
     )
 
     assert (normalize_spaces(page.select_one(".banner h1").text)) == "Example template is waiting for approval"
@@ -3696,7 +3776,7 @@ def test_cant_approve_own_broadcast_if_service_is_live(
     link = page.select_one(".banner a.govuk-link.govuk-link--destructive")
     assert link.text == "Discard this alert"
     assert link["href"] == url_for(
-        ".reject_broadcast_message",
+        ".discard_broadcast_message",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
     )
@@ -3732,6 +3812,7 @@ def test_view_only_user_cant_approve_broadcast_created_by_someone_else(
         ".view_current_broadcast",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
+        _test_page_title=False,
     )
 
     assert (normalize_spaces(page.select_one(".banner").text)) == (
@@ -3770,6 +3851,7 @@ def test_view_only_user_cant_approve_broadcasts_they_created(
         ".view_current_broadcast",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
+        _test_page_title=False,
     )
 
     assert (normalize_spaces(page.select_one(".banner").text)) == (
@@ -3835,6 +3917,7 @@ def test_user_without_approve_permission_cant_approve_broadcast_created_by_someo
         ".view_current_broadcast",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
+        _test_page_title=False,
     )
 
     assert (normalize_spaces(page.select_one(".banner").text)) == banner_text
@@ -3870,6 +3953,7 @@ def test_user_without_approve_permission_cant_approve_broadcast_they_created(
         ".view_current_broadcast",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
+        _test_page_title=False,
     )
 
     assert (normalize_spaces(page.select_one(".banner").text)) == (
@@ -3883,7 +3967,7 @@ def test_user_without_approve_permission_cant_approve_broadcast_they_created(
     link = page.select_one("a.govuk-link.govuk-link--destructive")
     assert link.text == "Discard this alert"
     assert link["href"] == url_for(
-        ".reject_broadcast_message",
+        ".discard_broadcast_message",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
     )
@@ -4036,19 +4120,16 @@ def test_confirm_approve_broadcast(
 
 @pytest.mark.parametrize(
     "user",
-    (
-        create_active_user_create_broadcasts_permissions(),
-        create_active_user_approve_broadcasts_permissions(),
-    ),
+    (create_active_user_approve_broadcasts_permissions(),),
 )
 @freeze_time("2020-02-22T22:22:22.000000")
-def test_reject_broadcast(
+def test_reject_broadcast_displays_error_when_no_reason_provided(
     mocker,
     client_request,
     service_one,
     fake_uuid,
     mock_update_broadcast_message,
-    mock_update_broadcast_message_status,
+    mock_update_broadcast_message_status_with_reason,
     user,
 ):
     mocker.patch(
@@ -4065,7 +4146,98 @@ def test_reject_broadcast(
     service_one["permissions"] += ["broadcast"]
 
     client_request.login(user)
-    client_request.get(
+    page = client_request.post(
+        ".reject_broadcast_message",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        _expected_status=200,
+        _data={"rejection_reason": ""},
+    )
+
+    assert (
+        normalize_spaces(page.select_one(".govuk-error-message").text)
+        == "Error: Enter the reason for rejecting the alert"
+    )
+
+    assert mock_update_broadcast_message.called is False
+    assert mock_update_broadcast_message_status_with_reason.called is False
+
+
+@pytest.mark.parametrize(
+    "user",
+    (create_active_user_create_broadcasts_permissions(),),
+)
+@freeze_time("2020-02-22T22:22:22.000000")
+def test_discard_broadcast(
+    mocker,
+    client_request,
+    service_one,
+    fake_uuid,
+    mock_update_broadcast_message,
+    mock_update_broadcast_message_status_with_reason,
+    user,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            finishes_at="2020-02-23T23:23:23.000000",
+            status="pending-approval",
+        ),
+    )
+    service_one["permissions"] += ["broadcast"]
+
+    client_request.login(user)
+    page = client_request.post(
+        ".reject_broadcast_message", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid, _expected_status=200
+    )
+    link = page.select_one(".banner a.govuk-link.govuk-link--destructive")
+    assert link.text == "Discard this alert"
+    assert link["href"] == url_for(
+        ".discard_broadcast_message",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+    )
+
+    assert mock_update_broadcast_message.called is False
+    assert mock_update_broadcast_message_status_with_reason.called is False
+
+
+@pytest.mark.parametrize(
+    "user",
+    (
+        create_active_user_create_broadcasts_permissions(),
+        create_active_user_approve_broadcasts_permissions(),
+    ),
+)
+@freeze_time("2020-02-22T22:22:22.000000")
+def test_reject_broadcast_with_reason(
+    mocker,
+    client_request,
+    service_one,
+    fake_uuid,
+    mock_update_broadcast_message,
+    mock_update_broadcast_message_status_with_reason,
+    user,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            finishes_at="2020-02-23T23:23:23.000000",
+            status="pending-approval",
+        ),
+    )
+    service_one["permissions"] += ["broadcast"]
+
+    client_request.login(user)
+    client_request.post(
         ".reject_broadcast_message",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
@@ -4073,14 +4245,14 @@ def test_reject_broadcast(
             ".broadcast_dashboard",
             service_id=SERVICE_ONE_ID,
         ),
+        _data={"rejection_reason": "TEST"},
     )
 
     assert mock_update_broadcast_message.called is False
+    assert mock_update_broadcast_message_status_with_reason.called
 
-    mock_update_broadcast_message_status.assert_called_once_with(
-        "rejected",
-        service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+    mock_update_broadcast_message_status_with_reason.assert_called_once_with(
+        "rejected", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid, rejection_reason="TEST"
     )
 
 

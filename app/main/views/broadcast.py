@@ -1,4 +1,5 @@
 from flask import abort, flash, jsonify, redirect, render_template, request, url_for
+from notifications_python_client.errors import HTTPError
 
 from app import current_service
 from app.broadcast_areas.models import CustomBroadcastAreas
@@ -11,6 +12,7 @@ from app.main.forms import (
     ConfirmBroadcastForm,
     NewBroadcastForm,
     PostcodeForm,
+    RejectionReasonForm,
     SearchByNameForm,
 )
 from app.models.broadcast_message import BroadcastMessage, BroadcastMessages
@@ -49,6 +51,7 @@ def _get_back_link_from_view_broadcast_endpoint():
         "main.view_previous_broadcast": ".broadcast_dashboard_previous",
         "main.view_rejected_broadcast": ".broadcast_dashboard_rejected",
         "main.approve_broadcast_message": ".broadcast_dashboard",
+        "main.reject_broadcast_message": ".broadcast_dashboard",
     }[request.endpoint]
 
 
@@ -765,6 +768,7 @@ def view_broadcast(service_id, broadcast_message_id):
             channel=current_service.broadcast_channel,
             max_phones=broadcast_message.count_of_phones_likely,
         ),
+        rejection_form=RejectionReasonForm(),
         is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
         areas=format_areas_list(broadcast_message.areas),
     )
@@ -814,6 +818,7 @@ def approve_broadcast_message(service_id, broadcast_message_id):
                 service_id=current_service.id,
             ),
             form=form,
+            rejection_form=RejectionReasonForm(),
             is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
             areas=format_areas_list(broadcast_message.areas),
         )
@@ -827,10 +832,61 @@ def approve_broadcast_message(service_id, broadcast_message_id):
     )
 
 
-@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/reject")
+@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/reject", methods=["GET", "POST"])
 @user_has_permissions("create_broadcasts", "approve_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
 def reject_broadcast_message(service_id, broadcast_message_id):
+    broadcast_message = BroadcastMessage.from_id(
+        broadcast_message_id,
+        service_id=current_service.id,
+    )
+
+    if broadcast_message.status != "pending-approval":
+        return redirect(
+            url_for(
+                ".view_current_broadcast",
+                service_id=current_service.id,
+                broadcast_message_id=broadcast_message.id,
+            )
+        )
+
+    form = RejectionReasonForm()
+    rejection_reason = form.rejection_reason.data
+
+    if form.validate_on_submit():
+        try:
+            broadcast_message.reject_broadcast_with_reason(rejection_reason)
+            return redirect(
+                url_for(
+                    ".broadcast_dashboard",
+                    service_id=current_service.id,
+                )
+            )
+        except HTTPError as e:
+            if e.status_code == 400:
+                form.rejection_reason.errors = ["Enter the reason for rejecting the alert."]
+    return render_template(
+        "views/broadcast/view-message.html",
+        broadcast_message=broadcast_message,
+        rejection_form=form,
+        form=ConfirmBroadcastForm(
+            service_is_live=current_service.live,
+            channel=current_service.broadcast_channel,
+            max_phones=broadcast_message.count_of_phones_likely,
+        ),
+        is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
+        areas=format_areas_list(broadcast_message.areas),
+        back_link=url_for(
+            _get_back_link_from_view_broadcast_endpoint(),
+            service_id=current_service.id,
+        ),
+    )
+
+
+@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/discard", methods=["GET", "POST"])
+@user_has_permissions("create_broadcasts", "approve_broadcasts", restrict_admin_usage=True)
+@service_has_permission("broadcast")
+def discard_broadcast_message(service_id, broadcast_message_id):
     broadcast_message = BroadcastMessage.from_id(
         broadcast_message_id,
         service_id=current_service.id,
@@ -892,6 +948,12 @@ def cancel_broadcast_message(service_id, broadcast_message_id):
         "views/broadcast/view-message.html",
         broadcast_message=broadcast_message,
         hide_stop_link=True,
+        rejection_form=RejectionReasonForm(),
+        form=ConfirmBroadcastForm(
+            service_is_live=current_service.live,
+            channel=current_service.broadcast_channel,
+            max_phones=broadcast_message.count_of_phones_likely,
+        ),
         is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
         areas=format_areas_list(broadcast_message.areas),
     )
