@@ -3452,7 +3452,7 @@ def test_view_pending_broadcast(
         "Start broadcasting now "
         "Reject this alert "
         "Give a reason for rejecting the alert "
-        "Detailed reason for why the alert was rejected, including how it may be reworked. "
+        "Detailed reason for rejecting the alert, including how it may be reworked. "
         'For example, "The alert message has spelling mistakes". '
         "Reject alert"
     )
@@ -3479,7 +3479,7 @@ def test_view_pending_broadcast(
                 "Start broadcasting now "
                 "Reject this alert "
                 "Give a reason for rejecting the alert "
-                "Detailed reason for why the alert was rejected, including how it may be reworked. "
+                "Detailed reason for rejecting the alert, including how it may be reworked. "
                 'For example, "The alert message has spelling mistakes". '
                 "Reject alert"
             ),
@@ -3492,7 +3492,7 @@ def test_view_pending_broadcast(
                 "Start broadcasting now "
                 "Reject this alert "
                 "Give a reason for rejecting the alert "
-                "Detailed reason for why the alert was rejected, including how it may be reworked. "
+                "Detailed reason for rejecting the alert, including how it may be reworked. "
                 'For example, "The alert message has spelling mistakes". '
                 "Reject alert"
             ),
@@ -3578,7 +3578,7 @@ def test_view_pending_broadcast_from_api_call(
         "Start broadcasting now "
         "Reject this alert "
         "Give a reason for rejecting the alert "
-        "Detailed reason for why the alert was rejected, including how it may be reworked. "
+        "Detailed reason for rejecting the alert, including how it may be reworked. "
         'For example, "The alert message has spelling mistakes". '
         "Reject alert"
     )
