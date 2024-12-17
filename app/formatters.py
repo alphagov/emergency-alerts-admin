@@ -14,6 +14,7 @@ from emergency_alerts_utils.formatters import make_quotes_smart
 from emergency_alerts_utils.formatters import nl2br as utils_nl2br
 from emergency_alerts_utils.take import Take
 from emergency_alerts_utils.timezones import utc_string_to_aware_gmt_datetime
+from emergency_alerts_utils.validation import InvalidPhoneError, validate_phone_number
 from markupsafe import Markup
 
 
@@ -182,6 +183,14 @@ def format_delta_days(date):
     if date.strftime("%Y-%m-%d") == (now - timedelta(days=1)).strftime("%Y-%m-%d"):
         return "yesterday"
     return naturaltime_without_indefinite_article(now - date)
+
+
+def valid_phone_number(phone_number):
+    try:
+        validate_phone_number(phone_number)
+        return True
+    except InvalidPhoneError:
+        return False
 
 
 def format_notification_status_as_time(status, created, updated):
