@@ -256,8 +256,10 @@ def test_delete_mobile_number(client_request, api_user_active_email_auth, mocker
 @pytest.mark.parametrize(
     "phone_number_to_register_with",
     [
+        "+447700900460",
         "+4407700900460",
-        "+1800-555-555",
+        "07700900460",
+        "7700900460",
     ],
 )
 def test_should_redirect_after_mobile_number_change(
