@@ -7,12 +7,13 @@ from emergency_alerts_utils.formatters import formatted_list
 from emergency_alerts_utils.recipients import InvalidEmailError, validate_email_address
 from emergency_alerts_utils.sanitise_text import SanitiseSMS
 from emergency_alerts_utils.template import BroadcastMessageTemplate
+from flask_login import current_user
 from orderedset import OrderedSet
 from postcode_validator.uk.uk_postcode_regex import postcode_regex
 from wtforms import ValidationError
 
 from app.main._commonly_used_passwords import commonly_used_passwords
-from app.utils.user import is_gov_user
+from app.utils.user import distinct_email_addresses, is_gov_user
 
 
 class CommonlyUsedPassword:
@@ -233,4 +234,15 @@ class Only6DecimalPlaces:
 
     def __call__(self, form, field):
         if field.data and not re.match(self.regex, str(field.data)):
+            raise ValidationError(self.message)
+
+
+class IsDistinctEmail:
+    message = "You cannot send an invitation to yourself"
+
+    def __call__(self, form, field):
+        if not field.data:
+            return
+
+        if not distinct_email_addresses(field.data, current_user.email_address):
             raise ValidationError(self.message)
