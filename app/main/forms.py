@@ -58,6 +58,7 @@ from app.main.validators import (
     BroadcastLength,
     CharactersNotAllowed,
     CommonlyUsedPassword,
+    IsDistinctEmail,
     IsPostcode,
     LowEntropyPassword,
     MustContainAlphanumericCharacters,
@@ -76,7 +77,6 @@ from app.utils.govuk_frontend_field import (
     GovukFrontendWidgetMixin,
     render_govuk_frontend_macro,
 )
-from app.utils.user import distinct_email_addresses
 from app.utils.user_permissions import (
     all_ui_permissions,
     broadcast_permission_options,
@@ -142,16 +142,17 @@ class RadioField(WTFormsRadioField):
             raise ValidationError(f"Select {self.thing}")
 
 
-def email_address(label="Email address", gov_user=True, required=True):
-    validators = [
-        ValidEmail(),
-    ]
+def email_address(label="Email address", gov_user=True, required=True, must_be_distinct=False):
+    validators = [ValidEmail()]
 
     if gov_user:
         validators.append(ValidGovEmail())
 
     if required:
         validators.append(DataRequired(message="Cannot be empty"))
+
+    if must_be_distinct:
+        validators.append(IsDistinctEmail())
 
     return GovukEmailField(label, validators)
 
@@ -901,7 +902,7 @@ class BroadcastPermissionsForm(BasePermissionsForm):
 
 
 class BaseInviteUserForm:
-    email_address = email_address(gov_user=False)
+    email_address = email_address(gov_user=False, must_be_distinct=True)
 
     def __init__(self, inviter_email_address, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -919,11 +920,10 @@ class InviteUserForm(BaseInviteUserForm, PermissionsForm):
 
 
 class BroadcastInviteUserForm(BaseInviteUserForm, BroadcastPermissionsForm):
-    email_address = email_address(gov_user=True)
+    email_address = email_address(gov_user=True, must_be_distinct=True)
 
-    def validate_email_address(self, field):
-        if not distinct_email_addresses(field.data, self.inviter_email_address):
-            raise ValidationError("You cannot send an invitation to yourself")
+    def pre_validate(self, form):
+        return self.email_address.validate(form)
 
 
 class InviteOrgUserForm(BaseInviteUserForm, StripWhitespaceForm):
@@ -1143,7 +1143,7 @@ class BroadcastTemplateForm(SMSTemplateForm):
 
 
 class ForgotPasswordForm(StripWhitespaceForm):
-    email_address = email_address(gov_user=False)
+    email_address = email_address(gov_user=False, must_be_distinct=False)
 
 
 class NewPasswordForm(StripWhitespaceForm):
@@ -1187,7 +1187,7 @@ class ChangeEmailForm(StripWhitespaceForm):
 
 
 class ChangeNonGovEmailForm(ChangeEmailForm):
-    email_address = email_address(gov_user=False)
+    email_address = email_address(gov_user=False, must_be_distinct=True)
 
 
 class ChangeMobileNumberForm(StripWhitespaceForm):
