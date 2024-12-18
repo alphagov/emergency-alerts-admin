@@ -50,6 +50,14 @@ def invite_user(service_id, user_id=None):
     )
 
     user_to_invite = None
+    if form.email_address.data and not form.pre_validate(form):
+        return render_template(
+            "views/invite-user.html",
+            form=form,
+            mobile_number=True,
+            user_to_invite=user_to_invite,
+        )
+
     if user_id:
         user_to_invite = User.from_id(user_id)
     elif form.email_address.data:
