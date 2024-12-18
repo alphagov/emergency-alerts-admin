@@ -51,8 +51,6 @@ from app.formatters import (
     format_delta_days,
     format_list_items,
     format_mobile_network,
-    format_notification_status_as_field_status,
-    format_notification_status_as_time,
     format_number_in_pounds_as_currency,
     format_seconds_duration_as_time,
     format_thousands,
@@ -85,7 +83,6 @@ from app.notify_client.broadcast_message_api_client import broadcast_message_api
 from app.notify_client.events_api_client import events_api_client
 from app.notify_client.feature_toggle_api_client import feature_toggle_api_client
 from app.notify_client.invite_api_client import invite_api_client
-from app.notify_client.notification_api_client import notification_api_client
 from app.notify_client.org_invite_api_client import org_invite_api_client
 from app.notify_client.organisations_api_client import organisations_client
 from app.notify_client.reports_api_client import reports_api_client
@@ -150,7 +147,6 @@ def create_app(application):
         events_api_client,
         feature_toggle_api_client,
         invite_api_client,
-        notification_api_client,
         org_invite_api_client,
         organisations_client,
         reports_api_client,
@@ -484,8 +480,6 @@ def add_template_filters(application):
         format_day_of_week,
         format_delta,
         format_delta_days,
-        format_notification_status_as_time,
-        format_notification_status_as_field_status,
         format_number_in_pounds_as_currency,
         nl2br,
         format_thousands,

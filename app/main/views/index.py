@@ -48,11 +48,6 @@ def accessibility_statement():
     return render_template("views/accessibility_statement.html")
 
 
-@main.route("/integration-testing")
-def integration_testing():
-    return render_template("views/integration-testing.html"), 410
-
-
 # --- Features page set --- #
 
 
@@ -83,11 +78,10 @@ def training_mode():
 @main.route("/terms", endpoint="old_terms")
 @main.route("/information-security", endpoint="information_security")
 @main.route("/information-risk-management", endpoint="information_risk_management")
-@main.route("/integration_testing", endpoint="old_integration_testing")
 def old_page_redirects():
     redirects = {
         "main.old_terms": "main.terms",
+        "main.information_security": "main.security",
         "main.information_risk_management": "main.security",
-        "main.old_integration_testing": "main.integration_testing",
     }
     return redirect(url_for(redirects[request.endpoint]), code=301)

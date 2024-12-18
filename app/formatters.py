@@ -193,46 +193,6 @@ def valid_phone_number(phone_number):
         return False
 
 
-def format_notification_status_as_time(status, created, updated):
-    return dict.fromkeys({"created", "pending", "sending"}, " since {}".format(created)).get(status, updated)
-
-
-def format_notification_status_as_field_status(status, notification_type):
-    return (
-        {
-            "letter": {
-                "failed": "error",
-                "technical-failure": "error",
-                "temporary-failure": "error",
-                "permanent-failure": "error",
-                "delivered": None,
-                "sent": None,
-                "sending": None,
-                "created": None,
-                "accepted": None,
-                "pending-virus-check": None,
-                "virus-scan-failed": "error",
-                "cancelled": "error",
-            },
-        }
-        .get(
-            notification_type,
-            {
-                "failed": "error",
-                "technical-failure": "error",
-                "temporary-failure": "error",
-                "permanent-failure": "error",
-                "delivered": None,
-                "sent": None,
-                "sending": "default",
-                "created": "default",
-                "pending": "default",
-            },
-        )
-        .get(status, "error")
-    )
-
-
 def nl2br(value):
     if value:
         return Markup(
