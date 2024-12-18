@@ -1255,23 +1255,6 @@ class SMSPrefixForm(StripWhitespaceForm):
     enabled = OnOffField("")  # label is assigned on instantiation
 
 
-def get_placeholder_form_instance(
-    placeholder_name,
-    dict_to_populate_from,
-    template_type,
-):
-    if InsensitiveDict.make_key(placeholder_name) == "emailaddress" and template_type == "email":
-        field = email_address(label=placeholder_name, gov_user=False)
-    elif InsensitiveDict.make_key(placeholder_name) == "phonenumber" and template_type == "sms":
-        field = uk_mobile_number(label=placeholder_name)
-    else:
-        field = GovukTextInputField(placeholder_name, validators=[DataRequired(message="Cannot be empty")])
-
-    PlaceholderForm.placeholder_value = field
-
-    return PlaceholderForm(placeholder_value=dict_to_populate_from.get(placeholder_name, ""))
-
-
 class SetTemplateSenderForm(StripWhitespaceForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
