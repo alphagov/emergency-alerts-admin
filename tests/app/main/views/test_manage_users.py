@@ -5,6 +5,7 @@ import pytest
 from flask import url_for
 
 import app
+from app.main.forms import BroadcastInviteUserForm
 from app.models.user import User
 from app.utils.user import is_gov_user
 from tests.conftest import (
@@ -1213,6 +1214,12 @@ def test_broadcast_user_cant_invite_themselves_or_their_aliases(
     mock_get_template_folders,
     email_address,
 ):
+    form_mock = mocker.Mock(spec=BroadcastInviteUserForm)
+    form_mock.email_address.data = email_address
+    form_mock.pre_validate = True
+
+    mocker.patch("app.main.forms.BroadcastInviteUserForm", return_value=form_mock)
+
     mocker.patch("app.models.user.User.from_email_address_or_none", return_value=User(active_user_with_permissions))
     mocker.patch("app.models.user.User.belongs_to_service", return_value=True)
     mocker.patch("app.models.service.Service.invite_pending_for", return_value=False)
