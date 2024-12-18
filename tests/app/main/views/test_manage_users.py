@@ -5,7 +5,6 @@ import pytest
 from flask import url_for
 
 import app
-from app.main.forms import BroadcastInviteUserForm
 from app.models.user import User
 from app.utils.user import is_gov_user
 from tests.conftest import (
@@ -1191,7 +1190,7 @@ def test_user_cant_invite_themselves(
         _follow_redirects=True,
         _expected_status=200,
     )
-    assert page.select_one("h1").string.strip() == "This person is already a team member"
+    assert "You cannot send an invitation to yourself" in normalize_spaces(page.select_one(".govuk-error-message").text)
     assert not mock_create_invite.called
 
 
@@ -1214,12 +1213,6 @@ def test_broadcast_user_cant_invite_themselves_or_their_aliases(
     mock_get_template_folders,
     email_address,
 ):
-    form_mock = mocker.Mock(spec=BroadcastInviteUserForm)
-    form_mock.email_address.data = email_address
-    form_mock.pre_validate = True
-
-    mocker.patch("app.main.forms.BroadcastInviteUserForm", return_value=form_mock)
-
     mocker.patch("app.models.user.User.from_email_address_or_none", return_value=User(active_user_with_permissions))
     mocker.patch("app.models.user.User.belongs_to_service", return_value=True)
     mocker.patch("app.models.service.Service.invite_pending_for", return_value=False)
@@ -1231,7 +1224,7 @@ def test_broadcast_user_cant_invite_themselves_or_their_aliases(
         _expected_status=200,
     )
 
-    assert normalize_spaces(page.select_one("main h1").text) == ("This person is already a team member")
+    assert "You cannot send an invitation to yourself" in normalize_spaces(page.select_one(".govuk-error-message").text)
     assert mock_create_invite.called is False
 
 
@@ -1254,7 +1247,7 @@ def test_platform_admin_cant_invite_themselves_to_broadcast_services(
         _data={"email_address": platform_admin_user["email_address"], "permissions_field": []},
         _expected_status=200,
     )
-    assert normalize_spaces(page.select_one("main h1").text) == ("This person is already a team member")
+    assert "You cannot send an invitation to yourself" in normalize_spaces(page.select_one(".govuk-error-message").text)
     assert mock_create_invite.called is False
 
 
