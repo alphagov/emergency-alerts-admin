@@ -1347,9 +1347,6 @@ class TemplateAndFoldersSelectionForm(Form):
             filter(
                 None,
                 [
-                    ("email", "Email") if "email" in available_template_types else None,
-                    ("sms", "Text message") if "sms" in available_template_types else None,
-                    ("letter", "Letter") if "letter" in available_template_types else None,
                     ("broadcast", "Broadcast") if "broadcast" in available_template_types else None,
                     ("copy-existing", "Copy an existing template") if allow_adding_copy_of_template else None,
                 ],
