@@ -534,7 +534,7 @@ def test_should_hide_template_id_for_broadcast_templates(
     "service_permissions, data, expected_error",
     (
         (
-            ["letter"],
+            ["fake"],
             {
                 "operation": "add-new-template",
                 "add_template_by_template_type": "broadcast",

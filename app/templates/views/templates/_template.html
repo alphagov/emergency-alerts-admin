@@ -14,13 +14,7 @@
   {% else %}
     <div class="bottom-gutter-2-3">
       <div class="govuk-grid-row">
-        {% if template.template_type == 'letter' %}
-          {% if letter_too_long %}
-            {% call banner_wrapper(type='dangerous') %}
-                {% include "partials/check/letter-too-long.html" %}
-            {% endcall %}
-          {% endif %}
-        {% elif template.template_type == 'broadcast' %}
+        {% if template.template_type == 'broadcast' %}
           {% if current_user.has_permissions('create_broadcasts') %}
             <div class="govuk-grid-column-one-half">
               <a href="{{ url_for(".broadcast", service_id=current_service.id, template_id=template.id) }}" class="govuk-link govuk-link--inverse pill-separate-item">
@@ -49,9 +43,5 @@
   {% endif %}
 </div>
 <div class="govuk-grid-column-full template-container">
-  {% if current_user.has_permissions('manage_templates') and template.template_type == 'letter' %}
-    <a href="{{ url_for(".edit_template_postage", service_id=current_service.id, template_id=template.id) }}" class="govuk-link govuk-link--inverse edit-template-link-letter-postage">Change<span class="govuk-visually-hidden"> postage</span></a>
-    <a href="{{ url_for(".edit_service_template", service_id=current_service.id, template_id=template.id) }}" class="govuk-link govuk-link--inverse edit-template-link-letter-body">Edit<span class="govuk-visually-hidden"> letter template</span></a>
-  {% endif %}
   {{ template|string }}
 </div>

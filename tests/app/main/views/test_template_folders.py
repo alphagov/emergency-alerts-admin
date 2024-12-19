@@ -1516,10 +1516,8 @@ def test_should_filter_templates_folder_page_based_on_user_permissions(
             "data": [
                 _template("broadcast", "broadcast_template_root"),
                 _template("broadcast", "broadcast_template_A", parent=FOLDER_TWO_ID),
-                # _template("broadcast", "broadcast_template_C", parent=FOLDER_C_ID),
                 _template("broadcast", "broadcast_template_B", parent=FOLDER_B_ID),
                 _template("broadcast", "broadcast_template_G", parent=GRANDCHILD_FOLDER_ID),
-                # _template("letter", "letter_template_F", parent=CHILD_FOLDER_ID),
                 _template("broadcast", "broadcast_template_F", parent=CHILD_FOLDER_ID),
             ]
         },

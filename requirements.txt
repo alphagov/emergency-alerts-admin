@@ -44,14 +44,10 @@ cryptography==38.0.3
     # via
     #   fido2
     #   moto
-dnspython==2.2.1
-    # via eventlet
 docopt==0.6.2
     # via notifications-python-client
 et-xmlfile==1.1.0
     # via openpyxl
-eventlet==0.33.1
-    # via gunicorn
 exceptiongroup==1.1.1
     # via pytest
 execnet==1.9.0
@@ -84,10 +80,6 @@ gds-metrics @ git+https://github.com/alphagov/gds_metrics_python.git@6f1840a57b6
 govuk-bank-holidays==0.11
     # via -r requirements.in
 govuk-frontend-jinja==3.3.0
-    # via -r requirements.in
-greenlet==1.1.2
-    # via eventlet
-gunicorn[eventlet] @ git+https://github.com/benoitc/gunicorn.git@1299ea9e967a61ae2edebe191082fd169b864c64
     # via -r requirements.in
 humanize==4.4.0
     # via -r requirements.in
@@ -144,8 +136,6 @@ packaging==23.0
     #   pytest
 pathspec==0.11.1
     # via black
-pillow==9.3.0
-    # via -r requirements.in
 platformdirs==3.2.0
     # via black
 pluggy==1.0.0
@@ -225,7 +215,6 @@ s3transfer==0.6.0
     # via boto3
 six==1.16.0
     # via
-    #   eventlet
     #   python-dateutil
     #   requests-mock
 soupsieve==2.4
@@ -263,6 +252,3 @@ xmltodict==0.13.0
     # via moto
 zipp==3.11.0
     # via importlib-metadata
-
-# The following packages are considered to be unsafe in a requirements file:
-# setuptools

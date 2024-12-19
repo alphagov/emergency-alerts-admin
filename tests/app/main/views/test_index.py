@@ -106,7 +106,6 @@ def test_static_pages(
     "view, expected_view",
     [
         ("information_risk_management", "security"),
-        ("old_integration_testing", "integration_testing"),
         ("information_risk_management", "security"),
         ("old_terms", "terms"),
     ],

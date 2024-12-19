@@ -157,7 +157,7 @@ def get_template_nav_items(template_folder_id):
     ]
 
 
-def _view_template_version(service_id, template_id, version, letters_as_pdf=False):
+def _view_template_version(service_id, template_id, version):
     return dict(
         template=get_template(
             current_service.get_template(template_id, version=version),
@@ -180,18 +180,6 @@ def _add_template_by_type(template_type, template_folder_id):
             url_for(
                 ".choose_template_to_copy",
                 service_id=current_service.id,
-            )
-        )
-
-    if template_type == "letter":
-        blank_letter = service_api_client.create_service_template(
-            "New letter template", "letter", "Body", current_service.id, "Main heading", "normal", template_folder_id
-        )
-        return redirect(
-            url_for(
-                ".view_template",
-                service_id=current_service.id,
-                template_id=blank_letter["data"]["id"],
             )
         )
 

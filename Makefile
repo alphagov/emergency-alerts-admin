@@ -105,7 +105,7 @@ bootstrap: generate-version-file install-node ## Set up everything to run the ap
 
 
 .PHONY: bootstrap-for-tests
-bootstrap-for-tests: generate-version-file install-node ## Set up everything to run the app
+bootstrap-for-tests: generate-version-file install-node ## Set up everything to run the tests
 	${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements_github_utils.txt
 	. ~/.nvm-source && npm ci --no-audit
 	. ~/.nvm-source && npm run build

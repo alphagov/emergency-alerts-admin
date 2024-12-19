@@ -4,29 +4,8 @@ from freezegun import freeze_time
 from app.formatters import (
     email_safe,
     format_datetime_relative,
-    format_number_in_pounds_as_currency,
-    format_seconds_duration_as_time,
     round_to_significant_figures,
 )
-
-
-@pytest.mark.parametrize(
-    "input_number, formatted_number",
-    [
-        (0, "0p"),
-        (0.01, "1p"),
-        (0.5, "50p"),
-        (1, "£1.00"),
-        (1.01, "£1.01"),
-        (1.006, "£1.01"),
-        (5.25, "£5.25"),
-        (5.7, "£5.70"),
-        (381, "£381.00"),
-        (144820, "£144,820.00"),
-    ],
-)
-def test_format_number_in_pounds_as_currency(input_number, formatted_number):
-    assert format_number_in_pounds_as_currency(input_number) == formatted_number
 
 
 @pytest.mark.parametrize(
@@ -63,25 +42,6 @@ def test_format_number_in_pounds_as_currency(input_number, formatted_number):
 def test_format_datetime_relative(time, human_readable_datetime):
     with freeze_time("2018-03-21 12:00"):
         assert format_datetime_relative(time) == human_readable_datetime
-
-
-@pytest.mark.parametrize(
-    "seconds, formatted_time",
-    [
-        ("1800", "30 minutes"),
-        ("10800", "3 hours"),
-        ("21600", "6 hours"),
-        ("79200", "22 hours"),
-        ("81000", "22 hours, 30 minutes"),
-        ("86400", "1 day"),
-        ("86401", "1 day, 1 second"),
-        ("5212", "1 hour, 26 minutes, 52 seconds"),
-        ("3605", "1 hour, 5 seconds"),
-        (None, "0 seconds"),
-    ],
-)
-def test_format_seconds_duration_as_time(seconds, formatted_time):
-    assert format_seconds_duration_as_time(seconds) == formatted_time
 
 
 @pytest.mark.parametrize(
