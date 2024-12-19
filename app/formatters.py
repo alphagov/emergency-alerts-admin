@@ -6,8 +6,6 @@ from functools import lru_cache
 from math import floor, log10
 from numbers import Number
 
-import ago
-import dateutil
 import humanize
 from emergency_alerts_utils.field import Field
 from emergency_alerts_utils.formatters import make_quotes_smart
@@ -206,13 +204,6 @@ def nl2br(value):
     return ""
 
 
-def format_number_in_pounds_as_currency(number):
-    if number >= 1:
-        return f"£{number:,.2f}"
-
-    return f"{number * 100:.0f}p"
-
-
 def format_list_items(items, format_string, *args, **kwargs):
     """
     Apply formatting to each item in an iterable. Returns a list.
@@ -263,19 +254,6 @@ def redact_mobile_number(mobile_number, spacing=""):
     for i in indices:
         mobile_number_list[i] = redact_character
     return "".join(mobile_number_list)
-
-
-def get_time_left(created_at, service_data_retention_days=7):
-    return ago.human(
-        (datetime.now(timezone.utc))
-        - (
-            dateutil.parser.parse(created_at).replace(hour=0, minute=0, second=0)
-            + timedelta(days=service_data_retention_days + 1)
-        ),
-        future_tense="Data available for {}",
-        past_tense="Data no longer available",  # No-one should ever see this
-        precision=1,
-    )
 
 
 def starts_with_initial(name):

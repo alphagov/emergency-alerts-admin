@@ -4,29 +4,9 @@ from freezegun import freeze_time
 from app.formatters import (
     email_safe,
     format_datetime_relative,
-    format_number_in_pounds_as_currency,
     format_seconds_duration_as_time,
     round_to_significant_figures,
 )
-
-
-@pytest.mark.parametrize(
-    "input_number, formatted_number",
-    [
-        (0, "0p"),
-        (0.01, "1p"),
-        (0.5, "50p"),
-        (1, "£1.00"),
-        (1.01, "£1.01"),
-        (1.006, "£1.01"),
-        (5.25, "£5.25"),
-        (5.7, "£5.70"),
-        (381, "£381.00"),
-        (144820, "£144,820.00"),
-    ],
-)
-def test_format_number_in_pounds_as_currency(input_number, formatted_number):
-    assert format_number_in_pounds_as_currency(input_number) == formatted_number
 
 
 @pytest.mark.parametrize(
