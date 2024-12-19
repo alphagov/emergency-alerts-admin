@@ -1,6 +1,5 @@
 import re
 import unicodedata
-import urllib
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 from math import floor, log10
@@ -62,33 +61,6 @@ def format_date_numeric(date):
 
 def format_time_24h(date):
     return utc_string_to_aware_gmt_datetime(date).strftime("%H:%M")
-
-
-def format_seconds_duration_as_time(seconds):
-    seconds = int(seconds or 0)
-    days = seconds // (24 * 3600)
-    seconds %= 24 * 3600
-    hours = seconds // 3600
-    seconds %= 3600
-    minutes = seconds // 60
-    seconds %= 60
-
-    time_parts = []
-    if days > 0:
-        time_parts.append(f"{days} {'day' if days == 1 else 'days'}")
-    if hours > 0:
-        time_parts.append(f"{hours} {'hour' if hours == 1 else 'hours'}")
-    if minutes > 0:
-        time_parts.append(f"{minutes} {'minute' if minutes == 1 else 'minutes'}")
-    if seconds > 0:
-        time_parts.append(f"{seconds} {'second' if seconds == 1 else 'seconds'}")
-
-    if not time_parts:
-        return "0 seconds"
-    elif len(time_parts) == 1:
-        return time_parts[0]
-    else:
-        return ", ".join(time_parts)
 
 
 def get_human_day(time, date_prefix=""):
@@ -204,19 +176,6 @@ def nl2br(value):
     return ""
 
 
-def format_list_items(items, format_string, *args, **kwargs):
-    """
-    Apply formatting to each item in an iterable. Returns a list.
-    Each item is made available in the format_string as the 'item' keyword argument.
-    example usage: ['png','svg','pdf']|format_list_items('{0}. {item}', [1,2,3]) -> ['1. png', '2. svg', '3. pdf']
-    """
-    return [format_string.format(*args, item=item, **kwargs) for item in items]
-
-
-def linkable_name(value):
-    return urllib.parse.quote_plus(value)
-
-
 def format_thousands(value):
     if isinstance(value, Number):
         return "{:,.0f}".format(value)
@@ -326,10 +285,6 @@ def format_mobile_network(network):
     if network in ("three", "vodafone", "o2"):
         return network.capitalize()
     return "EE"
-
-
-def format_billions(count):
-    return humanize.intword(count)
 
 
 def format_yes_no(value, yes="Yes", no="No", none="No"):
