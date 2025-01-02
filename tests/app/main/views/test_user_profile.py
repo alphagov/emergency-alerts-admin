@@ -70,7 +70,7 @@ def test_should_show_name_page(client_request):
     assert page.select_one("h1").text.strip() == "Change your name"
 
 
-def test_should_redirect_after_name_change(
+def test_should_redirect_to_auth_after_name_change(
     client_request,
     mock_update_user_attribute,
 ):
@@ -78,7 +78,26 @@ def test_should_redirect_after_name_change(
         "main.user_profile_name",
         _data={"new_name": "New Name"},
         _expected_status=302,
-        _expected_redirect=url_for("main.user_profile"),
+        _expected_redirect=url_for("main.user_profile_name_authenticate"),
+    )
+
+    assert mock_update_user_attribute.called is False  # Name not updated as user redirected to auth page
+
+
+def test_should_render_change_name_after_authenticate(
+    client_request,
+    mock_verify_password,
+    mock_update_user_attribute,
+):
+    with client_request.session_transaction() as session:
+        session["new-name"] = "New Name"
+    client_request.post(
+        "main.user_profile_name_authenticate",
+        _data={"password": "12345"},
+        _expected_status=302,
+        _expected_redirect=url_for(
+            ".user_profile",
+        ),
     )
     assert mock_update_user_attribute.called is True
 

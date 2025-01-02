@@ -159,6 +159,7 @@ EXCLUDED_ENDPOINTS = tuple(
             "user_profile_mobile_number_confirm",
             "user_profile_mobile_number_delete",
             "user_profile_name",
+            "user_profile_name_authenticate",
             "user_profile_password",
             "user_profile_security_keys",
             "verify",
