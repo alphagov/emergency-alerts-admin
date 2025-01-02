@@ -32,6 +32,7 @@ from app.utils.user import user_is_gov_user, user_is_logged_in
 NEW_EMAIL = "new-email"
 NEW_MOBILE = "new-mob"
 NEW_MOBILE_PASSWORD_CONFIRMED = "new-mob-password-confirmed"
+NEW_NAME = "new-name"
 
 
 @main.route("/user-profile")
@@ -49,10 +50,34 @@ def user_profile_name():
     form = ChangeNameForm(new_name=current_user.name)
 
     if form.validate_on_submit():
-        current_user.update(name=form.new_name.data)
-        return redirect(url_for(".user_profile"))
+        session[NEW_NAME] = form.new_name.data
+        return redirect(url_for(".user_profile_name_authenticate"))
 
     return render_template("views/user-profile/change.html", thing="name", form_field=form.new_name)
+
+
+@main.route("/user-profile/name/authenticate", methods=["GET", "POST"])
+@user_is_logged_in
+def user_profile_name_authenticate():
+    # Validate password for form
+    def _check_password(pwd):
+        return user_api_client.verify_password(current_user.id, pwd)
+
+    form = ConfirmPasswordForm(_check_password)
+
+    if NEW_NAME not in session:
+        return redirect("main.user_profile_name")
+
+    if form.validate_on_submit():
+        current_user.update(name=session[NEW_NAME])
+        return redirect(url_for(".user_profile"))
+
+    return render_template(
+        "views/user-profile/authenticate.html",
+        thing="name",
+        form=form,
+        back_link=url_for(".user_profile_name"),
+    )
 
 
 @main.route("/user-profile/email", methods=["GET", "POST"])
