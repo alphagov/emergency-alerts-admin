@@ -57,13 +57,18 @@
         <div class="govuk-!-margin-bottom-2">
           <p class="govuk-!-margin-right-1 dashboard-table govuk-!-font-weight-bold">Broadcast: </p>
           <p class="govuk-body dashboard-table">
+          {% if item.rejected_by_api_key_id or item.rejected_by %}
             Rejected
             {{ item.updated_at|format_datetime_human }}
             {% if item.rejected_by %}
               by {{item.rejected_by}}.
-            {% else %}
+            {% elif item.rejected_by_api_key_id %}
               by an API call.
             {% endif %}
+          {% else %}
+            Rejected
+            {{ item.updated_at|format_datetime_human }}.
+          {% endif %}
           </p>
         </div>
         {% if item.rejection_reason %}
