@@ -217,12 +217,17 @@
       </p>
     {% elif broadcast_message.status == 'rejected' %}
       <p class="govuk-body govuk-!-margin-bottom-4">
-        Rejected
-        {{ broadcast_message.updated_at|format_datetime_human }}
-        {% if broadcast_message.rejected_by %}
-          by {{broadcast_message.rejected_by}}.
+        {% if broadcast_message.rejected_by or broadcast_message.rejected_by_api_key_id %}
+          Rejected
+          {{ broadcast_message.updated_at|format_datetime_human }}
+          {% if broadcast_message.rejected_by %}
+            by {{broadcast_message.rejected_by}}.
+          {% elif broadcast_message.rejected_by_api_key_id %}
+            by an API call.
+          {% endif %}
         {% else %}
-          by an API call.
+          Rejected
+          {{ broadcast_message.updated_at|format_datetime_human }}.
         {% endif %}
       </p>
       {% if broadcast_message.rejection_reason %}
