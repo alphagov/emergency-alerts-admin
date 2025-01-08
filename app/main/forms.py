@@ -1686,3 +1686,13 @@ class ChooseCoordinateTypeForm(StripWhitespaceForm):
         },
         validators=[DataRequired(message="Select which type of coordinates you'd like to use")],
     )
+
+
+class RejectionReasonForm(StripWhitespaceForm):
+    hint = """ Detailed reason for rejecting the alert, including how it may be reworked.
+        For example, "The alert message has spelling mistakes"."""
+
+    rejection_reason = GovukTextareaField(
+        validators=[DataRequired(message="Enter the reason for rejecting the alert")],
+        param_extensions={"hint": {"text": hint}, "rows": 3},
+    )

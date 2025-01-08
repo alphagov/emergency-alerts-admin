@@ -2314,6 +2314,20 @@ def mock_update_broadcast_message_status(
     )
 
 
+@pytest.fixture(scope="function")
+def mock_update_broadcast_message_status_with_reason(
+    mocker,
+    fake_uuid,
+):
+    def _update(status, *, service_id, broadcast_message_id, rejection_reason):
+        pass
+
+    return mocker.patch(
+        "app.broadcast_message_api_client.update_broadcast_message_status_with_reason",
+        side_effect=_update,
+    )
+
+
 @pytest.fixture
 def mock_get_invited_user_by_id(mocker, sample_invite):
     def _get(invited_user_id):
