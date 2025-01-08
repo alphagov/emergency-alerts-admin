@@ -2,6 +2,7 @@ import json
 from unittest.mock import ANY
 
 import pytest
+from emergency_alerts_utils import MAX_BROADCAST_CHAR_COUNT
 from flask import url_for
 from freezegun import freeze_time
 
@@ -18,8 +19,6 @@ from tests.conftest import (
     create_active_user_view_permissions,
     normalize_spaces,
 )
-
-MAX_BROADCAST_CHAR_COUNT = 1395
 
 
 def test_should_show_empty_page_when_no_templates(

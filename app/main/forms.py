@@ -7,7 +7,7 @@ from numbers import Number
 import pytz
 from emergency_alerts_utils.formatters import strip_all_whitespace
 from emergency_alerts_utils.insensitive_dict import InsensitiveDict
-from emergency_alerts_utils.recipients import (
+from emergency_alerts_utils.validation import (
     InvalidPhoneError,
     normalise_phone_number,
     validate_phone_number,
@@ -1402,27 +1402,6 @@ class CallbackForm(StripWhitespaceForm):
 
 class SMSPrefixForm(StripWhitespaceForm):
     enabled = OnOffField("")  # label is assigned on instantiation
-
-
-def get_placeholder_form_instance(
-    placeholder_name,
-    dict_to_populate_from,
-    template_type,
-    allow_international_phone_numbers=False,
-):
-    if InsensitiveDict.make_key(placeholder_name) == "emailaddress" and template_type == "email":
-        field = email_address(label=placeholder_name, gov_user=False)
-    elif InsensitiveDict.make_key(placeholder_name) == "phonenumber" and template_type == "sms":
-        if allow_international_phone_numbers:
-            field = international_phone_number(label=placeholder_name)
-        else:
-            field = uk_mobile_number(label=placeholder_name)
-    else:
-        field = GovukTextInputField(placeholder_name, validators=[DataRequired(message="Cannot be empty")])
-
-    PlaceholderForm.placeholder_value = field
-
-    return PlaceholderForm(placeholder_value=dict_to_populate_from.get(placeholder_name, ""))
 
 
 class SetTemplateSenderForm(StripWhitespaceForm):
