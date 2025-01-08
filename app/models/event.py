@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 
 from emergency_alerts_utils.formatters import formatted_list
 
-from app.formatters import format_thousands
 from app.models import ModelList
 from app.notify_client.service_api_client import service_api_client
 
@@ -66,16 +65,6 @@ class ServiceEvent(Event):
     def format_contact_link(self):
         return "Set the contact details for this service to ‘{}’".format(self.value_to)
 
-    def format_letter_contact_block(self):
-        return "Updated the default letter contact block for this service"
-
-    def format_message_limit(self):
-        return "{} this service’s daily message limit from {} to {}".format(
-            "Reduced" if self.value_from > self.value_to else "Increased",
-            format_thousands(self.value_from),
-            format_thousands(self.value_to),
-        )
-
     def format_name(self):
         return "Renamed this service from ‘{}’ to ‘{}’".format(self.value_from, self.value_to)
 
@@ -91,18 +80,6 @@ class ServiceEvent(Event):
             return "Added {} to this service’s permissions".format(formatted_list(added))
         if removed:
             return "Removed {} from this service’s permissions".format(formatted_list(removed))
-
-    def format_prefix_sms(self):
-        if self.value_to is True:
-            return "Set text messages to start with the name of this service"
-        else:
-            return "Set text messages to not start with the name of this service"
-
-    def format_research_mode(self):
-        if self.value_to is True:
-            return "Put this service into research mode"
-        else:
-            return "Took this service out of research mode"
 
     def format_service_callback_api(self):
         return "Updated the callback for delivery receipts"
