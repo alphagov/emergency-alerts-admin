@@ -8,17 +8,26 @@
       <h2>
         <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for(view_broadcast_endpoint, service_id=current_service.id, broadcast_message_id=item.id) }}">{{ item.template.name }}</a>
       </h2>
-      <span class="file-list-hint-large govuk-!-margin-bottom-2">
-        {{ item.content }}
-      </span>
+      {% if item.status != 'rejected' %}
+        <span class="file-list-hint-large govuk-!-margin-bottom-2">
+          {{ item.content }}
+        </span>
+      {% endif %}
       {% if item.status == 'pending-approval' %}
         <p class="govuk-body govuk-hint file-list-status">
           Waiting for approval
         </p>
       {% elif item.status == 'rejected' %}
-        <p class="govuk-body govuk-hint file-list-status">
-          {{ item.updated_at|format_date_human|title }} at {{ item.updated_at|format_time }}
+        <p class="govuk-body live-broadcast file-list-status govuk-!-margin-top-2">
+          {{ govukTag ({
+            'text': 'rejected',
+            'classes': 'govuk-!-margin-right-1 govuk-!-margin-top-2 broadcast-tag'
+          }) }}
+          {{ item.updated_at|format_datetime_human }}
         </p>
+        <span class="file-list-hint-large govuk-!-margin-bottom-2">
+          {{ item.content }}
+        </span>
       {% elif item.status == 'broadcasting' %}
         <p class="govuk-body live-broadcast file-list-status">
           {{ govukTag ({
@@ -32,17 +41,63 @@
           {{ item.starts_at|format_date_human|title }} at {{ item.starts_at|format_time }}
         </p>
       {% endif %}
-      <div>
-        <p class="govuk-!-margin-right-2 area-list">Area: </p>
-        <ul class="area-list">
-          {% for area in item.areas %}
-            <li class="area-list-item area-list-item--unremoveable area-list-item--smaller">{{area.name}}</li>
-          {% endfor %}
-        </ul>
-        <!-- {% if item.duration|format_seconds_duration_as_time != "0 seconds" %}
-          <p class="govuk-!-margin-right-2 duration-preview">Duration: {{ item.duration|format_seconds_duration_as_time }}</p>
-        {% endif %} -->
-      </div>
+      {% if item.status != 'rejected' %}
+        <div>
+          <p class="govuk-!-margin-right-2 area-list">Area: </p>
+          <ul class="area-list">
+            {% for area in item.areas %}
+              <li class="area-list-item area-list-item--unremoveable area-list-item--smaller">{{area.name}}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+    </div>
+    <div>
+      {% if item.status == 'rejected' %}
+        <div class="govuk-!-margin-bottom-2">
+          <p class="govuk-!-margin-right-1 dashboard-table govuk-!-font-weight-bold">Broadcast: </p>
+          <p class="govuk-body dashboard-table">
+          {% if item.rejected_by_api_key_id or item.rejected_by %}
+            Rejected
+            {{ item.updated_at|format_datetime_human }}
+            {% if item.rejected_by %}
+              by {{item.rejected_by}}.
+            {% elif item.rejected_by_api_key_id %}
+              by an API call.
+            {% endif %}
+          {% else %}
+            Rejected
+            {{ item.updated_at|format_datetime_human }}.
+          {% endif %}
+          </p>
+        </div>
+        {% if item.rejection_reason %}
+          <div class="govuk-!-margin-bottom-2 truncate-text">
+            <p class="govuk-!-margin-right-1 dashboard-table govuk-!-font-weight-bold">Reason: </p>
+            <p class="dashboard-table">
+              {{item.rejection_reason}}
+            </p>
+          </div>
+        {% endif %}
+        <div class="govuk-!-margin-bottom-2">
+          <p class="govuk-!-margin-right-1 dashboard-table govuk-!-font-weight-bold">Created by: </p>
+          <p class="govuk-body dashboard-table">
+            {% if item.created_by %}
+              {{item.created_by}}.
+            {% else %}
+              an API call.
+            {% endif %}
+          </p>
+        </div>
+        <div>
+          <p class="govuk-!-margin-right-1 area-list govuk-!-font-weight-bold">Area: </p>
+          <ul class="area-list">
+            {% for area in item.areas %}
+              <li class="area-list-item area-list-item--unremoveable area-list-item--smaller">{{area.name}}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
     </div>
   </div>
   {% if loop.last %}

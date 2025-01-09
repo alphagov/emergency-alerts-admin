@@ -1,8 +1,6 @@
 # Run `make freeze-requirements` to update requirements.txt
 # with package version changes made in requirements-app.txt
 
-ago==0.0.95
-govuk-bank-holidays==0.11
 humanize==4.4.0
 Flask==3.0.2
 Flask-WTF==1.2.1
@@ -10,18 +8,10 @@ wtforms==3.1.2
 Flask-Login==0.6.3
 Werkzeug==3.0.2
 jinja2==3.1.2
-Pillow==9.3.0
 MarkupSafe==2.1.5
 
 blinker==1.7.0
-pyexcel==0.7.0
-pyexcel-io==0.6.6
-pyexcel-xls==0.7.0
-pyexcel-xlsx==0.6.0
-pyexcel-ods3==0.6.1
 pytz==2022.6
-# Should be pinned until a new gunicorn release greater than 20.1.0 comes out. (Due to eventlet v0.33 compatibility issues)
-git+https://github.com/benoitc/gunicorn.git@1299ea9e967a61ae2edebe191082fd169b864c64#egg=gunicorn[eventlet]==20.1.0
 notifications-python-client==8.0.0
 rtreelib==0.2.0
 fido2==1.1.0

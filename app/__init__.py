@@ -34,7 +34,6 @@ from app.extensions import zendesk_client
 from app.formatters import (
     convert_to_boolean,
     format_auth_type,
-    format_billions,
     format_date,
     format_date_human,
     format_date_normal,
@@ -49,18 +48,12 @@ from app.formatters import (
     format_day_of_week,
     format_delta,
     format_delta_days,
-    format_list_items,
     format_mobile_network,
-    format_notification_status_as_field_status,
-    format_notification_status_as_time,
-    format_number_in_pounds_as_currency,
-    format_seconds_duration_as_time,
     format_thousands,
     format_time,
     format_yes_no,
     id_safe,
     iteration_count,
-    linkable_name,
     message_count,
     message_count_label,
     message_count_noun,
@@ -85,7 +78,6 @@ from app.notify_client.broadcast_message_api_client import broadcast_message_api
 from app.notify_client.events_api_client import events_api_client
 from app.notify_client.feature_toggle_api_client import feature_toggle_api_client
 from app.notify_client.invite_api_client import invite_api_client
-from app.notify_client.notification_api_client import notification_api_client
 from app.notify_client.org_invite_api_client import org_invite_api_client
 from app.notify_client.organisations_api_client import organisations_client
 from app.notify_client.reports_api_client import reports_api_client
@@ -150,7 +142,6 @@ def create_app(application):
         events_api_client,
         feature_toggle_api_client,
         invite_api_client,
-        notification_api_client,
         org_invite_api_client,
         organisations_client,
         reports_api_client,
@@ -465,15 +456,12 @@ def setup_event_handlers():
 def add_template_filters(application):
     for fn in [
         format_auth_type,
-        format_billions,
-        format_seconds_duration_as_time,
         format_datetime,
         format_datetime_24h,
         format_datetime_normal,
         format_datetime_short,
         format_time,
         valid_phone_number,
-        linkable_name,
         format_date,
         format_date_human,
         format_date_normal,
@@ -484,14 +472,10 @@ def add_template_filters(application):
         format_day_of_week,
         format_delta,
         format_delta_days,
-        format_notification_status_as_time,
-        format_notification_status_as_field_status,
-        format_number_in_pounds_as_currency,
         nl2br,
         format_thousands,
         id_safe,
         convert_to_boolean,
-        format_list_items,
         iteration_count,
         redact_mobile_number,
         round_to_significant_figures,

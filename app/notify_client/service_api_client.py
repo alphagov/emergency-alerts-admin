@@ -135,11 +135,6 @@ class ServiceAPIClient(AdminAPIClient):
         data = _attach_current_user(data)
         return self.post("/service/{0}/template/{1}".format(service_id, template_id), data)
 
-    def update_service_template_postage(self, service_id, template_id, postage):
-        return self.post(
-            "/service/{0}/template/{1}".format(service_id, template_id), _attach_current_user({"postage": postage})
-        )
-
     def get_service_template(self, service_id, template_id, version=None):
         """
         Retrieve a service template.
@@ -248,52 +243,6 @@ class ServiceAPIClient(AdminAPIClient):
             ),
             data={"email_address": email_address, "is_default": is_default},
         )
-
-    def delete_reply_to_email_address(self, service_id, reply_to_email_id):
-        return self.post("/service/{}/email-reply-to/{}/archive".format(service_id, reply_to_email_id), data=None)
-
-    def get_letter_contacts(self, service_id):
-        return self.get("/service/{}/letter-contact".format(service_id))
-
-    def get_letter_contact(self, service_id, letter_contact_id):
-        return self.get("/service/{}/letter-contact/{}".format(service_id, letter_contact_id))
-
-    def add_letter_contact(self, service_id, contact_block, is_default=False):
-        return self.post(
-            "/service/{}/letter-contact".format(service_id),
-            data={"contact_block": contact_block, "is_default": is_default},
-        )
-
-    def update_letter_contact(self, service_id, letter_contact_id, contact_block, is_default=False):
-        return self.post(
-            "/service/{}/letter-contact/{}".format(
-                service_id,
-                letter_contact_id,
-            ),
-            data={"contact_block": contact_block, "is_default": is_default},
-        )
-
-    def delete_letter_contact(self, service_id, letter_contact_id):
-        return self.post("/service/{}/letter-contact/{}/archive".format(service_id, letter_contact_id), data=None)
-
-    def get_sms_senders(self, service_id):
-        return self.get("/service/{}/sms-sender".format(service_id))
-
-    def get_sms_sender(self, service_id, sms_sender_id):
-        return self.get("/service/{}/sms-sender/{}".format(service_id, sms_sender_id))
-
-    def add_sms_sender(self, service_id, sms_sender, is_default=False):
-        data = {"sms_sender": sms_sender, "is_default": is_default}
-        return self.post("/service/{}/sms-sender".format(service_id), data=data)
-
-    def update_sms_sender(self, service_id, sms_sender_id, sms_sender, is_default=False):
-        return self.post(
-            "/service/{}/sms-sender/{}".format(service_id, sms_sender_id),
-            data={"sms_sender": sms_sender, "is_default": is_default},
-        )
-
-    def delete_sms_sender(self, service_id, sms_sender_id):
-        return self.post("/service/{}/sms-sender/{}/archive".format(service_id, sms_sender_id), data=None)
 
     def get_service_callback_api(self, service_id, callback_api_id):
         return self.get("/service/{}/delivery-receipt-api/{}".format(service_id, callback_api_id))["data"]

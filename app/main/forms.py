@@ -7,11 +7,7 @@ from numbers import Number
 import pytz
 from emergency_alerts_utils.formatters import strip_all_whitespace
 from emergency_alerts_utils.insensitive_dict import InsensitiveDict
-from emergency_alerts_utils.recipients import (
-    InvalidPhoneError,
-    normalise_phone_number,
-    validate_phone_number,
-)
+from emergency_alerts_utils.validation import InvalidPhoneError, validate_phone_number
 from flask import request
 from flask_login import current_user
 from flask_wtf import FlaskForm as Form
@@ -39,7 +35,6 @@ from wtforms import (
     validators,
 )
 from wtforms.validators import (
-    URL,
     UUID,
     DataRequired,
     InputRequired,
@@ -49,11 +44,7 @@ from wtforms.validators import (
     Regexp,
 )
 
-from app.formatters import (
-    format_auth_type,
-    format_thousands,
-    guess_name_from_email_address,
-)
+from app.formatters import format_auth_type, guess_name_from_email_address
 from app.main.validators import (
     BroadcastLength,
     CharactersNotAllowed,
@@ -302,83 +293,6 @@ class SMSCode(GovukTextInputField):
     def process_formdata(self, valuelist):
         if valuelist:
             self.data = InsensitiveDict.make_key(valuelist[0])
-
-
-class ForgivingIntegerField(GovukTextInputField):
-    #  Actual value is 2147483647 but this is a scary looking arbitrary number
-    POSTGRES_MAX_INT = 2000000000
-
-    def __init__(self, label=None, things="items", format_error_suffix="", **kwargs):
-        self.things = things
-        self.format_error_suffix = format_error_suffix
-        super().__init__(label, **kwargs)
-
-    def process_formdata(self, valuelist):
-        if valuelist:
-            value = valuelist[0].replace(",", "").replace(" ", "")
-
-            try:
-                value = int(value)
-            except ValueError:
-                pass
-
-            if value == "":
-                value = 0
-
-        return super().process_formdata([value])
-
-    def pre_validate(self, form):
-        if self.data:
-            error = None
-            try:
-                if int(self.data) > self.POSTGRES_MAX_INT:
-                    error = "Number of {} must be {} or less".format(
-                        self.things,
-                        format_thousands(self.POSTGRES_MAX_INT),
-                    )
-            except ValueError:
-                error = "Enter the number of {} {}".format(
-                    self.things,
-                    self.format_error_suffix,
-                )
-
-            if error:
-                raise ValidationError(error)
-
-        return super().pre_validate(form)
-
-    def __call__(self, **kwargs):
-        if self.get_form().is_submitted() and not self.get_form().validate():
-            return super().__call__(value=(self.raw_data or [None])[0], **kwargs)
-
-        try:
-            value = int(self.data)
-            value = format_thousands(value)
-        except (ValueError, TypeError):
-            value = self.data if self.data is not None else ""
-
-        return super().__call__(value=value, **kwargs)
-
-
-class HexColourCodeField(GovukTextInputField, RequiredValidatorsMixin):
-    required_validators = [
-        Regexp(regex="^$|^#?(?:[0-9a-fA-F]{3}){1,2}$", message="Must be a valid hex colour code"),
-    ]
-    param_extensions = {
-        "prefix": {
-            "text": "#",
-        },
-        "classes": "govuk-input--width-6",
-        "attributes": {"data-notify-module": "colour-preview"},
-    }
-
-    def _value(self):
-        return self.data[1:] if self.data and self.data.startswith("#") else self.data
-
-    def post_validate(self, form, validation_stopped):
-        if not self.errors:
-            if self.data and not self.data.startswith("#"):
-                self.data = "#" + self.data
 
 
 class FieldWithNoneOption:
@@ -1264,47 +1178,6 @@ class Triage(StripWhitespaceForm):
     )
 
 
-class ServiceContactDetailsForm(StripWhitespaceForm):
-    contact_details_type = GovukRadiosField(
-        "Type of contact details",
-        choices=[
-            ("url", "Link"),
-            ("email_address", "Email address"),
-            ("phone_number", "Phone number"),
-        ],
-    )
-
-    url = GovukTextInputField("URL")
-    email_address = GovukEmailField("Email address")
-    # This is a text field because the number provided by the user can also be a short code
-    phone_number = GovukTextInputField("Phone number")
-
-    def validate(self, extra_validators=None):
-        if self.contact_details_type.data == "url":
-            self.url.validators = [DataRequired(), URL(message="Must be a valid URL")]
-
-        elif self.contact_details_type.data == "email_address":
-            self.email_address.validators = [DataRequired(), Length(min=5, max=255), ValidEmail()]
-
-        elif self.contact_details_type.data == "phone_number":
-            # we can't use the existing phone number validation functions here since we want to allow landlines
-            def valid_phone_number(self, num):
-                try:
-                    normalise_phone_number(num.data)
-                    return True
-                except InvalidPhoneError:
-                    raise ValidationError("Must be a valid phone number")
-
-            self.phone_number.validators = [DataRequired(), Length(min=5, max=20), valid_phone_number]
-
-        return super().validate(extra_validators)
-
-
-class ServiceReplyToEmailForm(StripWhitespaceForm):
-    email_address = email_address(label="Reply-to email address", gov_user=False)
-    is_default = GovukCheckboxField("Make this email address the default")
-
-
 class AdminNotesForm(StripWhitespaceForm):
     notes = TextAreaField(validators=[])
 
@@ -1330,11 +1203,6 @@ class DateFilterForm(StripWhitespaceForm):
 class RequiredDateFilterForm(StripWhitespaceForm):
     start_date = GovukDateField("Start Date")
     end_date = GovukDateField("End Date")
-
-
-class BillingReportDateFilterForm(StripWhitespaceForm):
-    start_date = GovukDateField("First day covered by report")
-    end_date = GovukDateField("Last day covered by report")
 
 
 class SearchByNameForm(StripWhitespaceForm):
@@ -1383,46 +1251,8 @@ class PlaceholderForm(StripWhitespaceForm):
     pass
 
 
-class CallbackForm(StripWhitespaceForm):
-    url = GovukTextInputField(
-        "URL",
-        validators=[
-            DataRequired(message="Cannot be empty"),
-            Regexp(regex="^https.*", message="Must be a valid https URL"),
-        ],
-    )
-    bearer_token = GovukPasswordField(
-        "Bearer token",
-        validators=[DataRequired(message="Cannot be empty"), Length(min=10, message="Must be at least 10 characters")],
-    )
-
-    def validate(self, extra_validators=None):
-        return super().validate(extra_validators) or self.url.data == ""
-
-
 class SMSPrefixForm(StripWhitespaceForm):
     enabled = OnOffField("")  # label is assigned on instantiation
-
-
-def get_placeholder_form_instance(
-    placeholder_name,
-    dict_to_populate_from,
-    template_type,
-    allow_international_phone_numbers=False,
-):
-    if InsensitiveDict.make_key(placeholder_name) == "emailaddress" and template_type == "email":
-        field = email_address(label=placeholder_name, gov_user=False)
-    elif InsensitiveDict.make_key(placeholder_name) == "phonenumber" and template_type == "sms":
-        if allow_international_phone_numbers:
-            field = international_phone_number(label=placeholder_name)
-        else:
-            field = uk_mobile_number(label=placeholder_name)
-    else:
-        field = GovukTextInputField(placeholder_name, validators=[DataRequired(message="Cannot be empty")])
-
-    PlaceholderForm.placeholder_value = field
-
-    return PlaceholderForm(placeholder_value=dict_to_populate_from.get(placeholder_name, ""))
 
 
 class SetTemplateSenderForm(StripWhitespaceForm):
@@ -1440,36 +1270,6 @@ class AdminSetOrganisationForm(StripWhitespaceForm):
         self.organisations.choices = kwargs["choices"]
 
     organisations = GovukRadiosField("Select an organisation", validators=[DataRequired()])
-
-
-class GovernmentIdentityLogoForm(StripWhitespaceForm):
-    logo_text = GovukTextInputField(
-        "Enter the text that will appear in your logo",
-        validators=[DataRequired("Cannot be empty")],
-    )
-
-
-class AdminServiceAddDataRetentionForm(StripWhitespaceForm):
-    notification_type = GovukRadiosField(
-        "What notification type?",
-        choices=[
-            ("email", "Email"),
-            ("sms", "SMS"),
-            ("letter", "Letter"),
-        ],
-        thing="notification type",
-    )
-    days_of_retention = GovukIntegerField(
-        label="Days of retention",
-        validators=[validators.NumberRange(min=3, max=90, message="Must be between 3 and 90")],
-    )
-
-
-class AdminServiceEditDataRetentionForm(StripWhitespaceForm):
-    days_of_retention = GovukIntegerField(
-        label="Days of retention",
-        validators=[validators.NumberRange(min=3, max=90, message="Must be between 3 and 90")],
-    )
 
 
 class TemplateFolderForm(StripWhitespaceForm):
@@ -1547,9 +1347,6 @@ class TemplateAndFoldersSelectionForm(Form):
             filter(
                 None,
                 [
-                    ("email", "Email") if "email" in available_template_types else None,
-                    ("sms", "Text message") if "sms" in available_template_types else None,
-                    ("letter", "Letter") if "letter" in available_template_types else None,
                     ("broadcast", "Broadcast") if "broadcast" in available_template_types else None,
                     ("copy-existing", "Copy an existing template") if allow_adding_copy_of_template else None,
                 ],
@@ -1685,64 +1482,6 @@ class ServiceBroadcastAccountTypeForm(StripWhitespaceForm):
         ],
         validators=[DataRequired()],
     )
-
-
-class AcceptAgreementForm(StripWhitespaceForm):
-    @classmethod
-    def from_organisation(cls, org):
-        if org.agreement_signed_on_behalf_of_name and org.agreement_signed_on_behalf_of_email_address:
-            who = "someone-else"
-        elif org.agreement_signed_version:  # only set if user has submitted form previously
-            who = "me"
-        else:
-            who = None
-
-        return cls(
-            version=org.agreement_signed_version,
-            who=who,
-            on_behalf_of_name=org.agreement_signed_on_behalf_of_name,
-            on_behalf_of_email=org.agreement_signed_on_behalf_of_email_address,
-        )
-
-    version = GovukTextInputField("Which version of the agreement do you want to accept?")
-
-    who = RadioField(
-        "Who are you accepting the agreement for?",
-        choices=(
-            (
-                "me",
-                "Yourself",
-            ),
-            (
-                "someone-else",
-                "Someone else",
-            ),
-        ),
-    )
-
-    on_behalf_of_name = GovukTextInputField("What’s their name?")
-
-    on_behalf_of_email = email_address(
-        "What’s their email address?",
-        required=False,
-        gov_user=False,
-    )
-
-    def __validate_if_nominating(self, field):
-        if self.who.data == "someone-else":
-            if not field.data:
-                raise ValidationError("Cannot be empty")
-        else:
-            field.data = ""
-
-    validate_on_behalf_of_name = __validate_if_nominating
-    validate_on_behalf_of_email = __validate_if_nominating
-
-    def validate_version(self, field):
-        try:
-            float(field.data)
-        except (TypeError, ValueError):
-            raise ValidationError("Must be a number")
 
 
 class BroadcastAreaForm(StripWhitespaceForm):
@@ -1946,4 +1685,14 @@ class ChooseCoordinateTypeForm(StripWhitespaceForm):
             ],
         },
         validators=[DataRequired(message="Select which type of coordinates you'd like to use")],
+    )
+
+
+class RejectionReasonForm(StripWhitespaceForm):
+    hint = """ Detailed reason for rejecting the alert, including how it may be reworked.
+        For example, "The alert message has spelling mistakes"."""
+
+    rejection_reason = GovukTextareaField(
+        validators=[DataRequired(message="Enter the reason for rejecting the alert")],
+        param_extensions={"hint": {"text": hint}, "rows": 3},
     )

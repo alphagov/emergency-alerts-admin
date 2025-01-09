@@ -15,7 +15,6 @@ from app.broadcast_areas.models import (
 from app.broadcast_areas.utils import aggregate_areas
 from app.formatters import round_to_significant_figures
 from app.models import JSONModel, ModelList
-from app.models.user import User
 from app.notify_client.broadcast_message_api_client import broadcast_message_api_client
 
 ESTIMATED_AREA_OF_LARGEST_UK_COUNTY = broadcast_area_libraries.get_areas(["lad23-E06000065"])[  # North Yorkshire
@@ -39,9 +38,17 @@ class BroadcastMessage(JSONModel):
         "approved_at",
         "cancelled_at",
         "updated_at",
+        "rejected_at",
         "created_by_id",
         "approved_by_id",
         "cancelled_by_id",
+        "rejected_by_id",
+        "rejection_reason",
+        "rejected_by",
+        "created_by",
+        "approved_by",
+        "cancelled_by",
+        "rejected_by_api_key_id",
     }
 
     libraries = broadcast_area_libraries
@@ -199,20 +206,6 @@ class BroadcastMessage(JSONModel):
         ):
             return "completed"
         return self._dict["status"]
-
-    @cached_property
-    def created_by(self):
-        return User.from_id(self.created_by_id) if self.created_by_id else None
-
-    @cached_property
-    def approved_by(self):
-        return User.from_id(self.approved_by_id) if self.approved_by_id else None
-
-    @cached_property
-    def cancelled_by(self):
-        if not self.cancelled_by_id:
-            return "an API call"
-        return User.from_id(self.cancelled_by_id).name
 
     @cached_property
     def count_of_phones(self):
@@ -392,6 +385,11 @@ class BroadcastMessage(JSONModel):
 
     def reject_broadcast(self):
         self._set_status_to("rejected")
+
+    def reject_broadcast_with_reason(self, rejection_reason):
+        broadcast_message_api_client.update_broadcast_message_status_with_reason(
+            "rejected", broadcast_message_id=self.id, service_id=self.service_id, rejection_reason=rejection_reason
+        )
 
     def cancel_broadcast(self):
         self._set_status_to("cancelled")

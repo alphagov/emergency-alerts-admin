@@ -837,39 +837,6 @@ def mock_get_users_by_service(mocker):
 
 
 @pytest.fixture(scope="function")
-def mock_s3_upload(mocker):
-    def _upload(service_id, filedata, region):
-        return sample_uuid()
-
-    return mocker.patch("app.main.views.send.s3upload", side_effect=_upload)
-
-
-@pytest.fixture(scope="function")
-def mock_s3_download(mocker):
-    def _download(service_id, upload_id):
-        return """
-            phone number,name
-            +447700900986,John
-            +447700900986,Smith
-        """
-
-    return mocker.patch("app.main.views.send.s3download", side_effect=_download)
-
-
-@pytest.fixture(scope="function")
-def mock_s3_get_metadata(mocker):
-    def _get_metadata(service_id, upload_id):
-        return {"original_file_name": "example.csv"}
-
-    return mocker.patch("app.main.views.send.get_csv_metadata", side_effect=_get_metadata)
-
-
-@pytest.fixture(scope="function")
-def mock_s3_set_metadata(mocker):
-    return mocker.patch("app.main.views.send.set_metadata_on_csv_upload")
-
-
-@pytest.fixture(scope="function")
 def sample_invite(mocker, service_one):
     id_ = USER_ONE_ID
     from_user = service_one["users"][0]
@@ -2343,6 +2310,20 @@ def mock_update_broadcast_message_status(
 
     return mocker.patch(
         "app.broadcast_message_api_client.update_broadcast_message_status",
+        side_effect=_update,
+    )
+
+
+@pytest.fixture(scope="function")
+def mock_update_broadcast_message_status_with_reason(
+    mocker,
+    fake_uuid,
+):
+    def _update(status, *, service_id, broadcast_message_id, rejection_reason):
+        pass
+
+    return mocker.patch(
+        "app.broadcast_message_api_client.update_broadcast_message_status_with_reason",
         side_effect=_update,
     )
 

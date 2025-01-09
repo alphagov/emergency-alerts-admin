@@ -4,9 +4,9 @@ from abc import ABC, abstractmethod
 import pwdpy
 from emergency_alerts_utils.field import Field
 from emergency_alerts_utils.formatters import formatted_list
-from emergency_alerts_utils.recipients import InvalidEmailError, validate_email_address
 from emergency_alerts_utils.sanitise_text import SanitiseSMS
 from emergency_alerts_utils.template import BroadcastMessageTemplate
+from emergency_alerts_utils.validation import InvalidEmailError, validate_email_address
 from orderedset import OrderedSet
 from postcode_validator.uk.uk_postcode_regex import postcode_regex
 from wtforms import ValidationError
