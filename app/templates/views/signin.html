@@ -1,6 +1,7 @@
 {% extends "withoutnav_template.html" %}
 {% from "components/page-footer.html" import page_footer %}
 {% from "components/form.html" import form_wrapper %}
+{% from "govuk_frontend_jinja/components/password-input/macro.html" import govukPasswordInput %}
 
 {% block per_page_title %}
   {% if again %}
@@ -44,7 +45,25 @@
 
     {% call form_wrapper(autocomplete=True) %}
       {{ form.email_address(param_extensions={"autocomplete": "email"}) }}
-      {{ form.password(param_extensions={"autocomplete": "current-password"}) }}
+      {{ govukPasswordInput({
+        "label": {
+          "text": "Enter password"
+        },
+        "id": form.password.id,
+        "value": form.password.data,
+        "name": form.password.name,
+        "classes": "govuk-!-width-two-thirds govuk-!-margin-right-1",
+        "showPasswordText":"Show password",
+        "hidePasswordText":"Hide password",
+        "showPasswordAriaLabelText":"Show password",
+        "hidePasswordAriaLabelText":"Hide password",
+        "passwordShownAnnouncementText":"Your password is visible",
+        "passwordHiddenAnnouncementText":"Your password is hidden",
+        "autocomplete": "current-password",
+        "errorMessage": {
+              "text" : form.password.errors[0] | safe
+        } if form.password.errors[0] else None,
+      }) }}
       {{ page_footer("Continue", secondary_link=password_reset_url, secondary_link_text="Forgotten your password?") }}
     {% endcall %}
   </div>
