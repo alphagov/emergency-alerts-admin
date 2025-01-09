@@ -7,6 +7,7 @@ from emergency_alerts_utils.formatters import formatted_list
 from emergency_alerts_utils.sanitise_text import SanitiseSMS
 from emergency_alerts_utils.template import BroadcastMessageTemplate
 from emergency_alerts_utils.validation import InvalidEmailError, validate_email_address
+from flask_login import current_user
 from orderedset import OrderedSet
 from postcode_validator.uk.uk_postcode_regex import postcode_regex
 from wtforms import ValidationError
@@ -233,4 +234,13 @@ class Only6DecimalPlaces:
 
     def __call__(self, form, field):
         if field.data and not re.match(self.regex, str(field.data)):
+            raise ValidationError(self.message)
+
+
+class MustBeDifferentName:
+    def __init__(self, message="Enter a name different to current name"):
+        self.message = message
+
+    def __call__(self, form, field):
+        if field.data == current_user.name:
             raise ValidationError(self.message)

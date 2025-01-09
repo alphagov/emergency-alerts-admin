@@ -51,6 +51,7 @@ from app.main.validators import (
     CommonlyUsedPassword,
     IsPostcode,
     LowEntropyPassword,
+    MustBeDifferentName,
     MustContainAlphanumericCharacters,
     NoCommasInPlaceHolders,
     NoPlaceholders,
@@ -1078,7 +1079,9 @@ class ChangePasswordForm(StripWhitespaceForm):
 
 
 class ChangeNameForm(StripWhitespaceForm):
-    new_name = GovukTextInputField("Your name")
+    new_name = GovukTextInputField(
+        "Your name", validators=[DataRequired(message="Enter a name"), MustBeDifferentName()]
+    )
 
 
 class ChangeEmailForm(StripWhitespaceForm):
