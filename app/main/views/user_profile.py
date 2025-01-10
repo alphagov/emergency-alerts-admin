@@ -307,14 +307,40 @@ def user_profile_delete_security_key(key_id):
     if not current_user.can_use_webauthn:
         abort(403)
 
-    try:
-        user_api_client.delete_webauthn_credential_for_user(user_id=current_user.id, credential_id=key_id)
-    except HTTPError as e:
-        message = "Cannot delete last remaining webauthn credential for user"
-        if e.message == message:
-            flash("You cannot delete your last security key.")
-            return redirect(url_for(".user_profile_manage_security_key", key_id=key_id))
-        else:
-            raise e
+    return redirect(url_for(".user_profile_security_key_authenticate", key_id=key_id))
 
-    return redirect(url_for(".user_profile_security_keys"))
+
+@main.route("/user-profile/security-keys/<uuid:key_id>/authenticate", methods=["GET", "POST"])
+@user_is_logged_in
+def user_profile_security_key_authenticate(key_id):
+    # Validate password for form
+    def _check_password(pwd):
+        return user_api_client.verify_password(current_user.id, pwd)
+
+    security_key = current_user.webauthn_credentials.by_id(key_id)
+
+    form = ConfirmPasswordForm(_check_password)
+
+    if form.validate_on_submit():
+        try:
+            user_api_client.delete_webauthn_credential_for_user(user_id=current_user.id, credential_id=key_id)
+        except HTTPError as e:
+            message = "Cannot delete last remaining webauthn credential for user"
+            if e.message == message:
+                flash("You cannot delete your last security key.")
+                return redirect(url_for(".user_profile_manage_security_key", key_id=key_id))
+            else:
+                raise e
+
+        flash(
+            f"{security_key.name} was deleted.",
+            "default_with_tick",
+        )
+        return redirect(url_for(".user_profile_security_keys"))
+
+    return render_template(
+        "views/user-profile/authenticate.html",
+        thing="security keys",
+        form=form,
+        back_link=url_for(".user_profile_security_keys"),
+    )
