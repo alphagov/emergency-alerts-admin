@@ -143,7 +143,7 @@ def email_address(label="Email address", gov_user=True, required=True):
         validators.append(ValidGovEmail())
 
     if required:
-        validators.append(DataRequired(message="Cannot be empty"))
+        validators.append(DataRequired(message="Enter an email address"))
 
     return GovukEmailField(label, validators)
 
@@ -221,7 +221,7 @@ def uk_mobile_number(label="Mobile number"):
 
 
 def international_phone_number(label="Mobile number"):
-    return InternationalPhoneNumber(label, validators=[DataRequired(message="Cannot be empty")])
+    return InternationalPhoneNumber(label, validators=[DataRequired(message="Enter a mobile number")])
 
 
 def password():
@@ -1080,7 +1080,11 @@ class ChangePasswordForm(StripWhitespaceForm):
 
 class ChangeNameForm(StripWhitespaceForm):
     new_name = GovukTextInputField(
-        "Your name", validators=[DataRequired(message="Enter a name"), MustBeDifferentName()]
+        "Your name",
+        validators=[
+            DataRequired(message="Enter a name"),
+            MustBeDifferentName("Name must be different to current name"),
+        ],
     )
 
 
