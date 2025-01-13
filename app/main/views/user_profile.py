@@ -27,6 +27,7 @@ from app.main.forms import (
     TwoFactorForm,
 )
 from app.models.user import User
+from app.models.webauthn_credential import WebAuthnCredential
 from app.utils.user import user_is_gov_user, user_is_logged_in
 
 NEW_EMAIL = "new-email"
@@ -334,6 +335,40 @@ def user_profile_security_key_authenticate(key_id):
 
         flash(
             f"{security_key.name} was deleted.",
+            "default_with_tick",
+        )
+        return redirect(url_for(".user_profile_security_keys"))
+
+    return render_template(
+        "views/user-profile/authenticate.html",
+        thing="security keys",
+        form=form,
+        back_link=url_for(".user_profile_security_keys"),
+    )
+
+
+@main.route("/user-profile/security-keys/create/authenticate", methods=["GET", "POST"])
+@user_is_logged_in
+def user_profile_security_key_create_authenticate():
+    if not current_user.can_use_webauthn:
+        abort(403)
+
+    # Validate password for form
+    def _check_password(pwd):
+        return user_api_client.verify_password(current_user.id, pwd)
+
+    form = ConfirmPasswordForm(_check_password)
+    message = (
+        "Registration complete. Next time you sign in to Emergency Alerts you’ll be asked to use your security key."
+    )
+
+    if form.validate_on_submit():
+        credential = session.pop("webauthn_credential")
+        cred = WebAuthnCredential.create(credential)
+        current_user.create_webauthn_credential(cred)
+        current_user.update(auth_type="webauthn_auth")
+        flash(
+            message,
             "default_with_tick",
         )
         return redirect(url_for(".user_profile_security_keys"))
