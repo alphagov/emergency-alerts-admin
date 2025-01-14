@@ -716,30 +716,35 @@ def test_confirm_delete_security_key(client_request, platform_admin_user, webaut
     assert page.select_one(".banner-dangerous form")["method"] == "post"
 
 
-def test_delete_security_key(client_request, platform_admin_user, webauthn_credential, mocker):
+def test_delete_security_key(client_request, platform_admin_user, webauthn_credential, mocker, mock_verify_password):
     client_request.login(platform_admin_user)
     mock_delete = mocker.patch("app.user_api_client.delete_webauthn_credential_for_user")
+
+    mocker.patch(
+        "app.user_api_client.get_webauthn_credentials_count",
+        return_value=2,
+    )
 
     client_request.post(
         ".user_profile_delete_security_key",
         key_id=webauthn_credential["id"],
-        _expected_redirect=url_for(
-            ".user_profile_security_keys",
-        ),
+        _expected_redirect=url_for("main.user_profile_security_key_authenticate", key_id=webauthn_credential["id"]),
     )
     mock_delete.assert_called_once_with(credential_id=webauthn_credential["id"], user_id=platform_admin_user["id"])
 
 
 def test_delete_security_key_handles_last_credential_error(
-    client_request,
-    platform_admin_user,
-    webauthn_credential,
-    mocker,
+    client_request, platform_admin_user, webauthn_credential, mocker, mock_verify_password
 ):
     client_request.login(platform_admin_user)
     mocker.patch(
         "app.models.webauthn_credential.WebAuthnCredentials.client_method",
         return_value=[webauthn_credential],
+    )
+
+    mocker.patch(
+        "app.user_api_client.get_webauthn_credentials_count",
+        return_value=1,
     )
 
     mocker.patch(
