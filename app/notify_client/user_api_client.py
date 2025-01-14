@@ -218,6 +218,10 @@ class UserApiClient(AdminAPIClient):
 
         return self.get(endpoint)["data"]
 
+    def get_webauthn_credentials_count(self, user_id):
+        endpoint = f"/user/{user_id}/webauthn/check-credentials"
+        return int(self.get(endpoint)["data"])
+
     def create_webauthn_credential_for_user(self, user_id, credential):
         endpoint = f"/user/{user_id}/webauthn"
 
