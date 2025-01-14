@@ -237,10 +237,19 @@ class Only6DecimalPlaces:
             raise ValidationError(self.message)
 
 
-class MustBeDifferentName:
+class NameMustBeDifferent:
     def __init__(self, message="Enter a name different to current name"):
         self.message = message
 
     def __call__(self, form, field):
         if field.data == current_user.name:
+            raise ValidationError(self.message)
+
+
+class MobileNumberMustBeDifferent:
+    def __init__(self, message="Enter a mobile number different to current mobile number"):
+        self.message = message
+
+    def __call__(self, form, field):
+        if field.data == current_user.mobile_number:
             raise ValidationError(self.message)
