@@ -161,6 +161,8 @@ EXCLUDED_ENDPOINTS = tuple(
             "user_profile_name_authenticate",
             "user_profile_password",
             "user_profile_security_keys",
+            "user_profile_security_key_authenticate",
+            "user_profile_security_key_create_authenticate",
             "verify",
             "verify_email",
             "view_current_broadcast",
