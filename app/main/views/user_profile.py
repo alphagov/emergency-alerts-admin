@@ -87,9 +87,16 @@ def user_profile_name_authenticate():
 def user_profile_email():
     form = ChangeEmailForm(User.already_registered, email_address=current_user.email_address)
 
-    if form.validate_on_submit():
-        session[NEW_EMAIL] = form.email_address.data
-        return redirect(url_for(".user_profile_email_authenticate"))
+    try:
+        if form.validate_on_submit():
+            session[NEW_EMAIL] = form.email_address.data
+            return redirect(url_for(".user_profile_email_authenticate"))
+    except HTTPError as e:
+        if e.status_code == 400:
+            form.email_address.errors.append(e.message[0])
+            return render_template(
+                "views/user-profile/change.html", thing="email address", form_field=form.email_address
+            )
     return render_template("views/user-profile/change.html", thing="email address", form_field=form.email_address)
 
 
@@ -307,6 +314,10 @@ def user_profile_manage_security_key(key_id):
 def user_profile_delete_security_key(key_id):
     if not current_user.can_use_webauthn:
         abort(403)
+
+    if user_api_client.get_webauthn_credentials_count(current_user.id) == 1:
+        flash("You cannot delete your last security key.")
+        return redirect(url_for(".user_profile_manage_security_key", key_id=key_id))
 
     return redirect(url_for(".user_profile_security_key_authenticate", key_id=key_id))
 
