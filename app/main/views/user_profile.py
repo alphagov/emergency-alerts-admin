@@ -86,9 +86,12 @@ def user_profile_name_authenticate():
 @user_is_gov_user
 def user_profile_email():
     form = ChangeEmailForm(User.already_registered, email_address=current_user.email_address)
-    if current_user.email_address == form.email_address.data:
-        form.email_address.errors = ["Email address must be different to current email address"]
-        return render_template("views/user-profile/change.html", thing="email address", form_field=form.email_address)
+    if form.email_address.data != "" and form.is_submitted():
+        if current_user.email_address == form.email_address.data:
+            form.email_address.errors = ["Email address must be different to current email address"]
+            return render_template(
+                "views/user-profile/change.html", thing="email address", form_field=form.email_address
+            )
 
     try:
         if form.validate_on_submit():
