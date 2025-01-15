@@ -74,14 +74,14 @@ def test_should_redirect_to_auth_after_name_change(
     client_request,
     mock_update_user_attribute,
 ):
-    client_request.post(
+    page = client_request.post(
         "main.user_profile_name",
         _data={"new_name": "New Name"},
-        _expected_status=302,
-        _expected_redirect=url_for("main.user_profile_name_authenticate"),
+        _follow_redirects=True,
     )
 
     assert mock_update_user_attribute.called is False  # Name not updated as user redirected to auth page
+    assert page.select_one("h1").text.strip() == "Change your name"
 
 
 def test_should_render_change_name_after_authenticate(
@@ -91,15 +91,12 @@ def test_should_render_change_name_after_authenticate(
 ):
     with client_request.session_transaction() as session:
         session["new-name"] = "New Name"
-    client_request.post(
-        "main.user_profile_name_authenticate",
-        _data={"password": "12345"},
-        _expected_status=302,
-        _expected_redirect=url_for(
-            ".user_profile",
-        ),
+
+    page = client_request.post(
+        "main.user_profile_name_authenticate", _data={"password": "12345"}, _follow_redirects=True
     )
     assert mock_update_user_attribute.called is True
+    assert page.select_one("h1").text.strip() == "Your profile"
 
 
 def test_should_show_email_page(
@@ -716,25 +713,28 @@ def test_confirm_delete_security_key(client_request, platform_admin_user, webaut
     assert page.select_one(".banner-dangerous form")["method"] == "post"
 
 
-def test_delete_security_key(client_request, platform_admin_user, webauthn_credential, mocker, mock_verify_password):
+def test_delete_security_key_renders_auth_page(
+    client_request, platform_admin_user, webauthn_credential, mocker, mock_verify_password
+):
     client_request.login(platform_admin_user)
-    mock_delete = mocker.patch("app.user_api_client.delete_webauthn_credential_for_user")
+    mocker.patch(
+        "app.models.webauthn_credential.WebAuthnCredentials.client_method",
+        return_value=[webauthn_credential],
+    )
 
     mocker.patch(
         "app.user_api_client.get_webauthn_credentials_count",
         return_value=2,
     )
 
-    client_request.post(
-        ".user_profile_delete_security_key",
-        key_id=webauthn_credential["id"],
-        _expected_redirect=url_for("main.user_profile_security_key_authenticate", key_id=webauthn_credential["id"]),
+    page = client_request.post(
+        ".user_profile_delete_security_key", key_id=webauthn_credential["id"], _follow_redirects=True
     )
-    mock_delete.assert_called_once_with(credential_id=webauthn_credential["id"], user_id=platform_admin_user["id"])
+    assert "Change your security keys" in page.select_one("h1").text
 
 
 def test_delete_security_key_handles_last_credential_error(
-    client_request, platform_admin_user, webauthn_credential, mocker, mock_verify_password
+    client_request, platform_admin_user, webauthn_credential, mocker
 ):
     client_request.login(platform_admin_user)
     mocker.patch(
@@ -747,14 +747,80 @@ def test_delete_security_key_handles_last_credential_error(
         return_value=1,
     )
 
-    mocker.patch(
-        "app.user_api_client.delete_webauthn_credential_for_user",
-        side_effect=HTTPError(response={}, message="Cannot delete last remaining webauthn credential for user"),
+    page = client_request.post(
+        ".user_profile_delete_security_key", key_id=webauthn_credential["id"], _follow_redirects=True
     )
+    assert f"Manage ‘{webauthn_credential['name']}" in page.select_one("h1").text
+    expected_message = "You cannot delete your last security key."
+    assert expected_message in page.select_one("div.banner-dangerous").text
+
+
+def test_security_key_deleted_after_successful_auth(
+    client_request, platform_admin_user, webauthn_credential, mocker, mock_verify_password
+):
+    client_request.login(platform_admin_user)
+    mocker.patch(
+        "app.models.webauthn_credential.WebAuthnCredentials.client_method",
+        return_value=[webauthn_credential],
+    )
+
+    mocker.patch(
+        "app.user_api_client.get_webauthn_credentials_count",
+        return_value=2,
+    )
+
+    mock_delete = mocker.patch("app.user_api_client.delete_webauthn_credential_for_user")
 
     page = client_request.post(
         ".user_profile_delete_security_key", key_id=webauthn_credential["id"], _follow_redirects=True
     )
-    assert "Manage ‘Test credential’" in page.select_one("h1").text
-    expected_message = "You cannot delete your last security key."
-    assert expected_message in page.select_one("div.banner-dangerous").text
+
+    assert page.select_one("h1").text.strip() == "Change your security keys"
+
+    page2 = client_request.post(
+        ".user_profile_security_key_authenticate",
+        key_id=webauthn_credential["id"],
+        _data={"password": "12345"},
+        _follow_redirects=True,
+    )
+
+    mock_delete.assert_called_once_with(credential_id=webauthn_credential["id"], user_id=platform_admin_user["id"])
+    assert page2.select_one("h1").text.strip() == "Security keys"
+
+
+def test_security_key_added_after_successful_auth(
+    client_request, platform_admin_user, webauthn_credential, mocker, mock_verify_password, mock_update_user_attribute
+):
+    platform_admin_user["can_use_webauthn"] = True
+    client_request.login(platform_admin_user)
+    mocker.patch(
+        "app.models.webauthn_credential.WebAuthnCredentials.client_method",
+        return_value=[webauthn_credential],
+    )
+
+    with client_request.session_transaction() as session:
+        session["webauthn_credential"] = webauthn_credential
+
+    mock_create = mocker.patch("app.user_api_client.create_webauthn_credential_for_user")
+
+    client_request.post(
+        ".user_profile_security_key_create_authenticate",
+        _data={"password": "12345"},
+        expected_redirect=url_for(
+            "main.user_profile_security_keys",
+        ),
+    )
+    webauthn_credential = WebAuthnCredential.create(webauthn_credential)
+    mock_create.assert_called_once_with(platform_admin_user["id"], webauthn_credential)
+    mock_update_user_attribute.assert_called_once_with(
+        platform_admin_user["id"],
+        auth_type="webauthn_auth",
+    )
+    with client_request.session_transaction() as session:
+        assert session["_flashes"] == [
+            (
+                "default_with_tick",
+                "Registration complete. Next time you sign in to Emergency Alerts "
+                "you’ll be asked to use your security key.",
+            )
+        ]
