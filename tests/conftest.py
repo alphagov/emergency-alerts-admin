@@ -649,6 +649,14 @@ def mock_already_registered(mocker):
 
 
 @pytest.fixture(scope="function")
+def mock_not_already_registered(mocker):
+    def _is_already_registered(email_address):
+        return False
+
+    return mocker.patch("app.models.user.User.already_registered", side_effect=_is_already_registered)
+
+
+@pytest.fixture(scope="function")
 def mock_dont_get_user_by_email(mocker):
     def _get_user(email_address):
         return None
