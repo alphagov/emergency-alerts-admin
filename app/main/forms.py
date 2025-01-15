@@ -1109,7 +1109,7 @@ class ChangeEmailForm(StripWhitespaceForm):
         if self.email_address.errors:
             return
 
-        is_valid = self.validate_email_func(field.data)
+        is_valid = self.validate_email_func(field.data, current_user.id)
         if is_valid:
             raise ValidationError("The email address is already in use")
 
