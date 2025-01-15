@@ -120,16 +120,15 @@ def test_begin_register_stores_state_in_session(
 def test_complete_register_creates_credential(
     platform_admin_user,
     client_request,
-    mock_update_user_attribute,
     mocker,
 ):
+    mock_webauthn_credential = Mock()
+    mock_webauthn_credential.serialize.return_value = {}
     with client_request.session_transaction() as session:
         session["webauthn_registration_state"] = "state"
 
-    user_api_mock = mocker.patch("app.user_api_client.create_webauthn_credential_for_user")
-
     credential_mock = mocker.patch(
-        "app.models.webauthn_credential.WebAuthnCredential.from_registration", return_value="cred"
+        "app.models.webauthn_credential.WebAuthnCredential.from_registration", return_value=mock_webauthn_credential
     )
 
     client_request.login(platform_admin_user)
@@ -140,11 +139,9 @@ def test_complete_register_creates_credential(
     )
 
     credential_mock.assert_called_once_with("state", "public_key_credential")
-    user_api_mock.assert_called_once_with(platform_admin_user["id"], "cred")
-    mock_update_user_attribute.assert_called_once_with(
-        platform_admin_user["id"],
-        auth_type="webauthn_auth",
-    )
+
+    with client_request.session_transaction() as session:
+        assert "webauthn_credential" in session
 
 
 def test_complete_register_clears_session(
@@ -152,11 +149,18 @@ def test_complete_register_clears_session(
     platform_admin_user,
     mocker,
 ):
+    mock_webauthn_credential = Mock()
+    mock_webauthn_credential.serialize.return_value = {}
+
     with client_request.session_transaction() as session:
         session["webauthn_registration_state"] = "state"
 
     mocker.patch("app.user_api_client.create_webauthn_credential_for_user")
-    mocker.patch("app.models.webauthn_credential.WebAuthnCredential.from_registration")
+
+    mocker.patch(
+        "app.models.webauthn_credential.WebAuthnCredential.from_registration",
+        return_value=mock_webauthn_credential,
+    )
 
     client_request.login(platform_admin_user)
     client_request.post(
@@ -167,13 +171,6 @@ def test_complete_register_clears_session(
 
     with client_request.session_transaction() as session:
         assert "webauthn_registration_state" not in session
-        assert session["_flashes"] == [
-            (
-                "default_with_tick",
-                "Registration complete. Next time you sign in to Emergency Alerts "
-                "you’ll be asked to use your security key.",
-            )
-        ]
 
 
 def test_complete_register_handles_library_errors(

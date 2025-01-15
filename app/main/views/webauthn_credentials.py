@@ -1,6 +1,6 @@
 from fido2 import cbor
 from fido2.webauthn import AuthenticatorData, CollectedClientData
-from flask import abort, current_app, flash, redirect, request, session, url_for
+from flask import abort, current_app, redirect, request, session, url_for
 from flask_login import current_user
 
 from app.main import main
@@ -45,17 +45,10 @@ def webauthn_complete_register():
             session.pop("webauthn_registration_state"),
             cbor.decode(request.get_data()),
         )
+        session["webauthn_credential"] = credential.serialize()
     except RegistrationError as e:
         current_app.logger.info(f"User {current_user.id} could not register a new webauthn token - {e}")
         abort(400)
-
-    current_user.create_webauthn_credential(credential)
-    current_user.update(auth_type="webauthn_auth")
-
-    flash(
-        "Registration complete. Next time you sign in to Emergency Alerts you’ll be asked to use your security key.",
-        "default_with_tick",
-    )
 
     return cbor.encode("")
 

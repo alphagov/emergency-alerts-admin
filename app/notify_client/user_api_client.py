@@ -48,8 +48,8 @@ class UserApiClient(AdminAPIClient):
                 abort(429)
             raise e
 
-    def check_user_exists(self, email_address):
-        return self.post("/user/email-in-db", data={"email": email_address})
+    def check_user_exists(self, email_address, user_id):
+        return self.post("/user/{}/email-in-db".format(user_id), data={"email": email_address})
 
     def get_user_by_email_or_none(self, email_address):
         try:
@@ -102,6 +102,8 @@ class UserApiClient(AdminAPIClient):
         except HTTPError as e:
             if e.status_code == 400 or e.status_code == 404:
                 return False
+            elif e.status_code == 429:
+                abort(429)
 
     def send_verify_code(self, user_id, code_type, to, next_string=None):
         data = {"to": to}
@@ -215,6 +217,10 @@ class UserApiClient(AdminAPIClient):
         endpoint = f"/user/{user_id}/webauthn"
 
         return self.get(endpoint)["data"]
+
+    def get_webauthn_credentials_count(self, user_id):
+        endpoint = f"/user/{user_id}/webauthn/check-credentials"
+        return int(self.get(endpoint)["data"])
 
     def create_webauthn_credential_for_user(self, user_id, credential):
         endpoint = f"/user/{user_id}/webauthn"

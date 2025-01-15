@@ -33,7 +33,7 @@
                 throw Error(response.statusText);
               }
 
-              window.location.reload();
+              window.location.href = "/user-profile/security-keys/create/authenticate";
             })
             .catch((error) => {
               console.error(error);

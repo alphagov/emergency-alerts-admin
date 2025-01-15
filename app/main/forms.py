@@ -51,7 +51,9 @@ from app.main.validators import (
     CommonlyUsedPassword,
     IsPostcode,
     LowEntropyPassword,
+    MobileNumberMustBeDifferent,
     MustContainAlphanumericCharacters,
+    NameMustBeDifferent,
     NoCommasInPlaceHolders,
     NoPlaceholders,
     Only2DecimalPlaces,
@@ -142,7 +144,7 @@ def email_address(label="Email address", gov_user=True, required=True):
         validators.append(ValidGovEmail())
 
     if required:
-        validators.append(DataRequired(message="Cannot be empty"))
+        validators.append(DataRequired(message="Enter a valid email address"))
 
     return GovukEmailField(label, validators)
 
@@ -220,7 +222,13 @@ def uk_mobile_number(label="Mobile number"):
 
 
 def international_phone_number(label="Mobile number"):
-    return InternationalPhoneNumber(label, validators=[DataRequired(message="Cannot be empty")])
+    return InternationalPhoneNumber(label, validators=[DataRequired(message="Enter a valid mobile number")])
+
+
+def mobile_number(label="Mobile number"):
+    return InternationalPhoneNumber(
+        label, validators=[DataRequired(message="Enter a valid mobile number"), MobileNumberMustBeDifferent()]
+    )
 
 
 def password():
@@ -1078,7 +1086,13 @@ class ChangePasswordForm(StripWhitespaceForm):
 
 
 class ChangeNameForm(StripWhitespaceForm):
-    new_name = GovukTextInputField("Your name")
+    new_name = GovukTextInputField(
+        "Your name",
+        validators=[
+            DataRequired(message="Enter a name"),
+            NameMustBeDifferent("Name must be different to current name"),
+        ],
+    )
 
 
 class ChangeEmailForm(StripWhitespaceForm):
@@ -1095,7 +1109,7 @@ class ChangeEmailForm(StripWhitespaceForm):
         if self.email_address.errors:
             return
 
-        is_valid = self.validate_email_func(field.data)
+        is_valid = self.validate_email_func(field.data, current_user.id)
         if is_valid:
             raise ValidationError("The email address is already in use")
 
@@ -1105,7 +1119,7 @@ class ChangeNonGovEmailForm(ChangeEmailForm):
 
 
 class ChangeMobileNumberForm(StripWhitespaceForm):
-    mobile_number = international_phone_number()
+    mobile_number = mobile_number()
 
 
 class ChooseTimeForm(StripWhitespaceForm):

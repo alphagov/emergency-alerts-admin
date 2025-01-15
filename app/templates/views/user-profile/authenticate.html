@@ -3,6 +3,7 @@
 {% from "components/page-footer.html" import page_footer %}
 {% from "components/form.html" import form_wrapper %}
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
+{% from "govuk_frontend_jinja/components/password-input/macro.html" import govukPasswordInput %}
 
 {% block per_page_title %}
   Change your {{ thing }}
@@ -20,7 +21,25 @@
     <div class="govuk-grid-column-three-quarters">
 
     {% call form_wrapper(autocomplete=True) %}
-      {{ form.password(param_extensions={"autocomplete": "current-password"}) }}
+      {{ govukPasswordInput({
+        "label": {
+          "text": "Enter password"
+        },
+        "id": form.password.id,
+        "value": form.password.data,
+        "name": form.password.name,
+        "classes": "govuk-!-width-two-thirds govuk-!-margin-right-1",
+        "showPasswordText":"Show password",
+        "hidePasswordText":"Hide password",
+        "showPasswordAriaLabelText":"Show password",
+        "hidePasswordAriaLabelText":"Hide password",
+        "passwordShownAnnouncementText":"Your password is visible",
+        "passwordHiddenAnnouncementText":"Your password is hidden",
+        "autocomplete": "current-password",
+        "errorMessage": {
+              "text" : form.password.errors[0] | safe
+        } if form.password.errors[0] else None,
+      }) }}
       {{ page_footer('Confirm') }}
     {% endcall %}
     </div>

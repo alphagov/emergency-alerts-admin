@@ -27,11 +27,13 @@ from app.main.forms import (
     TwoFactorForm,
 )
 from app.models.user import User
+from app.models.webauthn_credential import WebAuthnCredential
 from app.utils.user import user_is_gov_user, user_is_logged_in
 
 NEW_EMAIL = "new-email"
 NEW_MOBILE = "new-mob"
 NEW_MOBILE_PASSWORD_CONFIRMED = "new-mob-password-confirmed"
+NEW_NAME = "new-name"
 
 
 @main.route("/user-profile")
@@ -49,10 +51,34 @@ def user_profile_name():
     form = ChangeNameForm(new_name=current_user.name)
 
     if form.validate_on_submit():
-        current_user.update(name=form.new_name.data)
-        return redirect(url_for(".user_profile"))
+        session[NEW_NAME] = form.new_name.data
+        return redirect(url_for(".user_profile_name_authenticate"))
 
     return render_template("views/user-profile/change.html", thing="name", form_field=form.new_name)
+
+
+@main.route("/user-profile/name/authenticate", methods=["GET", "POST"])
+@user_is_logged_in
+def user_profile_name_authenticate():
+    # Validate password for form
+    def _check_password(pwd):
+        return user_api_client.verify_password(current_user.id, pwd)
+
+    form = ConfirmPasswordForm(_check_password)
+
+    if NEW_NAME not in session:
+        return redirect("main.user_profile_name")
+
+    if form.validate_on_submit():
+        current_user.update(name=session[NEW_NAME])
+        return redirect(url_for(".user_profile"))
+
+    return render_template(
+        "views/user-profile/authenticate.html",
+        thing="name",
+        form=form,
+        back_link=url_for(".user_profile_name"),
+    )
 
 
 @main.route("/user-profile/email", methods=["GET", "POST"])
@@ -60,10 +86,23 @@ def user_profile_name():
 @user_is_gov_user
 def user_profile_email():
     form = ChangeEmailForm(User.already_registered, email_address=current_user.email_address)
+    if form.email_address.data != "" and form.is_submitted():
+        if current_user.email_address == form.email_address.data:
+            form.email_address.errors = ["Email address must be different to current email address"]
+            return render_template(
+                "views/user-profile/change.html", thing="email address", form_field=form.email_address
+            )
 
-    if form.validate_on_submit():
-        session[NEW_EMAIL] = form.email_address.data
-        return redirect(url_for(".user_profile_email_authenticate"))
+    try:
+        if form.validate_on_submit():
+            session[NEW_EMAIL] = form.email_address.data
+            return redirect(url_for(".user_profile_email_authenticate"))
+    except HTTPError as e:
+        if e.status_code == 400:
+            form.email_address.errors.append(e.message[0])
+            return render_template(
+                "views/user-profile/change.html", thing="email address", form_field=form.email_address
+            )
     return render_template("views/user-profile/change.html", thing="email address", form_field=form.email_address)
 
 
@@ -282,14 +321,78 @@ def user_profile_delete_security_key(key_id):
     if not current_user.can_use_webauthn:
         abort(403)
 
-    try:
-        user_api_client.delete_webauthn_credential_for_user(user_id=current_user.id, credential_id=key_id)
-    except HTTPError as e:
-        message = "Cannot delete last remaining webauthn credential for user"
-        if e.message == message:
-            flash("You cannot delete your last security key.")
-            return redirect(url_for(".user_profile_manage_security_key", key_id=key_id))
-        else:
-            raise e
+    if user_api_client.get_webauthn_credentials_count(current_user.id) == 1:
+        flash("You cannot delete your last security key.")
+        return redirect(url_for(".user_profile_manage_security_key", key_id=key_id))
 
-    return redirect(url_for(".user_profile_security_keys"))
+    return redirect(url_for(".user_profile_security_key_authenticate", key_id=key_id))
+
+
+@main.route("/user-profile/security-keys/<uuid:key_id>/authenticate", methods=["GET", "POST"])
+@user_is_logged_in
+def user_profile_security_key_authenticate(key_id):
+    # Validate password for form
+    def _check_password(pwd):
+        return user_api_client.verify_password(current_user.id, pwd)
+
+    security_key = current_user.webauthn_credentials.by_id(key_id)
+
+    form = ConfirmPasswordForm(_check_password)
+
+    if form.validate_on_submit():
+        try:
+            user_api_client.delete_webauthn_credential_for_user(user_id=current_user.id, credential_id=key_id)
+        except HTTPError as e:
+            message = "Cannot delete last remaining webauthn credential for user"
+            if e.message == message:
+                flash("You cannot delete your last security key.")
+                return redirect(url_for(".user_profile_manage_security_key", key_id=key_id))
+            else:
+                raise e
+
+        flash(
+            f"{security_key.name} was deleted.",
+            "default_with_tick",
+        )
+        return redirect(url_for(".user_profile_security_keys"))
+
+    return render_template(
+        "views/user-profile/authenticate.html",
+        thing="security keys",
+        form=form,
+        back_link=url_for(".user_profile_security_keys"),
+    )
+
+
+@main.route("/user-profile/security-keys/create/authenticate", methods=["GET", "POST"])
+@user_is_logged_in
+def user_profile_security_key_create_authenticate():
+    if not current_user.can_use_webauthn:
+        abort(403)
+
+    # Validate password for form
+    def _check_password(pwd):
+        return user_api_client.verify_password(current_user.id, pwd)
+
+    form = ConfirmPasswordForm(_check_password)
+    message = (
+        "Registration complete. Next time you sign in to Emergency Alerts you’ll be asked to use your security key."
+    )
+
+    if form.validate_on_submit():
+        credential = session.pop("webauthn_credential")
+        cred = WebAuthnCredential.create(credential)
+        current_user.create_webauthn_credential(cred)
+        current_user.update(auth_type="webauthn_auth")
+        flash(
+            message,
+            "default_with_tick",
+        )
+        return redirect(url_for(".user_profile_security_keys"))
+
+    return render_template(
+        "views/user-profile/authenticate.html",
+        thing="security keys",
+        form=form,
+        back_link=url_for(".user_profile_security_keys"),
+    )

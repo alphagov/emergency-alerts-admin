@@ -85,8 +85,8 @@ describe('Register security key', () => {
       return Promise.resolve({ ok: true })
     })
 
-    jest.spyOn(window.location, 'reload').mockImplementation(() => {
-      // signal that the async promise chain was called
+    jest.spyOn(window.location, 'href', 'set').mockImplementation((_url) => {
+      expect(_url).toBe('/user-profile/security-keys/create/authenticate')
       done()
     })
 
