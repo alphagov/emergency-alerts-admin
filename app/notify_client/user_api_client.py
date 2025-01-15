@@ -48,8 +48,8 @@ class UserApiClient(AdminAPIClient):
                 abort(429)
             raise e
 
-    def check_user_exists(self, email_address):
-        return self.post("/user/email-in-db", data={"email": email_address})
+    def check_user_exists(self, email_address, user_id):
+        return self.post("/user/{}/email-in-db".format(user_id), data={"email": email_address})
 
     def get_user_by_email_or_none(self, email_address):
         try:
