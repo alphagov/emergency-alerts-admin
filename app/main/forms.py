@@ -1130,7 +1130,26 @@ class ChangeEmailForm(StripWhitespaceForm):
             raise ValidationError("Invalid password")
 
 
-class ChangeNonGovEmailForm(ChangeEmailForm):
+class ChangeTeamMemberEmailForm(StripWhitespaceForm):
+    def __init__(self, validate_email_func, *args, **kwargs):
+        self.validate_email_func = validate_email_func
+        super(ChangeTeamMemberEmailForm, self).__init__(*args, **kwargs)
+
+    email_address = email_address()
+
+    def validate_email_address(self, field):
+        # The validate_email_func can be used to call API to check if the email address is already in
+        # use. We don't want to run that check for invalid email addresses, since that will cause an error.
+        # If there are any other validation errors on the email_address, we should skip this check.
+        if self.email_address.errors:
+            return
+
+        is_valid = self.validate_email_func(field.data)
+        if is_valid:
+            raise ValidationError("The email address is already in use")
+
+
+class ChangeNonGovEmailForm(ChangeTeamMemberEmailForm):
     email_address = email_address(gov_user=False)
 
 
@@ -1146,6 +1165,10 @@ class ChangeMobileNumberForm(StripWhitespaceForm):
     def validate_password(self, field):
         if not self.validate_password_func(field.data):
             raise ValidationError("Invalid password")
+
+
+class ChangeTeamMemberMobileNumberForm(StripWhitespaceForm):
+    mobile_number = international_phone_number()
 
 
 class ChooseTimeForm(StripWhitespaceForm):
