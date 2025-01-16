@@ -13,9 +13,9 @@ from app.main import main
 from app.main.forms import (
     BroadcastInviteUserForm,
     BroadcastPermissionsForm,
-    ChangeEmailForm,
-    ChangeMobileNumberForm,
     ChangeNonGovEmailForm,
+    ChangeTeamMemberEmailForm,
+    ChangeTeamMemberMobileNumberForm,
     PermissionsForm,
     SearchUsersForm,
 )
@@ -159,7 +159,7 @@ def edit_user_email(service_id, user_id):
     session_key = "team_member_email_change-{}".format(user_id)
 
     if is_gov_user(user_email):
-        form = ChangeEmailForm(User.already_registered, email_address=user_email)
+        form = ChangeTeamMemberEmailForm(User.already_registered, email_address=user_email)
     else:
         form = ChangeNonGovEmailForm(User.already_registered, email_address=user_email)
 
@@ -210,7 +210,7 @@ def edit_user_mobile_number(service_id, user_id):
     user = current_service.get_team_member(user_id)
     user_mobile_number = redact_mobile_number(user.mobile_number)
 
-    form = ChangeMobileNumberForm(mobile_number=user_mobile_number)
+    form = ChangeTeamMemberMobileNumberForm(mobile_number=user_mobile_number)
     if form.mobile_number.data == user_mobile_number and request.method == "POST":
         return redirect(url_for(".manage_users", service_id=service_id))
     if form.validate_on_submit():
