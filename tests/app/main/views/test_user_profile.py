@@ -89,11 +89,8 @@ def test_should_render_change_name_after_authenticate(
     mock_verify_password,
     mock_update_user_attribute,
 ):
-    with client_request.session_transaction() as session:
-        session["new-name"] = "New Name"
-
     page = client_request.post(
-        "main.user_profile_name_authenticate", _data={"password": "12345"}, _follow_redirects=True
+        "main.user_profile_name", _data={"new_name": "test", "password": "12345"}, _follow_redirects=True
     )
     assert mock_update_user_attribute.called is True
     assert page.select_one("h1").text.strip() == "Your profile"
@@ -106,23 +103,6 @@ def test_should_show_email_page(
     assert page.select_one("h1").text.strip() == "Change your email address"
     # template is shared with "Change your mobile number" but we don't want to show Delete mobile number link
     assert "Delete your number" not in page.text
-
-
-def test_should_redirect_after_email_change(
-    client_request,
-    mock_login,
-    mock_check_user_exists_for_nonexistent_user,
-):
-    client_request.post(
-        "main.user_profile_email",
-        _data={"email_address": "new_notify@notify.gov.uk"},
-        _expected_status=302,
-        _expected_redirect=url_for(
-            "main.user_profile_email_authenticate",
-        ),
-    )
-
-    assert mock_check_user_exists_for_nonexistent_user.called
 
 
 def test_should_show_error_if_email_already_in_use(
@@ -170,28 +150,23 @@ def test_should_show_errors_if_new_email_address_does_not_validate(
 def test_should_show_authenticate_after_email_change(
     client_request,
 ):
-    with client_request.session_transaction() as session:
-        session["new-email"] = "new_notify@notify.gov.uk"
-
-    page = client_request.get("main.user_profile_email_authenticate")
+    page = client_request.get("main.user_profile_email")
 
     assert "Change your email address" in page.text
     assert "Confirm" in page.text
 
 
 def test_should_render_change_email_continue_after_authenticate_email(
-    client_request,
-    mock_verify_password,
-    mock_send_change_email_verification,
+    client_request, mock_verify_password, mock_send_change_email_verification, mock_not_already_registered
 ):
-    with client_request.session_transaction() as session:
-        session["new-email"] = "new_notify@notify.gov.uk"
     page = client_request.post(
-        "main.user_profile_email_authenticate",
-        _data={"password": "12345"},
-        _expected_status=200,
+        "main.user_profile_email",
+        _data={"email_address": "test@digital.cabinet-office.gov.uk", "password": "12345"},
+        _follow_redirects=True,
     )
-    assert "Click the link in the email to confirm the change to your email address." in page.text
+
+    assert "Check your email" in normalize_spaces(page.select_one("h1").text)
+    assert "test@digital.cabinet-office.gov.uk" in page.text
 
 
 def test_should_redirect_to_user_profile_when_user_confirms_email_link(
@@ -250,7 +225,7 @@ def test_confirm_delete_mobile_number(client_request, api_user_active_email_auth
     )
 
     assert normalize_spaces(page.select_one(".banner-dangerous").text) == (
-        "Are you sure you want to delete your mobile number from Notify? Yes, delete"
+        "Are you sure you want to delete your mobile number from Emergency Alerts? Yes, delete"
     )
     assert "action" not in page.select_one(".banner-dangerous form")
     assert page.select_one(".banner-dangerous form")["method"] == "post"
@@ -279,51 +254,25 @@ def test_delete_mobile_number(client_request, api_user_active_email_auth, mocker
     ],
 )
 def test_should_redirect_after_mobile_number_change(
-    client_request,
-    phone_number_to_register_with,
+    client_request, phone_number_to_register_with, mock_update_user_attribute, mock_send_verify_code
 ):
     client_request.post(
         "main.user_profile_mobile_number",
-        _data={"mobile_number": phone_number_to_register_with},
-        _expected_status=302,
-        _expected_redirect=url_for(
-            "main.user_profile_mobile_number_authenticate",
-        ),
+        _data={"mobile_number": phone_number_to_register_with, "password": "12345"},
+        _expected_status=200,
     )
-    with client_request.session_transaction() as session:
-        assert session["new-mob"] == phone_number_to_register_with
+    assert mock_send_verify_code.is_called
 
 
 def test_should_show_authenticate_after_mobile_number_change(
     client_request,
 ):
-    with client_request.session_transaction() as session:
-        session["new-mob"] = "+441234123123"
-
     page = client_request.get(
-        "main.user_profile_mobile_number_authenticate",
+        "main.user_profile_mobile_number",
     )
 
     assert "Change your mobile number" in page.text
     assert "Confirm" in page.text
-
-
-def test_should_redirect_after_mobile_number_authenticate(
-    client_request,
-    mock_verify_password,
-    mock_send_verify_code,
-):
-    with client_request.session_transaction() as session:
-        session["new-mob"] = "+441234123123"
-
-    client_request.post(
-        "main.user_profile_mobile_number_authenticate",
-        _data={"password": "12345667"},
-        _expected_status=302,
-        _expected_redirect=url_for(
-            "main.user_profile_mobile_number_confirm",
-        ),
-    )
 
 
 def test_should_show_confirm_after_mobile_number_change(
