@@ -125,7 +125,7 @@ def user_profile_mobile_number():
         return redirect(url_for(".user_profile_mobile_number_confirm"))
 
     if request.endpoint == "main.user_profile_confirm_delete_mobile_number":
-        flash("Are you sure you want to delete your mobile number from Notify?", "delete")
+        flash("Are you sure you want to delete your mobile number from Emergency Alerts?", "delete")
 
     return render_template(
         "views/user-profile/change.html",
