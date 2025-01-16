@@ -48,36 +48,17 @@ def user_profile():
 @main.route("/user-profile/name", methods=["GET", "POST"])
 @user_is_logged_in
 def user_profile_name():
-    form = ChangeNameForm(new_name=current_user.name)
-
-    if form.validate_on_submit():
-        session[NEW_NAME] = form.new_name.data
-        return redirect(url_for(".user_profile_name_authenticate"))
-
-    return render_template("views/user-profile/change.html", thing="name", form_field=form.new_name)
-
-
-@main.route("/user-profile/name/authenticate", methods=["GET", "POST"])
-@user_is_logged_in
-def user_profile_name_authenticate():
-    # Validate password for form
     def _check_password(pwd):
         return user_api_client.verify_password(current_user.id, pwd)
 
-    form = ConfirmPasswordForm(_check_password)
-
-    if NEW_NAME not in session:
-        return redirect("main.user_profile_name")
+    form = ChangeNameForm(_check_password, new_name=current_user.name)
 
     if form.validate_on_submit():
-        current_user.update(name=session[NEW_NAME])
+        current_user.update(name=form.new_name.data)
         return redirect(url_for(".user_profile"))
 
     return render_template(
-        "views/user-profile/authenticate.html",
-        thing="name",
-        form=form,
-        back_link=url_for(".user_profile_name"),
+        "views/user-profile/change.html", thing="name", form=form, security_detail_field=form.new_name
     )
 
 
@@ -85,48 +66,27 @@ def user_profile_name_authenticate():
 @user_is_logged_in
 @user_is_gov_user
 def user_profile_email():
-    form = ChangeEmailForm(User.already_registered, email_address=current_user.email_address)
-    if form.email_address.data != "" and form.is_submitted():
-        if current_user.email_address == form.email_address.data:
-            form.email_address.errors = ["Email address must be different to current email address"]
-            return render_template(
-                "views/user-profile/change.html", thing="email address", form_field=form.email_address
-            )
+    def _check_password(pwd):
+        return user_api_client.verify_password(current_user.id, pwd)
+
+    form = ChangeEmailForm(User.already_registered, _check_password, email_address=current_user.email_address)
 
     try:
         if form.validate_on_submit():
-            session[NEW_EMAIL] = form.email_address.data
-            return redirect(url_for(".user_profile_email_authenticate"))
+            user_api_client.send_change_email_verification(current_user.id, form.email_address.data)
+            return render_template("views/change-email-continue.html", new_email=form.email_address.data)
+
     except HTTPError as e:
         if e.status_code == 400:
             form.email_address.errors.append(e.message[0])
             return render_template(
-                "views/user-profile/change.html", thing="email address", form_field=form.email_address
+                "views/user-profile/change.html",
+                thing="email address",
+                form=form,
+                security_detail_field=form.email_address,
             )
-    return render_template("views/user-profile/change.html", thing="email address", form_field=form.email_address)
-
-
-@main.route("/user-profile/email/authenticate", methods=["GET", "POST"])
-@user_is_logged_in
-def user_profile_email_authenticate():
-    # Validate password for form
-    def _check_password(pwd):
-        return user_api_client.verify_password(current_user.id, pwd)
-
-    form = ConfirmPasswordForm(_check_password)
-
-    if NEW_EMAIL not in session:
-        return redirect("main.user_profile_email")
-
-    if form.validate_on_submit():
-        user_api_client.send_change_email_verification(current_user.id, session[NEW_EMAIL])
-        return render_template("views/change-email-continue.html", new_email=session[NEW_EMAIL])
-
     return render_template(
-        "views/user-profile/authenticate.html",
-        thing="email address",
-        form=form,
-        back_link=url_for(".user_profile_email"),
+        "views/user-profile/change.html", thing="email address", form=form, security_detail_field=form.email_address
     )
 
 
@@ -152,17 +112,27 @@ def user_profile_email_confirm(token):
 @user_is_logged_in
 def user_profile_mobile_number():
     user = User.from_id(current_user.id)
-    form = ChangeMobileNumberForm(mobile_number=current_user.mobile_number)
+
+    def _check_password(pwd):
+        return user_api_client.verify_password(current_user.id, pwd)
+
+    form = ChangeMobileNumberForm(_check_password, mobile_number=current_user.mobile_number)
 
     if form.validate_on_submit():
         session[NEW_MOBILE] = form.mobile_number.data
-        return redirect(url_for(".user_profile_mobile_number_authenticate"))
+        session[NEW_MOBILE_PASSWORD_CONFIRMED] = True
+        current_user.send_verify_code(to=session[NEW_MOBILE])
+        return redirect(url_for(".user_profile_mobile_number_confirm"))
 
     if request.endpoint == "main.user_profile_confirm_delete_mobile_number":
         flash("Are you sure you want to delete your mobile number from Notify?", "delete")
 
     return render_template(
-        "views/user-profile/change.html", thing="mobile number", form_field=form.mobile_number, user_auth=user.auth_type
+        "views/user-profile/change.html",
+        thing="mobile number",
+        form=form,
+        user_auth=user.auth_type,
+        security_detail_field=form.mobile_number,
     )
 
 
@@ -175,31 +145,6 @@ def user_profile_mobile_number_delete():
     current_user.update(mobile_number=None)
 
     return redirect(url_for(".user_profile"))
-
-
-@main.route("/user-profile/mobile-number/authenticate", methods=["GET", "POST"])
-@user_is_logged_in
-def user_profile_mobile_number_authenticate():
-    # Validate password for form
-    def _check_password(pwd):
-        return user_api_client.verify_password(current_user.id, pwd)
-
-    form = ConfirmPasswordForm(_check_password)
-
-    if NEW_MOBILE not in session:
-        return redirect(url_for(".user_profile_mobile_number"))
-
-    if form.validate_on_submit():
-        session[NEW_MOBILE_PASSWORD_CONFIRMED] = True
-        current_user.send_verify_code(to=session[NEW_MOBILE])
-        return redirect(url_for(".user_profile_mobile_number_confirm"))
-
-    return render_template(
-        "views/user-profile/authenticate.html",
-        thing="mobile number",
-        form=form,
-        back_link=url_for(".user_profile_mobile_number_confirm"),
-    )
 
 
 @main.route("/user-profile/mobile-number/confirm", methods=["GET", "POST"])
