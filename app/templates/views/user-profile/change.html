@@ -40,7 +40,19 @@
                 "text" : form.password.errors[0] | safe
           } if form.password.errors[0] else None,
         }) }}
-      {{ page_footer('Confirm') }}
+      {% if current_user.auth_type == 'email_auth' and (current_user.mobile_number and thing == "mobile number") %}
+          {{ page_footer(
+            'Confirm',
+            delete_link=url_for(
+              'main.user_profile_mobile_number_delete',
+              user_id=current_user.id
+            ),
+            delete_link_text='Delete your number'
+            )
+          }}
+        {% else %}
+          {{ page_footer('Confirm')}}
+        {% endif %}
     {% endcall %}
     </div>
   </div>
