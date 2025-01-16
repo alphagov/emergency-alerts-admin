@@ -178,16 +178,20 @@ def user_profile_password():
         return user_api_client.verify_password(current_user.id, pwd)
 
     form = ChangePasswordForm(_check_password)
-
-    if form.validate_on_submit():
-        try:
-            user_api_client.check_password_is_valid(current_user.id, form.new_password.data)
-        except HTTPError as e:
-            if e.status_code == 400:
-                form.new_password.errors.append(e.message[0])
-                return render_template("views/user-profile/change-password.html", form=form)
-        user_api_client.update_password(current_user.id, password=form.new_password.data)
-        return redirect(url_for(".user_profile"))
+    try:
+        if form.validate_on_submit():
+            try:
+                user_api_client.check_password_is_valid(current_user.id, form.new_password.data)
+            except HTTPError as e:
+                if e.status_code == 400:
+                    form.new_password.errors.append(e.message[0])
+                    return render_template("views/user-profile/change-password.html", form=form)
+            user_api_client.update_password(current_user.id, password=form.new_password.data)
+            return redirect(url_for(".user_profile"))
+    except HTTPError as e:
+        if e.status_code == 400:
+            form.new_password.errors.append(e.message[0])
+            return render_template("views/user-profile/change-password.html", form=form)
 
     return render_template("views/user-profile/change-password.html", form=form)
 
