@@ -386,6 +386,9 @@ class User(BaseUser, UserMixin):
     def send_verify_code(self, to=None):
         user_api_client.send_verify_code(self.id, "sms", to or self.mobile_number)
 
+    def send_verify_code_to_new_auth(self, to):
+        user_api_client.send_verify_code_to_new_auth(self.id, "sms", to)
+
     def send_already_registered_email(self):
         user_api_client.send_already_registered_email(self.id, self.email_address)
 
