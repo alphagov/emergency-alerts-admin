@@ -49,7 +49,7 @@ class UserApiClient(AdminAPIClient):
             raise e
 
     def check_user_exists(self, email_address):
-        return self.post("/user/email-in-db", data={"email": email_address})
+        return self.post("/user/email-in-use", data={"email": email_address})
 
     def get_user_by_email_or_none(self, email_address):
         try:
@@ -112,6 +112,15 @@ class UserApiClient(AdminAPIClient):
         if code_type == "email":
             data["email_auth_link_host"] = self.admin_url
         endpoint = "/user/{0}/{1}-code".format(user_id, code_type)
+        self.post(endpoint, data=data)
+
+    def send_verify_code_to_new_auth(self, user_id, code_type, to, next_string=None):
+        data = {"to": to}
+        if next_string:
+            data["next"] = next_string
+        if code_type == "email":
+            data["email_auth_link_host"] = self.admin_url
+        endpoint = "/user/{0}/{1}-code-new".format(user_id, code_type)
         self.post(endpoint, data=data)
 
     def send_verify_email(self, user_id, to):
@@ -207,7 +216,10 @@ class UserApiClient(AdminAPIClient):
     def send_change_email_verification(self, user_id, new_email):
         endpoint = "/user/{}/change-email-verification".format(user_id)
         data = {"email": new_email}
-        self.post(endpoint, data)
+        try:
+            self.post(endpoint, data)
+        except HTTPError as e:
+            raise e
 
     def get_organisations_and_services_for_user(self, user_id):
         endpoint = "/user/{}/organisations-and-services".format(user_id)
