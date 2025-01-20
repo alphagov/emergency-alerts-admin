@@ -51,11 +51,14 @@ def user_profile_name():
     def _check_password(pwd):
         return user_api_client.verify_password(current_user.id, pwd)
 
-    form = ChangeNameForm(_check_password, new_name=current_user.name)
-
-    if form.validate_on_submit():
-        current_user.update(name=form.new_name.data)
-        return redirect(url_for(".user_profile"))
+    form = ChangeNameForm(_check_password, new_name=current_user.name, autocomplete="off")
+    try:
+        if form.validate_on_submit():
+            current_user.update(name=form.new_name.data)
+            return redirect(url_for(".user_profile"))
+    except HTTPError as e:
+        if e.status_code == 400:
+            form.new_name.errors.append(e.message[0])
 
     return render_template(
         "views/user-profile/change.html", thing="name", form=form, security_detail_field=form.new_name
@@ -71,11 +74,20 @@ def user_profile_email():
 
     form = ChangeEmailForm(User.already_registered, _check_password, email_address=current_user.email_address)
 
+    if form.is_submitted():
+        if form.email_address.data == current_user.email_address:
+            form.email_address.errors = ["Email address must be different to current email address"]
+            return render_template(
+                "views/user-profile/change.html",
+                thing="email address",
+                form=form,
+                security_detail_field=form.email_address,
+            )
+
     try:
         if form.validate_on_submit():
             user_api_client.send_change_email_verification(current_user.id, form.email_address.data)
             return render_template("views/change-email-continue.html", new_email=form.email_address.data)
-
     except HTTPError as e:
         if e.status_code == 400:
             form.email_address.errors.append(e.message[0])
@@ -118,11 +130,15 @@ def user_profile_mobile_number():
 
     form = ChangeMobileNumberForm(_check_password, mobile_number=current_user.mobile_number)
 
-    if form.validate_on_submit():
-        session[NEW_MOBILE] = form.mobile_number.data
-        session[NEW_MOBILE_PASSWORD_CONFIRMED] = True
-        current_user.send_verify_code(to=session[NEW_MOBILE])
-        return redirect(url_for(".user_profile_mobile_number_confirm"))
+    try:
+        if form.validate_on_submit():
+            session[NEW_MOBILE] = form.mobile_number.data
+            session[NEW_MOBILE_PASSWORD_CONFIRMED] = True
+            current_user.send_verify_code_to_new_auth(to=session[NEW_MOBILE])
+            return redirect(url_for(".user_profile_mobile_number_confirm"))
+    except HTTPError as e:
+        if e.status_code == 400:
+            form.mobile_number.errors.append(e.message[0])
 
     if request.endpoint == "main.user_profile_confirm_delete_mobile_number":
         flash("Are you sure you want to delete your mobile number from Emergency Alerts?", "delete")
