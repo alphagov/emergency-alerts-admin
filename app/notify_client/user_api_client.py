@@ -120,7 +120,7 @@ class UserApiClient(AdminAPIClient):
             data["next"] = next_string
         if code_type == "email":
             data["email_auth_link_host"] = self.admin_url
-        endpoint = "/user/{0}/{1}-code-new".format(user_id, code_type)
+        endpoint = "/user/{0}/{1}-code-new-auth".format(user_id, code_type)
         self.post(endpoint, data=data)
 
     def send_verify_email(self, user_id, to):
