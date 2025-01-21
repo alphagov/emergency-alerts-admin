@@ -67,7 +67,7 @@ class UserApiClient(AdminAPIClient):
         if disallowed_attributes:
             raise TypeError("Not allowed to update user attributes: {}".format(", ".join(disallowed_attributes)))
 
-        url = "/user/{}".format(user_id)
+        url = "/user/{}/update".format(user_id)
         user_data = self.post(url, data=data)
         return user_data["data"]
 
