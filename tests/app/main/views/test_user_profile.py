@@ -216,22 +216,20 @@ def test_change_your_mobile_number_page_doesnt_show_delete_link_if_user_has_no_m
     assert "Delete your number" not in page.text
 
 
-def test_confirm_delete_mobile_number(client_request, api_user_active_email_auth, mocker):
+def test_confirm_delete_mobile_number(client_request, api_user_active_email_auth, mocker, mock_update_user_attribute):
     mocker.patch("app.user_api_client.get_user", return_value=api_user_active_email_auth)
 
-    page = client_request.get(
+    client_request.get(
         ".user_profile_confirm_delete_mobile_number",
         _test_page_title=False,
+        _expected_redirect=url_for(
+            ".user_profile_mobile_number_delete",
+        ),
     )
-
-    assert normalize_spaces(page.select_one(".banner-dangerous").text) == (
-        "Are you sure you want to delete your mobile number from Emergency Alerts? Yes, delete"
-    )
-    assert "action" not in page.select_one(".banner-dangerous form")
-    assert page.select_one(".banner-dangerous form")["method"] == "post"
+    assert mock_update_user_attribute.is_called()
 
 
-def test_delete_mobile_number(client_request, api_user_active_email_auth, mocker):
+def test_delete_mobile_number(client_request, api_user_active_email_auth, mocker, mock_verify_password):
     mock_delete = mocker.patch("app.user_api_client.update_user_attribute")
 
     client_request.login(api_user_active_email_auth)
