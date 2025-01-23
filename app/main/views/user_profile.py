@@ -74,15 +74,14 @@ def user_profile_email():
 
     form = ChangeEmailForm(User.already_registered, _check_password, email_address=current_user.email_address)
 
-    if form.is_submitted():
-        if form.email_address.data == current_user.email_address:
-            form.email_address.errors = ["Email address must be different to current email address"]
-            return render_template(
-                "views/user-profile/change.html",
-                thing="email address",
-                form=form,
-                security_detail_field=form.email_address,
-            )
+    if form.is_submitted() and form.email_address.data == current_user.email_address:
+        form.email_address.errors = ["Email address must be different to current email address"]
+        return render_template(
+            "views/user-profile/change.html",
+            thing="email address",
+            form=form,
+            security_detail_field=form.email_address,
+        )
 
     try:
         if form.validate_on_submit():
@@ -165,7 +164,6 @@ def user_profile_mobile_number_delete():
 
     if form.validate_on_submit():
         current_user.update(mobile_number=None)
-
         return redirect(url_for(".user_profile"))
 
     return render_template(
