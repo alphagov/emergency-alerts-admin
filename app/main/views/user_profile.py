@@ -141,7 +141,7 @@ def user_profile_mobile_number():
             form.mobile_number.errors.append(e.message[0])
 
     if request.endpoint == "main.user_profile_confirm_delete_mobile_number":
-        flash("Are you sure you want to delete your mobile number from Emergency Alerts?", "delete")
+        return redirect(url_for(".user_profile_mobile_number_delete"))
 
     return render_template(
         "views/user-profile/change.html",
@@ -152,15 +152,28 @@ def user_profile_mobile_number():
     )
 
 
-@main.route("/user-profile/mobile-number/delete", methods=["POST"])
+@main.route("/user-profile/mobile-number/delete/authenticate", methods=["GET", "POST"])
 @user_is_logged_in
 def user_profile_mobile_number_delete():
     if current_user.auth_type != "email_auth":
         abort(403)
 
-    current_user.update(mobile_number=None)
+    def _check_password(pwd):
+        return user_api_client.verify_password(current_user.id, pwd)
 
-    return redirect(url_for(".user_profile"))
+    form = ConfirmPasswordForm(_check_password)
+
+    if form.validate_on_submit():
+        current_user.update(mobile_number=None)
+
+        return redirect(url_for(".user_profile"))
+
+    return render_template(
+        "views/user-profile/authenticate.html",
+        thing="mobile number",
+        form=form,
+        back_link=url_for(".user_profile_mobile_number"),
+    )
 
 
 @main.route("/user-profile/mobile-number/confirm", methods=["GET", "POST"])
