@@ -1421,23 +1421,22 @@ def test_edit_user_email_redirects_to_confirmation(
         assert session["team_member_email_change-{}".format(active_user_with_permissions["id"])] == "test@user.gov.uk"
 
 
-def test_edit_user_email_without_changing_goes_back_to_team_members(
+def test_edit_user_email_without_changing_renders_form_error(
     client_request,
     active_user_with_permissions,
     mock_get_user_by_email,
     mock_get_users_by_service,
     mock_update_user_attribute,
 ):
-    client_request.post(
+    page = client_request.post(
         "main.edit_user_email",
         service_id=SERVICE_ONE_ID,
         user_id=active_user_with_permissions["id"],
         _data={"email_address": active_user_with_permissions["email_address"]},
-        _expected_status=302,
-        _expected_redirect=url_for(
-            "main.manage_users",
-            service_id=SERVICE_ONE_ID,
-        ),
+        _expected_status=200,
+    )
+    assert normalize_spaces(page.select_one(".govuk-error-message").text) == (
+        "Error: Email address must be different to current email address"
     )
     assert mock_update_user_attribute.called is False
 
@@ -1698,25 +1697,27 @@ def test_edit_user_mobile_number_redirects_to_confirmation(
     )
 
 
-def test_edit_user_mobile_number_redirects_to_manage_users_if_number_not_changed(
+def test_edit_user_mobile_number_renders_form_error(
     client_request,
     active_user_with_permissions,
     mock_get_users_by_service,
+    mock_update_user_attribute,
     service_one,
     mocker,
     mock_get_user,
 ):
-    client_request.post(
+    page = client_request.post(
         "main.edit_user_mobile_number",
         service_id=SERVICE_ONE_ID,
         user_id=active_user_with_permissions["id"],
         _data={"mobile_number": "0770••••762"},
-        _expected_status=302,
-        _expected_redirect=url_for(
-            "main.manage_users",
-            service_id=SERVICE_ONE_ID,
-        ),
+        _expected_status=200,
     )
+
+    assert normalize_spaces(page.select_one(".govuk-error-message").text) == (
+        "Error: Mobile number must be different to current mobile number"
+    )
+    assert mock_update_user_attribute.called is False
 
 
 def test_confirm_edit_user_mobile_number_page(

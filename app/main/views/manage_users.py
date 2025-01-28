@@ -164,7 +164,8 @@ def edit_user_email(service_id, user_id):
         form = ChangeNonGovEmailForm(User.already_registered, email_address=user_email)
 
     if request.form.get("email_address", "").strip() == user_email:
-        return redirect(url_for(".manage_users", service_id=current_service.id))
+        form.email_address.errors = ["Email address must be different to current email address"]
+        return render_template("views/manage-users/edit-user-email.html", user=user, form=form, service_id=service_id)
 
     if form.validate_on_submit():
         session[session_key] = form.email_address.data
@@ -211,8 +212,9 @@ def edit_user_mobile_number(service_id, user_id):
     user_mobile_number = redact_mobile_number(user.mobile_number)
 
     form = ChangeTeamMemberMobileNumberForm(mobile_number=user_mobile_number)
-    if form.mobile_number.data == user_mobile_number and request.method == "POST":
-        return redirect(url_for(".manage_users", service_id=service_id))
+    if form.mobile_number.data in [user_mobile_number, user.mobile_number] and request.method == "POST":
+        form.mobile_number.errors = ["Mobile number must be different to current mobile number"]
+        return render_template("views/manage-users/edit-user-mobile.html", user=user, form=form, service_id=service_id)
     if form.validate_on_submit():
         session["team_member_mobile_change"] = form.mobile_number.data
 
