@@ -36,12 +36,19 @@
           }) }}
           since {{ item.starts_at|format_datetime_relative }}
         </p>
+      {% elif item.status == 'draft' %}
+        <p class="govuk-body live-broadcast file-list-status">
+          {{ govukTag ({
+            'text': 'draft',
+            'classes': 'govuk-!-margin-right-2 draft-tag'
+          }) }}
+        </p>
       {% else %}
         <p class="govuk-body govuk-hint file-list-status">
           {{ item.starts_at|format_date_human|title }} at {{ item.starts_at|format_time }}
         </p>
       {% endif %}
-      {% if item.status != 'rejected' %}
+      {% if item.status not in ['rejected', 'draft'] %}
         <div>
           <p class="govuk-!-margin-right-2 area-list">Area: </p>
           <ul class="area-list">
