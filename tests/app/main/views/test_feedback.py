@@ -256,7 +256,7 @@ def test_email_address_required_for_problems_and_questions(
     mocker.patch("app.main.views.feedback.zendesk_client")
     client_request.logout()
     page = client_request.post("main.feedback", ticket_type=ticket_type, _data=data, _expected_status=200)
-    assert normalize_spaces(page.select_one(".govuk-error-message").text) == "Error: Cannot be empty"
+    assert normalize_spaces(page.select_one(".govuk-error-message").text) == "Error: Enter a valid email address"
 
 
 @freeze_time("2016-12-12 12:00:00.000000")

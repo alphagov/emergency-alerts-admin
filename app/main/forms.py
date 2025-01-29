@@ -51,7 +51,9 @@ from app.main.validators import (
     CommonlyUsedPassword,
     IsPostcode,
     LowEntropyPassword,
+    MobileNumberMustBeDifferent,
     MustContainAlphanumericCharacters,
+    NameMustBeDifferent,
     NoCommasInPlaceHolders,
     NoPlaceholders,
     Only2DecimalPlaces,
@@ -142,7 +144,7 @@ def email_address(label="Email address", gov_user=True, required=True):
         validators.append(ValidGovEmail())
 
     if required:
-        validators.append(DataRequired(message="Cannot be empty"))
+        validators.append(DataRequired(message="Enter a valid email address"))
 
     return GovukEmailField(label, validators)
 
@@ -220,7 +222,13 @@ def uk_mobile_number(label="Mobile number"):
 
 
 def international_phone_number(label="Mobile number"):
-    return InternationalPhoneNumber(label, validators=[DataRequired(message="Cannot be empty")])
+    return InternationalPhoneNumber(label, validators=[DataRequired(message="Enter a valid mobile number")])
+
+
+def mobile_number(label="Mobile number"):
+    return InternationalPhoneNumber(
+        label, validators=[DataRequired(message="Enter a valid mobile number"), MobileNumberMustBeDifferent()]
+    )
 
 
 def password():
@@ -1078,13 +1086,54 @@ class ChangePasswordForm(StripWhitespaceForm):
 
 
 class ChangeNameForm(StripWhitespaceForm):
-    new_name = GovukTextInputField("Your name")
+    def __init__(self, validate_password_func, *args, **kwargs):
+        self.validate_password_func = validate_password_func
+        super(ChangeNameForm, self).__init__(*args, **kwargs)
+
+    new_name = GovukTextInputField(
+        "Your name",
+        validators=[
+            DataRequired(message="Enter a name"),
+            NameMustBeDifferent("Name must be different to current name"),
+        ],
+    )
+
+    password = GovukPasswordField("Enter password")
+
+    def validate_password(self, field):
+        if not self.validate_password_func(field.data):
+            raise ValidationError("Invalid password")
 
 
 class ChangeEmailForm(StripWhitespaceForm):
+    def __init__(self, validate_email_func, validate_password_func, *args, **kwargs):
+        self.validate_email_func = validate_email_func
+        self.validate_password_func = validate_password_func
+        super(ChangeEmailForm, self).__init__(*args, **kwargs)
+
+    email_address = email_address()
+    password = GovukPasswordField("Enter password")
+
+    def validate_email_address(self, field):
+        # The validate_email_func can be used to call API to check if the email address is already in
+        # use. We don't want to run that check for invalid email addresses, since that will cause an error.
+        # If there are any other validation errors on the email_address, we should skip this check.
+        if self.email_address.errors:
+            return
+
+        is_valid = self.validate_email_func(field.data)
+        if is_valid:
+            raise ValidationError("The email address is already in use")
+
+    def validate_password(self, field):
+        if not self.validate_password_func(field.data):
+            raise ValidationError("Invalid password")
+
+
+class ChangeTeamMemberEmailForm(StripWhitespaceForm):
     def __init__(self, validate_email_func, *args, **kwargs):
         self.validate_email_func = validate_email_func
-        super(ChangeEmailForm, self).__init__(*args, **kwargs)
+        super(ChangeTeamMemberEmailForm, self).__init__(*args, **kwargs)
 
     email_address = email_address()
 
@@ -1100,11 +1149,25 @@ class ChangeEmailForm(StripWhitespaceForm):
             raise ValidationError("The email address is already in use")
 
 
-class ChangeNonGovEmailForm(ChangeEmailForm):
+class ChangeNonGovEmailForm(ChangeTeamMemberEmailForm):
     email_address = email_address(gov_user=False)
 
 
 class ChangeMobileNumberForm(StripWhitespaceForm):
+    def __init__(self, validate_password_func, *args, **kwargs):
+        self.validate_password_func = validate_password_func
+        super(ChangeMobileNumberForm, self).__init__(*args, **kwargs)
+
+    mobile_number = mobile_number()
+
+    password = GovukPasswordField("Enter password")
+
+    def validate_password(self, field):
+        if not self.validate_password_func(field.data):
+            raise ValidationError("Invalid password")
+
+
+class ChangeTeamMemberMobileNumberForm(StripWhitespaceForm):
     mobile_number = international_phone_number()
 
 
