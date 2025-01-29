@@ -12,7 +12,8 @@ class LocationMock {
 
       Object.defineProperty(this, partName, {
         get: function () { return _url[partName]; },
-        set: function (value) { _url[partName] = value; }
+        set: function (value) { _url[partName] = value; },
+        configurable: true
       });
 
     });

@@ -27,11 +27,13 @@ from app.main.forms import (
     TwoFactorForm,
 )
 from app.models.user import User
+from app.models.webauthn_credential import WebAuthnCredential
 from app.utils.user import user_is_gov_user, user_is_logged_in
 
 NEW_EMAIL = "new-email"
 NEW_MOBILE = "new-mob"
 NEW_MOBILE_PASSWORD_CONFIRMED = "new-mob-password-confirmed"
+NEW_NAME = "new-name"
 
 
 @main.route("/user-profile")
@@ -46,48 +48,56 @@ def user_profile():
 @main.route("/user-profile/name", methods=["GET", "POST"])
 @user_is_logged_in
 def user_profile_name():
-    form = ChangeNameForm(new_name=current_user.name)
+    def _check_password(pwd):
+        return user_api_client.verify_password(current_user.id, pwd)
 
-    if form.validate_on_submit():
-        current_user.update(name=form.new_name.data)
-        return redirect(url_for(".user_profile"))
+    form = ChangeNameForm(_check_password, new_name=current_user.name, autocomplete="off")
+    try:
+        if form.validate_on_submit():
+            current_user.update(name=form.new_name.data)
+            return redirect(url_for(".user_profile"))
+    except HTTPError as e:
+        if e.status_code == 400:
+            form.new_name.errors.append(e.message[0])
 
-    return render_template("views/user-profile/change.html", thing="name", form_field=form.new_name)
+    return render_template(
+        "views/user-profile/change.html", thing="name", form=form, security_detail_field=form.new_name
+    )
 
 
 @main.route("/user-profile/email", methods=["GET", "POST"])
 @user_is_logged_in
 @user_is_gov_user
 def user_profile_email():
-    form = ChangeEmailForm(User.already_registered, email_address=current_user.email_address)
-
-    if form.validate_on_submit():
-        session[NEW_EMAIL] = form.email_address.data
-        return redirect(url_for(".user_profile_email_authenticate"))
-    return render_template("views/user-profile/change.html", thing="email address", form_field=form.email_address)
-
-
-@main.route("/user-profile/email/authenticate", methods=["GET", "POST"])
-@user_is_logged_in
-def user_profile_email_authenticate():
-    # Validate password for form
     def _check_password(pwd):
         return user_api_client.verify_password(current_user.id, pwd)
 
-    form = ConfirmPasswordForm(_check_password)
+    form = ChangeEmailForm(User.already_registered, _check_password, email_address=current_user.email_address)
 
-    if NEW_EMAIL not in session:
-        return redirect("main.user_profile_email")
+    if form.is_submitted() and form.email_address.data == current_user.email_address:
+        form.email_address.errors = ["Email address must be different to current email address"]
+        return render_template(
+            "views/user-profile/change.html",
+            thing="email address",
+            form=form,
+            security_detail_field=form.email_address,
+        )
 
-    if form.validate_on_submit():
-        user_api_client.send_change_email_verification(current_user.id, session[NEW_EMAIL])
-        return render_template("views/change-email-continue.html", new_email=session[NEW_EMAIL])
-
+    try:
+        if form.validate_on_submit():
+            user_api_client.send_change_email_verification(current_user.id, form.email_address.data)
+            return render_template("views/change-email-continue.html", new_email=form.email_address.data)
+    except HTTPError as e:
+        if e.status_code == 400:
+            form.email_address.errors.append(e.message[0])
+            return render_template(
+                "views/user-profile/change.html",
+                thing="email address",
+                form=form,
+                security_detail_field=form.email_address,
+            )
     return render_template(
-        "views/user-profile/authenticate.html",
-        thing="email address",
-        form=form,
-        back_link=url_for(".user_profile_email"),
+        "views/user-profile/change.html", thing="email address", form=form, security_detail_field=form.email_address
     )
 
 
@@ -113,53 +123,54 @@ def user_profile_email_confirm(token):
 @user_is_logged_in
 def user_profile_mobile_number():
     user = User.from_id(current_user.id)
-    form = ChangeMobileNumberForm(mobile_number=current_user.mobile_number)
 
-    if form.validate_on_submit():
-        session[NEW_MOBILE] = form.mobile_number.data
-        return redirect(url_for(".user_profile_mobile_number_authenticate"))
+    def _check_password(pwd):
+        return user_api_client.verify_password(current_user.id, pwd)
+
+    form = ChangeMobileNumberForm(_check_password, mobile_number=current_user.mobile_number)
+
+    try:
+        if form.validate_on_submit():
+            session[NEW_MOBILE] = form.mobile_number.data
+            session[NEW_MOBILE_PASSWORD_CONFIRMED] = True
+            current_user.send_verify_code_to_new_auth(to=session[NEW_MOBILE])
+            return redirect(url_for(".user_profile_mobile_number_confirm"))
+    except HTTPError as e:
+        if e.status_code == 400:
+            form.mobile_number.errors.append(e.message[0])
 
     if request.endpoint == "main.user_profile_confirm_delete_mobile_number":
-        flash("Are you sure you want to delete your mobile number from Notify?", "delete")
+        return redirect(url_for(".user_profile_mobile_number_delete"))
 
     return render_template(
-        "views/user-profile/change.html", thing="mobile number", form_field=form.mobile_number, user_auth=user.auth_type
+        "views/user-profile/change.html",
+        thing="mobile number",
+        form=form,
+        user_auth=user.auth_type,
+        security_detail_field=form.mobile_number,
     )
 
 
-@main.route("/user-profile/mobile-number/delete", methods=["POST"])
+@main.route("/user-profile/mobile-number/delete/authenticate", methods=["GET", "POST"])
 @user_is_logged_in
 def user_profile_mobile_number_delete():
     if current_user.auth_type != "email_auth":
         abort(403)
 
-    current_user.update(mobile_number=None)
-
-    return redirect(url_for(".user_profile"))
-
-
-@main.route("/user-profile/mobile-number/authenticate", methods=["GET", "POST"])
-@user_is_logged_in
-def user_profile_mobile_number_authenticate():
-    # Validate password for form
     def _check_password(pwd):
         return user_api_client.verify_password(current_user.id, pwd)
 
     form = ConfirmPasswordForm(_check_password)
 
-    if NEW_MOBILE not in session:
-        return redirect(url_for(".user_profile_mobile_number"))
-
     if form.validate_on_submit():
-        session[NEW_MOBILE_PASSWORD_CONFIRMED] = True
-        current_user.send_verify_code(to=session[NEW_MOBILE])
-        return redirect(url_for(".user_profile_mobile_number_confirm"))
+        current_user.update(mobile_number=None)
+        return redirect(url_for(".user_profile"))
 
     return render_template(
         "views/user-profile/authenticate.html",
         thing="mobile number",
         form=form,
-        back_link=url_for(".user_profile_mobile_number_confirm"),
+        back_link=url_for(".user_profile_mobile_number"),
     )
 
 
@@ -194,16 +205,20 @@ def user_profile_password():
         return user_api_client.verify_password(current_user.id, pwd)
 
     form = ChangePasswordForm(_check_password)
-
-    if form.validate_on_submit():
-        try:
-            user_api_client.check_password_is_valid(current_user.id, form.new_password.data)
-        except HTTPError as e:
-            if e.status_code == 400:
-                form.new_password.errors.append(e.message[0])
-                return render_template("views/user-profile/change-password.html", form=form)
-        user_api_client.update_password(current_user.id, password=form.new_password.data)
-        return redirect(url_for(".user_profile"))
+    try:
+        if form.validate_on_submit():
+            try:
+                user_api_client.check_password_is_valid(current_user.id, form.new_password.data)
+            except HTTPError as e:
+                if e.status_code == 400:
+                    form.new_password.errors.append(e.message[0])
+                    return render_template("views/user-profile/change-password.html", form=form)
+            user_api_client.update_password(current_user.id, password=form.new_password.data)
+            return redirect(url_for(".user_profile"))
+    except HTTPError as e:
+        if e.status_code == 400:
+            form.new_password.errors.append(e.message[0])
+            return render_template("views/user-profile/change-password.html", form=form)
 
     return render_template("views/user-profile/change-password.html", form=form)
 
@@ -282,14 +297,78 @@ def user_profile_delete_security_key(key_id):
     if not current_user.can_use_webauthn:
         abort(403)
 
-    try:
-        user_api_client.delete_webauthn_credential_for_user(user_id=current_user.id, credential_id=key_id)
-    except HTTPError as e:
-        message = "Cannot delete last remaining webauthn credential for user"
-        if e.message == message:
-            flash("You cannot delete your last security key.")
-            return redirect(url_for(".user_profile_manage_security_key", key_id=key_id))
-        else:
-            raise e
+    if user_api_client.get_webauthn_credentials_count(current_user.id) == 1:
+        flash("You cannot delete your last security key.")
+        return redirect(url_for(".user_profile_manage_security_key", key_id=key_id))
 
-    return redirect(url_for(".user_profile_security_keys"))
+    return redirect(url_for(".user_profile_security_key_authenticate", key_id=key_id))
+
+
+@main.route("/user-profile/security-keys/<uuid:key_id>/authenticate", methods=["GET", "POST"])
+@user_is_logged_in
+def user_profile_security_key_authenticate(key_id):
+    # Validate password for form
+    def _check_password(pwd):
+        return user_api_client.verify_password(current_user.id, pwd)
+
+    security_key = current_user.webauthn_credentials.by_id(key_id)
+
+    form = ConfirmPasswordForm(_check_password)
+
+    if form.validate_on_submit():
+        try:
+            user_api_client.delete_webauthn_credential_for_user(user_id=current_user.id, credential_id=key_id)
+        except HTTPError as e:
+            message = "Cannot delete last remaining webauthn credential for user"
+            if e.message == message:
+                flash("You cannot delete your last security key.")
+                return redirect(url_for(".user_profile_manage_security_key", key_id=key_id))
+            else:
+                raise e
+
+        flash(
+            f"{security_key.name} was deleted.",
+            "default_with_tick",
+        )
+        return redirect(url_for(".user_profile_security_keys"))
+
+    return render_template(
+        "views/user-profile/authenticate.html",
+        thing="security keys",
+        form=form,
+        back_link=url_for(".user_profile_security_keys"),
+    )
+
+
+@main.route("/user-profile/security-keys/create/authenticate", methods=["GET", "POST"])
+@user_is_logged_in
+def user_profile_security_key_create_authenticate():
+    if not current_user.can_use_webauthn:
+        abort(403)
+
+    # Validate password for form
+    def _check_password(pwd):
+        return user_api_client.verify_password(current_user.id, pwd)
+
+    form = ConfirmPasswordForm(_check_password)
+    message = (
+        "Registration complete. Next time you sign in to Emergency Alerts you’ll be asked to use your security key."
+    )
+
+    if form.validate_on_submit():
+        credential = session.pop("webauthn_credential")
+        cred = WebAuthnCredential.create(credential)
+        current_user.create_webauthn_credential(cred)
+        current_user.update(auth_type="webauthn_auth")
+        flash(
+            message,
+            "default_with_tick",
+        )
+        return redirect(url_for(".user_profile_security_keys"))
+
+    return render_template(
+        "views/user-profile/authenticate.html",
+        thing="security keys",
+        form=form,
+        back_link=url_for(".user_profile_security_keys"),
+    )

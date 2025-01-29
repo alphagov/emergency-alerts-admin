@@ -70,17 +70,30 @@ def test_should_show_name_page(client_request):
     assert page.select_one("h1").text.strip() == "Change your name"
 
 
-def test_should_redirect_after_name_change(
+def test_should_redirect_to_auth_after_name_change(
     client_request,
     mock_update_user_attribute,
 ):
-    client_request.post(
+    page = client_request.post(
         "main.user_profile_name",
         _data={"new_name": "New Name"},
-        _expected_status=302,
-        _expected_redirect=url_for("main.user_profile"),
+        _follow_redirects=True,
+    )
+
+    assert mock_update_user_attribute.called is False  # Name not updated as user redirected to auth page
+    assert page.select_one("h1").text.strip() == "Change your name"
+
+
+def test_should_render_change_name_after_authenticate(
+    client_request,
+    mock_verify_password,
+    mock_update_user_attribute,
+):
+    page = client_request.post(
+        "main.user_profile_name", _data={"new_name": "test", "password": "12345"}, _follow_redirects=True
     )
     assert mock_update_user_attribute.called is True
+    assert page.select_one("h1").text.strip() == "Your profile"
 
 
 def test_should_show_email_page(
@@ -90,23 +103,6 @@ def test_should_show_email_page(
     assert page.select_one("h1").text.strip() == "Change your email address"
     # template is shared with "Change your mobile number" but we don't want to show Delete mobile number link
     assert "Delete your number" not in page.text
-
-
-def test_should_redirect_after_email_change(
-    client_request,
-    mock_login,
-    mock_check_user_exists_for_nonexistent_user,
-):
-    client_request.post(
-        "main.user_profile_email",
-        _data={"email_address": "new_notify@notify.gov.uk"},
-        _expected_status=302,
-        _expected_redirect=url_for(
-            "main.user_profile_email_authenticate",
-        ),
-    )
-
-    assert mock_check_user_exists_for_nonexistent_user.called
 
 
 def test_should_show_error_if_email_already_in_use(
@@ -154,28 +150,23 @@ def test_should_show_errors_if_new_email_address_does_not_validate(
 def test_should_show_authenticate_after_email_change(
     client_request,
 ):
-    with client_request.session_transaction() as session:
-        session["new-email"] = "new_notify@notify.gov.uk"
-
-    page = client_request.get("main.user_profile_email_authenticate")
+    page = client_request.get("main.user_profile_email")
 
     assert "Change your email address" in page.text
     assert "Confirm" in page.text
 
 
 def test_should_render_change_email_continue_after_authenticate_email(
-    client_request,
-    mock_verify_password,
-    mock_send_change_email_verification,
+    client_request, mock_verify_password, mock_send_change_email_verification, mock_not_already_registered
 ):
-    with client_request.session_transaction() as session:
-        session["new-email"] = "new_notify@notify.gov.uk"
     page = client_request.post(
-        "main.user_profile_email_authenticate",
-        _data={"password": "12345"},
-        _expected_status=200,
+        "main.user_profile_email",
+        _data={"email_address": "test@digital.cabinet-office.gov.uk", "password": "12345"},
+        _follow_redirects=True,
     )
-    assert "Click the link in the email to confirm the change to your email address." in page.text
+
+    assert "Check your email" in normalize_spaces(page.select_one("h1").text)
+    assert "test@digital.cabinet-office.gov.uk" in page.text
 
 
 def test_should_redirect_to_user_profile_when_user_confirms_email_link(
@@ -225,22 +216,20 @@ def test_change_your_mobile_number_page_doesnt_show_delete_link_if_user_has_no_m
     assert "Delete your number" not in page.text
 
 
-def test_confirm_delete_mobile_number(client_request, api_user_active_email_auth, mocker):
+def test_confirm_delete_mobile_number(client_request, api_user_active_email_auth, mocker, mock_update_user_attribute):
     mocker.patch("app.user_api_client.get_user", return_value=api_user_active_email_auth)
 
-    page = client_request.get(
+    client_request.get(
         ".user_profile_confirm_delete_mobile_number",
         _test_page_title=False,
+        _expected_redirect=url_for(
+            ".user_profile_mobile_number_delete",
+        ),
     )
-
-    assert normalize_spaces(page.select_one(".banner-dangerous").text) == (
-        "Are you sure you want to delete your mobile number from Notify? Yes, delete"
-    )
-    assert "action" not in page.select_one(".banner-dangerous form")
-    assert page.select_one(".banner-dangerous form")["method"] == "post"
+    assert mock_update_user_attribute.is_called()
 
 
-def test_delete_mobile_number(client_request, api_user_active_email_auth, mocker):
+def test_delete_mobile_number(client_request, api_user_active_email_auth, mocker, mock_verify_password):
     mock_delete = mocker.patch("app.user_api_client.update_user_attribute")
 
     client_request.login(api_user_active_email_auth)
@@ -263,51 +252,25 @@ def test_delete_mobile_number(client_request, api_user_active_email_auth, mocker
     ],
 )
 def test_should_redirect_after_mobile_number_change(
-    client_request,
-    phone_number_to_register_with,
+    client_request, phone_number_to_register_with, mock_update_user_attribute, mock_send_verify_code
 ):
     client_request.post(
         "main.user_profile_mobile_number",
-        _data={"mobile_number": phone_number_to_register_with},
-        _expected_status=302,
-        _expected_redirect=url_for(
-            "main.user_profile_mobile_number_authenticate",
-        ),
+        _data={"mobile_number": phone_number_to_register_with, "password": "12345"},
+        _expected_status=200,
     )
-    with client_request.session_transaction() as session:
-        assert session["new-mob"] == phone_number_to_register_with
+    assert mock_send_verify_code.is_called
 
 
 def test_should_show_authenticate_after_mobile_number_change(
     client_request,
 ):
-    with client_request.session_transaction() as session:
-        session["new-mob"] = "+441234123123"
-
     page = client_request.get(
-        "main.user_profile_mobile_number_authenticate",
+        "main.user_profile_mobile_number",
     )
 
     assert "Change your mobile number" in page.text
     assert "Confirm" in page.text
-
-
-def test_should_redirect_after_mobile_number_authenticate(
-    client_request,
-    mock_verify_password,
-    mock_send_verify_code,
-):
-    with client_request.session_transaction() as session:
-        session["new-mob"] = "+441234123123"
-
-    client_request.post(
-        "main.user_profile_mobile_number_authenticate",
-        _data={"password": "12345667"},
-        _expected_status=302,
-        _expected_redirect=url_for(
-            "main.user_profile_mobile_number_confirm",
-        ),
-    )
 
 
 def test_should_show_confirm_after_mobile_number_change(
@@ -697,25 +660,8 @@ def test_confirm_delete_security_key(client_request, platform_admin_user, webaut
     assert page.select_one(".banner-dangerous form")["method"] == "post"
 
 
-def test_delete_security_key(client_request, platform_admin_user, webauthn_credential, mocker):
-    client_request.login(platform_admin_user)
-    mock_delete = mocker.patch("app.user_api_client.delete_webauthn_credential_for_user")
-
-    client_request.post(
-        ".user_profile_delete_security_key",
-        key_id=webauthn_credential["id"],
-        _expected_redirect=url_for(
-            ".user_profile_security_keys",
-        ),
-    )
-    mock_delete.assert_called_once_with(credential_id=webauthn_credential["id"], user_id=platform_admin_user["id"])
-
-
-def test_delete_security_key_handles_last_credential_error(
-    client_request,
-    platform_admin_user,
-    webauthn_credential,
-    mocker,
+def test_delete_security_key_renders_auth_page(
+    client_request, platform_admin_user, webauthn_credential, mocker, mock_verify_password
 ):
     client_request.login(platform_admin_user)
     mocker.patch(
@@ -724,13 +670,104 @@ def test_delete_security_key_handles_last_credential_error(
     )
 
     mocker.patch(
-        "app.user_api_client.delete_webauthn_credential_for_user",
-        side_effect=HTTPError(response={}, message="Cannot delete last remaining webauthn credential for user"),
+        "app.user_api_client.get_webauthn_credentials_count",
+        return_value=2,
     )
 
     page = client_request.post(
         ".user_profile_delete_security_key", key_id=webauthn_credential["id"], _follow_redirects=True
     )
-    assert "Manage ‘Test credential’" in page.select_one("h1").text
+    assert "Change your security keys" in page.select_one("h1").text
+
+
+def test_delete_security_key_handles_last_credential_error(
+    client_request, platform_admin_user, webauthn_credential, mocker
+):
+    client_request.login(platform_admin_user)
+    mocker.patch(
+        "app.models.webauthn_credential.WebAuthnCredentials.client_method",
+        return_value=[webauthn_credential],
+    )
+
+    mocker.patch(
+        "app.user_api_client.get_webauthn_credentials_count",
+        return_value=1,
+    )
+
+    page = client_request.post(
+        ".user_profile_delete_security_key", key_id=webauthn_credential["id"], _follow_redirects=True
+    )
+    assert f"Manage ‘{webauthn_credential['name']}" in page.select_one("h1").text
     expected_message = "You cannot delete your last security key."
     assert expected_message in page.select_one("div.banner-dangerous").text
+
+
+def test_security_key_deleted_after_successful_auth(
+    client_request, platform_admin_user, webauthn_credential, mocker, mock_verify_password
+):
+    client_request.login(platform_admin_user)
+    mocker.patch(
+        "app.models.webauthn_credential.WebAuthnCredentials.client_method",
+        return_value=[webauthn_credential],
+    )
+
+    mocker.patch(
+        "app.user_api_client.get_webauthn_credentials_count",
+        return_value=2,
+    )
+
+    mock_delete = mocker.patch("app.user_api_client.delete_webauthn_credential_for_user")
+
+    page = client_request.post(
+        ".user_profile_delete_security_key", key_id=webauthn_credential["id"], _follow_redirects=True
+    )
+
+    assert page.select_one("h1").text.strip() == "Change your security keys"
+
+    page2 = client_request.post(
+        ".user_profile_security_key_authenticate",
+        key_id=webauthn_credential["id"],
+        _data={"password": "12345"},
+        _follow_redirects=True,
+    )
+
+    mock_delete.assert_called_once_with(credential_id=webauthn_credential["id"], user_id=platform_admin_user["id"])
+    assert page2.select_one("h1").text.strip() == "Security keys"
+
+
+def test_security_key_added_after_successful_auth(
+    client_request, platform_admin_user, webauthn_credential, mocker, mock_verify_password, mock_update_user_attribute
+):
+    platform_admin_user["can_use_webauthn"] = True
+    client_request.login(platform_admin_user)
+    mocker.patch(
+        "app.models.webauthn_credential.WebAuthnCredentials.client_method",
+        return_value=[webauthn_credential],
+    )
+
+    with client_request.session_transaction() as session:
+        session["webauthn_credential"] = webauthn_credential
+
+    mock_create = mocker.patch("app.user_api_client.create_webauthn_credential_for_user")
+
+    client_request.post(
+        ".user_profile_security_key_create_authenticate",
+        _data={"password": "12345"},
+        expected_redirect=url_for(
+            "main.user_profile_security_keys",
+        ),
+    )
+    webauthn_credential = WebAuthnCredential.create(webauthn_credential)
+    mock_create.assert_called_once_with(platform_admin_user["id"], webauthn_credential)
+    mock_update_user_attribute.assert_called_once_with(
+        platform_admin_user["id"],
+        auth_type="webauthn_auth",
+    )
+    with client_request.session_transaction() as session:
+        assert session["_flashes"] == [
+            (
+                "default_with_tick",
+                "Registration complete. Next time you sign in to Emergency Alerts "
+                "you’ll be asked to use your security key.",
+            )
+        ]

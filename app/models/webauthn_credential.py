@@ -58,6 +58,10 @@ class WebAuthnCredential(JSONModel):
             }
         )
 
+    @classmethod
+    def create(cls, credential):
+        return cls(credential)
+
     def to_credential_data(self):
         return AttestedCredentialData(cbor.decode(base64.b64decode(self.credential_data.encode())))
 

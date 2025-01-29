@@ -13,9 +13,9 @@ from app.main import main
 from app.main.forms import (
     BroadcastInviteUserForm,
     BroadcastPermissionsForm,
-    ChangeEmailForm,
-    ChangeMobileNumberForm,
     ChangeNonGovEmailForm,
+    ChangeTeamMemberEmailForm,
+    ChangeTeamMemberMobileNumberForm,
     PermissionsForm,
     SearchUsersForm,
 )
@@ -159,12 +159,13 @@ def edit_user_email(service_id, user_id):
     session_key = "team_member_email_change-{}".format(user_id)
 
     if is_gov_user(user_email):
-        form = ChangeEmailForm(User.already_registered, email_address=user_email)
+        form = ChangeTeamMemberEmailForm(User.already_registered, email_address=user_email)
     else:
         form = ChangeNonGovEmailForm(User.already_registered, email_address=user_email)
 
     if request.form.get("email_address", "").strip() == user_email:
-        return redirect(url_for(".manage_users", service_id=current_service.id))
+        form.email_address.errors = ["Email address must be different to current email address"]
+        return render_template("views/manage-users/edit-user-email.html", user=user, form=form, service_id=service_id)
 
     if form.validate_on_submit():
         session[session_key] = form.email_address.data
@@ -210,9 +211,10 @@ def edit_user_mobile_number(service_id, user_id):
     user = current_service.get_team_member(user_id)
     user_mobile_number = redact_mobile_number(user.mobile_number)
 
-    form = ChangeMobileNumberForm(mobile_number=user_mobile_number)
-    if form.mobile_number.data == user_mobile_number and request.method == "POST":
-        return redirect(url_for(".manage_users", service_id=service_id))
+    form = ChangeTeamMemberMobileNumberForm(mobile_number=user_mobile_number)
+    if form.mobile_number.data in [user_mobile_number, user.mobile_number] and request.method == "POST":
+        form.mobile_number.errors = ["Mobile number must be different to current mobile number"]
+        return render_template("views/manage-users/edit-user-mobile.html", user=user, form=form, service_id=service_id)
     if form.validate_on_submit():
         session["team_member_mobile_change"] = form.mobile_number.data
 
