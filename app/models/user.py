@@ -671,12 +671,15 @@ class InvitedUsers(Users):
     model = InvitedUser
 
     def __init__(self, service_id):
-        self.service_id = service_id
         self.items = [user for user in self.client_method(service_id) if user["status"] != "accepted"]
 
-    @property
-    def pending(self):
-        return [user for user in self.client_method(self.service_id) if user["status"] == "pending"]
+
+class PendingUsers(Users):
+    client_method = invite_api_client.get_invites_for_service
+    model = InvitedUser
+
+    def __init__(self, service_id):
+        self.items = [user for user in self.client_method(service_id) if user["status"] == "pending"]
 
 
 class OrganisationInvitedUsers(InvitedUsers):
