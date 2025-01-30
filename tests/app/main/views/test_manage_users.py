@@ -7,7 +7,6 @@ from flask import url_for
 import app
 from app.models.user import User
 from app.utils.user import is_gov_user
-from tests import user_json
 from tests.conftest import (
     ORGANISATION_ID,
     SERVICE_ONE_ID,
@@ -718,6 +717,7 @@ def test_should_show_page_for_inviting_user_with_email_prefilled(
     active_user_with_permission_to_other_service,
     mock_get_organisation_by_domain,
     mock_get_invites_for_service,
+    sample_invite,
 ):
     service_one["organisation"] = ORGANISATION_ID
 
@@ -726,7 +726,7 @@ def test_should_show_page_for_inviting_user_with_email_prefilled(
         "app.user_api_client.get_user",
         return_value=active_user_with_permission_to_other_service,
     )
-    mocker.patch("app.models.user.InvitedUsers.pending", return_value=[user_json(id_=uuid.uuid4(), state="inactive")])
+    mocker.patch("app.models.user.PendingUsers.client_method", return_value=[sample_invite])
     page = client_request.get(
         "main.invite_user",
         service_id=SERVICE_ONE_ID,
@@ -787,8 +787,12 @@ def test_should_show_page_if_prefilled_user_is_already_invited(
         "app.models.user.user_api_client.get_user",
         return_value=active_user_with_permission_to_other_service,
     )
-    mocker.patch("app.models.user.InvitedUsers.pending", return_value=[user_json(id_=fake_uuid, state="inactive")])
-    page = client_request.get("main.invite_user", service_id=SERVICE_ONE_ID, user_id=fake_uuid, test_page_prefix=False)
+    mocker.patch("app.models.service.Service.invite_pending_for", return_value=True)
+    page = client_request.get(
+        "main.invite_user",
+        service_id=SERVICE_ONE_ID,
+        user_id=fake_uuid,
+    )
 
     assert normalize_spaces(page.select_one("title").text).startswith("This person has already received an invite")
     assert normalize_spaces(page.select_one("h1").text) == "This person has already received an invite"
@@ -884,12 +888,12 @@ def test_invite_user_when_email_address_is_prefilled(
 ):
     service_one["organisation"] = ORGANISATION_ID
     client_request.login(active_user_with_permissions)
-    mocker.patch("app.models.user.InvitedUsers.pending", return_value=[user_json(id_=uuid.uuid4(), state="inactive")])
     mocker.patch(
         "app.models.user.user_api_client.get_user",
         return_value=active_user_with_permission_to_other_service,
     )
     mocker.patch("app.invite_api_client.create_invite", return_value=sample_invite)
+    mocker.patch("app.models.user.PendingUsers.client_method", return_value=[sample_invite])
     client_request.post(
         "main.invite_user",
         service_id=SERVICE_ONE_ID,
@@ -1017,8 +1021,7 @@ def test_invite_user_to_broadcast_service(
     expected_permissions_to_api,
 ):
     mocker.patch("app.models.user.User.from_email_address_or_none", return_value=User(active_new_user_with_permissions))
-    mocker.patch("app.models.user.InvitedUsers.client_method", return_value=[sample_invite])
-    mocker.patch("app.models.user.InvitedUsers.pending", return_value=[user_json(id_=uuid.uuid4(), state="inactive")])
+    mocker.patch("app.models.user.PendingUsers.client_method", return_value=[sample_invite])
     mocker.patch("app.invite_api_client.create_invite", return_value=sample_invite)
     mocker.patch("app.models.user.User.belongs_to_service", return_value=False)
 
