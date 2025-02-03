@@ -126,7 +126,7 @@ def get_broadcast_dashboard_partials(service_id):
     return dict(
         current_broadcasts=render_template(
             "views/broadcast/partials/dashboard-table.html",
-            broadcasts=broadcast_messages.with_status("pending-approval", "broadcasting"),
+            broadcasts=broadcast_messages.with_status("pending-approval", "broadcasting", "draft"),
             empty_message="You do not have any current alerts",
             view_broadcast_endpoint=".view_current_broadcast",
         ),
@@ -739,8 +739,6 @@ def view_broadcast(service_id, broadcast_message_id):
         broadcast_message_id,
         service_id=current_service.id,
     )
-    if broadcast_message.status == "draft":
-        abort(404)
 
     for statuses, endpoint in (
         ({"completed", "cancelled"}, "main.view_previous_broadcast"),
