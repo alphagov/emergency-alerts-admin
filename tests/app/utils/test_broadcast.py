@@ -41,6 +41,7 @@ from tests.app.broadcast_areas.custom_polygons import (
         ("latitude_longitude", 54, -2, 12),
         ("easting_northing", 530111, 170000, 12),
         ("easting_northing", 530111, 179963, 1),
+        ("easting_northing", 341216, 1006204.592, 23),  # EAS-2567: Long values end up as scientific notation
     ],
 )
 def test_create_coordinate_area_slug(coordinate_type, first_coordinate, second_coordinate, radius):
