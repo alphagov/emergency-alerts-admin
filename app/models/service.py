@@ -4,7 +4,7 @@ from werkzeug.utils import cached_property
 
 from app.models import JSONModel
 from app.models.organisation import Organisation
-from app.models.user import InvitedUsers, User, Users
+from app.models.user import InvitedUsers, PendingUsers, User, Users
 from app.notify_client.api_key_api_client import api_key_api_client
 from app.notify_client.invite_api_client import invite_api_client
 from app.notify_client.organisations_api_client import organisations_client
@@ -80,8 +80,12 @@ class Service(JSONModel):
     def invited_users(self):
         return InvitedUsers(self.id)
 
+    @cached_property
+    def pending_users(self):
+        return PendingUsers(self.id)
+
     def invite_pending_for(self, email_address):
-        return email_address.lower() in (invited_user.email_address.lower() for invited_user in self.invited_users)
+        return email_address.lower() in (invited_user.email_address.lower() for invited_user in self.pending_users)
 
     @cached_property
     def active_users(self):
