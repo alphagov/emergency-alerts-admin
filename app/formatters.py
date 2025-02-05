@@ -1,6 +1,7 @@
 import re
 import unicodedata
 from datetime import datetime, timedelta, timezone
+from decimal import Decimal
 from functools import lru_cache
 from math import floor, log10
 from numbers import Number
@@ -308,3 +309,16 @@ def format_auth_type(auth_type, with_indefinite_article=False):
         return f"{indefinite_article} {auth_type.lower()}"
 
     return auth_type
+
+
+def format_number_no_scientific(num):
+    """
+    Returns a string of the number similar to ':g' formatting (e.g. no trailing zeroes), but this will *not* be in
+    scientific notation after the number reaches a certain threshold.
+    """
+    dec = Decimal(str(num))
+    # Ensure whole numbers with trailing zeroes are not normlaized to exponent format
+    # See https://docs.python.org/3.9/library/decimal.html#decimal-faq
+    normalised = dec.quantize(Decimal(1)) if dec == dec.to_integral() else dec.normalize()
+
+    return str(normalised)

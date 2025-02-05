@@ -6,7 +6,7 @@ from shapely.geometry import MultiPolygon, Polygon
 from shapely.ops import unary_union
 
 from app.broadcast_areas.models import CustomBroadcastArea, CustomBroadcastAreas
-from app.formatters import round_to_significant_figures
+from app.formatters import format_number_no_scientific, round_to_significant_figures
 from app.main.forms import (
     EastingNorthingCoordinatesForm,
     LatitudeLongitudeCoordinatesForm,
@@ -16,13 +16,13 @@ from app.models.broadcast_message import BroadcastMessage
 
 
 def create_coordinate_area_slug(coordinate_type, first_coordinate, second_coordinate, radius):
-    radius_min_sig_figs = "{:g}".format(radius)
+    radius_min_sig_figs = format_number_no_scientific(radius)
     id = f"{radius_min_sig_figs}km around "
     if coordinate_type == "latitude_longitude":
         id = f"{id}{first_coordinate} latitude, {second_coordinate} longitude"
     elif coordinate_type == "easting_northing":
-        first_coordinate = "{:g}".format((first_coordinate))
-        second_coordinate = "{:g}".format(second_coordinate)
+        first_coordinate = format_number_no_scientific(first_coordinate)
+        second_coordinate = format_number_no_scientific(second_coordinate)
         id = f"{id}the easting of {first_coordinate} and the northing of {second_coordinate}"
     return id
 
