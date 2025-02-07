@@ -1,7 +1,8 @@
+from emergency_alerts_utils.template import BroadcastPreviewTemplate
 from flask import abort, flash, jsonify, redirect, render_template, request, url_for
 from notifications_python_client.errors import HTTPError
 
-from app import current_service
+from app import broadcast_message_api_client, current_service
 from app.broadcast_areas.models import CustomBroadcastAreas
 from app.main import main
 from app.main.forms import (
@@ -27,6 +28,7 @@ from app.utils.broadcast import (
     create_coordinate_area,
     create_coordinate_area_slug,
     create_custom_area_polygon,
+    create_map_label,
     create_postcode_area_slug,
     create_postcode_db_id,
     extract_attributes_from_custom_area,
@@ -40,6 +42,7 @@ from app.utils.broadcast import (
     render_coordinates_page,
     render_postcode_page,
     select_coordinate_form,
+    stringify_areas,
     validate_form_based_on_fields_entered,
 )
 from app.utils.user import user_has_permissions
@@ -177,6 +180,19 @@ def write_new_broadcast(service_id):
                 content=form.template_content.data,
                 reference=form.name.data,
             )
+            broadcast_message = broadcast_message = BroadcastMessage.from_id(
+                broadcast_message_id,
+                service_id=current_service.id,
+            )
+
+            if broadcast_message.areas:
+                return redirect(
+                    url_for(
+                        ".preview_broadcast_message",
+                        service_id=current_service.id,
+                        broadcast_message_id=broadcast_message_id,
+                    )
+                )
         else:
             broadcast_message = BroadcastMessage.create_from_content(
                 service_id=current_service.id,
@@ -264,11 +280,15 @@ def preview_broadcast_areas(service_id, broadcast_message_id):
         broadcast_message_id,
         service_id=current_service.id,
     )
-    if broadcast_message.template_id:
+    if broadcast_message.template_id and broadcast_message.status != "draft":
         back_link = url_for(
             ".view_template",
             service_id=current_service.id,
             template_id=broadcast_message.template_id,
+        )
+    elif broadcast_message.status == "draft":
+        back_link = url_for(
+            ".view_current_broadcast", service_id=current_service.id, broadcast_message_id=broadcast_message_id
         )
     else:
         back_link = url_for(
@@ -409,6 +429,24 @@ def remove_postcode_area(service_id, broadcast_message_id, postcode_slug):
             service_id=current_service.id,
             broadcast_message_id=broadcast_message_id,
             library_slug="postcodes",
+        )
+    )
+
+
+@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/remove/>")
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+@service_has_permission("broadcast")
+def remove_coordinate_area(service_id, broadcast_message_id):
+    broadcast_message = BroadcastMessage.from_id(
+        broadcast_message_id,
+        service_id=current_service.id,
+    )
+    broadcast_message.clear_areas()
+    return redirect(
+        url_for(
+            ".preview_broadcast_areas",
+            service_id=current_service.id,
+            broadcast_message_id=broadcast_message.id,
         )
     )
 
@@ -712,11 +750,32 @@ def preview_broadcast_message(service_id, broadcast_message_id):
                 broadcast_message_id=broadcast_message.id,
             )
         )
-
+    areas = format_areas_list(broadcast_message.areas)
     return render_template(
         "views/broadcast/preview-message.html",
         broadcast_message=broadcast_message,
         custom_broadcast=is_custom_broadcast,
+        areas=areas,
+        label=create_map_label(areas),
+        areas_string=stringify_areas(areas),
+    )
+
+
+@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/submit")
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+@service_has_permission("broadcast")
+def submit_broadcast_message(service_id, broadcast_message_id):
+    broadcast_message = BroadcastMessage.from_id(
+        broadcast_message_id,
+        service_id=current_service.id,
+    )
+    broadcast_message.request_approval()
+    return redirect(
+        url_for(
+            ".view_current_broadcast",
+            service_id=current_service.id,
+            broadcast_message_id=broadcast_message.id,
+        )
     )
 
 
@@ -742,7 +801,7 @@ def view_broadcast(service_id, broadcast_message_id):
 
     for statuses, endpoint in (
         ({"completed", "cancelled"}, "main.view_previous_broadcast"),
-        ({"broadcasting", "pending-approval"}, "main.view_current_broadcast"),
+        ({"broadcasting", "pending-approval", "draft"}, "main.view_current_broadcast"),
         ({"rejected"}, "main.view_rejected_broadcast"),
     ):
         if broadcast_message.status in statuses and request.endpoint != endpoint:
@@ -954,4 +1013,22 @@ def cancel_broadcast_message(service_id, broadcast_message_id):
         ),
         is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
         areas=format_areas_list(broadcast_message.areas),
+    )
+
+
+@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/versions")
+@user_has_permissions(allow_org_user=True)
+def view_broadcast_versions(service_id, broadcast_message_id):
+    versions = broadcast_message_api_client.get_broadcast_message_versions(service_id, broadcast_message_id)
+    for message in versions:
+        message["template"] = BroadcastPreviewTemplate(
+            {
+                "template_type": BroadcastPreviewTemplate.template_type,
+                "name": message.get("reference"),
+                "content": message.get("content"),
+            }
+        )
+    return render_template(
+        "views/broadcast/choose_history.html",
+        versions=versions,
     )
