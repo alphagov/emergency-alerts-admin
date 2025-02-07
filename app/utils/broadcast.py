@@ -319,3 +319,21 @@ def format_areas_list(areas_list):
         return [format_area_name(area) for area in areas_list.items]
     else:
         return [format_area_name(area) if isinstance(area, str) else format_area_name(area.name) for area in areas_list]
+
+
+def create_map_label(areas):
+    label = ""
+    if len(areas) == 1:
+        label = f"Map of the United Kingdom, showing the area for {areas[0]}"
+    elif len(areas) > 1:
+        label = "Map of the United Kingdom, showing the areas for " + (", ").join(areas[:-1]) + " and " + areas[-1]
+    return label
+
+
+def stringify_areas(areas):
+    areas_string = ""
+    if len(areas) == 1:
+        areas_string = areas[0]
+    elif len(areas) > 1:
+        areas_string = (", ").join(areas[:-1]) + " and " + areas[-1]
+    return areas_string
