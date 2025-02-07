@@ -42,7 +42,11 @@
         {% for area in broadcast_message.areas %}
           <li class="area-list-item">
             {{area.name}}
-            <a class="area-list-item-remove govuk-button" data-module="govuk-button" role="button" href="{{ url_for('.remove_broadcast_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, area_slug=area.id) }}">
+            {% if is_custom_broadcast %}
+              <a class="area-list-item-remove govuk-button" data-module="govuk-button" role="button" href="{{ url_for('.remove_coordinate_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, area_slug=area.id) }}">
+            {% else %}
+              <a class="area-list-item-remove govuk-button" data-module="govuk-button" role="button" href="{{ url_for('.remove_broadcast_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, area_slug=area.id) }}">
+            {% endif %}
               <svg id="area-list-item-remove__icon" width="11" height="11" viewbox="0 0 10 10" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
                 <g transform="rotate(45),translate(1, -6)">
                   <line stroke-width="1.75" id="svg_1" y2="0" x2="6" y1="12" x1="6" stroke="currentColor" fill="none"/>
@@ -54,18 +58,20 @@
           </li>
         {% endfor %}
       </ul>
-      {{ govukButton({
-        "element": "a",
-        "text": "Add another area",
-        "href": url_for('.choose_broadcast_library', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
-        "classes": "govuk-button--secondary govuk-!-margin-bottom-5"
-      }) }}
+      {% if not is_custom_broadcast %}
+        {{ govukButton({
+          "element": "a",
+          "text": "Add another area",
+          "href": url_for('.choose_broadcast_library', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
+          "classes": "govuk-button--secondary govuk-!-margin-bottom-5"
+        }) }}
+      {% endif %}
     </div>
 
     {{ map(broadcast_message.simple_polygons.estimated_area, broadcast_message.simple_polygons_with_bleed.estimated_area, broadcast_message.count_of_phones, broadcast_message.count_of_phones_likely, is_custom_broadcast, label) }}
     {{ govukButton({
       "element": "a",
-      "text": "Preview alert",
+      "text": "Save and preview alert",
       "href": url_for('.preview_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
       "classes": "govuk-button"
     }) }}
