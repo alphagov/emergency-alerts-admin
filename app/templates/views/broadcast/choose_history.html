@@ -1,0 +1,19 @@
+{% extends "withnav_template.html" %}
+
+{% block service_page_title %}
+  Previous versions
+{% endblock %}
+
+{% block maincolumn_content %}
+  <h1 class="heading-large">Previous versions</h1>
+  <div class="govuk-grid-row">
+    {% for broadcast_message in versions %}
+      {% with show_title=True %}
+        {% include 'views/broadcast/_broadcast_message_history.html' %}
+      {% endwith %}
+    {% endfor %}
+  </div>
+  <p class="govuk-body">
+    <a class="govuk-link govuk-link--no-visited-state">Back to current alerts</a>
+  </p>
+{% endblock %}

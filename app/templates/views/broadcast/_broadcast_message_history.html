@@ -1,0 +1,16 @@
+<div class="govuk-grid-column-full alert-list-item">
+  <h2 class="message-name">{{ broadcast_message.reference }}</h2>
+  <p class="hint">
+    {% if broadcast_message.version > 1 %}
+      Edit made {% if broadcast_message.updated_at %}{{ broadcast_message.updated_at|format_datetime_normal }}{% endif %}
+    {% else %}
+      Created
+      {% if broadcast_message.created_at %}{{ broadcast_message.created_at|format_datetime_normal }}{% endif %}
+    {% endif %}
+    by {{ broadcast_message.created_by }}
+  </p>
+</div>
+
+<div class="govuk-grid-column-full">
+  {{ broadcast_message.template|string }}
+</div>
