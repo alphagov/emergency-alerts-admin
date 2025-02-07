@@ -89,3 +89,7 @@ $notify-secondary-button-hover-colour: govuk-shade(govuk-colour("light-grey"), 1
 .govuk-tabs {
   overflow-wrap: break-word;
 }
+
+.govuk-summary-list__actions, .govuk-summary-list__key {
+  vertical-align: top;
+}

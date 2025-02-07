@@ -276,3 +276,14 @@ details .arrow {
   align-items: center;
   gap: 5%;
 }
+
+
+.edit-button {
+  float: right;
+  margin: govuk-spacing(2);
+}
+
+.alert-list-item {
+  border-top: 1px solid #B1B4B6;
+  padding: 15px 0;
+}
