@@ -73,5 +73,17 @@ class BroadcastMessageAPIClient(AdminAPIClient):
             if e.status_code == 400:
                 raise e
 
+    def get_broadcast_message_versions(self, service_id, broadcast_message_id):
+        """
+        Retrieve a list of versions for a broadcast message
+        """
+        return self.get(f"/service/{service_id}/broadcast-message-history/{broadcast_message_id}/versions")
+
+    def get_broadcast_message_version(self, service_id, broadcast_message_id, version):
+        """
+        Retrieve a list of versions for a broadcast message
+        """
+        return self.get(f"/service/{service_id}/broadcast-message-history/{broadcast_message_id}/version/{version}")
+
 
 broadcast_message_api_client = BroadcastMessageAPIClient()
