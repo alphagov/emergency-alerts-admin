@@ -105,6 +105,15 @@ def platform_admin_services():
     )
 
 
+@main.route("/platform-admin/admin-approvals", endpoint="admin_approvals")
+@user_is_platform_admin
+def platform_admin_approvals():
+    return render_template(
+        "views/platform-admin/admin-approvals.html",
+        thing="Yes",
+    )
+
+
 def get_url_for_notify_record(uuid_):
     @dataclasses.dataclass
     class _EndpointSpec:

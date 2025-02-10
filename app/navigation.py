@@ -59,6 +59,7 @@ class HeaderNavigation(Navigation):
             "user_profile_disable_platform_admin_view",
         },
         "platform-admin": {
+            "admin_approvals",
             "archive_user",
             "change_user_auth",
             "find_services_by_name",
