@@ -9,6 +9,7 @@ from notifications_python_client.errors import HTTPError
 from app import service_api_client, user_api_client
 from app.main import main
 from app.main.forms import DateFilterForm, PlatformAdminSearch
+from app.notify_client.admin_actions_client import admin_actions_api_client
 from app.notify_client.platform_admin_api_client import admin_api_client
 from app.utils.user import user_is_platform_admin
 
@@ -105,13 +106,12 @@ def platform_admin_services():
     )
 
 
-@main.route("/platform-admin/admin-approvals", endpoint="admin_approvals")
+@main.route("/platform-admin/admin-actions", endpoint="admin_actions")
 @user_is_platform_admin
-def platform_admin_approvals():
-    return render_template(
-        "views/platform-admin/admin-approvals.html",
-        thing="Yes",
-    )
+def platform_admin_actions():
+    pending_actions = admin_actions_api_client.get_pending_admin_actions()
+
+    return render_template("views/platform-admin/admin-actions.html", **pending_actions)
 
 
 def get_url_for_notify_record(uuid_):

@@ -1,0 +1,35 @@
+{% extends "views/platform-admin/_base_template.html" %}
+{% from "components/big-number.html" import big_number_simple %}
+{% from "components/status-box.html" import status_box %}
+{% from "components/form.html" import form_wrapper %}
+{% from "govuk_frontend_jinja/components/tag/macro.html" import govukTag %}
+
+{% block per_page_title %}
+  Admin Approvals
+{% endblock %}
+
+{% block platform_admin_content %}
+
+  <h1 class="heading-medium">
+    Admin Approvals
+  </h1>
+
+  {% for action in pending %}
+    <div class="user-list-item">
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-three-quarters">
+          <h2>
+            {{ action }}
+
+            <span>
+              {{govukTag({
+                text: action.status,
+                classes: "govuk-tag--grey"
+              })}}
+            </span>
+          </h2>
+        </div>
+    </div>
+  {% endfor %}
+
+{% endblock %}
