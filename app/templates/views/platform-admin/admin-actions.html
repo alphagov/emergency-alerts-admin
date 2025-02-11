@@ -2,7 +2,8 @@
 {% from "components/big-number.html" import big_number_simple %}
 {% from "components/status-box.html" import status_box %}
 {% from "components/form.html" import form_wrapper %}
-{% from "govuk_frontend_jinja/components/tag/macro.html" import govukTag %}
+{% from "components/tick-cross.html" import tick_cross %}
+{% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
 
 {% block per_page_title %}
   Admin Approvals
@@ -14,22 +15,43 @@
     Admin Approvals
   </h1>
 
-  {% for action in pending %}
-    <div class="user-list-item">
-      <div class="govuk-grid-row">
-        <div class="govuk-grid-column-three-quarters">
-          <h2>
-            {{ action }}
+  <div class="keyline-block"></div>
 
-            <span>
-              {{govukTag({
-                text: action.status,
-                classes: "govuk-tag--grey"
-              })}}
-            </span>
-          </h2>
-        </div>
+  {% for action in pending %}
+    <div class="govuk-grid-row service-block">
+      <div class="govuk-grid-column-three-quarters">
+          {% if action.action_type == 'invite_user' %}
+            <h2>Invite user {{ action.action_data.email }} to{% if not services[action.service_id].restricted %} <strong>live</strong>{% endif %} service {{ services[action.service_id].name }}</h2>
+            With permissions:
+            <ul class="tick-cross-list-permissions">
+              {% for ui_permission in action.action_data.permissions %}
+                {{ tick_cross(
+                  True,
+                  permission_labels[ui_permission]
+                ) }}
+              {% endfor %}
+            </ul>
+          {% else %}
+            {{ action }}
+          {% endif %}
+
+      </div>
+      <div class="govuk-grid-column-one-quarter">
+        {{ govukButton({
+          "element": "a",
+          "text": "Approve",
+          "href": "",
+        }) }}
+        </br>
+        {{ govukButton({
+          "element": "a",
+          "text": "Reject",
+          "href": "",
+          "classes": "govuk-button--warning"
+        }) }}
+      </div>
     </div>
+    <div class="keyline-block"></div>
   {% endfor %}
 
 {% endblock %}

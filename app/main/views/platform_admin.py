@@ -12,6 +12,7 @@ from app.main.forms import DateFilterForm, PlatformAdminSearch
 from app.notify_client.admin_actions_client import admin_actions_api_client
 from app.notify_client.platform_admin_api_client import admin_api_client
 from app.utils.user import user_is_platform_admin
+from app.utils.user_permissions import broadcast_permission_options, permission_options
 
 COMPLAINT_THRESHOLD = 0.02
 FAILURE_THRESHOLD = 3
@@ -111,7 +112,11 @@ def platform_admin_services():
 def platform_admin_actions():
     pending_actions = admin_actions_api_client.get_pending_admin_actions()
 
-    return render_template("views/platform-admin/admin-actions.html", **pending_actions)
+    return render_template(
+        "views/platform-admin/admin-actions.html",
+        **pending_actions,
+        permission_labels=dict(permission_options + broadcast_permission_options),
+    )
 
 
 def get_url_for_notify_record(uuid_):
