@@ -1028,6 +1028,7 @@ def view_broadcast_versions(service_id, broadcast_message_id):
                 "content": message.get("content"),
             }
         )
+        message["formatted_areas"] = message.get("areas")["names"]
     return render_template(
         "views/broadcast/choose_history.html",
         versions=versions,
