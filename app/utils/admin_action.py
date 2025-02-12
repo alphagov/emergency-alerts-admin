@@ -1,5 +1,9 @@
 from typing import Iterable
 
+from flask import flash, redirect, url_for
+
+from app.models.user import InvitedUser
+
 # Tasks which require another platform/org admin to approve before being actioned
 ADMIN_INVITE_USER = "invite_user"  # Only if the user has sensitive permissions
 ADMIN_INVITE_USER_ORG = "invite_user_org"
@@ -32,10 +36,19 @@ def process_admin_action(action_obj):
     Process an admin action - i.e, it's been approved and we now need to actuate the relevant API to fulfil it
     """
 
-    action_type = action_obj.action_type
+    action_type = action_obj["action_type"]
 
     if action_type == ADMIN_INVITE_USER:
-        pass
+        InvitedUser.create(
+            action_obj["created_by"],
+            action_obj["service_id"],
+            action_obj["action_data"]["email_address"],
+            action_obj["action_data"]["permissions"],
+            action_obj["action_data"]["login_authentication"],
+            action_obj["action_data"]["folder_permissions"],
+        )
+        flash("Sent invite to user " + action_obj["action_data"]["email_address"], "default_with_tick")
+        return redirect(url_for(".manage_users", service_id=action_obj["service_id"]))
     else:
         raise Exception("Unknown admin action " + action_type)
 

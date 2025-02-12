@@ -138,7 +138,7 @@ def platform_review_admin_action(action_id, status):
         admin_actions_api_client.review_admin_action(action_id, status)
 
         # Now we need to 'do' the thing we've approved
-        process_admin_action(action)
+        return process_admin_action(action)
 
     return redirect(url_for(".admin_actions"))
 
