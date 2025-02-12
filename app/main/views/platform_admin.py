@@ -3,15 +3,16 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from flask import flash, redirect, render_template, request, url_for
+from flask import current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 from notifications_python_client.errors import HTTPError
 
 from app import service_api_client, user_api_client
 from app.main import main
 from app.main.forms import DateFilterForm, PlatformAdminSearch
-from app.notify_client.admin_actions_client import admin_actions_api_client
+from app.notify_client.admin_actions_api_client import admin_actions_api_client
 from app.notify_client.platform_admin_api_client import admin_api_client
+from app.utils.admin_action import process_admin_action
 from app.utils.user import user_is_platform_admin
 from app.utils.user_permissions import broadcast_permission_options, permission_options
 
@@ -130,9 +131,14 @@ def platform_review_admin_action(action_id, status):
     if action["status"] != "pending":
         flash("That action is not pending and cannot be reviewed")
     elif status == "approved" and action["created_by"] == current_user.id:
+        # TODO: Do we turn this off for non-production?
         flash("You cannot approve your own admin approvals")
     else:
+        current_app.logger.info("Approving and fulfilling admin action", extra={"admin_action": action})
         admin_actions_api_client.review_admin_action(action_id, status)
+
+        # Now we need to 'do' the thing we've approved
+        process_admin_action(action)
 
     return redirect(url_for(".admin_actions"))
 

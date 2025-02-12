@@ -13,7 +13,10 @@ class PendingActionResponse(TypedDict):
     users: dict[str, dict]
 
 
-class AdminActionsClient(AdminAPIClient):
+class AdminActionsApiClient(AdminAPIClient):
+    def create_admin_action(self, action_obj):
+        return self.post(url="/admin-action", data=action_obj)
+
     def get_pending_admin_actions(self) -> PendingActionResponse:
         return self.get(url="/admin-action/pending")
 
@@ -28,4 +31,4 @@ class AdminActionsClient(AdminAPIClient):
         return self.post(url="/admin-action/{}/review".format(action_id), data=data)
 
 
-admin_actions_api_client = AdminActionsClient()
+admin_actions_api_client = AdminActionsApiClient()

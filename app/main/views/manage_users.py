@@ -20,6 +20,8 @@ from app.main.forms import (
     SearchUsersForm,
 )
 from app.models.user import InvitedUser, User
+from app.notify_client.admin_actions_api_client import admin_actions_api_client
+from app.utils.admin_action import ADMIN_INVITE_USER, permissions_require_admin_action
 from app.utils.user import is_gov_user, user_has_permissions
 from app.utils.user_permissions import broadcast_permission_options, permission_options
 
@@ -61,6 +63,7 @@ def invite_user(service_id, user_id=None):
                 "views/user-already-team-member.html",
                 user_to_invite=user_to_invite,
             )
+        # TODO: Check for pending admin action
         if current_service.invite_pending_for(user_to_invite.email_address):
             return render_template(
                 "views/user-already-invited.html",
@@ -74,15 +77,32 @@ def invite_user(service_id, user_id=None):
         form.login_authentication.data = "sms_auth"
 
     if form.validate_on_submit():
-        invited_user = InvitedUser.create(
-            current_user.id,
-            service_id,
-            form.email_address.data,
-            form.permissions,
-            form.login_authentication.data,
-            form.folder_permissions.data,
-        )
-        flash("Invite sent to {}".format(invited_user.email_address), "default_with_tick")
+        if permissions_require_admin_action(form.permissions):
+            action = {
+                "organisation_id": current_service.organisation_id,
+                "service_id": current_service.id,
+                "created_by": current_user.id,
+                "action_type": ADMIN_INVITE_USER,
+                "action_data": {
+                    "email_address": form.email_address.data,
+                    "permissions": form.permissions,
+                    "login_authentication": form.login_authentication.data,
+                    "folder_permissions": form.folder_permissions.data,
+                },
+            }
+            admin_actions_api_client.create_admin_action(action)
+            flash("An admin approval has been created", "default_with_tick")
+        else:
+            invited_user = InvitedUser.create(
+                current_user.id,
+                service_id,
+                form.email_address.data,
+                form.permissions,
+                form.login_authentication.data,
+                form.folder_permissions.data,
+            )
+            flash("Invite sent to {}".format(invited_user.email_address), "default_with_tick")
+
         return redirect(url_for(".manage_users", service_id=service_id))
 
     return render_template(
@@ -106,9 +126,11 @@ def edit_user_permissions(service_id, user_id):
     form = form_class.from_user(
         user,
         service_id,
-        folder_permissions=None
-        if user.platform_admin
-        else [f["id"] for f in current_service.all_template_folders if user.has_template_folder_permission(f)],
+        folder_permissions=(
+            None
+            if user.platform_admin
+            else [f["id"] for f in current_service.all_template_folders if user.has_template_folder_permission(f)]
+        ),
         all_template_folders=None if user.platform_admin else current_service.all_template_folders,
     )
 
