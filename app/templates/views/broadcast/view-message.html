@@ -5,23 +5,19 @@
 {% from "components/banner.html" import banner %}
 {% from "components/page-header.html" import page_header %}
 {% from "components/page-footer.html" import page_footer %}
-{% from "views/broadcast/macros/area-map.html" import map %}
+{% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
+{% from "components/alert-summary-list.html" import alertSummaryList %}
+
 
 {% extends "withnav_template.html" %}
 
 {% block extra_stylesheets %}
-  {% include "views/broadcast/partials/area-map-stylesheets.html" %}
+{% include "views/broadcast/partials/area-map-stylesheets.html" %}
 {% endblock %}
 
 {% block extra_javascripts %}
-  {% include "views/broadcast/partials/area-map-javascripts.html" %}
+{% include "views/broadcast/partials/area-map-javascripts.html" %}
 {% endblock %}
-
-{% if areas|length == 1 %}
-  {% set label = "Map of the United Kingdom, showing the area for "+areas[0] %}
-{% else %}
-  {% set label = "Map of the United Kingdom, showing the areas for "+areas[:-1]|join(', ')+' and '+areas[-1] %}
-{% endif %}
 
 {% block service_page_title %}
   {% if broadcast_message.status == 'pending-approval' %}
@@ -201,6 +197,8 @@
         </p>
       </div>
     {% endif %}
+  {% elif broadcast_message.status == 'draft' %}
+    {{ page_header(broadcast_message.template.name) }}
   {% else %}
     {{ page_header(broadcast_message.template.name) }}
 
@@ -242,62 +240,73 @@
         {{ broadcast_message.starts_at|format_datetime_human }}.
       </p>
     {% endif %}
-
   {% endif %}
 
-  {{ broadcast_message.template|string }}
+  {{alertSummaryList(current_service.id, broadcast_message, areas, broadcast_message.simple_polygons_with_bleed.estimated_area, broadcast_message.count_of_phones, broadcast_message.count_of_phones_likely, is_custom_broadcast)}}
 
-  {% if broadcast_message.areas %}
-    <div>
-      <p class="govuk-!-margin-right-2 area-list">Area: </p>
-      <ul class="area-list">
-        {% for area in broadcast_message.areas %}
-          <li class="area-list-item area-list-item--unremoveable">
-            {{area.name}}
-          </li>
-        {% endfor %}
-      </ul>
-    </div>
-  {% endif %}
 
-  <div class="area-list-map-details">
-    {{ govukDetails({
-      "summaryText": "Show map of areas",
-      "html": map(broadcast_message.simple_polygons.estimated_area, broadcast_message.simple_polygons_with_bleed.estimated_area, broadcast_message.count_of_phones, broadcast_message.count_of_phones_likely, is_custom_broadcast, label)
-    }) }}
+{% if broadcast_message.status != 'pending-approval' %}
+  <p class="govuk-body govuk-!-margin-bottom-3">
+    {% if broadcast_message.created_by %}
+      Created by {{ broadcast_message.created_by }}
+    {%- else %}
+      Created from an API call
+    {%- endif %}
+    {%- if broadcast_message.approved_by %}
+      and approved by {{ broadcast_message.approved_by }}
+    {%- endif %}
+    {{- '.' }}
+  </p>
+{% endif %}
+
+{% if broadcast_message.status == 'broadcasting' %}
+  <p class="govuk-body">
+    Broadcasting stops {{ broadcast_message.finishes_at|format_datetime_human }}.
+  </p>
+{% elif broadcast_message.status == 'cancelled' %}
+  <p class="govuk-body">
+    {% if broadcast_message.cancelled_by_id %}
+      Stopped by {{ broadcast_message.cancelled_by }}
+    {%- else %}
+      Stopped by an API call
+    {%- endif %}
+    {{ broadcast_message.cancelled_at|format_datetime_human }}.
+  </p>
+{% elif broadcast_message.status == 'completed' %}
+  <p class="govuk-body">
+    Finished broadcasting {{ broadcast_message.finishes_at|format_datetime_human }}.
+  </p>
+{% endif %}
+
+{% if broadcast_message.areas and broadcast_message.content and broadcast_message.reference and broadcast_message.status == "draft" %}
+  {{ govukButton({
+    "element": "a",
+    "text": "Submit for approval",
+    "href":url_for(
+      ".submit_broadcast_message",
+      service_id=current_service.id,
+      broadcast_message_id=broadcast_message.id,
+    ),
+    "classes": "govuk-button"
+  }) }}
+{% endif %}
+
+{% if broadcast_message.status == "draft" %}
+  <div class="bottom-gutter-1-2">
+    {% if broadcast_message.updated_at%}
+      <h2 class="heading-small bottom-gutter-2-3 heading-inline">
+        Last edited
+        <time class="timeago" datetime="{{ broadcast_message.updated_at }}">
+          {{ broadcast_message.updated_at|format_delta }}
+        </time>
+      </h2>
+
+      &emsp;
+      <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('.view_broadcast_versions', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }}">See previous versions</a>
+      &emsp;
+      <br/>
+    {% endif %}
   </div>
-
-  {% if broadcast_message.status != 'pending-approval' %}
-    <p class="govuk-body govuk-!-margin-bottom-3">
-      {% if broadcast_message.created_by %}
-        Created by {{ broadcast_message.created_by }}
-      {%- else %}
-        Created from an API call
-      {%- endif %}
-      {%- if broadcast_message.approved_by %}
-        and approved by {{ broadcast_message.approved_by }}
-      {%- endif %}
-      {{- '.' }}
-    </p>
-  {% endif %}
-
-  {% if broadcast_message.status == 'broadcasting' %}
-    <p class="govuk-body">
-      Broadcasting stops {{ broadcast_message.finishes_at|format_datetime_human }}.
-    </p>
-  {% elif broadcast_message.status == 'cancelled' %}
-    <p class="govuk-body">
-      {% if broadcast_message.cancelled_by_id %}
-        Stopped by {{ broadcast_message.cancelled_by }}
-      {%- else %}
-        Stopped by an API call
-      {%- endif %}
-      {{ broadcast_message.cancelled_at|format_datetime_human }}.
-    </p>
-  {% elif broadcast_message.status == 'completed' %}
-    <p class="govuk-body">
-      Finished broadcasting {{ broadcast_message.finishes_at|format_datetime_human }}.
-    </p>
-  {% endif %}
+{% endif %}
 
 {% endblock %}

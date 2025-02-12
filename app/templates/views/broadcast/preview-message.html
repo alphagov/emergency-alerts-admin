@@ -5,9 +5,8 @@
 {% from "components/page-footer.html" import page_footer %}
 {% from "components/radios.html" import radio_select %}
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
-{% from "views/broadcast/macros/area-map.html" import map %}
 {% from "govuk_frontend_jinja/components/details/macro.html" import govukDetails %}
-{% from "govuk_frontend_jinja/components/summary-list/macro.html" import govukSummaryList %}
+{% from "components/alert-summary-list.html" import alertSummaryList %}
 
 {% block extra_stylesheets %}
   {% include "views/broadcast/partials/area-map-stylesheets.html" %}
@@ -39,102 +38,7 @@
 
   {{ page_header("Preview alert") }}
 
-  {% set map_html = map(None, broadcast_message.simple_polygons_with_bleed.estimated_area, broadcast_message.count_of_phones, broadcast_message.count_of_phones_likely, is_custom_broadcast, label)%}
-
-
-  {% set areas_html %}
-    <ul class="area-list">
-      {% for area in broadcast_message.areas %}
-        <li class="area-list-item area-list-item--unremoveable">
-          {{area.name}}
-        </li>
-      {% endfor %}
-    </ul>
-  {% endset %}
-
-
-  {% set conditional_areas %}
-    {% if broadcast_message.areas %}
-      {{( areas_html | safe ~ " " ~ map_html ) | safe}}
-    {% endif%}
-  {% endset %}
-
-
-  {% set conditional_area_action_text %}
-    {% if broadcast_message.areas %}
-      Change
-    {% else %}
-      Add areas
-    {% endif%}
-  {% endset %}
-
-  {% set conditional_area_action_link %}
-    {% if broadcast_message.areas %}
-      {{url_for('.preview_broadcast_areas', service_id=current_service.id, broadcast_message_id=broadcast_message.id)}}
-    {% else%}
-      {{url_for(
-        ".choose_broadcast_library",
-        service_id=current_service.id,
-        broadcast_message_id=broadcast_message.id,
-      )}}
-    {% endif%}
-  {% endset %}
-
-  {{ govukSummaryList({
-    'rows': [
-      {
-        'key': {
-          'text': "Reference"
-        },
-        'value': {
-          'text': broadcast_message.reference
-        },
-        'actions': {
-          'items': [
-            {
-              'href': url_for('.write_new_broadcast', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
-              'text': "Change",
-              'visuallyHiddenText': "reference"
-            }
-          ]
-        }
-      },
-      {
-        'key': {
-          'text': "Alert message"
-        },
-        'value': {
-          'html': broadcast_message.template
-        },
-        'actions': {
-          'items': [
-            {
-              'href': url_for('.write_new_broadcast', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
-              'text': "Change",
-              'visuallyHiddenText': "message"
-            }
-          ]
-        }
-      },
-      {
-        'key': {
-          'text': "Area"
-        },
-        'value': {
-          'html': conditional_areas
-        },
-        'actions': {
-          'items': [
-            {
-              'href': conditional_area_action_link,
-              'text': conditional_area_action_text,
-              'visuallyHiddenText': "areas"
-            }
-          ]
-        }
-      },
-    ]
-  }) }}
+  {{alertSummaryList(current_service.id, broadcast_message, areas, broadcast_message.simple_polygons_with_bleed.estimated_area, broadcast_message.count_of_phones, broadcast_message.count_of_phones_likely, is_custom_broadcast)}}
 
   {% call form_wrapper() %}
     {{ page_footer('Submit for approval') }}
