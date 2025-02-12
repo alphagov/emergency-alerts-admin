@@ -35,20 +35,23 @@
             {{ action }}
           {% endif %}
 
+          Created {{ action.created_at | format_datetime_human }} by {{ users[action.created_by].email_address }}
       </div>
       <div class="govuk-grid-column-one-quarter">
-        {{ govukButton({
-          "element": "a",
-          "text": "Approve",
-          "href": "",
-        }) }}
+        <form action="{{url_for('.review_admin_action', action_id=action.id, status='approved')}}" method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          {{ govukButton({
+            "text": "Approve",
+          }) }}
+        </form>
         </br>
-        {{ govukButton({
-          "element": "a",
-          "text": "Reject",
-          "href": "",
-          "classes": "govuk-button--warning"
-        }) }}
+        <form action="{{url_for('.review_admin_action', action_id=action.id, status='rejected')}}" method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          {{ govukButton({
+            "text": "Reject",
+            "classes": "govuk-button--warning"
+          }) }}
+        </form>
       </div>
     </div>
     <div class="keyline-block"></div>

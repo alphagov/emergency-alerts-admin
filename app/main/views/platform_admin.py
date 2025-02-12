@@ -3,7 +3,8 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from flask import redirect, render_template, request, url_for
+from flask import flash, redirect, render_template, request, url_for
+from flask_login import current_user
 from notifications_python_client.errors import HTTPError
 
 from app import service_api_client, user_api_client
@@ -117,6 +118,23 @@ def platform_admin_actions():
         **pending_actions,
         permission_labels=dict(permission_options + broadcast_permission_options),
     )
+
+
+@main.route(
+    "/platform-admin/admin-actions/<uuid:action_id>/review/<status>", endpoint="review_admin_action", methods=["POST"]
+)
+@user_is_platform_admin
+def platform_review_admin_action(action_id, status):
+    action = admin_actions_api_client.get_admin_action_by_id(action_id)
+
+    if action["status"] != "pending":
+        flash("That action is not pending and cannot be reviewed")
+    elif status == "approved" and action["created_by"] == current_user.id:
+        flash("You cannot approve your own admin approvals")
+    else:
+        admin_actions_api_client.review_admin_action(action_id, status)
+
+    return redirect(url_for(".admin_actions"))
 
 
 def get_url_for_notify_record(uuid_):
