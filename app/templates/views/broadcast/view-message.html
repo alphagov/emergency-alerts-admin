@@ -291,7 +291,7 @@
   }) }}
 {% endif %}
 
-{% if broadcast_message.status == "draft" %}
+{% if broadcast_message.status == "draft" and broadcast_message_version_count > 1 %}
   <div class="bottom-gutter-1-2">
     {% if broadcast_message.updated_at%}
       <h2 class="heading-small bottom-gutter-2-3 heading-inline">
