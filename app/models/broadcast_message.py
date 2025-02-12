@@ -416,6 +416,9 @@ class BroadcastMessage(JSONModel):
 
         self._update(**data)
 
+    def get_count_of_versions(self, service_id):
+        return len(broadcast_message_api_client.get_broadcast_message_versions(service_id, self.id))
+
 
 class BroadcastMessages(ModelList):
     model = BroadcastMessage

@@ -828,6 +828,7 @@ def view_broadcast(service_id, broadcast_message_id):
         rejection_form=RejectionReasonForm(),
         is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
         areas=format_areas_list(broadcast_message.areas),
+        broadcast_message_version_count=broadcast_message.get_count_of_versions(service_id),
     )
 
 
@@ -878,6 +879,7 @@ def approve_broadcast_message(service_id, broadcast_message_id):
             rejection_form=RejectionReasonForm(),
             is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
             areas=format_areas_list(broadcast_message.areas),
+            broadcast_message_version_count=broadcast_message.get_count_of_versions(service_id),
         )
 
     return redirect(
@@ -937,6 +939,7 @@ def reject_broadcast_message(service_id, broadcast_message_id):
             _get_back_link_from_view_broadcast_endpoint(),
             service_id=current_service.id,
         ),
+        broadcast_message_version_count=broadcast_message.get_count_of_versions(service_id),
     )
 
 
@@ -1013,6 +1016,7 @@ def cancel_broadcast_message(service_id, broadcast_message_id):
         ),
         is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
         areas=format_areas_list(broadcast_message.areas),
+        broadcast_message_version_count=broadcast_message.get_count_of_versions(service_id),
     )
 
 
