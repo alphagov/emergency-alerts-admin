@@ -77,4 +77,47 @@
     details.open = false;
   }
 
+  // for Larger map
+
+  const enlargeMapButton = document.getElementById("view-larger-map-btn");
+  const enlargedMapModal = document.getElementById("enlarged-map-dialog");
+  const closeMapButton = document.getElementById("close-map-btn");
+
+  let mapElement2 = document.getElementById('enlarged-map');
+
+  const enlargedMap = L.map(
+    'enlarged-map',
+    {
+      scrollWheelZoom: false
+    }
+  )
+
+  enlargedMap.setView(
+    [55.378052, -3.435973],
+    2
+  );
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(enlargedMap);
+
+  let polygonGroup2 = L.featureGroup(polygons).addTo(enlargedMap);
+  enlargedMap.fitBounds(
+    polygonGroup2.getBounds(),
+    {padding: [0.5, 0.5]}
+  );
+
+  enlargeMapButton.addEventListener("click", function () {
+    enlargedMapModal.showModal();
+    enlargedMap.invalidateSize();
+    enlargedMap.fitBounds(
+    polygonGroup2.getBounds(),
+    {padding: [1, 1]}
+    );
+    enlargedMapModal.focus();
+  });
+
+  closeMapButton.addEventListener("click", function () {
+    enlargedMapModal.close();
+  });
+
 </script>
