@@ -31,6 +31,16 @@
                 ) }}
               {% endfor %}
             </ul>
+          {% elif action.action_type == 'edit_permissions' %}
+            <h2>Edit {{ users[action.action_data.user_id].email_address }}'s permissions to{% if not services[action.service_id].restricted %} <strong>live</strong>{% endif %} service {{ services[action.service_id].name }}:</h2>
+            <ul class="tick-cross-list-permissions">
+              {% for ui_permission in action.action_data.permissions %}
+                {{ tick_cross(
+                  True,
+                  permission_labels[ui_permission]
+                ) }}
+              {% endfor %}
+            </ul>
           {% else %}
             {{ action }}
           {% endif %}

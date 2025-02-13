@@ -1,8 +1,9 @@
 from typing import Iterable
 
 from flask import flash, redirect, url_for
+from flask_login import current_user
 
-from app.models.user import InvitedUser
+from app.models.user import InvitedUser, User
 
 # Tasks which require another platform/org admin to approve before being actioned
 ADMIN_INVITE_USER = "invite_user"  # Only if the user has sensitive permissions
@@ -37,17 +38,28 @@ def process_admin_action(action_obj):
     """
 
     action_type = action_obj["action_type"]
+    action_data = action_obj["action_data"]
 
     if action_type == ADMIN_INVITE_USER:
         InvitedUser.create(
             action_obj["created_by"],
             action_obj["service_id"],
-            action_obj["action_data"]["email_address"],
-            action_obj["action_data"]["permissions"],
-            action_obj["action_data"]["login_authentication"],
-            action_obj["action_data"]["folder_permissions"],
+            action_data["email_address"],
+            action_data["permissions"],
+            action_data["login_authentication"],
+            action_data["folder_permissions"],
         )
-        flash("Sent invite to user " + action_obj["action_data"]["email_address"], "default_with_tick")
+        flash("Sent invite to user " + action_data["email_address"], "default_with_tick")
+        return redirect(url_for(".manage_users", service_id=action_obj["service_id"]))
+    elif action_type == ADMIN_EDIT_PERMISSIONS:
+        user = User.from_id(action_data["user_id"])
+        user.set_permissions(
+            action_obj["service_id"],
+            permissions=action_data["permissions"],
+            folder_permissions=action_data["folder_permissions"],
+            set_by_id=current_user.id,
+        )
+        flash("Updated permissions for user", "default_with_tick")
         return redirect(url_for(".manage_users", service_id=action_obj["service_id"]))
     else:
         raise Exception("Unknown admin action " + action_type)
