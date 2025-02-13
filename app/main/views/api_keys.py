@@ -24,7 +24,7 @@ def api_keys(service_id):
 
 
 @main.route("/services/<uuid:service_id>/api/keys/create", methods=["GET", "POST"])
-@user_has_permissions("manage_api_keys", restrict_admin_usage=True)
+@user_has_permissions("manage_api_keys")
 def create_api_key(service_id):
     form = CreateKeyForm(current_service.api_keys)
     form.key_type.choices = [
