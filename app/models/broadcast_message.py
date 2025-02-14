@@ -183,7 +183,7 @@ class BroadcastMessage(JSONModel):
 
     @property
     def reference(self):
-        if self.template_id:
+        if self.template_id and not self._dict["reference"]:
             return self._dict["template_name"]
         return self._dict["cap_event"] or self._dict["reference"]
 
@@ -307,6 +307,19 @@ class BroadcastMessage(JSONModel):
 
     def remove_area(self, area_id):
         self.area_ids = list(set(self._dict["areas"]["ids"]) - {area_id})
+        self._update_areas()
+
+    def replace_areas(self, new_area_ids):
+        """
+        Created this to ensure that if areas are added, that are in the libraries,
+        they will overwrite the custom area if added afterwards.
+        """
+        area_ids = (
+            list(set(self._dict["areas"]["ids"]) & {area.id for area in self.get_areas(self.area_ids)})
+            if self.area_ids
+            else []
+        )
+        self.area_ids = list(OrderedSet(area_ids + list(new_area_ids)))
         self._update_areas()
 
     def _set_status_to(self, status):

@@ -379,7 +379,7 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
 
     form = BroadcastAreaForm.from_library(library)
     if form.validate_on_submit():
-        broadcast_message.add_areas(*form.areas.data)
+        broadcast_message.replace_areas([*form.areas.data])
         return redirect(
             url_for(
                 ".preview_broadcast_areas",
@@ -1015,7 +1015,7 @@ def cancel_broadcast_message(service_id, broadcast_message_id):
             max_phones=broadcast_message.count_of_phones_likely,
         ),
         is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
-        areas=format_areas_list(broadcast_message.areas),
+        areas=format_areas_list(broadcast_message.areas) if broadcast_message.areas else [],
         broadcast_message_version_count=broadcast_message.get_count_of_versions(service_id),
     )
 
@@ -1032,7 +1032,7 @@ def view_broadcast_versions(service_id, broadcast_message_id):
                 "content": message.get("content"),
             }
         )
-        message["formatted_areas"] = message.get("areas")["names"]
+        message["formatted_areas"] = message.get("areas")["names"] if message.get("areas") else []
     return render_template(
         "views/broadcast/choose_history.html",
         versions=versions,
