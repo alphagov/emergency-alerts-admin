@@ -1,21 +1,25 @@
-from flask import abort, flash, redirect, render_template, request, url_for
+from flask import flash, redirect, render_template, request, url_for
+from flask_login import current_user
 from markupsafe import Markup
 
 from app import api_key_api_client, current_service, service_api_client
-from app.formatters import email_safe
 from app.main import main
 from app.main.forms import CreateKeyForm
+from app.notify_client.admin_actions_api_client import admin_actions_api_client
 from app.notify_client.api_key_api_client import (
     KEY_TYPE_NORMAL,
     KEY_TYPE_TEAM,
     KEY_TYPE_TEST,
 )
+from app.utils.admin_action import ADMIN_CREATE_API_KEY
 from app.utils.user import user_has_permissions
 
 dummy_bearer_token = "bearer_token_set"
 
 
-@main.route("/services/<uuid:service_id>/api/keys")
+@main.route(
+    "/services/<uuid:service_id>/api/keys",
+)
 @user_has_permissions("manage_api_keys")
 def api_keys(service_id):
     return render_template(
@@ -46,17 +50,19 @@ def create_api_key(service_id):
             },
         }
     if form.validate_on_submit():
-        if current_service.trial_mode and form.key_type.data == KEY_TYPE_NORMAL:
-            abort(400)
-        secret = api_key_api_client.create_api_key(
-            service_id=service_id, key_name=form.key_name.data, key_type=form.key_type.data
-        )
-        return render_template(
-            "views/api/keys/show.html",
-            secret=secret,
-            service_id=service_id,
-            key_name=email_safe(form.key_name.data, whitespace="_"),
-        )
+        action = {
+            "organisation_id": current_service.organisation_id,
+            "service_id": current_service.id,
+            "created_by": current_user.id,
+            "action_type": ADMIN_CREATE_API_KEY,
+            "action_data": {
+                "key_type": form.key_type.data,
+                "key_name": form.key_name.data,
+            },
+        }
+        admin_actions_api_client.create_admin_action(action)
+        flash("An admin approval has been created", "default_with_tick")
+        return redirect(url_for(".api_keys", service_id=service_id))
     return render_template("views/api/keys/create.html", form=form)
 
 

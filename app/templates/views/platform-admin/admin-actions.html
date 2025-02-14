@@ -41,6 +41,8 @@
                 ) }}
               {% endfor %}
             </ul>
+          {% elif action.action_type == 'create_api_key' %}
+            <h2>Create API key for{% if not services[action.service_id].restricted %} <strong>live</strong>{% endif %} service {{ services[action.service_id].name }}</h2>
           {% else %}
             {{ action }}
           {% endif %}
