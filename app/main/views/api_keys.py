@@ -6,11 +6,7 @@ from app import api_key_api_client, current_service, service_api_client
 from app.main import main
 from app.main.forms import CreateKeyForm
 from app.notify_client.admin_actions_api_client import admin_actions_api_client
-from app.notify_client.api_key_api_client import (
-    KEY_TYPE_NORMAL,
-    KEY_TYPE_TEAM,
-    KEY_TYPE_TEST,
-)
+from app.notify_client.api_key_api_client import KEY_TYPE_DESCRIPTIONS
 from app.utils.admin_action import ADMIN_CREATE_API_KEY
 from app.utils.user import user_has_permissions
 
@@ -22,20 +18,14 @@ dummy_bearer_token = "bearer_token_set"
 )
 @user_has_permissions("manage_api_keys")
 def api_keys(service_id):
-    return render_template(
-        "views/api/keys.html",
-    )
+    return render_template("views/api/keys.html", key_type_descriptions=KEY_TYPE_DESCRIPTIONS)
 
 
 @main.route("/services/<uuid:service_id>/api/keys/create", methods=["GET", "POST"])
 @user_has_permissions("manage_api_keys")
 def create_api_key(service_id):
     form = CreateKeyForm(current_service.api_keys)
-    form.key_type.choices = [
-        (KEY_TYPE_NORMAL, "Live – sends to anyone"),
-        (KEY_TYPE_TEAM, "Team and guest list – limits who you can send to"),
-        (KEY_TYPE_TEST, "Test – pretends to send messages"),
-    ]
+    form.key_type.choices = [(type, description) for type, description in KEY_TYPE_DESCRIPTIONS.items()]
     # preserve order of items extended by starting with empty dicts
     form.key_type.param_extensions = {"items": [{}, {}]}
     if current_service.trial_mode:
@@ -77,9 +67,7 @@ def revoke_api_key(service_id, key_id):
             ],
             "revoke this API key",
         )
-        return render_template(
-            "views/api/keys.html",
-        )
+        return render_template("views/api/keys.html", key_type_descriptions=KEY_TYPE_DESCRIPTIONS)
     elif request.method == "POST":
         api_key_api_client.revoke_api_key(service_id=service_id, key_id=key_id)
         flash("‘{}’ was revoked".format(key_name), "default_with_tick")
