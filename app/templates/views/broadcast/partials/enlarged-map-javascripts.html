@@ -1,6 +1,6 @@
 <script nonce="{{ cspNonce }}" src="{{ asset_url('javascripts/leaflet.js') }}"></script>
 <script nonce="{{ cspNonce }}">
-  let polygons = []
+  let enlarged_polygons = []
   {% if is_custom_broadcast %}
     area_color = "#0201FE"
     bleed_color = "#0201FE"
@@ -12,7 +12,7 @@
   {% endif %}
 
   {% for polygon in broadcast_message.simple_polygons_with_bleed.as_coordinate_pairs_lat_long %}
-    polygons.push(
+    enlarged_polygons.push(
       L.polygon({{polygon}}, {
         opacity: 1,
         color: bleed_color,
@@ -26,7 +26,7 @@
   {% endfor %}
 
   {% for polygon in broadcast_message.polygons.as_coordinate_pairs_lat_long %}
-    polygons.push(
+    enlarged_polygons.push(
       L.polygon({{polygon}}, {
         color: area_color,
         fillColor: fill_color,
@@ -36,45 +36,47 @@
     );
   {% endfor %}
 
+  // for Larger map
 
-  let mapElement = document.getElementById('area-list-map');
-  const grandparent = mapElement.parentNode.parentNode;
-  const isInDetails = grandparent.className.indexOf('govuk-details') !== -1;
-  let details;
+  const enlargeMapButton = document.getElementById("view-larger-map-btn");
+  const enlargedMapModal = document.getElementById("enlarged-map-dialog");
+  const closeMapButton = document.getElementById("close-map-btn");
 
-  // if element is inside a details element then to make the map render correctly we open the details element
-  // and set up the map before closing the details map after
-  if (isInDetails) {
-    details = grandparent;
-    details.open = true;
-  }
+  let mapElement2 = document.getElementById('enlarged-map');
 
-  mapElement.style.height = Math.max(320, window.innerHeight - mapElement.offsetTop - 100) + 'px';
-
-  const mymap = L.map(
-    'area-list-map',
+  const enlargedMap = L.map(
+    'enlarged-map',
     {
       scrollWheelZoom: false
     }
   )
 
-  mymap.setView(
+  enlargedMap.setView(
     [55.378052, -3.435973],
-    5
+    2
   );
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  }).addTo(mymap);
+  }).addTo(enlargedMap);
 
-  let polygonGroup = L.featureGroup(polygons).addTo(mymap);
-  mymap.fitBounds(
-    polygonGroup.getBounds(),
-    {padding: [1, 1]}
+  let polygonGroup2 = L.featureGroup(enlarged_polygons).addTo(enlargedMap);
+  enlargedMap.fitBounds(
+    polygonGroup2.getBounds(),
+    {padding: [0.5, 0.5]}
   );
 
-  // if element is inside a details element then close the details element
-  if (isInDetails) {
-    details.open = false;
-  }
+  enlargeMapButton.addEventListener("click", function () {
+    enlargedMapModal.showModal();
+    enlargedMap.invalidateSize();
+    enlargedMap.fitBounds(
+    polygonGroup2.getBounds(),
+    {padding: [1, 1]}
+    );
+    enlargedMapModal.focus();
+  });
+
+  closeMapButton.addEventListener("click", function () {
+    enlargedMapModal.close();
+  });
 
 </script>
