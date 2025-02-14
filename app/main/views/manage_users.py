@@ -83,7 +83,6 @@ def invite_user(service_id, user_id=None):
     if form.validate_on_submit():
         if permissions_require_admin_action(form.permissions):
             action = {
-                "organisation_id": current_service.organisation_id,
                 "service_id": current_service.id,
                 "created_by": current_user.id,
                 "action_type": ADMIN_INVITE_USER,
@@ -145,7 +144,6 @@ def edit_user_permissions(service_id, user_id):
         # Have sensitive permissions been added?
         if permissions_require_admin_action(added_permissions):
             action = {
-                "organisation_id": current_service.organisation_id,
                 "service_id": current_service.id,
                 "created_by": current_user.id,
                 "action_type": ADMIN_EDIT_PERMISSIONS,

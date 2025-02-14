@@ -51,7 +51,6 @@ def create_api_key(service_id):
         }
     if form.validate_on_submit():
         action = {
-            "organisation_id": current_service.organisation_id,
             "service_id": current_service.id,
             "created_by": current_user.id,
             "action_type": ADMIN_CREATE_API_KEY,

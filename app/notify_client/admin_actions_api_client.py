@@ -9,7 +9,6 @@ class PendingActionResponse(TypedDict):
     pending: list[dict]
     # UUID -> Object:
     services: dict[str, dict]
-    organizations: dict[str, dict]
     users: dict[str, dict]
 
 

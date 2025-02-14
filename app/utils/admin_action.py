@@ -9,13 +9,11 @@ from app.notify_client.api_key_api_client import KEY_TYPE_NORMAL, api_key_api_cl
 
 # Tasks which require another platform/org admin to approve before being actioned
 ADMIN_INVITE_USER = "invite_user"  # Only if the user has sensitive permissions
-ADMIN_INVITE_USER_ORG = "invite_user_org"
 ADMIN_EDIT_PERMISSIONS = "edit_permissions"  # Only if adding permissions, removal does not need approval
 ADMIN_CREATE_API_KEY = "create_api_key"
 
 ADMIN_ACTION_LIST = [
     ADMIN_INVITE_USER,
-    ADMIN_INVITE_USER_ORG,
     ADMIN_EDIT_PERMISSIONS,
     ADMIN_CREATE_API_KEY,
 ]
