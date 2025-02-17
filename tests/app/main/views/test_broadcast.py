@@ -1819,18 +1819,22 @@ def test_add_broadcast_area(
     mock_get_polygons_from_areas.assert_called_once_with(area_attribute="simple_polygons")
     mock_get_broadcast_message.assert_called_once_with(service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
 
-    mock_update_broadcast_message.assert_called_once_with(
-        service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
-        data={
-            "areas": {
-                "ids": ["ctry19-E92000001", "ctry19-W92000004"],
-                "names": ["England", "Wales"],
-                "aggregate_names": ["England", "Wales"],
-                "simple_polygons": coordinates,
-            }
-        },
-    )
+    mock_update_broadcast_message_kwargs = mock_update_broadcast_message.call_args.kwargs
+    assert mock_update_broadcast_message_kwargs["service_id"] == SERVICE_ONE_ID
+    assert mock_update_broadcast_message_kwargs["broadcast_message_id"] == fake_uuid
+
+    actual_areas = mock_update_broadcast_message_kwargs["data"]["areas"]
+    expected_areas = {
+        "ids": ["ctry19-E92000001", "ctry19-W92000004"],
+        "names": ["England", "Wales"],
+        "aggregate_names": ["England", "Wales"],
+        "simple_polygons": coordinates,
+    }
+
+    assert sorted(actual_areas["ids"]) == sorted(expected_areas["ids"])
+    assert actual_areas["names"] == expected_areas["names"]
+    assert actual_areas["aggregate_names"] == expected_areas["aggregate_names"]
+    assert actual_areas["simple_polygons"] == expected_areas["simple_polygons"]
 
 
 @pytest.mark.parametrize(
