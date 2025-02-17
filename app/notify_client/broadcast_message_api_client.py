@@ -81,7 +81,7 @@ class BroadcastMessageAPIClient(AdminAPIClient):
 
     def get_broadcast_message_version(self, service_id, broadcast_message_id, version):
         """
-        Retrieve a list of versions for a broadcast message
+        Retrieve a specific version of a broadcast message
         """
         return self.get(f"/service/{service_id}/broadcast-message-history/{broadcast_message_id}/version/{version}")
 
