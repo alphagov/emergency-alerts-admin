@@ -562,6 +562,7 @@ def test_broadcast_dashboard(
     assert [normalize_spaces(row.text) for row in page.select(".ajax-block-container")[0].select(".file-list")] == [
         "Half an hour ago This is a test Waiting for approval Area: England Scotland",
         "Hour and a half ago This is a test Waiting for approval Area: England Scotland",
+        "Example template This is a test draft",
         "Example template This is a test live since today at 2:20am Area: England Scotland",
         "Example template This is a test live since today at 1:20am Area: England Scotland",
     ]
@@ -1001,6 +1002,7 @@ def test_preview_broadcast_areas_page(
     areas_listed,
     estimates,
     active_user_create_broadcasts_permission,
+    mock_get_broadcast_message_versions,
 ):
     service_one["permissions"] += ["broadcast"]
     mocker.patch(
@@ -3132,6 +3134,7 @@ def test_start_broadcasting(
             },
             [
                 "live since 20 February at 8:20pm Stop sending",
+                "40,000,000 phones estimated",
                 "Created by Alice and approved by Bob.",
                 "Broadcasting stops tomorrow at 11:23pm.",
             ],
@@ -3142,6 +3145,7 @@ def test_start_broadcasting(
             {"status": "broadcasting", "finishes_at": "2020-02-23T23:23:23.000000", "approved_by": "Alice"},
             [
                 "live since 20 February at 8:20pm Stop sending",
+                "40,000,000 phones estimated",
                 "Created from an API call and approved by Alice.",
                 "Broadcasting stops tomorrow at 11:23pm.",
             ],
@@ -3157,6 +3161,7 @@ def test_start_broadcasting(
             },
             [
                 "Sent on 20 February at 8:20pm.",
+                "40,000,000 phones estimated",
                 "Created by Alice and approved by Bob.",
                 "Finished broadcasting today at 10:20pm.",
             ],
@@ -3171,6 +3176,7 @@ def test_start_broadcasting(
             },
             [
                 "Sent on 20 February at 8:20pm.",
+                "40,000,000 phones estimated",
                 "Created from an API call and approved by Alice.",
                 "Finished broadcasting today at 10:20pm.",
             ],
@@ -3186,6 +3192,7 @@ def test_start_broadcasting(
             },
             [
                 "Sent on 20 February at 8:20pm.",
+                "40,000,000 phones estimated",
                 "Created by Alice and approved by Bob.",
                 "Finished broadcasting yesterday at 9:21pm.",
             ],
@@ -3203,6 +3210,7 @@ def test_start_broadcasting(
             },
             [
                 "Sent on 20 February at 8:20pm.",
+                "40,000,000 phones estimated",
                 "Created by Alice and approved by Bob.",
                 "Stopped by Carol yesterday at 9:21pm.",
             ],
@@ -3219,6 +3227,7 @@ def test_start_broadcasting(
             },
             [
                 "Sent on 20 February at 8:20pm.",
+                "40,000,000 phones estimated",
                 "Created by Alice and approved by Bob.",
                 "Stopped by an API call yesterday at 9:21pm.",
             ],
@@ -3236,6 +3245,7 @@ def test_view_broadcast_message_page(
     created_by_api,
     extra_fields,
     expected_paragraphs,
+    mock_get_broadcast_message_versions,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -3274,6 +3284,7 @@ def test_view_broadcast_message_page(
             },
             [
                 "Rejected yesterday at 9:21pm by Carol.",
+                "40,000,000 phones estimated",
                 "Created by Alice and approved by Bob.",
             ],
         ),
@@ -3290,6 +3301,7 @@ def test_view_rejected_broadcast_message_page(
     created_by_api,
     extra_fields,
     expected_paragraphs,
+    mock_get_broadcast_message_versions,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -3377,6 +3389,7 @@ def test_view_broadcast_message_shows_correct_highlighted_navigation(
     status,
     expected_highlighted_navigation_item,
     expected_back_link_endpoint,
+    mock_get_broadcast_message_versions,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -3418,6 +3431,7 @@ def test_view_pending_broadcast(
     service_one,
     fake_uuid,
     active_user_approve_broadcasts_permission,
+    mock_get_broadcast_message_versions,
 ):
     broadcast_creator = create_active_user_create_broadcasts_permissions(with_unique_id=True)
     mocker.patch(
@@ -3507,6 +3521,7 @@ def test_view_pending_broadcast_without_template(
     active_user_approve_broadcasts_permission,
     extra_broadcast_json_fields,
     expected_banner_text,
+    mock_get_broadcast_message_versions,
 ):
     broadcast_creator = create_active_user_create_broadcasts_permissions(with_unique_id=True)
     mocker.patch(
@@ -3548,6 +3563,7 @@ def test_view_pending_broadcast_from_api_call(
     service_one,
     fake_uuid,
     active_user_approve_broadcasts_permission,
+    mock_get_broadcast_message_versions,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -3602,6 +3618,7 @@ def test_checkbox_to_confirm_non_training_broadcasts(
     active_user_approve_broadcasts_permission,
     channel,
     expected_label_text,
+    mock_get_broadcast_message_versions,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -3645,6 +3662,7 @@ def test_confirm_approve_non_training_broadcasts_errors_if_not_ticked(
     mock_update_broadcast_message,
     mock_update_broadcast_message_status,
     active_user_approve_broadcasts_permission,
+    mock_get_broadcast_message_versions,
 ):
     page = mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -3685,6 +3703,7 @@ def test_can_approve_own_broadcast_in_training_mode(
     service_one,
     fake_uuid,
     active_user_approve_broadcasts_permission,
+    mock_get_broadcast_message_versions,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -3738,11 +3757,7 @@ def test_can_approve_own_broadcast_in_training_mode(
     ],
 )
 def test_cant_approve_own_broadcast_if_service_is_live(
-    mocker,
-    client_request,
-    service_one,
-    fake_uuid,
-    user,
+    mocker, client_request, service_one, fake_uuid, user, mock_get_broadcast_message_versions
 ):
     service_one["restricted"] = False
     mocker.patch(
@@ -3793,6 +3808,7 @@ def test_view_only_user_cant_approve_broadcast_created_by_someone_else(
     platform_admin_user_no_service_permissions,
     fake_uuid,
     user_is_platform_admin,
+    mock_get_broadcast_message_versions,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -3830,6 +3846,7 @@ def test_view_only_user_cant_approve_broadcasts_they_created(
     fake_uuid,
     active_user_create_broadcasts_permission,
     active_user_view_permissions,
+    mock_get_broadcast_message_versions,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -3892,6 +3909,7 @@ def test_user_without_approve_permission_cant_approve_broadcast_created_by_someo
     fake_uuid,
     is_service_training_mode,
     banner_text,
+    mock_get_broadcast_message_versions,
 ):
     current_user = create_active_user_create_broadcasts_permissions(with_unique_id=True)
     mocker.patch(
@@ -3934,6 +3952,7 @@ def test_user_without_approve_permission_cant_approve_broadcast_they_created(
     service_one,
     fake_uuid,
     active_user_create_broadcasts_permission,
+    mock_get_broadcast_message_versions,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -4071,6 +4090,7 @@ def test_confirm_approve_broadcast(
     channel,
     duration,
     expected_finishes_at,
+    mock_get_broadcast_message_versions,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -4131,6 +4151,7 @@ def test_reject_broadcast_displays_error_when_no_reason_provided(
     mock_update_broadcast_message,
     mock_update_broadcast_message_status_with_reason,
     user,
+    mock_get_broadcast_message_versions,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -4176,6 +4197,7 @@ def test_discard_broadcast(
     mock_update_broadcast_message,
     mock_update_broadcast_message_status_with_reason,
     user,
+    mock_get_broadcast_message_versions,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -4222,6 +4244,7 @@ def test_reject_broadcast_with_reason(
     mock_update_broadcast_message,
     mock_update_broadcast_message_status_with_reason,
     user,
+    mock_get_broadcast_message_versions,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -4283,6 +4306,7 @@ def test_cant_reject_broadcast_in_wrong_state(
     mock_update_broadcast_message_status,
     user,
     initial_status,
+    mock_get_broadcast_message_versions,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -4315,24 +4339,46 @@ def test_cant_reject_broadcast_in_wrong_state(
 
 @pytest.mark.parametrize(
     "endpoint",
-    (
-        ".view_current_broadcast",
-        ".view_previous_broadcast",
-    ),
+    (".view_current_broadcast",),
 )
-def test_no_view_page_for_draft(
+def test_can_view_current_page_for_draft(
     client_request,
     service_one,
     mock_get_draft_broadcast_message,
     fake_uuid,
     endpoint,
+    mock_get_broadcast_message_versions,
 ):
     service_one["permissions"] += ["broadcast"]
     client_request.get(
         endpoint,
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
-        _expected_status=404,
+    )
+
+
+@pytest.mark.parametrize(
+    "endpoint",
+    (".view_previous_broadcast",),
+)
+def test_view_previous_page_for_draft_redirects_to_current(
+    client_request,
+    service_one,
+    mock_get_draft_broadcast_message,
+    fake_uuid,
+    endpoint,
+    mock_get_broadcast_message_versions,
+):
+    service_one["permissions"] += ["broadcast"]
+    client_request.get(
+        endpoint,
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        _expected_redirect=url_for(
+            ".view_current_broadcast",
+            service_id=SERVICE_ONE_ID,
+            broadcast_message_id=fake_uuid,
+        ),
     )
 
 
@@ -4351,6 +4397,7 @@ def test_cancel_broadcast(
     mock_update_broadcast_message_status,
     fake_uuid,
     user,
+    mock_get_broadcast_message_versions,
 ):
     """
     users with 'create/approve_broadcasts' permissions and platform admins should be able to cancel broadcasts.

@@ -2232,7 +2232,7 @@ def mock_get_no_broadcast_messages(
                 id_=fake_uuid,
                 service_id=SERVICE_ONE_ID,
                 template_id=fake_uuid,
-                status="draft",  # draft broadcasts aren’t shown on the dashboard
+                status="rejected",  # rejected broadcasts aren’t shown on the dashboard
                 created_by_id=fake_uuid,
             ),
         ],
@@ -2253,8 +2253,7 @@ def mock_get_broadcast_messages(
         )
         return [
             partial_json(
-                id_=uuid4(),
-                status="draft",
+                id_=uuid4(), status="draft", updated_at=(datetime.utcnow() - timedelta(hours=1, minutes=30)).isoformat()
             ),
             partial_json(
                 id_=uuid4(),
@@ -2308,6 +2307,11 @@ def mock_get_broadcast_messages(
         "app.models.broadcast_message.BroadcastMessages.client_method",
         side_effect=_get,
     )
+
+
+@pytest.fixture(scope="function")
+def mock_get_broadcast_message_versions(mocker):
+    return mocker.patch("app.broadcast_message_api_client.get_broadcast_message_versions", return_value=[])
 
 
 @pytest.fixture(scope="function")
