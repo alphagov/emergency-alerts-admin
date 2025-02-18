@@ -981,7 +981,7 @@ def test_invite_user_with_email_auth_service(
 
 
 @pytest.mark.parametrize(
-    "post_data, expected_permissions_to_api",
+    "post_data, expected_permissions, requires_admin_action",
     (
         (
             {
@@ -994,6 +994,7 @@ def test_invite_user_with_email_auth_service(
                 "view_activity",
                 "manage_templates",
             },
+            False,
         ),
         (
             {
@@ -1006,10 +1007,39 @@ def test_invite_user_with_email_auth_service(
             {
                 "view_activity",
             },
+            False,
+        ),
+        # These below permissions are sensitive and require an admin approval
+        (
+            {
+                "permissions_field": [
+                    "view_activity",
+                    "create_broadcasts",
+                ]
+            },
+            {
+                "view_activity",
+                "create_broadcasts",
+            },
+            True,
+        ),
+        (
+            {
+                "permissions_field": [
+                    "view_activity",
+                    "approve_broadcasts",
+                    "foo",
+                ]
+            },
+            {
+                "view_activity",
+                "approve_broadcasts",
+            },
+            True,
         ),
     ),
 )
-def test_invite_unprivileged_user_to_broadcast_service(
+def test_invite_user_to_broadcast_service(
     client_request,
     service_one,
     active_new_user_with_permissions,
@@ -1018,7 +1048,8 @@ def test_invite_unprivileged_user_to_broadcast_service(
     mock_get_template_folders,
     mock_get_organisations,
     post_data,
-    expected_permissions_to_api,
+    expected_permissions,
+    requires_admin_action,
 ):
     mocker.patch("app.models.user.User.from_email_address_or_none", return_value=User(active_new_user_with_permissions))
     mocker.patch("app.models.user.PendingUsers.client_method", return_value=[sample_invite])
@@ -1034,90 +1065,35 @@ def test_invite_unprivileged_user_to_broadcast_service(
         _data=post_data,
     )
 
-    app.invite_api_client.create_invite.assert_called_once_with(
-        sample_invite["from_user"],
-        sample_invite["service"],
-        "new.user@user.gov.uk",
-        expected_permissions_to_api,
-        "sms_auth",
-        [],
-    )
+    if requires_admin_action:
+        # One or more of the permissions above are sensitive and require approval
+        app.invite_api_client.create_invite.assert_not_called()
 
-    # The permissions above are not 'privileged' and do not require admin approval
-    app.admin_actions_api_client.create_admin_action.assert_not_called()
-
-
-@pytest.mark.parametrize(
-    "post_data, expected_permissions_to_admin_action",
-    (
-        (
+        app.admin_actions_api_client.create_admin_action.assert_called_once_with(
             {
-                "permissions_field": [
-                    "view_activity",
-                    "create_broadcasts",
-                ]
-            },
-            {
-                "view_activity",
-                "create_broadcasts",
-            },
-        ),
-        (
-            {
-                "permissions_field": [
-                    "view_activity",
-                    "approve_broadcasts",
-                    "foo",
-                ]
-            },
-            {
-                "view_activity",
-                "approve_broadcasts",
-            },
-        ),
-    ),
-)
-def test_invite_privileged_user_to_broadcast_service(
-    client_request,
-    service_one,
-    active_new_user_with_permissions,
-    mocker,
-    sample_invite,
-    mock_get_template_folders,
-    mock_get_organisations,
-    post_data,
-    expected_permissions_to_admin_action,
-):
-    mocker.patch("app.models.user.User.from_email_address_or_none", return_value=User(active_new_user_with_permissions))
-    mocker.patch("app.models.user.PendingUsers.client_method", return_value=[sample_invite])
-    mocker.patch("app.invite_api_client.create_invite", return_value=None)
-    mocker.patch("app.admin_actions_api_client.create_admin_action", return_value=None)
-    mocker.patch("app.models.user.User.belongs_to_service", return_value=False)
+                "service_id": SERVICE_ONE_ID,
+                "created_by": sample_invite["from_user"],
+                "action_type": "invite_user",
+                "action_data": {
+                    "email_address": "new.user@user.gov.uk",
+                    "permissions": expected_permissions,
+                    "login_authentication": "sms_auth",
+                    "folder_permissions": [],
+                },
+            }
+        )
 
-    post_data["email_address"] = "new.user@user.gov.uk"
-    client_request.post(
-        "main.invite_user",
-        service_id=SERVICE_ONE_ID,
-        _expected_status=302,
-        _data=post_data,
-    )
-
-    # One or more of the permissions above are sensitive and require approval
-    app.invite_api_client.create_invite.assert_not_called()
-
-    app.admin_actions_api_client.create_admin_action.assert_called_once_with(
-        {
-            "service_id": SERVICE_ONE_ID,
-            "created_by": sample_invite["from_user"],
-            "action_type": "invite_user",
-            "action_data": {
-                "email_address": "new.user@user.gov.uk",
-                "permissions": expected_permissions_to_admin_action,
-                "login_authentication": "sms_auth",
-                "folder_permissions": [],
-            },
-        }
-    )
+    else:
+        # The permissions above are not 'privileged' and do not require admin approval
+        app.invite_api_client.create_invite.assert_called_once_with(
+            sample_invite["from_user"],
+            sample_invite["service"],
+            "new.user@user.gov.uk",
+            expected_permissions,
+            "sms_auth",
+            [],
+        )
+        app.admin_actions_api_client.create_admin_action.assert_not_called()
 
 
 def test_invite_non_govt_user_to_broadcast_service_fails_validation(
