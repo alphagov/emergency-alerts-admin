@@ -677,7 +677,7 @@ def choose_broadcast_sub_area(service_id, broadcast_message_id, library_slug, ar
         select_all_choice=(area.id, f"All of {area.name}"),
     )
     if form.validate_on_submit():
-        broadcast_message.add_areas(*form.selected_areas)
+        broadcast_message.replace_areas([*form.areas.data])
         return redirect(
             url_for(
                 ".preview_broadcast_areas",
@@ -761,7 +761,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
     )
 
 
-@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/submit")
+@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/submit", methods=["GET", "POST"])
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
 def submit_broadcast_message(service_id, broadcast_message_id):
