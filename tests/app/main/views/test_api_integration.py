@@ -97,7 +97,7 @@ def test_should_show_create_api_key_page(
             assert normalize_spaces(item.select_one(".govuk-label").text) == option
 
 
-def test_should_create_api_key_with_type_normal(
+def test_should_create_api_key_admin_action_with_type_normal(
     client_request,
     api_user_active,
     mock_login,
@@ -107,24 +107,32 @@ def test_should_create_api_key_with_type_normal(
     fake_uuid,
     mocker,
 ):
-    post = mocker.patch("app.notify_client.api_key_api_client.ApiKeyApiClient.post", return_value={"data": fake_uuid})
+    mock_api_key_post = mocker.patch("app.notify_client.api_key_api_client.ApiKeyApiClient.post", return_value=None)
+    mock_create_admin_action = mocker.patch("app.admin_actions_api_client.create_admin_action", return_value=None)
 
-    page = client_request.post(
+    key_name = "Some default key name 1/2"
+    client_request.post(
         "main.create_api_key",
         service_id=SERVICE_ONE_ID,
-        _data={"key_name": "Some default key name 1/2", "key_type": "normal"},
-        _expected_status=200,
+        _data={"key_name": key_name, "key_type": "normal"},
+        _expected_redirect=url_for("main.api_keys", service_id=SERVICE_ONE_ID),
     )
 
-    assert page.select_one("span.copy-to-clipboard__value").text == (
-        # The text should be exactly this, with no leading or trailing whitespace
-        f"some_default_key_name_12-{SERVICE_ONE_ID}-{fake_uuid}"
+    # TODO: How do we assert the flash in a redirect?
+
+    mock_create_admin_action.assert_called_once_with(
+        {
+            "service_id": SERVICE_ONE_ID,
+            "created_by": fake_uuid,
+            "action_type": "create_api_key",
+            "action_data": {
+                "key_type": "normal",
+                "key_name": key_name,
+            },
+        }
     )
 
-    post.assert_called_once_with(
-        url="/service/{}/api-key".format(SERVICE_ONE_ID),
-        data={"name": "Some default key name 1/2", "key_type": "normal", "created_by": api_user_active["id"]},
-    )
+    mock_api_key_post.assert_not_called()
 
 
 def test_cant_create_normal_api_key_in_trial_mode(
@@ -138,6 +146,7 @@ def test_cant_create_normal_api_key_in_trial_mode(
     mocker,
 ):
     mock_post = mocker.patch("app.notify_client.api_key_api_client.ApiKeyApiClient.post")
+    mock_create_admin_action = mocker.patch("app.admin_actions_api_client.create_admin_action", return_value=None)
 
     client_request.post(
         "main.create_api_key",
@@ -145,7 +154,9 @@ def test_cant_create_normal_api_key_in_trial_mode(
         _data={"key_name": "some default key name", "key_type": "normal"},
         _expected_status=400,
     )
-    assert mock_post.called is False
+
+    mock_post.assert_not_called()
+    mock_create_admin_action.assert_not_called()
 
 
 def test_should_show_confirm_revoke_api_key(
