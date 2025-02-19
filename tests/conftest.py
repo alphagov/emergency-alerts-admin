@@ -2372,6 +2372,17 @@ def mock_update_broadcast_message_status_with_reason(
     )
 
 
+@pytest.fixture(scope="function")
+def mock_update_broadcast_message_status_raises_exception(mocker, fake_uuid):
+    def _update(status, *, service_id, broadcast_message_id):
+        raise Exception("TEST")
+
+    return mocker.patch(
+        "app.broadcast_message_api_client.update_broadcast_message_status",
+        side_effect=_update,
+    )
+
+
 @pytest.fixture
 def mock_get_invited_user_by_id(mocker, sample_invite):
     def _get(invited_user_id):
