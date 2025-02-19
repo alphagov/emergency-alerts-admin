@@ -677,7 +677,7 @@ def choose_broadcast_sub_area(service_id, broadcast_message_id, library_slug, ar
         select_all_choice=(area.id, f"All of {area.name}"),
     )
     if form.validate_on_submit():
-        broadcast_message.replace_areas([*form.areas.data])
+        broadcast_message.replace_areas([*form.selected_areas])
         return redirect(
             url_for(
                 ".preview_broadcast_areas",
@@ -1020,7 +1020,10 @@ def cancel_broadcast_message(service_id, broadcast_message_id):
     )
 
 
-@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/versions")
+@main.route(
+    "/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/versions",
+    methods=["GET", "POST"],
+)
 @user_has_permissions(allow_org_user=True)
 def view_broadcast_versions(service_id, broadcast_message_id):
     versions = broadcast_message_api_client.get_broadcast_message_versions(service_id, broadcast_message_id)
