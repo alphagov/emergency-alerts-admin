@@ -8,13 +8,21 @@ import pytest
 from flask import url_for
 from freezegun import freeze_time
 
-from tests import NotifyBeautifulSoup, broadcast_message_json, sample_uuid, user_json
+from tests import (
+    NotifyBeautifulSoup,
+    broadcast_message_json,
+    broadcast_message_version_json,
+    sample_uuid,
+    user_json,
+)
 from tests.app.broadcast_areas.custom_polygons import (
+    ABERDEEN_CITY,
     BD1_1EE,
     BD1_1EE_1,
     BD1_1EE_2,
     BD1_1EE_3,
     BRISTOL,
+    ENGLAND,
     HG3_2RL,
     SKYE,
 )
@@ -2852,16 +2860,16 @@ def test_add_broadcast_sub_area_district_view(
     expected_data["aggregate_names"] = sorted(["England", "Scotland"] + expected_data["aggregate_names"])
 
     mock_get_polygons_from_areas.assert_called_once_with(area_attribute="simple_polygons")
-    mock_update_broadcast_message.assert_called_once_with(
-        service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
-        data={
-            "areas": {
-                "simple_polygons": coordinates,
-                **expected_data,
-            }
-        },
-    )
+    mock_update_broadcast_message_kwargs = mock_update_broadcast_message.call_args.kwargs
+    assert mock_update_broadcast_message_kwargs["service_id"] == SERVICE_ONE_ID
+    assert mock_update_broadcast_message_kwargs["broadcast_message_id"] == fake_uuid
+
+    actual_areas = mock_update_broadcast_message_kwargs["data"]["areas"]
+
+    assert sorted(actual_areas["ids"]) == sorted(expected_data["ids"])
+    assert sorted(actual_areas["names"]) == sorted(expected_data["names"])
+    assert sorted(actual_areas["aggregate_names"]) == sorted(expected_data["aggregate_names"])
+    assert actual_areas["simple_polygons"] == coordinates
 
 
 def test_add_broadcast_sub_area_county_view(
@@ -2892,23 +2900,27 @@ def test_add_broadcast_sub_area_county_view(
         _data={"select_all": "y"},
     )
     mock_get_polygons_from_areas.assert_called_once_with(area_attribute="simple_polygons")
-    mock_update_broadcast_message.assert_called_once_with(
-        service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
-        data={
-            "areas": {
-                "simple_polygons": coordinates,
-                "ids": [
-                    # These two areas are on the broadcast already
-                    "ctry19-E92000001",
-                    "ctry19-S92000003",
-                ]
-                + ["ctyua23-E10000016"],
-                "names": ["England", "Scotland", "Kent"],
-                "aggregate_names": ["England", "Kent", "Scotland"],
-            }
-        },
-    )
+    mock_update_broadcast_message_kwargs = mock_update_broadcast_message.call_args.kwargs
+    assert mock_update_broadcast_message_kwargs["service_id"] == SERVICE_ONE_ID
+    assert mock_update_broadcast_message_kwargs["broadcast_message_id"] == fake_uuid
+
+    actual_areas = mock_update_broadcast_message_kwargs["data"]["areas"]
+    expected_areas = {
+        "simple_polygons": coordinates,
+        "ids": [
+            # These two areas are on the broadcast already
+            "ctry19-E92000001",
+            "ctry19-S92000003",
+        ]
+        + ["ctyua23-E10000016"],
+        "names": ["England", "Scotland", "Kent"],
+        "aggregate_names": ["England", "Kent", "Scotland"],
+    }
+
+    assert sorted(actual_areas["ids"]) == sorted(expected_areas["ids"])
+    assert sorted(actual_areas["names"]) == sorted(expected_areas["names"])
+    assert sorted(actual_areas["aggregate_names"]) == sorted(expected_areas["aggregate_names"])
+    assert actual_areas["simple_polygons"] == expected_areas["simple_polygons"]
 
 
 def test_remove_broadcast_area_page(
@@ -3005,6 +3017,162 @@ def test_remove_postcode_area(
                 "names": [],
                 "aggregate_names": [],
                 "simple_polygons": [],
+            }
+        },
+    )
+
+
+def test_remove_coordinate_area(
+    client_request,
+    service_one,
+    mock_get_draft_broadcast_message,
+    mock_update_broadcast_message,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
+):
+    service_one["permissions"] += ["broadcast"]
+    mock_get_broadcast_message = mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            areas={
+                "ids": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
+                "names": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
+                "aggregate_names": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
+                "simple_polygons": [HG3_2RL],
+            },
+        ),
+    )
+
+    client_request.login(active_user_create_broadcasts_permission)
+    client_request.get(
+        ".remove_coordinate_area",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        _expected_redirect=url_for(
+            ".preview_broadcast_areas",
+            service_id=SERVICE_ONE_ID,
+            broadcast_message_id=fake_uuid,
+        ),
+    )
+    mock_get_broadcast_message.assert_called_once_with(service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
+    mock_update_broadcast_message.assert_called_once_with(
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        data={
+            "areas": {
+                "ids": [],
+                "names": [],
+                "aggregate_names": [],
+                "simple_polygons": [],
+            }
+        },
+    )
+
+
+def test_replace_custom_area(
+    client_request,
+    service_one,
+    mock_get_draft_broadcast_message,
+    mock_update_broadcast_message,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
+):
+    service_one["permissions"] += ["broadcast"]
+
+    mock_get_broadcast_message = mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            areas={
+                "ids": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
+                "names": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
+                "aggregate_names": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
+                "simple_polygons": [HG3_2RL],
+            },
+        ),
+    )
+
+    client_request.login(active_user_create_broadcasts_permission)
+    client_request.post(
+        ".choose_broadcast_area",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        library_slug="ctry19",
+        _data={"areas": ["ctry19-E92000001"]},
+    )
+    mock_get_broadcast_message.assert_called_once_with(service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
+    mock_update_broadcast_message.assert_called_once_with(
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        data={
+            "areas": {
+                "ids": ["ctry19-E92000001"],
+                "names": ["England"],
+                "aggregate_names": ["England"],
+                "simple_polygons": ENGLAND,
+            }
+        },
+    )
+
+
+def test_replace_custom_area_with_sub_area(
+    client_request,
+    service_one,
+    mock_get_draft_broadcast_message,
+    mock_update_broadcast_message,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
+):
+    service_one["permissions"] += ["broadcast"]
+
+    mock_get_broadcast_message = mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            areas={
+                "ids": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
+                "names": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
+                "aggregate_names": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
+                "simple_polygons": [HG3_2RL],
+            },
+        ),
+    )
+
+    client_request.login(active_user_create_broadcasts_permission)
+    client_request.post(
+        ".choose_broadcast_sub_area",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        library_slug="wd23-lad23-ctyua23",
+        area_slug="lad23-S12000033",  # Aberdeen City
+        _data={"select_all": "y"},
+    )
+    mock_get_broadcast_message.assert_called_once_with(service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
+    mock_update_broadcast_message.assert_called_once_with(
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        data={
+            "areas": {
+                "ids": ["lad23-S12000033"],
+                "names": ["Aberdeen City"],
+                "aggregate_names": ["Aberdeen City"],
+                "simple_polygons": ABERDEEN_CITY,
             }
         },
     )
@@ -4339,6 +4507,127 @@ def test_cant_reject_broadcast_in_wrong_state(
 
     assert mock_update_broadcast_message.called is False
     assert mock_update_broadcast_message_status.called is False
+
+
+def test_submit_broadcast_changes_status(
+    mocker,
+    client_request,
+    service_one,
+    fake_uuid,
+    mock_update_broadcast_message,
+    mock_get_broadcast_message_versions,
+    mock_update_broadcast_message_status,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            finishes_at="2020-02-23T23:23:23.000000",
+            status="draft",
+        ),
+    )
+    service_one["permissions"] += ["broadcast"]
+
+    client_request.login(create_active_user_create_broadcasts_permissions())
+    client_request.post(
+        ".submit_broadcast_message",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        _expected_redirect=url_for(
+            ".view_current_broadcast",
+            broadcast_message_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+        ),
+    )
+
+    mock_update_broadcast_message_status.assert_called_once_with(
+        "pending-approval",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+    )
+
+
+def test_cannot_submit_broadcast_if_rejected_broadcast(
+    mocker,
+    client_request,
+    service_one,
+    fake_uuid,
+    mock_update_broadcast_message,
+    mock_get_broadcast_message_versions,
+    mock_update_broadcast_message_status_raises_exception,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            finishes_at="2020-02-23T23:23:23.000000",
+            status="rejected",
+        ),
+    )
+    service_one["permissions"] += ["broadcast"]
+
+    client_request.login(create_active_user_create_broadcasts_permissions())
+
+    with pytest.raises(Exception):
+        client_request.post(
+            ".submit_broadcast_message",
+            service_id=SERVICE_ONE_ID,
+            broadcast_message_id=fake_uuid,
+            _expected_redirect=url_for(
+                ".view_current_broadcast",
+                broadcast_message_id=fake_uuid,
+                service_id=SERVICE_ONE_ID,
+            ),
+        )
+
+
+def test_view_broadcast_versions_returns_versions(
+    mocker,
+    client_request,
+    service_one,
+    fake_uuid,
+    mock_update_broadcast_message,
+    mock_update_broadcast_message_status_with_reason,
+    mock_get_broadcast_message_versions,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_version_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            created_by_id=fake_uuid,
+            status="draft",
+        ),
+    )
+    service_one["permissions"] += ["broadcast"]
+
+    client_request.login(create_active_user_create_broadcasts_permissions())
+
+    page = client_request.post(
+        ".view_broadcast_versions", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid, _expected_status=200
+    )
+
+    assert normalize_spaces(page.select_one("h1").text) == "Previous versions"
+    assert [
+        normalize_spaces(row.text)
+        for row in page.select(".govuk-grid-column-three-quarters")[0].select(".message-name")
+    ] == [
+        "Test version broadcast",
+        "Test version broadcast",
+    ]
+    assert [
+        normalize_spaces(row.text)
+        for row in page.select(".govuk-grid-column-three-quarters")[0].select(".area-list-item")
+    ] == [
+        "England",
+        "England",
+    ]
 
 
 @pytest.mark.parametrize(
