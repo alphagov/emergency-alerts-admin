@@ -1,4 +1,4 @@
-from flask import flash, redirect, render_template, request, url_for
+from flask import abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 from markupsafe import Markup
 
@@ -6,7 +6,7 @@ from app import api_key_api_client, current_service, service_api_client
 from app.main import main
 from app.main.forms import CreateKeyForm
 from app.notify_client.admin_actions_api_client import admin_actions_api_client
-from app.notify_client.api_key_api_client import KEY_TYPE_DESCRIPTIONS
+from app.notify_client.api_key_api_client import KEY_TYPE_DESCRIPTIONS, KEY_TYPE_NORMAL
 from app.utils.admin_action import ADMIN_CREATE_API_KEY
 from app.utils.user import user_has_permissions
 
@@ -40,6 +40,8 @@ def create_api_key(service_id):
             },
         }
     if form.validate_on_submit():
+        if current_service.trial_mode and form.key_type.data == KEY_TYPE_NORMAL:
+            abort(400)
         action = {
             "service_id": current_service.id,
             "created_by": current_user.id,
