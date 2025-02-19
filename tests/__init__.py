@@ -12,6 +12,7 @@ from flask.testing import FlaskClient
 from flask_login import login_user
 
 from app.models.user import User
+from tests.app.broadcast_areas.custom_polygons import ENGLAND
 
 # Add itsdangerous to the libraries which freezegun ignores to avoid errors.
 # In tests where we freeze time, the code in the test function will get the frozen time but the
@@ -454,4 +455,38 @@ def broadcast_message_json(
         "approved_by": approved_by,
         "rejected_by": rejected_by,
         "cancelled_by": cancelled_by or "an API call",
+    }
+
+
+def broadcast_message_version_json(
+    *,
+    id_=None,
+    service_id=None,
+    created_by_id=None,
+    updated_at=None,
+    areas=None,
+    area_ids=None,
+    simple_polygons=None,
+    content=None,
+    reference=None,
+    created_by=None,
+    version=None,
+    status="draft",
+):
+    return {
+        "id": id_,
+        "service_id": service_id,
+        "content": content or "This is a test",
+        "reference": reference,
+        "personalisation": {},
+        "areas": {
+            "ids": ["ctry19-E92000001"],
+            "simple_polygons": ENGLAND,
+            "names": ["England"],
+            "aggregate_names": ["England"],
+        },
+        "created_at": None,
+        "approved_at": None,
+        "created_by": created_by,
+        "version": version or 1,
     }
