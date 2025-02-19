@@ -20,6 +20,7 @@ from . import (
     api_key_json,
     assert_url_expected,
     broadcast_message_json,
+    broadcast_message_version_json,
     generate_uuid,
     invite_json,
     org_invite_json,
@@ -2311,7 +2312,22 @@ def mock_get_broadcast_messages(
 
 @pytest.fixture(scope="function")
 def mock_get_broadcast_message_versions(mocker):
-    return mocker.patch("app.broadcast_message_api_client.get_broadcast_message_versions", return_value=[])
+    partial_json = partial(
+        broadcast_message_version_json,
+        service_id=SERVICE_ONE_ID,
+        id_=fake_uuid,
+        created_by_id=fake_uuid,
+        reference="Test version broadcast",
+    )
+    return mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message_versions",
+        return_value=[
+            partial_json(
+                version=1,
+            ),
+            partial_json(version=2),
+        ],
+    )
 
 
 @pytest.fixture(scope="function")
