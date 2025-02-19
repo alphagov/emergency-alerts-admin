@@ -11,6 +11,7 @@ from app import service_api_client, user_api_client
 from app.main import main
 from app.main.forms import DateFilterForm, PlatformAdminSearch
 from app.notify_client.admin_actions_api_client import admin_actions_api_client
+from app.notify_client.api_key_api_client import KEY_TYPE_DESCRIPTIONS
 from app.notify_client.platform_admin_api_client import admin_api_client
 from app.utils.admin_action import (
     ADMIN_STATUS_APPROVED,
@@ -122,6 +123,7 @@ def platform_admin_actions():
         "views/platform-admin/admin-actions.html",
         **pending_actions,
         permission_labels=dict(permission_options + broadcast_permission_options),
+        key_type_labels=KEY_TYPE_DESCRIPTIONS,
     )
 
 
