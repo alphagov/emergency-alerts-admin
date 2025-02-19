@@ -6,7 +6,7 @@ import pytest
 from flask import url_for
 
 from tests import service_json
-from tests.conftest import normalize_spaces
+from tests.conftest import SERVICE_ONE_ID, SERVICE_TWO_ID, normalize_spaces
 
 
 @pytest.mark.parametrize(
@@ -251,3 +251,60 @@ class TestPlatformAdminSearch:
         assert found_service_links[0].get("href") == "/services/596364a0-858e-42c8-9062-a8fe822260eb"
         assert found_service_links[1].text == "service two"
         assert found_service_links[1].get("href") == "/services/147ad62a-2951-4fa1-9ca0-093cd1a52c52"
+
+
+class TestPlatformAdminActions:
+    def test_should_not_allow_normal_user_to_list_actions(self, client_request):
+        client_request.get("main.admin_actions", _expected_status=403)
+
+    def test_should_list_admin_actions(
+        self,
+        client_request,
+        platform_admin_user,
+        mocker,
+        fake_uuid,
+    ):
+        mock_get_pending_actions = mocker.patch(
+            "app.admin_actions_api_client.get_pending_admin_actions",
+            return_value={
+                "pending": [
+                    {
+                        "service_id": SERVICE_ONE_ID,
+                        "created_by": fake_uuid,
+                        "created_at": "2025-02-14T12:34:56",
+                        "action_type": "create_api_key",
+                        "action_data": {
+                            "key_type": "normal",
+                            "key_name": "Test Key",
+                        },
+                    },
+                    {
+                        "service_id": SERVICE_TWO_ID,
+                        "created_by": fake_uuid,
+                        "created_at": "2025-02-14T12:34:56",
+                        "action_type": "create_api_key",
+                        "action_data": {
+                            "key_type": "team",
+                            "key_name": "Test Key",
+                        },
+                    },
+                ],
+                "users": {str(fake_uuid): {"name": "Test", "email_address": "test@test.gov.uk"}},
+                "services": {
+                    SERVICE_ONE_ID: {"name": "Test Live Service", "active": True, "restricted": False},
+                    SERVICE_TWO_ID: {"name": "Test Service 2", "active": True, "restricted": True},
+                },
+            },
+        )
+
+        client_request.login(platform_admin_user)
+        page = client_request.get("main.admin_actions")
+        elements = page.select("main .govuk-grid-row")
+
+        assert len(elements) == 2
+        assert "Create API key for live service Test Live Service" in normalize_spaces(elements[0].text)
+        assert "Key type: Live" in normalize_spaces(elements[0].text)
+        assert "Create API key for service Test Service 2" in normalize_spaces(elements[1].text)
+        assert "Key type: Team and guest" in normalize_spaces(elements[1].text)
+
+        mock_get_pending_actions.assert_called_once()
