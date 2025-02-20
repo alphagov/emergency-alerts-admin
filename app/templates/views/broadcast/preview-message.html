@@ -42,7 +42,9 @@
   {{alertSummaryList(current_service.id, broadcast_message, areas, broadcast_message.simple_polygons_with_bleed.estimated_area, broadcast_message.count_of_phones, broadcast_message.count_of_phones_likely, is_custom_broadcast)}}
 
   {% call form_wrapper() %}
-    {{ page_footer('Submit for approval') }}
+    {% if broadcast_message.areas and broadcast_message.content and broadcast_message.reference and broadcast_message.status == "draft" %}
+      {{ page_footer('Submit for approval') }}
+    {% endif %}
   {% endcall %}
 
 {% endblock %}
