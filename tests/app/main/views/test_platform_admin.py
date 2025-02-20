@@ -443,7 +443,7 @@ class TestPlatformAdminActions:
 
         client_request.login(platform_admin_user)
         page = client_request.post(
-            "main.review_admin_action", action_id=fake_uuid, status="approved", _follow_redirects=True
+            "main.review_admin_action", action_id=fake_uuid, new_status="approved", _follow_redirects=True
         )
         assert "You cannot approve your own admin approvals" in page.select_one(".banner-dangerous").text
 
@@ -472,6 +472,8 @@ class TestPlatformAdminActions:
         mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
 
         client_request.login(platform_admin_user)
-        client_request.post("main.review_admin_action", action_id=fake_uuid, status="rejected", _follow_redirects=True)
+        client_request.post(
+            "main.review_admin_action", action_id=fake_uuid, new_status="rejected", _follow_redirects=True
+        )
 
         mock_review_admin_action.assert_called_once_with(fake_uuid, "rejected")
