@@ -454,10 +454,10 @@ class TestPlatformAdminActions:
         self,
         client_request,
         platform_admin_user,
-        fake_uuid,
         mocker,
         is_own_action,
     ):
+        action_id = str(uuid.uuid4())  # Reused for both action and creator
         mocker.patch(
             "app.admin_actions_api_client.get_pending_admin_actions",
             return_value={"pending": []},  # For the followed redirect before asserting
@@ -465,15 +465,61 @@ class TestPlatformAdminActions:
         mocker.patch(
             "app.admin_actions_api_client.get_admin_action_by_id",
             return_value=self.sample_pending_action(
-                fake_uuid,
-                (platform_admin_user["id"] if is_own_action else fake_uuid),
+                action_id,
+                (platform_admin_user["id"] if is_own_action else action_id),
             ),
         )
         mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
 
         client_request.login(platform_admin_user)
         client_request.post(
-            "main.review_admin_action", action_id=fake_uuid, new_status="rejected", _follow_redirects=True
+            "main.review_admin_action", action_id=action_id, new_status="rejected", _follow_redirects=True
         )
 
-        mock_review_admin_action.assert_called_once_with(fake_uuid, "rejected")
+        mock_review_admin_action.assert_called_once_with(action_id, "rejected")
+
+    def test_approving_creates_api_key(
+        self,
+        client_request,
+        platform_admin_user,
+        mocker,
+        mock_get_service,
+    ):
+        action_id = str(uuid.uuid4())  # Reused for both action and creator ID
+        mocker.patch(
+            "app.admin_actions_api_client.get_admin_action_by_id",
+            return_value={
+                "id": action_id,
+                "service_id": SERVICE_ONE_ID,
+                "created_by": action_id,  # Not the creator
+                "created_at": "2025-02-14T12:34:56",
+                "action_type": "create_api_key",
+                "action_data": {
+                    "key_type": "test",
+                    "key_name": "Test Key",
+                },
+                "status": "pending",
+            },
+        )
+        mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
+        mock_api_key_create = mocker.patch(
+            "app.notify_client.api_key_api_client.ApiKeyApiClient.create_api_key", return_value="key-secret"
+        )
+
+        client_request.login(platform_admin_user)
+        page = client_request.post(
+            "main.review_admin_action",
+            action_id=action_id,
+            new_status="approved",
+            _expected_status=200,  # POSTs expect a redirect, but for API keys we want the secret to be a once only
+        )
+
+        mock_review_admin_action.assert_called_once_with(action_id, "approved")
+        mock_api_key_create.assert_called_once_with(
+            service_id=SERVICE_ONE_ID,
+            key_name="Test Key",
+            key_type="test",
+        )
+
+        clipboard = page.select_one(".copy-to-clipboard__value")
+        assert "key-secret" in clipboard.text

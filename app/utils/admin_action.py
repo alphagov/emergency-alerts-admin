@@ -70,7 +70,7 @@ def process_admin_action(action_obj):
         secret = api_key_api_client.create_api_key(
             service_id=service_id, key_name=action_data["key_name"], key_type=action_data["key_type"]
         )
-        # The template uses has_permissions, but this requires the service ID to be in the request args
+        # The template uses has_permissions and requires the service ID to be in the request args
         request.view_args["service_id"] = service_id
         return render_template(
             "views/api/keys/show.html",
