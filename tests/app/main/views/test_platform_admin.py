@@ -257,7 +257,7 @@ class TestPlatformAdminActions:
     def test_should_not_allow_normal_user_to_list_actions(self, client_request):
         client_request.get("main.admin_actions", _expected_status=403)
 
-    def test_should_list_admin_actions(
+    def test_should_list_api_key_actions(
         self,
         client_request,
         platform_admin_user,
@@ -306,5 +306,54 @@ class TestPlatformAdminActions:
         assert "Key type: Live" in normalize_spaces(elements[0].text)
         assert "Create API key for service Test Service 2" in normalize_spaces(elements[1].text)
         assert "Key type: Team and guest" in normalize_spaces(elements[1].text)
+
+        mock_get_pending_actions.assert_called_once()
+
+    def test_should_display_invite_actions(
+        self,
+        client_request,
+        platform_admin_user,
+        mocker,
+        fake_uuid,
+    ):
+        mock_get_pending_actions = mocker.patch(
+            "app.admin_actions_api_client.get_pending_admin_actions",
+            return_value={
+                "pending": [
+                    {
+                        "service_id": SERVICE_ONE_ID,
+                        "created_by": fake_uuid,
+                        "created_at": "2025-02-14T12:34:56",
+                        "action_type": "invite_user",
+                        "action_data": {
+                            "email_address": "testing@test.gov.uk",
+                            "permissions": [
+                                "create_broadcasts",
+                                "approve_broadcasts",
+                                "manage_templates",
+                                "view_activity",
+                            ],
+                            "login_authentication": "sms_auth",
+                            "folder_permissions": [],
+                        },
+                    },
+                ],
+                "users": {str(fake_uuid): {"name": "Test", "email_address": "test@test.gov.uk"}},
+                "services": {
+                    SERVICE_ONE_ID: {"name": "Test Live Service", "active": True, "restricted": False},
+                    # SERVICE_TWO_ID: {"name": "Test Service 2", "active": True, "restricted": True},
+                },
+            },
+        )
+
+        client_request.login(platform_admin_user)
+        page = client_request.get("main.admin_actions")
+        elements = page.select("main .govuk-grid-row")
+
+        assert len(elements) == 1
+        assert "Invite user testing@test.gov.uk to live service Test Live Service" in normalize_spaces(elements[0].text)
+        assert "Create new alerts" in normalize_spaces(elements[0].text)
+        assert "Approve alerts" in normalize_spaces(elements[0].text)
+        assert "Add and edit templates" in normalize_spaces(elements[0].text)
 
         mock_get_pending_actions.assert_called_once()
