@@ -139,12 +139,13 @@ def platform_review_admin_action(action_id, status):
     elif status == "approved" and action["created_by"] == current_user.id:
         # TODO: Do we turn this off for non-production?
         flash("You cannot approve your own admin approvals")
-    elif status == ADMIN_STATUS_APPROVED:
+    else:
         current_app.logger.info("Approving and fulfilling admin action", extra={"admin_action": action})
         admin_actions_api_client.review_admin_action(action_id, status)
 
-        # Now we need to 'do' the thing we've approved
-        return process_admin_action(action)
+        if status == ADMIN_STATUS_APPROVED:
+            # Now we need to 'do' the thing we've approved
+            return process_admin_action(action)
 
     return redirect(url_for(".admin_actions"))
 
