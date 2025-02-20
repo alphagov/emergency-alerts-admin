@@ -85,7 +85,7 @@ class BroadcastMessageAPIClient(AdminAPIClient):
         """
         return self.get(f"/service/{service_id}/broadcast-message-history/{broadcast_message_id}/version/{version}")
 
-    def check_broadcast_status_transition_allowed(self, service_id, broadcast_message_id, new_status):
+    def check_broadcast_status_transition_allowed(self, new_status, *, service_id, broadcast_message_id):
         data = _attach_current_user(
             {
                 "status": new_status,
