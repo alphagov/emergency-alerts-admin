@@ -412,6 +412,18 @@ class TestPlatformAdminActions:
 
         mock_get_pending_actions.assert_called_once()
 
+    @staticmethod
+    def sample_pending_action(fake_uuid, user_id):
+        return {
+            "id": fake_uuid,
+            "service_id": SERVICE_ONE_ID,
+            "created_by": user_id,
+            "created_at": "2025-02-14T12:34:56",
+            "action_type": "test",
+            "action_data": {},
+            "status": "pending",
+        }
+
     def test_cannot_approve_own_action(
         self,
         client_request,
@@ -419,21 +431,13 @@ class TestPlatformAdminActions:
         fake_uuid,
         mocker,
     ):
-        mock_review_admin_action = mocker.patch(
+        mocker.patch(
             "app.admin_actions_api_client.get_pending_admin_actions",
             return_value={"pending": []},  # For the followed redirect before asserting
         )
-        mock_review_admin_action = mocker.patch(
+        mocker.patch(
             "app.admin_actions_api_client.get_admin_action_by_id",
-            return_value={
-                "id": fake_uuid,
-                "service_id": SERVICE_ONE_ID,
-                "created_by": platform_admin_user["id"],
-                "created_at": "2025-02-14T12:34:56",
-                "action_type": "test",
-                "action_data": {},
-                "status": "pending",
-            },
+            return_value=self.sample_pending_action(fake_uuid, platform_admin_user["id"]),
         )
         mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
 
@@ -444,3 +448,30 @@ class TestPlatformAdminActions:
         assert "You cannot approve your own admin approvals" in page.select_one(".banner-dangerous").text
 
         mock_review_admin_action.assert_not_called()
+
+    @pytest.mark.parametrize("is_own_action", (True, False))
+    def test_admins_can_reject_all_actions(
+        self,
+        client_request,
+        platform_admin_user,
+        fake_uuid,
+        mocker,
+        is_own_action,
+    ):
+        mocker.patch(
+            "app.admin_actions_api_client.get_pending_admin_actions",
+            return_value={"pending": []},  # For the followed redirect before asserting
+        )
+        mocker.patch(
+            "app.admin_actions_api_client.get_admin_action_by_id",
+            return_value=self.sample_pending_action(
+                fake_uuid,
+                (platform_admin_user["id"] if is_own_action else fake_uuid),
+            ),
+        )
+        mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
+
+        client_request.login(platform_admin_user)
+        client_request.post("main.review_admin_action", action_id=fake_uuid, status="rejected", _follow_redirects=True)
+
+        mock_review_admin_action.assert_called_once_with(fake_uuid, "rejected")
