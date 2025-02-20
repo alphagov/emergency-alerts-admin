@@ -329,6 +329,13 @@ class BroadcastMessage(JSONModel):
             service_id=self.service_id,
         )
 
+    def check_can_update_status(self, status):
+        broadcast_message_api_client.check_broadcast_status_transition_allowed(
+            status,
+            broadcast_message_id=self.id,
+            service_id=self.service_id,
+        )
+
     def _update_areas(self, force_override=False):
         areas = {
             "ids": self.area_ids,
@@ -429,8 +436,11 @@ class BroadcastMessage(JSONModel):
 
         self._update(**data)
 
-    def get_count_of_versions(self, service_id):
-        return len(broadcast_message_api_client.get_broadcast_message_versions(service_id, self.id))
+    def get_versions(self):
+        return broadcast_message_api_client.get_broadcast_message_versions(self.service_id, self.id)
+
+    def get_count_of_versions(self):
+        return len(self.get_versions())
 
 
 class BroadcastMessages(ModelList):
