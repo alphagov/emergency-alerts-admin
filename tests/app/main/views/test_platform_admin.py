@@ -523,3 +523,55 @@ class TestPlatformAdminActions:
 
         clipboard = page.select_one(".copy-to-clipboard__value")
         assert "key-secret" in clipboard.text
+
+    def test_approving_creates_user_invite(
+        self,
+        client_request,
+        platform_admin_user,
+        mocker,
+    ):
+        action_or_creator_id = str(uuid.uuid4())
+        mocker.patch(
+            "app.admin_actions_api_client.get_admin_action_by_id",
+            return_value={
+                "id": action_or_creator_id,
+                "service_id": SERVICE_ONE_ID,
+                "created_by": action_or_creator_id,  # Not the creator
+                "created_at": "2025-02-14T12:34:56",
+                "action_type": "invite_user",
+                "action_data": {
+                    "email_address": "testing@test.gov.uk",
+                    "permissions": [
+                        "create_broadcasts",
+                    ],
+                    "login_authentication": "sms_auth",
+                    "folder_permissions": [],
+                },
+                "status": "pending",
+            },
+        )
+        mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
+        mock_api_key_create = mocker.patch(
+            "app.notify_client.invite_api_client.InviteApiClient.create_invite",
+            return_value={"from_user": action_or_creator_id},
+        )
+
+        client_request.login(platform_admin_user)
+        client_request.post(
+            "main.review_admin_action",
+            action_id=action_or_creator_id,
+            new_status="approved",
+            _expected_redirect=url_for(".manage_users", service_id=SERVICE_ONE_ID),
+        )
+
+        mock_review_admin_action.assert_called_once_with(action_or_creator_id, "approved")
+        mock_api_key_create.assert_called_once_with(
+            action_or_creator_id,
+            SERVICE_ONE_ID,
+            "testing@test.gov.uk",
+            [
+                "create_broadcasts",
+            ],
+            "sms_auth",
+            [],
+        )
