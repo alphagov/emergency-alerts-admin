@@ -491,7 +491,7 @@ class TestPlatformAdminActions:
             return_value={
                 "id": action_id,
                 "service_id": SERVICE_ONE_ID,
-                "created_by": action_id,  # Not the creator
+                "created_by": action_id,  # Test user is not the creator
                 "created_at": "2025-02-14T12:34:56",
                 "action_type": "create_api_key",
                 "action_data": {
@@ -502,9 +502,7 @@ class TestPlatformAdminActions:
             },
         )
         mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
-        mock_api_key_create = mocker.patch(
-            "app.notify_client.api_key_api_client.ApiKeyApiClient.create_api_key", return_value="key-secret"
-        )
+        mock_api_key_create = mocker.patch("app.api_key_api_client.create_api_key", return_value="key-secret")
 
         client_request.login(platform_admin_user)
         page = client_request.post(
@@ -536,7 +534,7 @@ class TestPlatformAdminActions:
             return_value={
                 "id": action_or_creator_id,
                 "service_id": SERVICE_ONE_ID,
-                "created_by": action_or_creator_id,  # Not the creator
+                "created_by": action_or_creator_id,
                 "created_at": "2025-02-14T12:34:56",
                 "action_type": "invite_user",
                 "action_data": {
@@ -551,8 +549,8 @@ class TestPlatformAdminActions:
             },
         )
         mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
-        mock_api_key_create = mocker.patch(
-            "app.notify_client.invite_api_client.InviteApiClient.create_invite",
+        mock_user_invite = mocker.patch(
+            "app.invite_api_client.create_invite",
             return_value={"from_user": action_or_creator_id},
         )
 
@@ -565,7 +563,7 @@ class TestPlatformAdminActions:
         )
 
         mock_review_admin_action.assert_called_once_with(action_or_creator_id, "approved")
-        mock_api_key_create.assert_called_once_with(
+        mock_user_invite.assert_called_once_with(
             action_or_creator_id,
             SERVICE_ONE_ID,
             "testing@test.gov.uk",
@@ -574,4 +572,61 @@ class TestPlatformAdminActions:
             ],
             "sms_auth",
             [],
+        )
+
+    def test_approving_edits_user_permissions(
+        self,
+        client_request,
+        platform_admin_user,
+        mocker,
+    ):
+        action_or_creator_id = str(uuid.uuid4())
+        edited_user_id = str(uuid.uuid4())
+
+        mocker.patch(
+            "app.admin_actions_api_client.get_admin_action_by_id",
+            return_value={
+                "id": action_or_creator_id,
+                "service_id": SERVICE_ONE_ID,
+                "created_by": action_or_creator_id,  # Test user is not the creator
+                "created_at": "2025-02-14T12:34:56",
+                "action_type": "edit_permissions",
+                "action_data": {
+                    "user_id": edited_user_id,
+                    "existing_permissions": [],
+                    "permissions": [
+                        "create_broadcasts",
+                    ],
+                    "folder_permissions": [],
+                },
+                "status": "pending",
+            },
+        )
+        mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
+        mock_edit_permissions = mocker.patch(
+            "app.user_api_client.set_user_permissions",
+            return_value=None,
+        )
+
+        client_request.login(platform_admin_user)
+        # For User.from_id to work, .login patches it to our platform admin user
+        mocker.patch(
+            "app.user_api_client.get_user",
+            return_value={"id": edited_user_id, "platform_admin": False, "email_address": "testing@gov.uk"},
+        )
+        client_request.post(
+            "main.review_admin_action",
+            action_id=action_or_creator_id,
+            new_status="approved",
+            _expected_redirect=url_for(".manage_users", service_id=SERVICE_ONE_ID),
+        )
+
+        mock_review_admin_action.assert_called_once_with(action_or_creator_id, "approved")
+        mock_edit_permissions.assert_called_once_with(
+            edited_user_id,
+            SERVICE_ONE_ID,
+            permissions=[
+                "create_broadcasts",
+            ],
+            folder_permissions=[],
         )
