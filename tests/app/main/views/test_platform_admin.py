@@ -1,4 +1,5 @@
 import datetime
+import uuid
 from functools import partial
 from unittest.mock import ANY
 
@@ -289,7 +290,7 @@ class TestPlatformAdminActions:
                         },
                     },
                 ],
-                "users": {str(fake_uuid): {"name": "Test", "email_address": "test@test.gov.uk"}},
+                "users": {fake_uuid: {"name": "Test", "email_address": "test@test.gov.uk"}},
                 "services": {
                     SERVICE_ONE_ID: {"name": "Test Live Service", "active": True, "restricted": False},
                     SERVICE_TWO_ID: {"name": "Test Service 2", "active": True, "restricted": True},
@@ -338,10 +339,9 @@ class TestPlatformAdminActions:
                         },
                     },
                 ],
-                "users": {str(fake_uuid): {"name": "Test", "email_address": "test@test.gov.uk"}},
+                "users": {fake_uuid: {"name": "Test", "email_address": "test@test.gov.uk"}},
                 "services": {
                     SERVICE_ONE_ID: {"name": "Test Live Service", "active": True, "restricted": False},
-                    # SERVICE_TWO_ID: {"name": "Test Service 2", "active": True, "restricted": True},
                 },
             },
         )
@@ -352,6 +352,60 @@ class TestPlatformAdminActions:
 
         assert len(elements) == 1
         assert "Invite user testing@test.gov.uk to live service Test Live Service" in normalize_spaces(elements[0].text)
+        assert "Create new alerts" in normalize_spaces(elements[0].text)
+        assert "Approve alerts" in normalize_spaces(elements[0].text)
+        assert "Add and edit templates" in normalize_spaces(elements[0].text)
+
+        mock_get_pending_actions.assert_called_once()
+
+    def test_should_display_edit_permission_actions(
+        self,
+        client_request,
+        platform_admin_user,
+        mocker,
+        fake_uuid,
+    ):
+        edited_user_uuid = str(uuid.uuid4())
+        mock_get_pending_actions = mocker.patch(
+            "app.admin_actions_api_client.get_pending_admin_actions",
+            return_value={
+                "pending": [
+                    {
+                        "service_id": SERVICE_ONE_ID,
+                        "created_by": fake_uuid,
+                        "created_at": "2025-02-14T12:34:56",
+                        "action_type": "edit_permissions",
+                        "action_data": {
+                            "user_id": edited_user_uuid,
+                            "existing_permissions": [],
+                            "permissions": [
+                                "create_broadcasts",
+                                "approve_broadcasts",
+                                "manage_templates",
+                                "view_activity",
+                            ],
+                            "folder_permissions": [],
+                        },
+                    },
+                ],
+                "users": {
+                    fake_uuid: {"name": "Test", "email_address": "test@test.gov.uk"},
+                    edited_user_uuid: {"name": "Test 2", "email_address": "testing@test.gov.uk"},
+                },
+                "services": {
+                    SERVICE_ONE_ID: {"name": "Test Live Service", "active": True, "restricted": False},
+                },
+            },
+        )
+
+        client_request.login(platform_admin_user)
+        page = client_request.get("main.admin_actions")
+        elements = page.select("main .govuk-grid-row")
+
+        assert len(elements) == 1
+        assert "Edit testing@test.gov.uk's permissions to live service Test Live Service" in normalize_spaces(
+            elements[0].text
+        )
         assert "Create new alerts" in normalize_spaces(elements[0].text)
         assert "Approve alerts" in normalize_spaces(elements[0].text)
         assert "Add and edit templates" in normalize_spaces(elements[0].text)
