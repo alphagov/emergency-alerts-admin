@@ -1092,7 +1092,7 @@ def cancel_broadcast_message(service_id, broadcast_message_id):
             max_phones=broadcast_message.count_of_phones_likely,
         ),
         back_link=url_for(
-            _get_back_link_from_view_broadcast_endpoint(),
+            ".broadcast_dashboard",
             service_id=current_service.id,
         ),
         is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
