@@ -55,6 +55,7 @@ def _get_back_link_from_view_broadcast_endpoint():
         "main.view_rejected_broadcast": ".broadcast_dashboard_rejected",
         "main.approve_broadcast_message": ".broadcast_dashboard",
         "main.reject_broadcast_message": ".broadcast_dashboard",
+        "main.reject_broadcast_message_with_reason": ".broadcast_dashboard",
     }[request.endpoint]
 
 
@@ -955,6 +956,58 @@ def reject_broadcast_message(service_id, broadcast_message_id):
         service_id=current_service.id,
     )
 
+    try:
+        broadcast_message.check_can_update_status("rejected")
+    except Exception as e:
+        flash(e.message)
+        return render_template(
+            "views/broadcast/view-message.html",
+            broadcast_message=broadcast_message,
+            rejection_form=RejectionReasonForm(),
+            form=ConfirmBroadcastForm(
+                service_is_live=current_service.live,
+                channel=current_service.broadcast_channel,
+                max_phones=broadcast_message.count_of_phones_likely,
+            ),
+            is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
+            areas=format_areas_list(broadcast_message.areas),
+            back_link=url_for(
+                _get_back_link_from_view_broadcast_endpoint(),
+                service_id=current_service.id,
+            ),
+            broadcast_message_version_count=broadcast_message.get_count_of_versions(),
+        )
+
+    if broadcast_message.status != "pending-approval":
+        return redirect(
+            url_for(
+                ".view_current_broadcast",
+                service_id=current_service.id,
+                broadcast_message_id=broadcast_message.id,
+            )
+        )
+
+    broadcast_message.reject_broadcast()
+
+    return redirect(
+        url_for(
+            ".broadcast_dashboard",
+            service_id=current_service.id,
+        )
+    )
+
+
+@main.route(
+    "/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/reject-with-reason", methods=["GET", "POST"]
+)
+@user_has_permissions("create_broadcasts", "approve_broadcasts", restrict_admin_usage=True)
+@service_has_permission("broadcast")
+def reject_broadcast_message_with_reason(service_id, broadcast_message_id):
+    broadcast_message = BroadcastMessage.from_id(
+        broadcast_message_id,
+        service_id=current_service.id,
+    )
+
     form = RejectionReasonForm()
     rejection_reason = form.rejection_reason.data
 
@@ -1001,6 +1054,7 @@ def reject_broadcast_message(service_id, broadcast_message_id):
         except HTTPError as e:
             if e.status_code == 400:
                 form.rejection_reason.errors = ["Enter the reason for rejecting the alert."]
+
     return render_template(
         "views/broadcast/view-message.html",
         broadcast_message=broadcast_message,

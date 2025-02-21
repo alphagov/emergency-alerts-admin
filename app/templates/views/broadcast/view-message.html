@@ -88,7 +88,7 @@
           {% set rejection_reason_details %}
             <div class="govuk-!-margin-top-3">
               <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for rejecting the alert</h1>
-              {% call form_wrapper(id='reject', action=url_for('main.reject_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
+              {% call form_wrapper(id='reject', action=url_for('main.reject_broadcast_message_with_reason', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
                 {{ rejection_form.rejection_reason }}
                 {{ page_footer(
                   'Reject alert',
@@ -155,7 +155,7 @@
         {% set rejection_reason_details %}
           <div class="govuk-!-margin-top-3">
             <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for rejecting the alert</h1>
-            {% call form_wrapper(id='reject',action=url_for('main.reject_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
+            {% call form_wrapper(id='reject',action=url_for('main.reject_broadcast_message_with_reason', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
               {{ rejection_form.rejection_reason }}
               {{ page_footer(
                 'Reject alert',
