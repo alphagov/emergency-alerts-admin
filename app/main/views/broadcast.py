@@ -900,6 +900,31 @@ def reject_broadcast_message(service_id, broadcast_message_id):
         service_id=current_service.id,
     )
 
+    form = RejectionReasonForm()
+    rejection_reason = form.rejection_reason.data
+
+    try:
+        broadcast_message.check_can_update_status("rejected")
+    except Exception as e:
+        flash(e.message)
+        return render_template(
+            "views/broadcast/view-message.html",
+            broadcast_message=broadcast_message,
+            rejection_form=form,
+            form=ConfirmBroadcastForm(
+                service_is_live=current_service.live,
+                channel=current_service.broadcast_channel,
+                max_phones=broadcast_message.count_of_phones_likely,
+            ),
+            is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
+            areas=format_areas_list(broadcast_message.areas),
+            back_link=url_for(
+                _get_back_link_from_view_broadcast_endpoint(),
+                service_id=current_service.id,
+            ),
+            broadcast_message_version_count=broadcast_message.get_count_of_versions(),
+        )
+
     if broadcast_message.status != "pending-approval":
         return redirect(
             url_for(
@@ -908,9 +933,6 @@ def reject_broadcast_message(service_id, broadcast_message_id):
                 broadcast_message_id=broadcast_message.id,
             )
         )
-
-    form = RejectionReasonForm()
-    rejection_reason = form.rejection_reason.data
 
     if form.validate_on_submit():
         try:
