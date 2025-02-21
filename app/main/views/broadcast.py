@@ -741,7 +741,25 @@ def preview_broadcast_message(service_id, broadcast_message_id):
         service_id=current_service.id,
     )
     is_custom_broadcast = type(broadcast_message.areas) is CustomBroadcastAreas
+    areas = format_areas_list(broadcast_message.areas)
     if request.method == "POST":
+        try:
+            broadcast_message.check_can_update_status("pending-approval")
+        except HTTPError as e:
+            flash(e.message)
+            return render_template(
+                "views/broadcast/preview-message.html",
+                back_link=url_for(
+                    ".view_current_broadcast",
+                    service_id=current_service.id,
+                    broadcast_message_id=broadcast_message.id,
+                ),
+                broadcast_message=broadcast_message,
+                custom_broadcast=is_custom_broadcast,
+                areas=areas,
+                label=create_map_label(areas),
+                areas_string=stringify_areas(areas),
+            )
         broadcast_message.request_approval()
         return redirect(
             url_for(
@@ -750,7 +768,6 @@ def preview_broadcast_message(service_id, broadcast_message_id):
                 broadcast_message_id=broadcast_message.id,
             )
         )
-    areas = format_areas_list(broadcast_message.areas)
     return render_template(
         "views/broadcast/preview-message.html",
         broadcast_message=broadcast_message,
@@ -769,6 +786,25 @@ def submit_broadcast_message(service_id, broadcast_message_id):
         broadcast_message_id,
         service_id=current_service.id,
     )
+    try:
+        broadcast_message.check_can_update_status("pending-approval")
+    except HTTPError as e:
+        flash(e.message)
+        return render_template(
+            "views/broadcast/view-message.html",
+            broadcast_message=broadcast_message,
+            hide_stop_link=True,
+            rejection_form=RejectionReasonForm(),
+            form=ConfirmBroadcastForm(
+                service_is_live=current_service.live,
+                channel=current_service.broadcast_channel,
+                max_phones=broadcast_message.count_of_phones_likely,
+            ),
+            is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
+            areas=format_areas_list(broadcast_message.areas) if broadcast_message.areas else [],
+            broadcast_message_version_count=broadcast_message.get_count_of_versions(),
+        )
+
     broadcast_message.request_approval()
     return redirect(
         url_for(
