@@ -2,7 +2,7 @@ from emergency_alerts_utils.template import BroadcastPreviewTemplate
 from flask import abort, flash, jsonify, redirect, render_template, request, url_for
 from notifications_python_client.errors import HTTPError
 
-from app import broadcast_message_api_client, current_service
+from app import current_service
 from app.broadcast_areas.models import CustomBroadcastAreas
 from app.main import main
 from app.main.forms import (
@@ -828,7 +828,7 @@ def view_broadcast(service_id, broadcast_message_id):
         rejection_form=RejectionReasonForm(),
         is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
         areas=format_areas_list(broadcast_message.areas),
-        broadcast_message_version_count=broadcast_message.get_count_of_versions(service_id),
+        broadcast_message_version_count=broadcast_message.get_count_of_versions(),
     )
 
 
@@ -879,7 +879,7 @@ def approve_broadcast_message(service_id, broadcast_message_id):
             rejection_form=RejectionReasonForm(),
             is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
             areas=format_areas_list(broadcast_message.areas),
-            broadcast_message_version_count=broadcast_message.get_count_of_versions(service_id),
+            broadcast_message_version_count=broadcast_message.get_count_of_versions(),
         )
 
     return redirect(
@@ -939,7 +939,7 @@ def reject_broadcast_message(service_id, broadcast_message_id):
             _get_back_link_from_view_broadcast_endpoint(),
             service_id=current_service.id,
         ),
-        broadcast_message_version_count=broadcast_message.get_count_of_versions(service_id),
+        broadcast_message_version_count=broadcast_message.get_count_of_versions(),
     )
 
 
@@ -1016,7 +1016,7 @@ def cancel_broadcast_message(service_id, broadcast_message_id):
         ),
         is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
         areas=format_areas_list(broadcast_message.areas) if broadcast_message.areas else [],
-        broadcast_message_version_count=broadcast_message.get_count_of_versions(service_id),
+        broadcast_message_version_count=broadcast_message.get_count_of_versions(),
     )
 
 
@@ -1026,7 +1026,11 @@ def cancel_broadcast_message(service_id, broadcast_message_id):
 )
 @user_has_permissions(allow_org_user=True)
 def view_broadcast_versions(service_id, broadcast_message_id):
-    versions = broadcast_message_api_client.get_broadcast_message_versions(service_id, broadcast_message_id)
+    broadcast_message = BroadcastMessage.from_id(
+        broadcast_message_id,
+        service_id=current_service.id,
+    )
+    versions = broadcast_message.get_versions()
     for message in versions:
         message["template"] = BroadcastPreviewTemplate(
             {
