@@ -1091,6 +1091,10 @@ def cancel_broadcast_message(service_id, broadcast_message_id):
             channel=current_service.broadcast_channel,
             max_phones=broadcast_message.count_of_phones_likely,
         ),
+        back_link=url_for(
+            _get_back_link_from_view_broadcast_endpoint(),
+            service_id=current_service.id,
+        ),
         is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
         areas=format_areas_list(broadcast_message.areas) if broadcast_message.areas else [],
         broadcast_message_version_count=broadcast_message.get_count_of_versions(),
