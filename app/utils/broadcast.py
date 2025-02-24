@@ -5,12 +5,15 @@ from shapely import Point
 from shapely.geometry import MultiPolygon, Polygon
 from shapely.ops import unary_union
 
+from app import current_service
 from app.broadcast_areas.models import CustomBroadcastArea, CustomBroadcastAreas
 from app.formatters import format_number_no_scientific, round_to_significant_figures
 from app.main.forms import (
+    ConfirmBroadcastForm,
     EastingNorthingCoordinatesForm,
     LatitudeLongitudeCoordinatesForm,
     PostcodeForm,
+    RejectionReasonForm,
 )
 from app.models.broadcast_message import BroadcastMessage
 
@@ -337,3 +340,29 @@ def stringify_areas(areas):
     elif len(areas) > 1:
         areas_string = (", ").join(areas[:-1]) + " and " + areas[-1]
     return areas_string
+
+
+def render_current_alert_page(
+    broadcast_message,
+    rejection_form=None,
+    back_link_url=".broadcast_dashboard",
+    hide_stop_link=False,
+):
+    return render_template(
+        "views/broadcast/view-message.html",
+        broadcast_message=broadcast_message,
+        rejection_form=RejectionReasonForm() if rejection_form is None else rejection_form,
+        form=ConfirmBroadcastForm(
+            service_is_live=current_service.live,
+            channel=current_service.broadcast_channel,
+            max_phones=broadcast_message.count_of_phones_likely,
+        ),
+        is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
+        areas=format_areas_list(broadcast_message.areas),
+        back_link=url_for(
+            back_link_url,
+            service_id=current_service.id,
+        ),
+        hide_stop_link=hide_stop_link,
+        broadcast_message_version_count=broadcast_message.get_count_of_versions(),
+    )
