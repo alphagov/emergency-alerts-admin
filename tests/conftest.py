@@ -2345,6 +2345,11 @@ def mock_update_broadcast_message(
 
 
 @pytest.fixture(scope="function")
+def mock_check_can_update_status(mocker):
+    return mocker.patch("app.broadcast_message_api_client.check_broadcast_status_transition_allowed")
+
+
+@pytest.fixture(scope="function")
 def mock_update_broadcast_message_status(
     mocker,
     fake_uuid,
