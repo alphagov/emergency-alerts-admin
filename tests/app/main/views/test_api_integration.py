@@ -1,7 +1,7 @@
 from unittest.mock import call
 
 import pytest
-from flask import url_for
+from flask import session, url_for
 
 from tests import validate_route_permission
 from tests.conftest import SERVICE_ONE_ID, normalize_spaces
@@ -118,7 +118,9 @@ def test_should_create_api_key_admin_action_with_type_normal(
         _expected_redirect=url_for("main.api_keys", service_id=SERVICE_ONE_ID),
     )
 
-    # TODO: How do we assert the flash in a redirect?
+    flashes = session.get("_flashes")
+    assert len(flashes) == 1
+    assert flashes[0][1] == "An admin approval has been created"
 
     mock_create_admin_action.assert_called_once_with(
         {
