@@ -1011,6 +1011,7 @@ def test_preview_broadcast_areas_page(
     estimates,
     active_user_create_broadcasts_permission,
     mock_get_broadcast_message_versions,
+    mock_check_can_update_status,
 ):
     service_one["permissions"] += ["broadcast"]
     mocker.patch(
@@ -1118,6 +1119,7 @@ def test_preview_broadcast_areas_page_with_custom_polygons(
     polygons,
     expected_list_items,
     active_user_create_broadcasts_permission,
+    mock_check_can_update_status,
 ):
     service_one["permissions"] += ["broadcast"]
     mocker.patch(
@@ -1595,6 +1597,7 @@ def test_write_new_broadcast_does_update_when_broadcast_exists(
     active_user_create_broadcasts_permission,
     mock_create_broadcast_message,
     mock_update_broadcast_message,
+    mock_check_can_update_status,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -1639,6 +1642,7 @@ def test_preview_broadcast_areas_has_back_link_with_uuid(
     active_user_create_broadcasts_permission,
     expected_back_link_url,
     expected_back_link_extra_kwargs,
+    mock_check_can_update_status,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -1671,6 +1675,7 @@ def test_write_new_broadcast_content_from_uuid_is_displayed_before_live(
     service_one,
     fake_uuid,
     active_user_create_broadcasts_permission,
+    mock_check_can_update_status,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -1716,6 +1721,7 @@ def test_write_new_broadcast_does_not_display_alerts_in_broadcast(
     mock_get_live_broadcast_message,
     fake_uuid,
     active_user_create_broadcasts_permission,
+    mock_check_can_update_status,
 ):
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
@@ -3272,6 +3278,7 @@ def test_start_broadcasting(
     mock_update_broadcast_message_status,
     fake_uuid,
     active_user_create_broadcasts_permission,
+    mock_check_can_update_status,
 ):
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
@@ -3835,6 +3842,7 @@ def test_confirm_approve_non_training_broadcasts_errors_if_not_ticked(
     mock_update_broadcast_message_status,
     active_user_approve_broadcasts_permission,
     mock_get_broadcast_message_versions,
+    mock_check_can_update_status,
 ):
     page = mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -4114,7 +4122,7 @@ def test_user_without_approve_permission_cant_approve_broadcast_created_by_someo
     assert not page.select_one("form")
     link = page.select_one(".banner a")
     assert link["href"] == url_for(
-        ".reject_broadcast_message", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid
+        ".discard_broadcast_message", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid
     )
 
 
@@ -4263,6 +4271,7 @@ def test_confirm_approve_broadcast(
     duration,
     expected_finishes_at,
     mock_get_broadcast_message_versions,
+    mock_check_can_update_status,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -4324,6 +4333,7 @@ def test_reject_broadcast_displays_error_when_no_reason_provided(
     mock_update_broadcast_message_status_with_reason,
     user,
     mock_get_broadcast_message_versions,
+    mock_check_can_update_status,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -4417,6 +4427,7 @@ def test_reject_broadcast_with_reason(
     mock_update_broadcast_message_status_with_reason,
     user,
     mock_get_broadcast_message_versions,
+    mock_check_can_update_status,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -4479,6 +4490,7 @@ def test_cant_reject_broadcast_in_wrong_state(
     user,
     initial_status,
     mock_get_broadcast_message_versions,
+    mock_check_can_update_status,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -4517,6 +4529,7 @@ def test_submit_broadcast_changes_status(
     mock_update_broadcast_message,
     mock_get_broadcast_message_versions,
     mock_update_broadcast_message_status,
+    mock_check_can_update_status,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -4691,6 +4704,7 @@ def test_cancel_broadcast(
     fake_uuid,
     user,
     mock_get_broadcast_message_versions,
+    mock_check_can_update_status,
 ):
     """
     users with 'create/approve_broadcasts' permissions and platform admins should be able to cancel broadcasts.
@@ -4735,6 +4749,7 @@ def test_confirm_cancel_broadcast(
     service_one,
     mock_get_live_broadcast_message,
     mock_update_broadcast_message_status,
+    mock_check_can_update_status,
     fake_uuid,
     user,
 ):
@@ -4771,6 +4786,7 @@ def test_cant_cancel_broadcast_in_a_different_state(
     fake_uuid,
     active_user_create_broadcasts_permission,
     method,
+    mock_check_can_update_status,
 ):
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
