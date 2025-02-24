@@ -866,22 +866,6 @@ def approve_broadcast_message(service_id, broadcast_message_id):
 
     is_custom_broadcast = type(broadcast_message.areas) is CustomBroadcastAreas
     areas = format_areas_list(broadcast_message.areas)
-    try:
-        broadcast_message.check_can_update_status("broadcasting")
-    except HTTPError as e:
-        flash(e.message)
-        return render_template(
-            "views/broadcast/preview-message.html",
-            back_link=url_for(
-                ".broadcast_dashboard",
-                service_id=current_service.id,
-            ),
-            broadcast_message=broadcast_message,
-            custom_broadcast=is_custom_broadcast,
-            areas=areas,
-            label=create_map_label(areas),
-            areas_string=stringify_areas(areas),
-        )
 
     if broadcast_message.status != "pending-approval":
         return redirect(
@@ -902,9 +886,27 @@ def approve_broadcast_message(service_id, broadcast_message_id):
             )
         )
     elif form.validate_on_submit():
+        try:
+            broadcast_message.check_can_update_status("broadcasting")
+        except HTTPError as e:
+            flash(e.message)
+            return render_template(
+                "views/broadcast/preview-message.html",
+                back_link=url_for(
+                    ".broadcast_dashboard",
+                    service_id=current_service.id,
+                ),
+                broadcast_message=broadcast_message,
+                custom_broadcast=is_custom_broadcast,
+                areas=areas,
+                label=create_map_label(areas),
+                areas_string=stringify_areas(areas),
+            )
         broadcast_message.approve_broadcast(channel=current_service.broadcast_channel)
     else:
-        return render_current_alert_page(broadcast_message, back_link_url=_get_back_link_from_view_broadcast_endpoint())
+        return render_current_alert_page(
+            broadcast_message, confirm_broadcast_form=form, back_link_url=_get_back_link_from_view_broadcast_endpoint()
+        )
 
     return redirect(
         url_for(
