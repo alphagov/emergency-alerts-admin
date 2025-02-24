@@ -40,6 +40,7 @@ from app.utils.broadcast import (
     postcode_entered,
     preview_button_clicked,
     render_coordinates_page,
+    render_current_alert_page,
     render_postcode_page,
     select_coordinate_form,
     stringify_areas,
@@ -180,22 +181,8 @@ def write_new_broadcast(service_id):
             broadcast_message.check_can_update_status("draft")
         except HTTPError as e:
             flash(e.message)
-            return render_template(
-                "views/broadcast/view-message.html",
-                broadcast_message=broadcast_message,
-                rejection_form=RejectionReasonForm(),
-                form=ConfirmBroadcastForm(
-                    service_is_live=current_service.live,
-                    channel=current_service.broadcast_channel,
-                    max_phones=broadcast_message.count_of_phones_likely,
-                ),
-                is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
-                areas=format_areas_list(broadcast_message.areas),
-                back_link=url_for(
-                    ".broadcast_dashboard",
-                    service_id=current_service.id,
-                ),
-                broadcast_message_version_count=broadcast_message.get_count_of_versions(),
+            return render_current_alert_page(
+                broadcast_message,
             )
 
     if form.validate_on_submit():
@@ -300,22 +287,8 @@ def preview_broadcast_areas(service_id, broadcast_message_id):
         broadcast_message.check_can_update_status("draft")
     except HTTPError as e:
         flash(e.message)
-        return render_template(
-            "views/broadcast/view-message.html",
-            broadcast_message=broadcast_message,
-            rejection_form=RejectionReasonForm(),
-            form=ConfirmBroadcastForm(
-                service_is_live=current_service.live,
-                channel=current_service.broadcast_channel,
-                max_phones=broadcast_message.count_of_phones_likely,
-            ),
-            is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
-            areas=format_areas_list(broadcast_message.areas),
-            back_link=url_for(
-                ".broadcast_dashboard",
-                service_id=current_service.id,
-            ),
-            broadcast_message_version_count=broadcast_message.get_count_of_versions(),
+        return render_current_alert_page(
+            broadcast_message,
         )
 
     if broadcast_message.template_id and broadcast_message.status != "draft":
@@ -827,21 +800,7 @@ def submit_broadcast_message(service_id, broadcast_message_id):
         broadcast_message.check_can_update_status("pending-approval")
     except HTTPError as e:
         flash(e.message)
-        return render_template(
-            "views/broadcast/view-message.html",
-            broadcast_message=broadcast_message,
-            hide_stop_link=True,
-            rejection_form=RejectionReasonForm(),
-            form=ConfirmBroadcastForm(
-                service_is_live=current_service.live,
-                channel=current_service.broadcast_channel,
-                max_phones=broadcast_message.count_of_phones_likely,
-            ),
-            back_link=url_for(".broadcast_dashboard", service_id=current_service.id),
-            is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
-            areas=format_areas_list(broadcast_message.areas) if broadcast_message.areas else [],
-            broadcast_message_version_count=broadcast_message.get_count_of_versions(),
-        )
+        return render_current_alert_page(broadcast_message, hide_stop_link=True)
 
     broadcast_message.request_approval()
     return redirect(
@@ -887,23 +846,7 @@ def view_broadcast(service_id, broadcast_message_id):
                 )
             )
 
-    return render_template(
-        "views/broadcast/view-message.html",
-        broadcast_message=broadcast_message,
-        back_link=url_for(
-            _get_back_link_from_view_broadcast_endpoint(),
-            service_id=current_service.id,
-        ),
-        form=ConfirmBroadcastForm(
-            service_is_live=current_service.live,
-            channel=current_service.broadcast_channel,
-            max_phones=broadcast_message.count_of_phones_likely,
-        ),
-        rejection_form=RejectionReasonForm(),
-        is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
-        areas=format_areas_list(broadcast_message.areas),
-        broadcast_message_version_count=broadcast_message.get_count_of_versions(),
-    )
+    return render_current_alert_page(broadcast_message, back_link_url=_get_back_link_from_view_broadcast_endpoint())
 
 
 @main.route("/services/<uuid:service_id>/current-alerts/<uuid:broadcast_message_id>", methods=["POST"])
@@ -961,19 +904,7 @@ def approve_broadcast_message(service_id, broadcast_message_id):
     elif form.validate_on_submit():
         broadcast_message.approve_broadcast(channel=current_service.broadcast_channel)
     else:
-        return render_template(
-            "views/broadcast/view-message.html",
-            broadcast_message=broadcast_message,
-            back_link=url_for(
-                _get_back_link_from_view_broadcast_endpoint(),
-                service_id=current_service.id,
-            ),
-            form=form,
-            rejection_form=RejectionReasonForm(),
-            is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
-            areas=format_areas_list(broadcast_message.areas),
-            broadcast_message_version_count=broadcast_message.get_count_of_versions(),
-        )
+        return render_current_alert_page(broadcast_message, back_link_url=_get_back_link_from_view_broadcast_endpoint())
 
     return redirect(
         url_for(
@@ -1000,23 +931,7 @@ def reject_broadcast_message(service_id, broadcast_message_id):
         broadcast_message.check_can_update_status("rejected")
     except HTTPError as e:
         flash(e.message)
-        return render_template(
-            "views/broadcast/view-message.html",
-            broadcast_message=broadcast_message,
-            rejection_form=form,
-            form=ConfirmBroadcastForm(
-                service_is_live=current_service.live,
-                channel=current_service.broadcast_channel,
-                max_phones=broadcast_message.count_of_phones_likely,
-            ),
-            is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
-            areas=format_areas_list(broadcast_message.areas),
-            back_link=url_for(
-                _get_back_link_from_view_broadcast_endpoint(),
-                service_id=current_service.id,
-            ),
-            broadcast_message_version_count=broadcast_message.get_count_of_versions(),
-        )
+        return render_current_alert_page(broadcast_message, back_link_url=_get_back_link_from_view_broadcast_endpoint())
 
     if broadcast_message.status != "pending-approval":
         return redirect(
@@ -1040,22 +955,8 @@ def reject_broadcast_message(service_id, broadcast_message_id):
             if e.status_code == 400:
                 form.rejection_reason.errors = ["Enter the reason for rejecting the alert."]
 
-    return render_template(
-        "views/broadcast/view-message.html",
-        broadcast_message=broadcast_message,
-        rejection_form=form,
-        form=ConfirmBroadcastForm(
-            service_is_live=current_service.live,
-            channel=current_service.broadcast_channel,
-            max_phones=broadcast_message.count_of_phones_likely,
-        ),
-        is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
-        areas=format_areas_list(broadcast_message.areas),
-        back_link=url_for(
-            _get_back_link_from_view_broadcast_endpoint(),
-            service_id=current_service.id,
-        ),
-        broadcast_message_version_count=broadcast_message.get_count_of_versions(),
+    return render_current_alert_page(
+        broadcast_message, form, back_link_url=_get_back_link_from_view_broadcast_endpoint()
     )
 
 
@@ -1072,23 +973,7 @@ def discard_broadcast_message(service_id, broadcast_message_id):
         broadcast_message.check_can_update_status("rejected")
     except HTTPError as e:
         flash(e.message)
-        return render_template(
-            "views/broadcast/view-message.html",
-            broadcast_message=broadcast_message,
-            rejection_form=RejectionReasonForm(),
-            form=ConfirmBroadcastForm(
-                service_is_live=current_service.live,
-                channel=current_service.broadcast_channel,
-                max_phones=broadcast_message.count_of_phones_likely,
-            ),
-            is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
-            areas=format_areas_list(broadcast_message.areas),
-            back_link=url_for(
-                _get_back_link_from_view_broadcast_endpoint(),
-                service_id=current_service.id,
-            ),
-            broadcast_message_version_count=broadcast_message.get_count_of_versions(),
-        )
+        return render_current_alert_page(broadcast_message, back_link_url=_get_back_link_from_view_broadcast_endpoint())
 
     if broadcast_message.status != "pending-approval":
         return redirect(
@@ -1125,24 +1010,7 @@ def cancel_broadcast_message(service_id, broadcast_message_id):
         broadcast_message.check_can_update_status("cancelled")
     except HTTPError as e:
         flash(e.message)
-        return render_template(
-            "views/broadcast/view-message.html",
-            broadcast_message=broadcast_message,
-            hide_stop_link=True,
-            rejection_form=RejectionReasonForm(),
-            form=ConfirmBroadcastForm(
-                service_is_live=current_service.live,
-                channel=current_service.broadcast_channel,
-                max_phones=broadcast_message.count_of_phones_likely,
-            ),
-            back_link=url_for(
-                ".broadcast_dashboard",
-                service_id=current_service.id,
-            ),
-            is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
-            areas=format_areas_list(broadcast_message.areas) if broadcast_message.areas else [],
-            broadcast_message_version_count=broadcast_message.get_count_of_versions(),
-        )
+        return render_current_alert_page(broadcast_message, hide_stop_link=True)
 
     if broadcast_message.status != "broadcasting":
         return redirect(
@@ -1165,24 +1033,7 @@ def cancel_broadcast_message(service_id, broadcast_message_id):
 
     flash(["Are you sure you want to stop this broadcast now?"], "stop broadcasting")
 
-    return render_template(
-        "views/broadcast/view-message.html",
-        broadcast_message=broadcast_message,
-        hide_stop_link=True,
-        rejection_form=RejectionReasonForm(),
-        form=ConfirmBroadcastForm(
-            service_is_live=current_service.live,
-            channel=current_service.broadcast_channel,
-            max_phones=broadcast_message.count_of_phones_likely,
-        ),
-        back_link=url_for(
-            ".broadcast_dashboard",
-            service_id=current_service.id,
-        ),
-        is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
-        areas=format_areas_list(broadcast_message.areas) if broadcast_message.areas else [],
-        broadcast_message_version_count=broadcast_message.get_count_of_versions(),
-    )
+    return render_current_alert_page(broadcast_message, hide_stop_link=True)
 
 
 @main.route(
