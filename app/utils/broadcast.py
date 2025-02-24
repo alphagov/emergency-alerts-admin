@@ -345,6 +345,7 @@ def stringify_areas(areas):
 def render_current_alert_page(
     broadcast_message,
     rejection_form=None,
+    confirm_broadcast_form=None,
     back_link_url=".broadcast_dashboard",
     hide_stop_link=False,
 ):
@@ -356,7 +357,9 @@ def render_current_alert_page(
             service_is_live=current_service.live,
             channel=current_service.broadcast_channel,
             max_phones=broadcast_message.count_of_phones_likely,
-        ),
+        )
+        if confirm_broadcast_form is None
+        else confirm_broadcast_form,
         is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
         areas=format_areas_list(broadcast_message.areas),
         back_link=url_for(
