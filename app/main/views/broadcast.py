@@ -55,6 +55,7 @@ def _get_back_link_from_view_broadcast_endpoint():
         "main.view_rejected_broadcast": ".broadcast_dashboard_rejected",
         "main.approve_broadcast_message": ".broadcast_dashboard",
         "main.reject_broadcast_message": ".broadcast_dashboard",
+        "main.discard_broadcast_message": ".broadcast_dashboard",
     }[request.endpoint]
 
 
@@ -170,7 +171,32 @@ def write_new_broadcast(service_id):
     form = BroadcastTemplateForm()
 
     broadcast_message_id = request.args.get("broadcast_message_id")
-    broadcast_message = None
+    broadcast_message = (
+        BroadcastMessage.from_id(broadcast_message_id, service_id=current_service.id) if broadcast_message_id else None
+    )
+
+    if broadcast_message:
+        try:
+            broadcast_message.check_can_update_status("draft")
+        except HTTPError as e:
+            flash(e.message)
+            return render_template(
+                "views/broadcast/view-message.html",
+                broadcast_message=broadcast_message,
+                rejection_form=RejectionReasonForm(),
+                form=ConfirmBroadcastForm(
+                    service_is_live=current_service.live,
+                    channel=current_service.broadcast_channel,
+                    max_phones=broadcast_message.count_of_phones_likely,
+                ),
+                is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
+                areas=format_areas_list(broadcast_message.areas),
+                back_link=url_for(
+                    ".broadcast_dashboard",
+                    service_id=current_service.id,
+                ),
+                broadcast_message_version_count=broadcast_message.get_count_of_versions(),
+            )
 
     if form.validate_on_submit():
         if broadcast_message_id:
@@ -179,10 +205,6 @@ def write_new_broadcast(service_id):
                 broadcast_message_id=broadcast_message_id,
                 content=form.template_content.data,
                 reference=form.name.data,
-            )
-            broadcast_message = broadcast_message = BroadcastMessage.from_id(
-                broadcast_message_id,
-                service_id=current_service.id,
             )
 
             if broadcast_message.areas:
@@ -208,16 +230,9 @@ def write_new_broadcast(service_id):
             )
         )
 
-    if broadcast_message_id:
-        broadcast_message = BroadcastMessage.from_id(
-            broadcast_message_id,
-            service_id=current_service.id,
-        )
-        if broadcast_message.status == "draft":
-            form.template_content.data = broadcast_message.content
-            form.name.data = broadcast_message.reference
-        else:
-            broadcast_message = None
+    if broadcast_message and broadcast_message.status == "draft":
+        form.template_content.data = broadcast_message.content
+        form.name.data = broadcast_message.reference
 
     return render_template(
         "views/broadcast/write-new-broadcast.html",
@@ -280,6 +295,29 @@ def preview_broadcast_areas(service_id, broadcast_message_id):
         broadcast_message_id,
         service_id=current_service.id,
     )
+
+    try:
+        broadcast_message.check_can_update_status("draft")
+    except HTTPError as e:
+        flash(e.message)
+        return render_template(
+            "views/broadcast/view-message.html",
+            broadcast_message=broadcast_message,
+            rejection_form=RejectionReasonForm(),
+            form=ConfirmBroadcastForm(
+                service_is_live=current_service.live,
+                channel=current_service.broadcast_channel,
+                max_phones=broadcast_message.count_of_phones_likely,
+            ),
+            is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
+            areas=format_areas_list(broadcast_message.areas),
+            back_link=url_for(
+                ".broadcast_dashboard",
+                service_id=current_service.id,
+            ),
+            broadcast_message_version_count=broadcast_message.get_count_of_versions(),
+        )
+
     if broadcast_message.template_id and broadcast_message.status != "draft":
         back_link = url_for(
             ".view_template",
@@ -887,7 +925,7 @@ def approve_broadcast_message(service_id, broadcast_message_id):
     areas = format_areas_list(broadcast_message.areas)
     try:
         broadcast_message.check_can_update_status("broadcasting")
-    except Exception as e:
+    except HTTPError as e:
         flash(e.message)
         return render_template(
             "views/broadcast/preview-message.html",
@@ -960,7 +998,7 @@ def reject_broadcast_message(service_id, broadcast_message_id):
 
     try:
         broadcast_message.check_can_update_status("rejected")
-    except Exception as e:
+    except HTTPError as e:
         flash(e.message)
         return render_template(
             "views/broadcast/view-message.html",
@@ -1032,7 +1070,7 @@ def discard_broadcast_message(service_id, broadcast_message_id):
 
     try:
         broadcast_message.check_can_update_status("rejected")
-    except Exception as e:
+    except HTTPError as e:
         flash(e.message)
         return render_template(
             "views/broadcast/view-message.html",
@@ -1085,7 +1123,7 @@ def cancel_broadcast_message(service_id, broadcast_message_id):
 
     try:
         broadcast_message.check_can_update_status("cancelled")
-    except Exception as e:
+    except HTTPError as e:
         flash(e.message)
         return render_template(
             "views/broadcast/view-message.html",
