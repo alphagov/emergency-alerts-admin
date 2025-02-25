@@ -14,6 +14,7 @@ class PendingActionResponse(TypedDict):
 
 class AdminActionsApiClient(AdminAPIClient):
     def create_admin_action(self, action_obj):
+        """Caution: You may wish to use utils/admin_action.create_or_replace_admin_action"""
         return self.post(url="/admin-action", data=action_obj)
 
     def get_pending_admin_actions(self) -> PendingActionResponse:
