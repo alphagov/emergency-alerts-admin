@@ -49,6 +49,9 @@ class BroadcastMessage(JSONModel):
         "approved_by",
         "cancelled_by",
         "rejected_by_api_key_id",
+        "submitted_by_id",
+        "submitted_by",
+        "submitted_at",
     }
 
     libraries = broadcast_area_libraries
