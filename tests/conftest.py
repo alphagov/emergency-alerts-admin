@@ -9,7 +9,7 @@ from uuid import UUID, uuid4
 
 import pytest
 from emergency_alerts_utils.url_safe_token import generate_token
-from flask import Flask, url_for
+from flask import Flask, Response, url_for
 from notifications_python_client.errors import HTTPError
 
 from app import create_app, webauthn_server
@@ -2350,6 +2350,25 @@ def mock_check_can_update_status(mocker):
 
 
 @pytest.fixture(scope="function")
+def mock_check_can_update_status_returns_http_error(mocker):
+    def _get(status, broadcast_message_id, service_id):
+        if status == "pending-approval":
+            message = "This alert is pending approval, it cannot be edited or submitted again."
+        elif status == "rejected":
+            message = "This alert has been rejected, it cannot be edited or resubmitted for approval."
+        elif status == "broadcasting":
+            message = "This alert is live, it cannot be edited or submitted again."
+        elif status == "cancelled":
+            message = "This alert has already been broadcast, it cannot be edited or resubmitted for approval."
+        raise HTTPError(
+            Response(status=400),
+            message,
+        )
+
+    return mocker.patch("app.broadcast_message_api_client.check_broadcast_status_transition_allowed", side_effect=_get)
+
+
+@pytest.fixture(scope="function")
 def mock_update_broadcast_message_status(
     mocker,
     fake_uuid,
@@ -2378,9 +2397,10 @@ def mock_update_broadcast_message_status_with_reason(
 
 
 @pytest.fixture(scope="function")
-def mock_update_broadcast_message_status_raises_exception(mocker, fake_uuid):
+def mock_update_broadcast_message_status_raises_httperror(mocker, fake_uuid):
     def _update(status, *, service_id, broadcast_message_id):
-        raise Exception("TEST")
+        message = f"Cannot move broadcast_message {broadcast_message_id} from rejected to pending-approval"
+        raise HTTPError(Response(status=400), message=message)
 
     return mocker.patch(
         "app.broadcast_message_api_client.update_broadcast_message_status",
