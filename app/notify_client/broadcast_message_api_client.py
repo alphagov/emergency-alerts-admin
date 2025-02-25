@@ -41,7 +41,7 @@ class BroadcastMessageAPIClient(AdminAPIClient):
     def update_broadcast_message(self, *, service_id, broadcast_message_id, data):
         self.post(
             f"/service/{service_id}/broadcast-message/{broadcast_message_id}",
-            data=data,
+            data=_attach_current_user(data),
         )
 
     def update_broadcast_message_status(self, status, *, service_id, broadcast_message_id):
