@@ -4570,7 +4570,7 @@ def test_cannot_submit_broadcast_if_rejected_broadcast(
     fake_uuid,
     mock_update_broadcast_message,
     mock_get_broadcast_message_versions,
-    mock_update_broadcast_message_status_raises_exception,
+    mock_update_broadcast_message_status_raises_httperror,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
