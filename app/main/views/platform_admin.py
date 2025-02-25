@@ -3,6 +3,11 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
+from emergency_alerts_utils.admin_action import (
+    ADMIN_STATUS_APPROVED,
+    ADMIN_STATUS_PENDING,
+)
+from emergency_alerts_utils.api_key import KEY_TYPE_DESCRIPTIONS
 from flask import current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 from notifications_python_client.errors import HTTPError
@@ -11,13 +16,8 @@ from app import service_api_client, user_api_client
 from app.main import main
 from app.main.forms import DateFilterForm, PlatformAdminSearch
 from app.notify_client.admin_actions_api_client import admin_actions_api_client
-from app.notify_client.api_key_api_client import KEY_TYPE_DESCRIPTIONS
 from app.notify_client.platform_admin_api_client import admin_api_client
-from app.utils.admin_action import (
-    ADMIN_STATUS_APPROVED,
-    ADMIN_STATUS_PENDING,
-    process_admin_action,
-)
+from app.utils.admin_action import process_admin_action
 from app.utils.user import user_is_platform_admin
 from app.utils.user_permissions import broadcast_permission_options, permission_options
 

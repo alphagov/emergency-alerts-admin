@@ -1,12 +1,13 @@
 from typing import Iterable
 
+from emergency_alerts_utils.api_key import KEY_TYPE_NORMAL
 from flask import abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 
 from app.models.service import Service
 from app.models.user import InvitedUser, User
 from app.notify_client.admin_actions_api_client import admin_actions_api_client
-from app.notify_client.api_key_api_client import KEY_TYPE_NORMAL, api_key_api_client
+from app.notify_client.api_key_api_client import api_key_api_client
 
 # Tasks which require another platform/org admin to approve before being actioned
 ADMIN_INVITE_USER = "invite_user"  # Only if the user has sensitive permissions
