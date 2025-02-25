@@ -104,6 +104,7 @@ def test_should_create_api_key_admin_action_with_type_normal(
     mock_get_api_keys,
     mock_get_live_service,
     mock_has_permissions,
+    mock_get_pending_admin_actions,
     fake_uuid,
     mocker,
 ):

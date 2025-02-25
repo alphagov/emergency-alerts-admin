@@ -5,9 +5,8 @@ from markupsafe import Markup
 from app import api_key_api_client, current_service, service_api_client
 from app.main import main
 from app.main.forms import CreateKeyForm
-from app.notify_client.admin_actions_api_client import admin_actions_api_client
 from app.notify_client.api_key_api_client import KEY_TYPE_DESCRIPTIONS, KEY_TYPE_NORMAL
-from app.utils.admin_action import ADMIN_CREATE_API_KEY
+from app.utils.admin_action import ADMIN_CREATE_API_KEY, create_or_replace_admin_action
 from app.utils.user import user_has_permissions
 
 dummy_bearer_token = "bearer_token_set"
@@ -51,7 +50,7 @@ def create_api_key(service_id):
                 "key_name": form.key_name.data,
             },
         }
-        admin_actions_api_client.create_admin_action(action)
+        create_or_replace_admin_action(action)
         flash("An admin approval has been created", "default_with_tick")
         return redirect(url_for(".api_keys", service_id=service_id))
     return render_template("views/api/keys/create.html", form=form)

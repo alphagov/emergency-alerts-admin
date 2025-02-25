@@ -20,10 +20,10 @@ from app.main.forms import (
     SearchUsersForm,
 )
 from app.models.user import InvitedUser, User
-from app.notify_client.admin_actions_api_client import admin_actions_api_client
 from app.utils.admin_action import (
     ADMIN_EDIT_PERMISSIONS,
     ADMIN_INVITE_USER,
+    create_or_replace_admin_action,
     permissions_require_admin_action,
 )
 from app.utils.user import is_gov_user, user_has_permissions
@@ -67,7 +67,6 @@ def invite_user(service_id, user_id=None):
                 "views/user-already-team-member.html",
                 user_to_invite=user_to_invite,
             )
-        # TODO: Check for pending admin action
         if current_service.invite_pending_for(user_to_invite.email_address):
             return render_template(
                 "views/user-already-invited.html",
@@ -93,7 +92,7 @@ def invite_user(service_id, user_id=None):
                     "folder_permissions": form.folder_permissions.data,
                 },
             }
-            admin_actions_api_client.create_admin_action(action)
+            create_or_replace_admin_action(action)
             flash("An admin approval has been created", "default_with_tick")
         else:
             invited_user = InvitedUser.create(
@@ -154,7 +153,7 @@ def edit_user_permissions(service_id, user_id):
                     "folder_permissions": form.folder_permissions.data,
                 },
             }
-            admin_actions_api_client.create_admin_action(action)
+            create_or_replace_admin_action(action)
             flash("An admin approval has been created", "default_with_tick")
         else:
             user.set_permissions(
