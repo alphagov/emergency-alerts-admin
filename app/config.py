@@ -126,6 +126,8 @@ class Test(Config):
     ASSET_DOMAIN = "static.example.com"
     ASSET_PATH = "https://static.example.com/"
 
+    ADMIN_ACTION_ALLOW_SELF_APPROVAL = False
+
 
 configs = {
     "local": Config,
