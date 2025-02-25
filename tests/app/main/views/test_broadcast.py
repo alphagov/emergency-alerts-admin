@@ -3007,7 +3007,7 @@ def test_remove_postcode_area(
         broadcast_message_id=fake_uuid,
         postcode_slug="1km around the postcode BD1 1EE in Bradford",
         _expected_redirect=url_for(
-            ".choose_broadcast_area",
+            ".choose_broadcast_library",
             service_id=SERVICE_ONE_ID,
             broadcast_message_id=fake_uuid,
             library_slug="postcodes",
@@ -3061,7 +3061,7 @@ def test_remove_coordinate_area(
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         _expected_redirect=url_for(
-            ".preview_broadcast_areas",
+            ".choose_broadcast_library",
             service_id=SERVICE_ONE_ID,
             broadcast_message_id=fake_uuid,
         ),
