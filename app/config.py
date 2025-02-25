@@ -74,7 +74,7 @@ class Config(object):
     EXPIRY_WARNING_MINS = 58
     INACTIVITY_WARNING_DURATION = 2
 
-    ADMIN_ACTION_ALLOW_SELF_APPROVAL = True
+    ADMIN_ACTION_ALLOW_SELF_APPROVAL = os.environ.get("ADMIN_ACTION_ALLOW_SELF_APPROVAL", "false").lower() == "true"
 
     FUNCTIONAL_TEST_PERMANENT_SESSION_LIFETIME = 0.667 * 60
     FUNCTIONAL_TEST_INACTIVITY_MINS = 0.167
@@ -104,8 +104,6 @@ class Hosted(Config):
     SESSION_COOKIE_SECURE = True
     SESSION_PROTECTION = "strong"
 
-    ADMIN_ACTION_ALLOW_SELF_APPROVAL = False
-
 
 class Test(Config):
     DEBUG = True
@@ -125,8 +123,6 @@ class Test(Config):
     ADMIN_EXTERNAL_URL = f"https://{TENANT}admin.{SUBDOMAIN}emergency-alerts.service.gov.uk"
     ASSET_DOMAIN = "static.example.com"
     ASSET_PATH = "https://static.example.com/"
-
-    ADMIN_ACTION_ALLOW_SELF_APPROVAL = False
 
 
 configs = {
