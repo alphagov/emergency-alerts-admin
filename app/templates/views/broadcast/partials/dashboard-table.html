@@ -2,7 +2,7 @@
 {% from "govuk_frontend_jinja/components/tag/macro.html" import govukTag %}
 
 <div class="ajax-block-container js-mark-focus-on-parent" data-classes-to-persist="js-child-has-focus">
-{% for item in broadcasts|sort|reverse|list %}
+{% for item in broadcasts|list %}
   <div class="keyline-block">
     <div class="file-list file-list--sectioned govuk-!-margin-bottom-2">
       <h2>

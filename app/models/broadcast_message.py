@@ -449,3 +449,8 @@ class BroadcastMessages(ModelList):
 
     def with_status(self, *statuses):
         return [broadcast for broadcast in self if broadcast.status in statuses]
+
+    def with_status_and_sorted(self, *statuses):
+        messages = [broadcast for broadcast in self if broadcast.status in statuses]
+        status_order = {"broadcasting": 0, "pending-approval": 1, "draft": 2}
+        return sorted(messages, key=lambda x: (status_order[x.status], x.reference))

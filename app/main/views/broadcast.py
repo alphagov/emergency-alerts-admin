@@ -131,7 +131,7 @@ def get_broadcast_dashboard_partials(service_id):
     return dict(
         current_broadcasts=render_template(
             "views/broadcast/partials/dashboard-table.html",
-            broadcasts=broadcast_messages.with_status("pending-approval", "broadcasting", "draft"),
+            broadcasts=broadcast_messages.with_status_and_sorted("pending-approval", "broadcasting", "draft"),
             empty_message="You do not have any current alerts",
             view_broadcast_endpoint=".view_current_broadcast",
         ),
