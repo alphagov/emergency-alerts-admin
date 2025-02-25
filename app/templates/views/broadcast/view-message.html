@@ -253,6 +253,9 @@
     {%- else %}
       Created from an API call
     {%- endif %}
+    {%- if broadcast_message.submitted_by -%}
+    , submitted by {{ broadcast_message.submitted_by }}
+    {%- endif %}
     {%- if broadcast_message.approved_by %}
       and approved by {{ broadcast_message.approved_by }}
     {%- endif %}
