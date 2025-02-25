@@ -1,4 +1,9 @@
 {% extends "withnav_template.html" %}
+{% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
+
+{% block backLink %}
+  {{ govukBackLink({ "href": url_for('main.view_current_broadcast', service_id=current_service.id, broadcast_message_id=broadcast_message_id,) }) }}
+{% endblock %}
 
 {% block service_page_title %}
   Previous versions
