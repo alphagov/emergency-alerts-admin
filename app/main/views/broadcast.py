@@ -436,7 +436,7 @@ def remove_postcode_area(service_id, broadcast_message_id, postcode_slug):
     ).remove_area(postcode_slug)
     return redirect(
         url_for(
-            ".choose_broadcast_area",
+            ".choose_broadcast_library",
             service_id=current_service.id,
             broadcast_message_id=broadcast_message_id,
             library_slug="postcodes",
@@ -455,7 +455,7 @@ def remove_coordinate_area(service_id, broadcast_message_id):
     broadcast_message.clear_areas()
     return redirect(
         url_for(
-            ".preview_broadcast_areas",
+            ".choose_broadcast_library",
             service_id=current_service.id,
             broadcast_message_id=broadcast_message.id,
         )
@@ -727,17 +727,27 @@ def choose_broadcast_sub_area(service_id, broadcast_message_id, library_slug, ar
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
 def remove_broadcast_area(service_id, broadcast_message_id, area_slug):
-    BroadcastMessage.from_id(
+    broadcast_message = BroadcastMessage.from_id(
         broadcast_message_id,
         service_id=current_service.id,
-    ).remove_area(area_slug)
-    return redirect(
-        url_for(
-            ".preview_broadcast_areas",
-            service_id=current_service.id,
-            broadcast_message_id=broadcast_message_id,
-        )
     )
+    broadcast_message.remove_area(area_slug)
+    if len(broadcast_message.areas) == 0:
+        return redirect(
+            url_for(
+                ".choose_broadcast_library",
+                service_id=current_service.id,
+                broadcast_message_id=broadcast_message_id,
+            )
+        )
+    else:
+        return redirect(
+            url_for(
+                ".preview_broadcast_areas",
+                service_id=current_service.id,
+                broadcast_message_id=broadcast_message_id,
+            )
+        )
 
 
 @main.route(
