@@ -568,9 +568,9 @@ def test_broadcast_dashboard(
     assert len(page.select(".ajax-block-container")) == len(page.select("h1")) == 1
 
     assert [normalize_spaces(row.text) for row in page.select(".ajax-block-container")[0].select(".file-list")] == [
+        "Example template This is a test draft",
         "Half an hour ago This is a test Waiting for approval Area: England Scotland",
         "Hour and a half ago This is a test Waiting for approval Area: England Scotland",
-        "Example template This is a test draft",
         "Example template This is a test live since today at 2:20am Area: England Scotland",
         "Example template This is a test live since today at 1:20am Area: England Scotland",
     ]
