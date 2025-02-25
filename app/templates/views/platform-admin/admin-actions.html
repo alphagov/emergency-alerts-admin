@@ -59,6 +59,7 @@
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
           {{ govukButton({
             "text": "Approve",
+            "disabled": not allow_self_approval or (not allow_self_approval and action.created_by == current_user.id)
           }) }}
         </form>
         </br>

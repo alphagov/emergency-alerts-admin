@@ -124,6 +124,7 @@ def platform_admin_actions():
         **pending_actions,
         permission_labels=dict(permission_options + broadcast_permission_options),
         key_type_labels=KEY_TYPE_DESCRIPTIONS,
+        allow_self_approval=current_app.config["ADMIN_ACTION_ALLOW_SELF_APPROVAL"],
     )
 
 
@@ -138,8 +139,11 @@ def platform_review_admin_action(action_id, new_status):
 
     if action["status"] != ADMIN_STATUS_PENDING:
         flash("That action is not pending and cannot be reviewed")
-    elif new_status == "approved" and action["created_by"] == current_user.id:
-        # TODO: Do we turn this off for non-production?
+    elif (
+        not current_app.config["ADMIN_ACTION_ALLOW_SELF_APPROVAL"]
+        and new_status == "approved"
+        and action["created_by"] == current_user.id
+    ):
         flash("You cannot approve your own admin approvals")
     else:
         admin_actions_api_client.review_admin_action(action_id, new_status)
