@@ -282,7 +282,7 @@
   </p>
 {% endif %}
 
-{% if broadcast_message.areas and broadcast_message.content and broadcast_message.reference and broadcast_message.status == "draft" %}
+{% if current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) and broadcast_message.areas and broadcast_message.content and broadcast_message.reference and broadcast_message.status == "draft" %}
   {{ govukButton({
     "element": "a",
     "text": "Submit for approval",
