@@ -1,0 +1,82 @@
+<script nonce="{{ cspNonce }}" src="{{ asset_url('javascripts/leaflet.js') }}"></script>
+<script nonce="{{ cspNonce }}">
+  let enlarged_polygons = []
+  {% if is_custom_broadcast %}
+    area_color = "#0201FE"
+    bleed_color = "#0201FE"
+    fill_color = "none"
+  {% else %}
+    area_color = "#0B0B0C"
+    bleed_color = "#1d70b8"
+    fill_color = "#5694ca"
+  {% endif %}
+
+  {% for polygon in broadcast_message.simple_polygons_with_bleed.as_coordinate_pairs_lat_long %}
+    enlarged_polygons.push(
+      L.polygon({{polygon}}, {
+        opacity: 1,
+        color: bleed_color,
+        fillColor: fill_color,
+        fillOpacity: 0.15,
+        weight: 2,
+        dashArray: [6, 7],
+        lineCap: 'butt'
+      })
+    );
+  {% endfor %}
+
+  {% for polygon in broadcast_message.polygons.as_coordinate_pairs_lat_long %}
+    enlarged_polygons.push(
+      L.polygon({{polygon}}, {
+        color: area_color,
+        fillColor: fill_color,
+        fillOpacity: 0.3,
+        weight: 2
+      })
+    );
+  {% endfor %}
+
+  // for Larger map
+
+  const enlargeMapButton = document.getElementById("view-larger-map-btn");
+  const enlargedMapModal = document.getElementById("enlarged-map-dialog");
+  const closeMapButton = document.getElementById("close-map-btn");
+
+  let mapElement2 = document.getElementById('enlarged-map');
+
+  const enlargedMap = L.map(
+    'enlarged-map',
+    {
+      scrollWheelZoom: false
+    }
+  )
+
+  enlargedMap.setView(
+    [55.378052, -3.435973],
+    2
+  );
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(enlargedMap);
+
+  let polygonGroup2 = L.featureGroup(enlarged_polygons).addTo(enlargedMap);
+  enlargedMap.fitBounds(
+    polygonGroup2.getBounds(),
+    {padding: [0.5, 0.5]}
+  );
+
+  enlargeMapButton.addEventListener("click", function () {
+    enlargedMapModal.showModal();
+    enlargedMap.invalidateSize();
+    enlargedMap.fitBounds(
+    polygonGroup2.getBounds(),
+    {padding: [1, 1]}
+    );
+    enlargedMapModal.focus();
+  });
+
+  closeMapButton.addEventListener("click", function () {
+    enlargedMapModal.close();
+  });
+
+</script>

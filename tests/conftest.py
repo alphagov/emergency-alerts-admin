@@ -9,7 +9,7 @@ from uuid import UUID, uuid4
 
 import pytest
 from emergency_alerts_utils.url_safe_token import generate_token
-from flask import Flask, url_for
+from flask import Flask, Response, url_for
 from notifications_python_client.errors import HTTPError
 
 from app import create_app, webauthn_server
@@ -20,6 +20,7 @@ from . import (
     api_key_json,
     assert_url_expected,
     broadcast_message_json,
+    broadcast_message_version_json,
     generate_uuid,
     invite_json,
     org_invite_json,
@@ -2232,7 +2233,7 @@ def mock_get_no_broadcast_messages(
                 id_=fake_uuid,
                 service_id=SERVICE_ONE_ID,
                 template_id=fake_uuid,
-                status="draft",  # draft broadcasts aren’t shown on the dashboard
+                status="rejected",  # rejected broadcasts aren’t shown on the dashboard
                 created_by_id=fake_uuid,
             ),
         ],
@@ -2253,8 +2254,7 @@ def mock_get_broadcast_messages(
         )
         return [
             partial_json(
-                id_=uuid4(),
-                status="draft",
+                id_=uuid4(), status="draft", updated_at=(datetime.utcnow() - timedelta(hours=1, minutes=30)).isoformat()
             ),
             partial_json(
                 id_=uuid4(),
@@ -2311,6 +2311,26 @@ def mock_get_broadcast_messages(
 
 
 @pytest.fixture(scope="function")
+def mock_get_broadcast_message_versions(mocker):
+    partial_json = partial(
+        broadcast_message_version_json,
+        service_id=SERVICE_ONE_ID,
+        id_=fake_uuid,
+        created_by_id=fake_uuid,
+        reference="Test version broadcast",
+    )
+    return mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message_versions",
+        return_value=[
+            partial_json(
+                version=1,
+            ),
+            partial_json(version=2),
+        ],
+    )
+
+
+@pytest.fixture(scope="function")
 def mock_update_broadcast_message(
     mocker,
     fake_uuid,
@@ -2322,6 +2342,30 @@ def mock_update_broadcast_message(
         "app.broadcast_message_api_client.update_broadcast_message",
         side_effect=_update,
     )
+
+
+@pytest.fixture(scope="function")
+def mock_check_can_update_status(mocker):
+    return mocker.patch("app.broadcast_message_api_client.check_broadcast_status_transition_allowed")
+
+
+@pytest.fixture(scope="function")
+def mock_check_can_update_status_returns_http_error(mocker):
+    def _get(status, broadcast_message_id, service_id):
+        if status == "pending-approval":
+            message = "This alert is pending approval, it cannot be edited or submitted again."
+        elif status == "rejected":
+            message = "This alert has been rejected, it cannot be edited or resubmitted for approval."
+        elif status == "broadcasting":
+            message = "This alert is live, it cannot be edited or submitted again."
+        elif status == "cancelled":
+            message = "This alert has already been broadcast, it cannot be edited or resubmitted for approval."
+        raise HTTPError(
+            Response(status=400),
+            message,
+        )
+
+    return mocker.patch("app.broadcast_message_api_client.check_broadcast_status_transition_allowed", side_effect=_get)
 
 
 @pytest.fixture(scope="function")
@@ -2348,6 +2392,18 @@ def mock_update_broadcast_message_status_with_reason(
 
     return mocker.patch(
         "app.broadcast_message_api_client.update_broadcast_message_status_with_reason",
+        side_effect=_update,
+    )
+
+
+@pytest.fixture(scope="function")
+def mock_update_broadcast_message_status_raises_httperror(mocker, fake_uuid):
+    def _update(status, *, service_id, broadcast_message_id):
+        message = f"Cannot move broadcast_message {broadcast_message_id} from rejected to pending-approval"
+        raise HTTPError(Response(status=400), message=message)
+
+    return mocker.patch(
+        "app.broadcast_message_api_client.update_broadcast_message_status",
         side_effect=_update,
     )
 
