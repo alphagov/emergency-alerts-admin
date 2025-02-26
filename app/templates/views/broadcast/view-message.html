@@ -263,6 +263,20 @@
   </p>
 {% endif %}
 
+{% if broadcast_message.status == 'pending-approval' %}
+  <p class="govuk-body govuk-!-margin-bottom-3">
+    {% if broadcast_message.created_by %}
+      Created by {{ broadcast_message.created_by }}
+    {%- else %}
+      Created from an API call
+    {%- endif %}
+    {%- if broadcast_message.submitted_by %}
+    and submitted by {{ broadcast_message.submitted_by }}
+    {%- endif %}
+    {{- '.' }}
+  </p>
+{% endif %}
+
 {% if broadcast_message.status == 'broadcasting' %}
   <p class="govuk-body">
     Broadcasting stops {{ broadcast_message.finishes_at|format_datetime_human }}.
