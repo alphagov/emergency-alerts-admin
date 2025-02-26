@@ -20,6 +20,12 @@ from app.main.forms import (
     SearchUsersForm,
 )
 from app.models.user import InvitedUser, User
+from app.utils.admin_action import (
+    ADMIN_EDIT_PERMISSIONS,
+    ADMIN_INVITE_USER,
+    create_or_replace_admin_action,
+    permissions_require_admin_action,
+)
 from app.utils.user import is_gov_user, user_has_permissions
 from app.utils.user_permissions import broadcast_permission_options, permission_options
 
@@ -74,15 +80,31 @@ def invite_user(service_id, user_id=None):
         form.login_authentication.data = "sms_auth"
 
     if form.validate_on_submit():
-        invited_user = InvitedUser.create(
-            current_user.id,
-            service_id,
-            form.email_address.data,
-            form.permissions,
-            form.login_authentication.data,
-            form.folder_permissions.data,
-        )
-        flash("Invite sent to {}".format(invited_user.email_address), "default_with_tick")
+        if permissions_require_admin_action(form.permissions):
+            action = {
+                "service_id": current_service.id,
+                "created_by": current_user.id,
+                "action_type": ADMIN_INVITE_USER,
+                "action_data": {
+                    "email_address": form.email_address.data,
+                    "permissions": form.permissions,
+                    "login_authentication": form.login_authentication.data,
+                    "folder_permissions": form.folder_permissions.data,
+                },
+            }
+            create_or_replace_admin_action(action)
+            flash("An admin approval has been created", "default_with_tick")
+        else:
+            invited_user = InvitedUser.create(
+                current_user.id,
+                service_id,
+                form.email_address.data,
+                form.permissions,
+                form.login_authentication.data,
+                form.folder_permissions.data,
+            )
+            flash("Invite sent to {}".format(invited_user.email_address), "default_with_tick")
+
         return redirect(url_for(".manage_users", service_id=service_id))
 
     return render_template(
@@ -106,23 +128,45 @@ def edit_user_permissions(service_id, user_id):
     form = form_class.from_user(
         user,
         service_id,
-        folder_permissions=None
-        if user.platform_admin
-        else [f["id"] for f in current_service.all_template_folders if user.has_template_folder_permission(f)],
+        folder_permissions=(
+            None
+            if user.platform_admin
+            else [f["id"] for f in current_service.all_template_folders if user.has_template_folder_permission(f)]
+        ),
         all_template_folders=None if user.platform_admin else current_service.all_template_folders,
     )
 
+    existing_permissions = set(user.permissions_for_service(service_id))
+    added_permissions = set(form.permissions) - existing_permissions
+
     if form.validate_on_submit():
-        user.set_permissions(
-            service_id,
-            permissions=form.permissions,
-            folder_permissions=form.folder_permissions.data,
-            set_by_id=current_user.id,
-        )
-        # Only change the auth type if this is supported for a service. If a user logs in with a
-        # security key, we generally don't want them to be able to use something less secure.
-        if current_service.has_permission("email_auth") and not user.webauthn_auth:
-            user.update(auth_type=form.login_authentication.data)
+        # Have sensitive permissions been added?
+        if permissions_require_admin_action(added_permissions):
+            action = {
+                "service_id": current_service.id,
+                "created_by": current_user.id,
+                "action_type": ADMIN_EDIT_PERMISSIONS,
+                "action_data": {
+                    "user_id": user_id,
+                    "existing_permissions": existing_permissions,
+                    "permissions": form.permissions,
+                    "folder_permissions": form.folder_permissions.data,
+                },
+            }
+            create_or_replace_admin_action(action)
+            flash("An admin approval has been created", "default_with_tick")
+        else:
+            user.set_permissions(
+                service_id,
+                permissions=form.permissions,
+                folder_permissions=form.folder_permissions.data,
+                set_by_id=current_user.id,
+            )
+            # Only change the auth type if this is supported for a service. If a user logs in with a
+            # security key, we generally don't want them to be able to use something less secure.
+            if current_service.has_permission("email_auth") and not user.webauthn_auth:
+                user.update(auth_type=form.login_authentication.data)
+
         return redirect(url_for(".manage_users", service_id=service_id))
 
     return render_template(

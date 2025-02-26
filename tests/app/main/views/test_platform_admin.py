@@ -1,4 +1,5 @@
 import datetime
+import uuid
 from functools import partial
 from unittest.mock import ANY
 
@@ -6,7 +7,7 @@ import pytest
 from flask import url_for
 
 from tests import service_json
-from tests.conftest import normalize_spaces
+from tests.conftest import SERVICE_ONE_ID, SERVICE_TWO_ID, normalize_spaces
 
 
 @pytest.mark.parametrize(
@@ -251,3 +252,381 @@ class TestPlatformAdminSearch:
         assert found_service_links[0].get("href") == "/services/596364a0-858e-42c8-9062-a8fe822260eb"
         assert found_service_links[1].text == "service two"
         assert found_service_links[1].get("href") == "/services/147ad62a-2951-4fa1-9ca0-093cd1a52c52"
+
+
+class TestPlatformAdminActions:
+    def test_admin_actions_is_platform_admin_only(self, client_request):
+        client_request.get("main.admin_actions", _expected_status=403)
+
+    def test_lists_api_key_actions(
+        self,
+        client_request,
+        platform_admin_user,
+        mocker,
+        fake_uuid,
+    ):
+        mock_get_pending_actions = mocker.patch(
+            "app.admin_actions_api_client.get_pending_admin_actions",
+            return_value={
+                "pending": [
+                    {
+                        "service_id": SERVICE_ONE_ID,
+                        "created_by": fake_uuid,
+                        "created_at": "2025-02-14T12:34:56",
+                        "action_type": "create_api_key",
+                        "action_data": {
+                            "key_type": "normal",
+                            "key_name": "Test Key",
+                        },
+                    },
+                    {
+                        "service_id": SERVICE_TWO_ID,
+                        "created_by": fake_uuid,
+                        "created_at": "2025-02-14T12:34:56",
+                        "action_type": "create_api_key",
+                        "action_data": {
+                            "key_type": "team",
+                            "key_name": "Test Key",
+                        },
+                    },
+                ],
+                "users": {fake_uuid: {"name": "Test", "email_address": "test@test.gov.uk"}},
+                "services": {
+                    SERVICE_ONE_ID: {"name": "Test Live Service", "active": True, "restricted": False},
+                    SERVICE_TWO_ID: {"name": "Test Service 2", "active": True, "restricted": True},
+                },
+            },
+        )
+
+        client_request.login(platform_admin_user)
+        page = client_request.get("main.admin_actions")
+        elements = page.select("main .govuk-grid-row")
+
+        assert len(elements) == 2
+        assert "Create API key for live service Test Live Service" in normalize_spaces(elements[0].text)
+        assert "Key type: Live" in normalize_spaces(elements[0].text)
+        assert "Create API key for service Test Service 2" in normalize_spaces(elements[1].text)
+        assert "Key type: Team and guest" in normalize_spaces(elements[1].text)
+
+        mock_get_pending_actions.assert_called_once()
+
+    def test_lists_invite_actions(
+        self,
+        client_request,
+        platform_admin_user,
+        mocker,
+        fake_uuid,
+    ):
+        mock_get_pending_actions = mocker.patch(
+            "app.admin_actions_api_client.get_pending_admin_actions",
+            return_value={
+                "pending": [
+                    {
+                        "service_id": SERVICE_ONE_ID,
+                        "created_by": fake_uuid,
+                        "created_at": "2025-02-14T12:34:56",
+                        "action_type": "invite_user",
+                        "action_data": {
+                            "email_address": "testing@test.gov.uk",
+                            "permissions": [
+                                "create_broadcasts",
+                                "approve_broadcasts",
+                                "manage_templates",
+                                "view_activity",
+                            ],
+                            "login_authentication": "sms_auth",
+                            "folder_permissions": [],
+                        },
+                    },
+                ],
+                "users": {fake_uuid: {"name": "Test", "email_address": "test@test.gov.uk"}},
+                "services": {
+                    SERVICE_ONE_ID: {"name": "Test Live Service", "active": True, "restricted": False},
+                },
+            },
+        )
+
+        client_request.login(platform_admin_user)
+        page = client_request.get("main.admin_actions")
+        elements = page.select("main .govuk-grid-row")
+
+        assert len(elements) == 1
+        assert "Invite user testing@test.gov.uk to live service Test Live Service" in normalize_spaces(elements[0].text)
+        assert "Create new alerts" in normalize_spaces(elements[0].text)
+        assert "Approve alerts" in normalize_spaces(elements[0].text)
+        assert "Add and edit templates" in normalize_spaces(elements[0].text)
+
+        mock_get_pending_actions.assert_called_once()
+
+    def test_lists_edit_permission_actions(
+        self,
+        client_request,
+        platform_admin_user,
+        mocker,
+        fake_uuid,
+    ):
+        edited_user_uuid = str(uuid.uuid4())
+        mock_get_pending_actions = mocker.patch(
+            "app.admin_actions_api_client.get_pending_admin_actions",
+            return_value={
+                "pending": [
+                    {
+                        "service_id": SERVICE_ONE_ID,
+                        "created_by": fake_uuid,
+                        "created_at": "2025-02-14T12:34:56",
+                        "action_type": "edit_permissions",
+                        "action_data": {
+                            "user_id": edited_user_uuid,
+                            "existing_permissions": [],
+                            "permissions": [
+                                "create_broadcasts",
+                                "approve_broadcasts",
+                                "manage_templates",
+                                "view_activity",
+                            ],
+                            "folder_permissions": [],
+                        },
+                    },
+                ],
+                "users": {
+                    fake_uuid: {"name": "Test", "email_address": "test@test.gov.uk"},
+                    edited_user_uuid: {"name": "Test 2", "email_address": "testing@test.gov.uk"},
+                },
+                "services": {
+                    SERVICE_ONE_ID: {"name": "Test Live Service", "active": True, "restricted": False},
+                },
+            },
+        )
+
+        client_request.login(platform_admin_user)
+        page = client_request.get("main.admin_actions")
+        elements = page.select("main .govuk-grid-row")
+
+        assert len(elements) == 1
+        assert "Edit testing@test.gov.uk's permissions to live service Test Live Service" in normalize_spaces(
+            elements[0].text
+        )
+        assert "Create new alerts" in normalize_spaces(elements[0].text)
+        assert "Approve alerts" in normalize_spaces(elements[0].text)
+        assert "Add and edit templates" in normalize_spaces(elements[0].text)
+
+        mock_get_pending_actions.assert_called_once()
+
+    @staticmethod
+    def sample_pending_action(fake_uuid, user_id):
+        return {
+            "id": fake_uuid,
+            "service_id": SERVICE_ONE_ID,
+            "created_by": user_id,
+            "created_at": "2025-02-14T12:34:56",
+            "action_type": "test",
+            "action_data": {},
+            "status": "pending",
+        }
+
+    def test_cannot_approve_own_action(
+        self,
+        client_request,
+        platform_admin_user,
+        fake_uuid,
+        mocker,
+    ):
+        mocker.patch(
+            "app.admin_actions_api_client.get_pending_admin_actions",
+            return_value={"pending": []},  # For the followed redirect before asserting
+        )
+        mocker.patch(
+            "app.admin_actions_api_client.get_admin_action_by_id",
+            return_value=self.sample_pending_action(fake_uuid, platform_admin_user["id"]),
+        )
+        mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
+
+        client_request.login(platform_admin_user)
+        page = client_request.post(
+            "main.review_admin_action", action_id=fake_uuid, new_status="approved", _follow_redirects=True
+        )
+        assert "You cannot approve your own admin approvals" in page.select_one(".banner-dangerous").text
+
+        mock_review_admin_action.assert_not_called()
+
+    @pytest.mark.parametrize("is_own_action", (True, False))
+    def test_admins_can_reject_all_actions(
+        self,
+        client_request,
+        platform_admin_user,
+        mocker,
+        is_own_action,
+    ):
+        action_id = str(uuid.uuid4())  # Reused for both action and creator
+        mocker.patch(
+            "app.admin_actions_api_client.get_pending_admin_actions",
+            return_value={"pending": []},  # For the followed redirect before asserting
+        )
+        mocker.patch(
+            "app.admin_actions_api_client.get_admin_action_by_id",
+            return_value=self.sample_pending_action(
+                action_id,
+                (platform_admin_user["id"] if is_own_action else action_id),
+            ),
+        )
+        mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
+
+        client_request.login(platform_admin_user)
+        client_request.post(
+            "main.review_admin_action", action_id=action_id, new_status="rejected", _follow_redirects=True
+        )
+
+        mock_review_admin_action.assert_called_once_with(action_id, "rejected")
+
+    def test_approving_creates_api_key(
+        self,
+        client_request,
+        platform_admin_user,
+        mocker,
+        mock_get_service,
+    ):
+        action_id = str(uuid.uuid4())  # Reused for both action and creator ID
+        mocker.patch(
+            "app.admin_actions_api_client.get_admin_action_by_id",
+            return_value={
+                "id": action_id,
+                "service_id": SERVICE_ONE_ID,
+                "created_by": action_id,  # Test user is not the creator
+                "created_at": "2025-02-14T12:34:56",
+                "action_type": "create_api_key",
+                "action_data": {
+                    "key_type": "test",
+                    "key_name": "Test Key",
+                },
+                "status": "pending",
+            },
+        )
+        mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
+        mock_api_key_create = mocker.patch("app.api_key_api_client.create_api_key", return_value="key-secret")
+
+        client_request.login(platform_admin_user)
+        page = client_request.post(
+            "main.review_admin_action",
+            action_id=action_id,
+            new_status="approved",
+            _expected_status=200,  # POSTs expect a redirect, but for API keys we want the secret to be a once only
+        )
+
+        mock_review_admin_action.assert_called_once_with(action_id, "approved")
+        mock_api_key_create.assert_called_once_with(
+            service_id=SERVICE_ONE_ID,
+            key_name="Test Key",
+            key_type="test",
+        )
+
+        clipboard = page.select_one(".copy-to-clipboard__value")
+        assert "key-secret" in clipboard.text
+
+    def test_approving_creates_user_invite(
+        self,
+        client_request,
+        platform_admin_user,
+        mocker,
+    ):
+        action_or_creator_id = str(uuid.uuid4())
+        mocker.patch(
+            "app.admin_actions_api_client.get_admin_action_by_id",
+            return_value={
+                "id": action_or_creator_id,
+                "service_id": SERVICE_ONE_ID,
+                "created_by": action_or_creator_id,
+                "created_at": "2025-02-14T12:34:56",
+                "action_type": "invite_user",
+                "action_data": {
+                    "email_address": "testing@test.gov.uk",
+                    "permissions": [
+                        "create_broadcasts",
+                    ],
+                    "login_authentication": "sms_auth",
+                    "folder_permissions": [],
+                },
+                "status": "pending",
+            },
+        )
+        mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
+        mock_user_invite = mocker.patch(
+            "app.invite_api_client.create_invite",
+            return_value={"from_user": action_or_creator_id},
+        )
+
+        client_request.login(platform_admin_user)
+        client_request.post(
+            "main.review_admin_action",
+            action_id=action_or_creator_id,
+            new_status="approved",
+            _expected_redirect=url_for(".manage_users", service_id=SERVICE_ONE_ID),
+        )
+
+        mock_review_admin_action.assert_called_once_with(action_or_creator_id, "approved")
+        mock_user_invite.assert_called_once_with(
+            action_or_creator_id,
+            SERVICE_ONE_ID,
+            "testing@test.gov.uk",
+            [
+                "create_broadcasts",
+            ],
+            "sms_auth",
+            [],
+        )
+
+    def test_approving_edits_user_permissions(
+        self,
+        client_request,
+        platform_admin_user,
+        mocker,
+    ):
+        action_or_creator_id = str(uuid.uuid4())
+        edited_user_id = str(uuid.uuid4())
+
+        mocker.patch(
+            "app.admin_actions_api_client.get_admin_action_by_id",
+            return_value={
+                "id": action_or_creator_id,
+                "service_id": SERVICE_ONE_ID,
+                "created_by": action_or_creator_id,  # Test user is not the creator
+                "created_at": "2025-02-14T12:34:56",
+                "action_type": "edit_permissions",
+                "action_data": {
+                    "user_id": edited_user_id,
+                    "existing_permissions": [],
+                    "permissions": [
+                        "create_broadcasts",
+                    ],
+                    "folder_permissions": [],
+                },
+                "status": "pending",
+            },
+        )
+        mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
+        mock_edit_permissions = mocker.patch(
+            "app.user_api_client.set_user_permissions",
+            return_value=None,
+        )
+
+        client_request.login(platform_admin_user)
+        # For User.from_id to work, .login patches it to our platform admin user
+        mocker.patch(
+            "app.user_api_client.get_user",
+            return_value={"id": edited_user_id, "platform_admin": False, "email_address": "testing@gov.uk"},
+        )
+        client_request.post(
+            "main.review_admin_action",
+            action_id=action_or_creator_id,
+            new_status="approved",
+            _expected_redirect=url_for(".manage_users", service_id=SERVICE_ONE_ID),
+        )
+
+        mock_review_admin_action.assert_called_once_with(action_or_creator_id, "approved")
+        mock_edit_permissions.assert_called_once_with(
+            edited_user_id,
+            SERVICE_ONE_ID,
+            permissions=[
+                "create_broadcasts",
+            ],
+            folder_permissions=[],
+        )

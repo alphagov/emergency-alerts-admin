@@ -1,0 +1,78 @@
+{% extends "views/platform-admin/_base_template.html" %}
+{% from "components/big-number.html" import big_number_simple %}
+{% from "components/status-box.html" import status_box %}
+{% from "components/form.html" import form_wrapper %}
+{% from "components/tick-cross.html" import tick_cross %}
+{% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
+
+{% block per_page_title %}
+  Admin Approvals
+{% endblock %}
+
+{% block platform_admin_content %}
+
+  <h1 class="heading-medium">
+    Admin Approvals
+  </h1>
+
+  <div class="keyline-block"></div>
+
+  {% for action in pending %}
+    <div class="govuk-grid-row service-block">
+      <div class="govuk-grid-column-three-quarters">
+          {% if action.action_type == 'invite_user' %}
+            <h2>Invite user {{ action.action_data.email_address }} to{% if not services[action.service_id].restricted %} <strong>live</strong>{% endif %} service {{ services[action.service_id].name }}</h2>
+            With permissions:
+            <ul class="tick-cross-list-permissions">
+              {% for ui_permission in action.action_data.permissions %}
+                {{ tick_cross(
+                  True,
+                  permission_labels[ui_permission]
+                ) }}
+              {% endfor %}
+            </ul>
+          {% elif action.action_type == 'edit_permissions' %}
+            <h2>Edit {{ users[action.action_data.user_id].email_address }}'s permissions to{% if not services[action.service_id].restricted %} <strong>live</strong>{% endif %} service {{ services[action.service_id].name }}:</h2>
+            <ul class="tick-cross-list-permissions">
+              {% for ui_permission in action.action_data.permissions %}
+                {{ tick_cross(
+                  True,
+                  permission_labels[ui_permission]
+                ) }}
+              {% endfor %}
+            </ul>
+          {% elif action.action_type == 'create_api_key' %}
+            <h2>Create API key for{% if not services[action.service_id].restricted %} <strong>live</strong>{% endif %} service {{ services[action.service_id].name }}</h2>
+            <p class="govuk-body">
+              API Key name: {{ action.action_data.key_name }}
+              <br/>
+              API Key type: {{ key_type_labels[action.action_data.key_type] }}
+            </p>
+          {% else %}
+            {{ action }}
+          {% endif %}
+
+          Created {{ action.created_at | format_datetime_human }} by {{ users[action.created_by].email_address }}
+      </div>
+      <div class="govuk-grid-column-one-quarter">
+        <form action="{{url_for('.review_admin_action', action_id=action.id, new_status='approved')}}" method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          {{ govukButton({
+            "text": "Approve",
+            "disabled": not allow_self_approval or (not allow_self_approval and action.created_by == current_user.id)
+          }) }}
+        </form>
+        </br>
+        <form action="{{url_for('.review_admin_action', action_id=action.id, new_status='rejected')}}" method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          {{ govukButton({
+            "text": "Reject",
+            "classes": "govuk-button--warning"
+          }) }}
+        </form>
+      </div>
+    </div>
+    <div class="keyline-block"></div>
+  {% endfor %}
+
+{% endblock %}

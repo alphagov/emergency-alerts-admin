@@ -3,14 +3,23 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from flask import redirect, render_template, request, url_for
+from emergency_alerts_utils.admin_action import (
+    ADMIN_STATUS_APPROVED,
+    ADMIN_STATUS_PENDING,
+)
+from emergency_alerts_utils.api_key import KEY_TYPE_DESCRIPTIONS
+from flask import current_app, flash, redirect, render_template, request, url_for
+from flask_login import current_user
 from notifications_python_client.errors import HTTPError
 
 from app import service_api_client, user_api_client
 from app.main import main
 from app.main.forms import DateFilterForm, PlatformAdminSearch
+from app.notify_client.admin_actions_api_client import admin_actions_api_client
 from app.notify_client.platform_admin_api_client import admin_api_client
+from app.utils.admin_action import process_admin_action
 from app.utils.user import user_is_platform_admin
+from app.utils.user_permissions import broadcast_permission_options, permission_options
 
 COMPLAINT_THRESHOLD = 0.02
 FAILURE_THRESHOLD = 3
@@ -103,6 +112,48 @@ def platform_admin_services():
         services=list(format_service_data(services)),
         page_title=f"{'Trial mode' if request.endpoint == 'main.trial_services' else 'Live'} services",
     )
+
+
+@main.route("/platform-admin/admin-actions", endpoint="admin_actions")
+@user_is_platform_admin
+def platform_admin_actions():
+    pending_actions = admin_actions_api_client.get_pending_admin_actions()
+
+    return render_template(
+        "views/platform-admin/admin-actions.html",
+        **pending_actions,
+        permission_labels=dict(permission_options + broadcast_permission_options),
+        key_type_labels=KEY_TYPE_DESCRIPTIONS,
+        allow_self_approval=current_app.config["ADMIN_ACTION_ALLOW_SELF_APPROVAL"],
+    )
+
+
+@main.route(
+    "/platform-admin/admin-actions/<uuid:action_id>/review/<new_status>",
+    endpoint="review_admin_action",
+    methods=["POST"],
+)
+@user_is_platform_admin
+def platform_review_admin_action(action_id, new_status):
+    action = admin_actions_api_client.get_admin_action_by_id(action_id)
+
+    if action["status"] != ADMIN_STATUS_PENDING:
+        flash("That action is not pending and cannot be reviewed")
+    elif (
+        not current_app.config["ADMIN_ACTION_ALLOW_SELF_APPROVAL"]
+        and new_status == "approved"
+        and action["created_by"] == current_user.id
+    ):
+        flash("You cannot approve your own admin approvals")
+    else:
+        admin_actions_api_client.review_admin_action(action_id, new_status)
+
+        if new_status == ADMIN_STATUS_APPROVED:
+            current_app.logger.info("Approving and fulfilling admin action", extra={"admin_action": action})
+            # Now we need to 'do' the thing we've approved
+            return process_admin_action(action)
+
+    return redirect(url_for(".admin_actions"))
 
 
 def get_url_for_notify_record(uuid_):

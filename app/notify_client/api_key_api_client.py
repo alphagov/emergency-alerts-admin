@@ -1,10 +1,5 @@
 from app.notify_client import AdminAPIClient, _attach_current_user
 
-# must match key types in emergency-alerts-api/app/models.py
-KEY_TYPE_NORMAL = "normal"
-KEY_TYPE_TEAM = "team"
-KEY_TYPE_TEST = "test"
-
 
 class ApiKeyApiClient(AdminAPIClient):
     def get_api_keys(self, service_id):
