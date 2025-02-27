@@ -2351,6 +2351,19 @@ def mock_check_can_update_status(mocker):
 
 @pytest.fixture(scope="function")
 def mock_check_can_update_status_returns_http_error(mocker):
+    """
+    This fixture is different to actual client method in that the status passed in is the new status
+    and the error message here is dependent on new status only.
+    For the actual method, the message is dependent on the existing status of the broadcast message
+    i.e. the error message for when 'pending-approval' is passed in is reflective of whether or not
+    the current broadcast message can transition to 'pending-approval'.
+    For example, if the current broadcast message status is 'rejected' and the method is called to
+    update the status to 'pending-approval' the message returned will be "his alert has been rejected,
+    it cannot be edited or resubmitted for approval.".
+    In the interests of mocking the method and the resulting error handling, the below messages are returned
+    for each new_status, irresepctive of existing status.
+    """
+
     def _get(status, broadcast_message_id, service_id):
         if status == "pending-approval":
             message = "This alert is pending approval, it cannot be edited or submitted again."
@@ -2392,18 +2405,6 @@ def mock_update_broadcast_message_status_with_reason(
 
     return mocker.patch(
         "app.broadcast_message_api_client.update_broadcast_message_status_with_reason",
-        side_effect=_update,
-    )
-
-
-@pytest.fixture(scope="function")
-def mock_update_broadcast_message_status_raises_httperror(mocker, fake_uuid):
-    def _update(status, *, service_id, broadcast_message_id):
-        message = f"Cannot move broadcast_message {broadcast_message_id} from rejected to pending-approval"
-        raise HTTPError(Response(status=400), message=message)
-
-    return mocker.patch(
-        "app.broadcast_message_api_client.update_broadcast_message_status",
         side_effect=_update,
     )
 
