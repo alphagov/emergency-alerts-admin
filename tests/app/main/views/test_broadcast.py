@@ -4319,6 +4319,63 @@ def test_confirm_approve_broadcast(
         assert mock_update_broadcast_message_status.called is False
 
 
+@pytest.mark.parametrize("trial_mode", (True, False))
+@pytest.mark.parametrize(
+    "initial_status",
+    (
+        ("draft",),
+        ("pending-approval",),
+        ("rejected",),
+        ("broadcasting",),
+        ("draft",),
+    ),
+)
+@freeze_time("2020-02-22T22:22:22.000000")
+def test_cannot_approve_broadcast_if_transition_not_allowed(
+    mocker,
+    client_request,
+    service_one,
+    fake_uuid,
+    mock_update_broadcast_message,
+    mock_update_broadcast_message_status,
+    active_user_approve_broadcasts_permission,
+    initial_status,
+    trial_mode,
+    mock_get_broadcast_message_versions,
+    mock_check_can_update_status_returns_http_error,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            status=initial_status,
+            finishes_at="2020-02-23T23:23:23.000000",
+            starts_at="2020-02-23T23:13:23.000000",
+        ),
+    )
+    service_one["restricted"] = trial_mode
+    service_one["permissions"] += ["broadcast"]
+
+    client_request.login(active_user_approve_broadcasts_permission)
+
+    page = client_request.post(
+        ".approve_broadcast_message",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        _expected_status=200,
+        _data={},
+    )
+
+    assert mock_update_broadcast_message.called is False
+    assert mock_update_broadcast_message_status.called is False
+    assert normalize_spaces(page.select_one(".banner-dangerous").text) == (
+        "This alert is live, it cannot be edited or submitted again."
+    )
+
+
 @pytest.mark.parametrize(
     "user",
     (create_active_user_approve_broadcasts_permissions(),),
@@ -4408,6 +4465,92 @@ def test_discard_broadcast(
 
     assert mock_update_broadcast_message.called is False
     assert mock_update_broadcast_message_status_with_reason.called is False
+
+
+@pytest.mark.parametrize(
+    "user",
+    (create_active_user_approve_broadcasts_permissions(),),
+)
+@freeze_time("2020-02-22T22:22:22.000000")
+def test_cannot_reject_broadcast_if_transition_not_allowed(
+    mocker,
+    client_request,
+    service_one,
+    fake_uuid,
+    mock_update_broadcast_message,
+    mock_update_broadcast_message_status_with_reason,
+    user,
+    mock_get_broadcast_message_versions,
+    mock_check_can_update_status_returns_http_error,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            finishes_at="2020-02-23T23:23:23.000000",
+            status="pending-approval",
+        ),
+    )
+    service_one["permissions"] += ["broadcast"]
+
+    client_request.login(user)
+    page = client_request.post(
+        ".reject_broadcast_message",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        _expected_status=200,
+        _data={"rejection_reason": ""},
+    )
+
+    assert mock_update_broadcast_message.called is False
+    assert mock_update_broadcast_message_status_with_reason.called is False
+    assert normalize_spaces(page.select_one(".banner-dangerous").text) == (
+        "This alert has been rejected, it cannot be edited or resubmitted for approval."
+    )
+
+
+@pytest.mark.parametrize(
+    "user",
+    (create_active_user_create_broadcasts_permissions(),),
+)
+@freeze_time("2020-02-22T22:22:22.000000")
+def test_cannot_discard_broadcast_if_transition_not_allowed(
+    mocker,
+    client_request,
+    service_one,
+    fake_uuid,
+    mock_update_broadcast_message,
+    mock_update_broadcast_message_status_with_reason,
+    user,
+    mock_get_broadcast_message_versions,
+    mock_check_can_update_status_returns_http_error,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            finishes_at="2020-02-23T23:23:23.000000",
+            status="pending-approval",
+        ),
+    )
+    service_one["permissions"] += ["broadcast"]
+
+    client_request.login(user)
+    page = client_request.post(
+        ".reject_broadcast_message", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid, _expected_status=200
+    )
+
+    assert mock_update_broadcast_message.called is False
+    assert mock_update_broadcast_message_status_with_reason.called is False
+    assert normalize_spaces(page.select_one(".banner-dangerous").text) == (
+        "This alert has been rejected, it cannot be edited or resubmitted for approval."
+    )
 
 
 @pytest.mark.parametrize(
@@ -4563,14 +4706,15 @@ def test_submit_broadcast_changes_status(
     )
 
 
-def test_cannot_submit_broadcast_if_rejected_broadcast(
+def test_cannot_submit_if_transition_not_allowed(
     mocker,
     client_request,
     service_one,
     fake_uuid,
     mock_update_broadcast_message,
     mock_get_broadcast_message_versions,
-    mock_update_broadcast_message_status_raises_httperror,
+    mock_update_broadcast_message_status,
+    mock_check_can_update_status_returns_http_error,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -4580,24 +4724,21 @@ def test_cannot_submit_broadcast_if_rejected_broadcast(
             template_id=fake_uuid,
             created_by_id=fake_uuid,
             finishes_at="2020-02-23T23:23:23.000000",
-            status="rejected",
+            updated_at="2020-02-23T23:00:00.000000",
         ),
     )
     service_one["permissions"] += ["broadcast"]
 
     client_request.login(create_active_user_create_broadcasts_permissions())
 
-    with pytest.raises(Exception):
-        client_request.post(
-            ".submit_broadcast_message",
-            service_id=SERVICE_ONE_ID,
-            broadcast_message_id=fake_uuid,
-            _expected_redirect=url_for(
-                ".view_current_broadcast",
-                broadcast_message_id=fake_uuid,
-                service_id=SERVICE_ONE_ID,
-            ),
-        )
+    page = client_request.get(
+        ".submit_broadcast_message", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid, _expected_status=200
+    )
+
+    assert mock_update_broadcast_message_status.called is False
+    assert normalize_spaces(page.select_one(".banner-dangerous").text) == (
+        "This alert is pending approval, it cannot be edited or submitted again."
+    )
 
 
 def test_view_broadcast_versions_returns_versions(
@@ -4733,6 +4874,37 @@ def test_cancel_broadcast(
             broadcast_message_id=fake_uuid,
         )
         not in page
+    )
+
+
+@pytest.mark.parametrize(
+    "user",
+    (
+        create_active_user_create_broadcasts_permissions(),
+        create_active_user_approve_broadcasts_permissions(),
+        create_platform_admin_user(),
+    ),
+)
+def test_cannot_cancel_broadcast_if_transition_not_allowed(
+    client_request,
+    service_one,
+    mock_get_live_broadcast_message,
+    mock_update_broadcast_message_status,
+    fake_uuid,
+    user,
+    mock_get_broadcast_message_versions,
+    mock_check_can_update_status_returns_http_error,
+):
+    service_one["permissions"] += ["broadcast"]
+
+    client_request.login(user)
+    page = client_request.get(
+        ".cancel_broadcast_message", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid, _expected_status=200
+    )
+
+    assert mock_update_broadcast_message_status.called is False
+    assert normalize_spaces(page.select_one(".banner-dangerous").text) == (
+        "This alert has already been broadcast, it cannot be edited or resubmitted for approval."
     )
 
 
