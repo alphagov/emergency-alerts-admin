@@ -96,14 +96,11 @@ class BroadcastMessage(JSONModel):
         )
 
     @classmethod
-    def update_from_content(cls, *, service_id, broadcast_message_id, content, reference):
+    def update_from_content(cls, *, service_id, broadcast_message_id, content=None, reference=None):
         broadcast_message_api_client.update_broadcast_message(
             service_id=service_id,
             broadcast_message_id=broadcast_message_id,
-            data={
-                "reference": reference,
-                "content": content,
-            },
+            data=({"reference": reference} if reference else {}) | ({"content": content} if content else {}),
         )
 
     @classmethod
