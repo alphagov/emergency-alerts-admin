@@ -1057,6 +1057,8 @@ class BroadcastTemplateForm(SMSTemplateForm):
     template_content = TextAreaField(
         "Alert message", validators=[DataRequired(message="Enter an alert message"), NoCommasInPlaceHolders()]
     )
+    initial_name = HiddenField("initial_name")
+    initial_content = HiddenField("initial_content")
 
     def validate_template_content(self, field):
         OnlySMSCharacters(template_type="broadcast")(None, field)
