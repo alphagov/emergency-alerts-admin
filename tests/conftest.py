@@ -2361,7 +2361,7 @@ def mock_check_can_update_status_returns_http_error(mocker):
     update the status to 'pending-approval' the message returned will be "his alert has been rejected,
     it cannot be edited or resubmitted for approval.".
     In the interests of mocking the method and the resulting error handling, the below messages are returned
-    for each new_status, irresepctive of existing status.
+    for each new_status, passed in by function called, irresepctive of existing status.
     """
 
     def _get(status, broadcast_message_id, service_id):
