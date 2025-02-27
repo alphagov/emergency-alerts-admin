@@ -5,6 +5,7 @@
 {% from "components/textbox.html" import textbox %}
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
 {% from "components/error-summary.html" import errorSummary %}
+{% from "components/banner.html" import banner %}
 
 {% block service_page_title %}
   Write new alert
@@ -21,6 +22,15 @@
 
 {% block maincolumn_content %}
 
+  {% if display_banner %}
+    {{ banner(
+      '{}, do you want to overwrite this change?'.format(changed_data_text),
+      type='dangerous',
+      delete_button='Yes, overwrite',
+      action=""
+    ) }}
+  {% endif %}
+
   {{ errorSummary(form) }}
 
   {{ page_header('Write new alert')}}
@@ -28,6 +38,8 @@
   {% call form_wrapper() %}
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-two-thirds">
+        {{form.initial_name()}}
+        {{form.initial_content()}}
         {{ form.name(param_extensions={
           "classes": "govuk-!-width-full",
           "hint": {"text": "Your recipients will not see this"}
