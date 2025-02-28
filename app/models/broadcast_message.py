@@ -52,6 +52,7 @@ class BroadcastMessage(JSONModel):
         "submitted_by_id",
         "submitted_by",
         "submitted_at",
+        "updated_by",
     }
 
     libraries = broadcast_area_libraries
