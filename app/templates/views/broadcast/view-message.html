@@ -7,6 +7,7 @@
 {% from "components/page-footer.html" import page_footer %}
 {% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
 {% from "components/alert-summary-list.html" import alertSummaryList %}
+{% from "views/broadcast/partials/broadcast-details.html" import broadcast_details %}
 
 
 {% extends "withnav_template.html" %}
@@ -51,44 +52,31 @@
     {{ page_header(broadcast_message.template.name) }}
     {% if broadcast_message.created_by_id and broadcast_message.created_by_id == current_user.id
       and current_user.has_permissions('create_broadcasts', 'approve_broadcasts', restrict_admin_usage=True) %}
-      <div class="banner govuk-!-margin-bottom-6">
-        <h1 class="govuk-heading-m govuk-!-margin-bottom-3">
-          {{ broadcast_message.template.name }} is waiting for approval
-        </h1>
-        {% if current_service.live %}
-          <p class="govuk-body">
-            You need another member of your team to approve your alert.
-          </p>
-          {{ page_footer(
-            delete_link=url_for('main.discard_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
-            delete_link_text='Discard this alert'
-          ) }}
-        {% elif current_user.has_permissions('approve_broadcasts', restrict_admin_usage=True) %}
-          <p class="govuk-body govuk-!-margin-bottom-3">
-            When you use a live account you’ll need another member of
-            your team to approve your alert.
-          </p>
-          {% set approve_details %}
-            <div class="govuk-!-margin-bottom-5">
-              {% call form_wrapper(id='approve') %}
-              <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-3">
-                Because you’re in training mode you can approve
-                your own alerts, to see how it works.
-              </p>
-              <p class="govuk-body govuk-!-margin-top-0 govuk-!-margin-bottom-3">
-                No real alerts will be broadcast to anyone’s phone.
-              </p>
-              {{ page_footer(
-                "Start broadcasting now"
-              ) }}
-              {% endcall %}
-            </div>
-          {% endset %}
-
+      {% if current_service.live and broadcast_message.submitted_by_id != current_user.id %}
+        <div class="banner govuk-!-margin-bottom-6">
+          {% call form_wrapper(id='approve',class="govuk-!-margin-bottom-5") %}
+            <h1 class="govuk-heading-m govuk-!-margin-top-0 govuk-!-margin-bottom-3">
+              {% if broadcast_message.created_by %}
+                {{ broadcast_message.created_by }}
+              {% else %}
+                An API call
+              {% endif %}
+              wants to broadcast
+              {{ broadcast_message.template.name }}
+            </h1>
+            {{ form.confirm(param_extensions={
+              'formGroup': {
+                'classes': 'govuk-!-margin-bottom-4'
+              }
+            }) }}
+            {{ page_footer(
+              "Start broadcasting now"
+            ) }}
+          {% endcall %}
           {% set rejection_reason_details %}
             <div class="govuk-!-margin-top-3">
               <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for rejecting the alert</h1>
-              {% call form_wrapper(id='reject', action=url_for('main.reject_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
+              {% call form_wrapper(id='reject',action=url_for('main.reject_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
                 {{ rejection_form.rejection_reason }}
                 {{ page_footer(
                   'Reject alert',
@@ -97,12 +85,6 @@
               {% endcall %}
             </div>
           {% endset %}
-
-          {{ govukDetails({
-            "classes": "govuk-!-margin-bottom-0",
-            "summaryText": "Approve your own alert",
-            "html": approve_details
-          }) }}
           <div class="govuk-!-margin-top-1">
             {{ govukDetails({
               "classes": "govuk-!-margin-bottom-0",
@@ -112,18 +94,97 @@
               "id": "rejection_reason_details"
             }) }}
           </div>
-        {% elif current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) %}
-          <p class="govuk-body">
-            You need another member of your team to approve this alert.
-          </p>
-          <p class="govuk-body">
-            This service is in training mode. No real alerts will be sent.
-          </p>
-          {{ page_footer(
-            delete_link=url_for('main.discard_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
-            delete_link_text='Discard this alert'
-          ) }}
-        {% endif %}
+        </div>
+      {% else %}
+        <div class="banner govuk-!-margin-bottom-6">
+          <h1 class="govuk-heading-m govuk-!-margin-bottom-3">
+            {{ broadcast_message.template.name }} is waiting for approval
+          </h1>
+          {% if current_service.live %}
+            <p class="govuk-body">
+              You need another member of your team to approve your alert.
+            </p>
+            {{ page_footer(
+              delete_link=url_for('main.discard_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
+              delete_link_text='Discard this alert'
+            ) }}
+          {% elif current_user.has_permissions('approve_broadcasts', restrict_admin_usage=True) %}
+            <p class="govuk-body govuk-!-margin-bottom-3">
+              When you use a live account you’ll need another member of
+              your team to approve your alert.
+            </p>
+            {% set approve_details %}
+              <div class="govuk-!-margin-bottom-5">
+                {% call form_wrapper(id='approve') %}
+                <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-3">
+                  Because you’re in training mode you can approve
+                  your own alerts, to see how it works.
+                </p>
+                <p class="govuk-body govuk-!-margin-top-0 govuk-!-margin-bottom-3">
+                  No real alerts will be broadcast to anyone’s phone.
+                </p>
+                {{ page_footer(
+                  "Start broadcasting now"
+                ) }}
+                {% endcall %}
+              </div>
+            {% endset %}
+
+            {% set rejection_reason_details %}
+              <div class="govuk-!-margin-top-3">
+                <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for rejecting the alert</h1>
+                {% call form_wrapper(id='reject', action=url_for('main.reject_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
+                  {{ rejection_form.rejection_reason }}
+                  {{ page_footer(
+                    'Reject alert',
+                    destructive=True,
+                  ) }}
+                {% endcall %}
+              </div>
+            {% endset %}
+
+            {{ govukDetails({
+              "classes": "govuk-!-margin-bottom-0",
+              "summaryText": "Approve your own alert",
+              "html": approve_details
+            }) }}
+            <div class="govuk-!-margin-top-1">
+              {{ govukDetails({
+                "classes": "govuk-!-margin-bottom-0",
+                "summaryText": "Reject this alert",
+                "html": rejection_reason_details,
+                "open": rejection_form.rejection_reason.errors | convert_to_boolean,
+                "id": "rejection_reason_details"
+              }) }}
+            </div>
+          {% elif current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) %}
+            <p class="govuk-body">
+              You need another member of your team to approve this alert.
+            </p>
+            <p class="govuk-body">
+              This service is in training mode. No real alerts will be sent.
+            </p>
+            {{ page_footer(
+              delete_link=url_for('main.discard_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
+              delete_link_text='Discard this alert'
+            ) }}
+          {% endif %}
+        </div>
+      {% endif %}
+    {% elif current_service.live and broadcast_message.created_by_id and broadcast_message.created_by_id != current_user.id
+      and current_user.has_permissions('create_broadcasts', 'approve_broadcasts', restrict_admin_usage=True)
+      and broadcast_message.submitted_by_id == current_user.id %}
+      <div class="banner govuk-!-margin-bottom-6">
+        <h1 class="govuk-heading-m govuk-!-margin-bottom-3">
+          {{ broadcast_message.template.name }} is waiting for approval
+        </h1>
+        <p class="govuk-body">
+          You need another member of your team to approve your alert.
+        </p>
+        {{ page_footer(
+          delete_link=url_for('main.discard_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
+          delete_link_text='Discard this alert'
+        ) }}
       </div>
     {% elif current_user.has_permissions('approve_broadcasts', restrict_admin_usage=True) %}
       <div class="banner govuk-!-margin-bottom-6">
@@ -203,44 +264,7 @@
   {% else %}
     {{ page_header(broadcast_message.template.name) }}
 
-    {% if broadcast_message.status == 'broadcasting' %}
-      <p class="govuk-body govuk-!-margin-bottom-2 live-broadcast live-broadcast--left">
-        {{ govukTag ({
-          'text': 'live',
-          'classes': 'govuk-!-margin-right-2 broadcast-tag'
-        }) }}
-        since {{ broadcast_message.starts_at|format_datetime_relative }}&ensp;
-        {%- if not hide_stop_link %}
-          <a href="{{ url_for('.cancel_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }}" class="destructive-link destructive-link--no-visited-state">Stop sending</a>
-        {% endif %}
-      </p>
-    {% elif broadcast_message.status == 'rejected' %}
-      <p class="govuk-body govuk-!-margin-bottom-4">
-        {% if broadcast_message.rejected_by or broadcast_message.rejected_by_api_key_id %}
-          Rejected
-          {{ broadcast_message.updated_at|format_datetime_human }}
-          {% if broadcast_message.rejected_by %}
-            by {{broadcast_message.rejected_by}}.
-          {% elif broadcast_message.rejected_by_api_key_id %}
-            by an API call.
-          {% endif %}
-        {% else %}
-          Rejected
-          {{ broadcast_message.updated_at|format_datetime_human }}.
-        {% endif %}
-      </p>
-      {% if broadcast_message.rejection_reason %}
-        <div class="govuk-!-margin-bottom-4">
-          <p class="govuk-!-margin-right-2 govuk-heading-m govuk-!-margin-bottom-1">Reason </p>
-          {{broadcast_message.rejection_reason}}
-        </div>
-      {% endif %}
-    {% else %}
-      <p class="govuk-body govuk-!-margin-bottom-4">
-        Sent
-        {{ broadcast_message.starts_at|format_datetime_human }}.
-      </p>
-    {% endif %}
+  {{broadcast_details(broadcast_message, current_service)}}
   {% endif %}
 
   {{alertSummaryList(current_user, current_service.id, broadcast_message, areas, broadcast_message.simple_polygons_with_bleed.estimated_area, broadcast_message.count_of_phones, broadcast_message.count_of_phones_likely, is_custom_broadcast)}}
