@@ -8,7 +8,11 @@
 {% from "components/banner.html" import banner %}
 
 {% block service_page_title %}
-  Write new alert
+  {% if broadcast_message %}
+    Edit alert
+  {% else %}
+    Write new alert
+  {% endif %}
 {% endblock %}
 
 
@@ -33,7 +37,11 @@
 
   {{ errorSummary(form) }}
 
-  {{ page_header('Write new alert')}}
+  {% if broadcast_message %}
+    {{ page_header('Edit alert')}}
+  {% else %}
+    {{ page_header('Write new alert')}}
+  {% endif %}
 
   {% call form_wrapper() %}
     <div class="govuk-grid-row">
