@@ -49,4 +49,21 @@
     {% endif %}
   {% endcall %}
 
+  {% if broadcast_message.status == "draft" and broadcast_message_version_count > 1 %}
+  <div class="bottom-gutter-1-2">
+    {% if broadcast_message.updated_at%}
+      <h2 class="heading-small bottom-gutter-2-3 heading-inline">
+        Last edited
+        <time class="timeago" datetime="{{ broadcast_message.updated_at }}">
+          {{ broadcast_message.updated_at|format_delta }}
+        </time>
+      </h2>
+
+      &emsp;
+      <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('.view_broadcast_versions', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }}">See previous versions</a>
+      &emsp;
+      <br/>
+    {% endif %}
+  </div>
+{% endif %}
 {% endblock %}
