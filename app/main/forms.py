@@ -1042,20 +1042,6 @@ class BaseTemplateForm(StripWhitespaceForm):
     )
 
 
-class RequiredIfChannelIs(InputRequired):
-    def __init__(self, channels, *args, **kwargs):
-        self.channels = channels
-        super(RequiredIfChannelIs, self).__init__(*args, **kwargs)
-
-    def __call__(self, form):
-        channel = form.__getattribute__("channel")
-        print("**********************************")
-        print(channel)
-        print("***********************************")
-        if channel in self.channels:
-            super(RequiredIfChannelIs, self).__call__(form)
-
-
 class RequiredForChannels(object):
     def __init__(self, channels, message=None):
         self.channels = channels

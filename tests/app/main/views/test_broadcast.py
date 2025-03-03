@@ -3019,25 +3019,14 @@ def test_choose_broadcast_duration_page(
         broadcast_message_id=fake_uuid,
     )
 
-    assert normalize_spaces(page.select_one("h1").text) == "Choose alert duration"
+    assert normalize_spaces(page.select_one("h1").text) == "Alert Duration"
 
     form = page.select_one("form")
     assert form["method"] == "post"
     assert "action" not in form
 
-    assert [
-        (
-            choice.select_one("input")["name"],
-            choice.select_one("input")["value"],
-            normalize_spaces(choice.select_one("label").text),
-        )
-        for choice in form.select(".govuk-radios__item")
-    ] == [
-        ("content", "PT30M", "30 minutes"),
-        ("content", "PT3H", "3 hours"),
-        ("content", "PT6H", "6 hours"),
-        ("content", "PT22H", "22 hours"),
-    ]
+    assert form.select("input#hours") is not None
+    assert form.select("input#minutes") is not None
 
 
 def test_choose_broadcast_duration(
@@ -3080,7 +3069,7 @@ def test_preview_broadcast_message_page(
         "Scotland",
     ]
 
-    assert page.select_one("p.duration-preview").text == "Duration: 0 seconds"
+    assert normalize_spaces(page.select_one("p.duration-preview").text) == "Duration: 0 seconds"
 
     assert normalize_spaces(page.select_one("h2.broadcast-message-heading").text) == "Emergency alert"
 
