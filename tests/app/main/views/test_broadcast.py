@@ -849,6 +849,61 @@ def test_write_new_broadcast_posts(
     )
 
 
+def test_edit_broadcast_page(
+    client_request,
+    service_one,
+    active_user_create_broadcasts_permission,
+    mocker,
+    fake_uuid,
+    mock_check_can_update_status,
+):
+    service_one["permissions"] += ["broadcast"]
+    client_request.login(active_user_create_broadcasts_permission)
+
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            reference="Test Edit Alert",
+            content="This is a test for edit_broadcast",
+        ),
+    )
+    page = client_request.get(".edit_broadcast", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
+
+    assert normalize_spaces(page.select_one("h1").text) == "Edit alert"
+
+    form = page.select_one("form")
+    assert form["method"] == "post"
+    assert "action" not in form
+
+    assert normalize_spaces(page.select_one("label[for=name]").text) == "Reference"
+    assert page.select_one("input[type=text]")["name"] == "name"
+
+    assert normalize_spaces(page.select_one("label[for=template_content]").text) == "Alert message"
+    assert normalize_spaces(page.select_one("textarea").text) == "This is a test for edit_broadcast"
+    assert page.select_one("textarea")["name"] == "template_content"
+    assert page.select_one("textarea")["data-notify-module"] == "enhanced-textbox"
+    assert page.select_one("textarea")["data-highlight-placeholders"] == "false"
+
+    assert (page.select_one("[data-notify-module=update-status]")["data-updates-url"]) == url_for(
+        ".count_content_length",
+        service_id=SERVICE_ONE_ID,
+        template_type="broadcast",
+    )
+
+    assert (
+        (page.select_one("[data-notify-module=update-status]")["data-target"])
+        == (page.select_one("textarea")["id"])
+        == "template_content"
+    )
+
+    assert (page.select_one("[data-notify-module=update-status]")["aria-live"]) == "polite"
+
+
 @pytest.mark.parametrize(
     "content, expected_error_message",
     (
