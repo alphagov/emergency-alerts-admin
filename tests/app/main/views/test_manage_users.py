@@ -411,48 +411,84 @@ def test_should_not_show_page_for_non_team_member(
 
 
 @pytest.mark.parametrize(
-    "submitted_permissions, permissions_sent_to_api",
+    "existing_permissions, submitted_permissions, expected_sent_permissions, requires_admin_action",
     [
         (
+            set(),
             {
-                "permissions_field": [
-                    "create_broadcasts",
-                ]
+                "create_broadcasts",
             },
             {
                 "view_activity",
                 "create_broadcasts",
             },
+            True,
         ),
         (
+            set(),
             {
-                "permissions_field": [
-                    "approve_broadcasts",
-                ]
+                "approve_broadcasts",
             },
             {
                 "view_activity",
                 "approve_broadcasts",
             },
+            True,
         ),
         (
+            set(),
             {
-                "permissions_field": [
-                    "create_broadcasts",
-                    "approve_broadcasts",
-                ]
+                "create_broadcasts",
+                "approve_broadcasts",
             },
             {
                 "view_activity",
                 "create_broadcasts",
                 "approve_broadcasts",
             },
+            True,
         ),
         (
-            {},
+            set(),
+            {"manage_templates"},  # Not sensitive
+            {
+                "view_activity",
+                "manage_templates",
+            },
+            False,
+        ),
+        # Removing permissions should never require admin action:
+        (
+            {"manage_templates", "view_activity"},
+            set(),
             {
                 "view_activity",
             },
+            False,
+        ),
+        (
+            {
+                "create_broadcasts",
+                "approve_broadcasts",
+                "manage_templates",
+            },
+            {"manage_templates"},
+            {
+                "view_activity",
+                "manage_templates",
+            },
+            False,
+        ),
+        (
+            {
+                "create_broadcasts",
+                "approve_broadcasts",
+            },
+            set(),
+            {
+                "view_activity",
+            },
+            False,
         ),
     ],
 )
@@ -464,25 +500,60 @@ def test_edit_user_permissions_for_broadcast_service(
     mock_get_invites_for_service,
     mock_set_user_permissions,
     mock_get_template_folders,
+    mock_get_pending_admin_actions,
     fake_uuid,
+    existing_permissions,
     submitted_permissions,
-    permissions_sent_to_api,
+    expected_sent_permissions,
+    requires_admin_action,
 ):
+    mocker.patch(
+        "app.models.user.User.permissions_for_service",
+        side_effect=[
+            {"manage_service"},  # To allow the endpoint to run initially
+            # Called by the form, endpoint for existing perms, and then the User class:
+            existing_permissions,
+            existing_permissions,
+            existing_permissions,
+        ],
+    )
+    mocker.patch("app.admin_actions_api_client.create_admin_action", return_value=None)
     service_one["permissions"] = ["broadcast"]
+
     client_request.post(
         "main.edit_user_permissions",
         service_id=SERVICE_ONE_ID,
         user_id=fake_uuid,
-        _data=dict(email_address="test@example.com", **submitted_permissions),
+        _data=dict(email_address="test@example.com", permissions_field=list(submitted_permissions)),
         _expected_status=302,
         _expected_redirect=url_for(
             "main.manage_users",
             service_id=SERVICE_ONE_ID,
         ),
     )
-    mock_set_user_permissions.assert_called_with(
-        fake_uuid, SERVICE_ONE_ID, permissions=permissions_sent_to_api, folder_permissions=[]
-    )
+
+    if requires_admin_action:
+        # One or more added permissions are sensitive
+        app.admin_actions_api_client.create_admin_action.assert_called_once_with(
+            {
+                "service_id": SERVICE_ONE_ID,
+                "created_by": fake_uuid,
+                "action_type": "edit_permissions",
+                "action_data": {
+                    "user_id": fake_uuid,
+                    "existing_permissions": existing_permissions,
+                    "permissions": expected_sent_permissions,
+                    "folder_permissions": [],
+                },
+            }
+        )
+        mock_set_user_permissions.assert_not_called()
+    else:
+        # The added permissions are not sensitive
+        mock_set_user_permissions.assert_called_with(
+            fake_uuid, SERVICE_ONE_ID, permissions=expected_sent_permissions, folder_permissions=[]
+        )
+        app.admin_actions_api_client.create_admin_action.assert_not_called()
 
 
 def test_edit_user_folder_permissions(
@@ -981,19 +1052,20 @@ def test_invite_user_with_email_auth_service(
 
 
 @pytest.mark.parametrize(
-    "post_data, expected_permissions_to_api",
+    "post_data, expected_permissions, requires_admin_action",
     (
         (
             {
                 "permissions_field": [
                     "view_activity",
-                    "create_broadcasts",
+                    "manage_templates",
                 ]
             },
             {
                 "view_activity",
-                "create_broadcasts",
+                "manage_templates",
             },
+            False,
         ),
         (
             {
@@ -1006,6 +1078,35 @@ def test_invite_user_with_email_auth_service(
             {
                 "view_activity",
             },
+            False,
+        ),
+        # These below permissions are sensitive and require an admin approval
+        (
+            {
+                "permissions_field": [
+                    "view_activity",
+                    "create_broadcasts",
+                ]
+            },
+            {
+                "view_activity",
+                "create_broadcasts",
+            },
+            True,
+        ),
+        (
+            {
+                "permissions_field": [
+                    "view_activity",
+                    "approve_broadcasts",
+                    "foo",
+                ]
+            },
+            {
+                "view_activity",
+                "approve_broadcasts",
+            },
+            True,
         ),
     ),
 )
@@ -1017,12 +1118,15 @@ def test_invite_user_to_broadcast_service(
     sample_invite,
     mock_get_template_folders,
     mock_get_organisations,
+    mock_get_pending_admin_actions,
     post_data,
-    expected_permissions_to_api,
+    expected_permissions,
+    requires_admin_action,
 ):
     mocker.patch("app.models.user.User.from_email_address_or_none", return_value=User(active_new_user_with_permissions))
     mocker.patch("app.models.user.PendingUsers.client_method", return_value=[sample_invite])
     mocker.patch("app.invite_api_client.create_invite", return_value=sample_invite)
+    mocker.patch("app.admin_actions_api_client.create_admin_action", return_value=None)
     mocker.patch("app.models.user.User.belongs_to_service", return_value=False)
 
     post_data["email_address"] = "new.user@user.gov.uk"
@@ -1033,14 +1137,35 @@ def test_invite_user_to_broadcast_service(
         _data=post_data,
     )
 
-    app.invite_api_client.create_invite.assert_called_once_with(
-        sample_invite["from_user"],
-        sample_invite["service"],
-        "new.user@user.gov.uk",
-        expected_permissions_to_api,
-        "sms_auth",
-        [],
-    )
+    if requires_admin_action:
+        # One or more of the permissions above are sensitive and require approval
+        app.invite_api_client.create_invite.assert_not_called()
+
+        app.admin_actions_api_client.create_admin_action.assert_called_once_with(
+            {
+                "service_id": SERVICE_ONE_ID,
+                "created_by": sample_invite["from_user"],
+                "action_type": "invite_user",
+                "action_data": {
+                    "email_address": "new.user@user.gov.uk",
+                    "permissions": expected_permissions,
+                    "login_authentication": "sms_auth",
+                    "folder_permissions": [],
+                },
+            }
+        )
+
+    else:
+        # The permissions above are not 'privileged' and do not require admin approval
+        app.invite_api_client.create_invite.assert_called_once_with(
+            sample_invite["from_user"],
+            sample_invite["service"],
+            "new.user@user.gov.uk",
+            expected_permissions,
+            "sms_auth",
+            [],
+        )
+        app.admin_actions_api_client.create_admin_action.assert_not_called()
 
 
 def test_invite_non_govt_user_to_broadcast_service_fails_validation(

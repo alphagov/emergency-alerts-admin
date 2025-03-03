@@ -814,7 +814,12 @@ class BroadcastPermissionsForm(BasePermissionsForm):
         "Permissions",
         choices=[(value, label) for value, label in broadcast_permission_options],
         filters=[filter_by_broadcast_permissions],
-        param_extensions={"hint": {"text": "Team members who can create or approve alerts can also reject them."}},
+        param_extensions={
+            "hint": {
+                "text": "Team members who can create or approve alerts can also reject them."
+                + " Platform admin approval is required to enable creating or approving alerts."
+            }
+        },
     )
 
     @property
