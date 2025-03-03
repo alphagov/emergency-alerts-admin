@@ -936,6 +936,53 @@ def test_write_new_broadcast_bad_content(
     assert mock_create_broadcast_message.called is False
 
 
+@pytest.mark.parametrize(
+    "content, expected_error_message",
+    (
+        ("", "Enter an alert message"),
+        ("ŵ" * 616, "Content must be 615 characters or fewer because it contains ŵ"),
+        ("w" * 1_396, "Content must be 1,395 characters or fewer"),
+        ("hello ((name))", "You can’t use ((double brackets)) to personalise this message"),
+    ),
+)
+def test_edit_broadcast_bad_content(
+    client_request,
+    service_one,
+    mock_create_broadcast_message,
+    active_user_create_broadcasts_permission,
+    content,
+    expected_error_message,
+    mock_update_broadcast_message,
+    fake_uuid,
+    mocker,
+    mock_check_can_update_status,
+):
+    service_one["permissions"] += ["broadcast"]
+    client_request.login(active_user_create_broadcasts_permission)
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+        ),
+    )
+    page = client_request.post(
+        ".edit_broadcast",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        _data={
+            "name": "My new alert",
+            "template_content": content,
+        },
+        _expected_status=200,
+    )
+    assert normalize_spaces(page.select_one(".error-message").text) == (expected_error_message)
+    assert mock_update_broadcast_message.called is False
+
+
 def test_broadcast_page(
     client_request,
     service_one,
