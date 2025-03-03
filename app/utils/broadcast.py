@@ -1,5 +1,5 @@
 import pyproj
-from flask import redirect, render_template, url_for
+from flask import redirect, render_template, request, url_for
 from postcode_validator.uk.uk_postcode_validator import UKPostcode
 from shapely import Point
 from shapely.geometry import MultiPolygon, Polygon
@@ -369,6 +369,31 @@ def render_current_alert_page(
         hide_stop_link=hide_stop_link,
         broadcast_message_version_count=broadcast_message.get_count_of_versions(),
     )
+
+
+def render_edit_alert_page(broadcast_message, form):
+    return render_template(
+        "views/broadcast/write-new-broadcast.html",
+        broadcast_message=broadcast_message,
+        form=form,
+        changes=get_changed_alert_form_data(broadcast_message, form),
+    )
+
+
+def keep_alert_content_button_clicked():
+    return request.method == "POST" and request.form.get("keep-message") is not None
+
+
+def keep_alert_reference_button_clicked():
+    return request.method == "POST" and request.form.get("keep-reference") is not None
+
+
+def overwrite_content_button_clicked():
+    return request.method == "POST" and request.form.get("overwrite-message") is not None
+
+
+def overwrite_reference_button_clicked():
+    return request.method == "POST" and request.form.get("overwrite-reference") is not None
 
 
 def get_changed_alert_form_data(broadcast_message, form):
