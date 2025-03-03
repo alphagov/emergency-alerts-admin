@@ -2,8 +2,12 @@
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
 
 {% block backLink %}
-  {{ govukBackLink({ "href": url_for('main.view_current_broadcast', service_id=current_service.id, broadcast_message_id=broadcast_message_id,) }) }}
-{% endblock %}
+  {% if back_link %}
+    {{ govukBackLink({ "href": url_for('main.view_current_broadcast', service_id=current_service.id, broadcast_message_id=broadcast_message_id,) }) }}
+  {% else %}
+    {{ govukBackLink({ "href": url_for('main.view_current_broadcast', service_id=current_service.id, broadcast_message_id=broadcast_message_id,) }) }}
+  {% endif %}
+  {% endblock %}
 
 {% block service_page_title %}
   Previous versions
