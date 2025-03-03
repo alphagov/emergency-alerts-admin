@@ -184,12 +184,19 @@ def write_new_broadcast(service_id):
     form = BroadcastTemplateForm()
 
     if form.validate_on_submit():
-        broadcast_message = BroadcastMessage.create_from_content(
-            service_id=current_service.id,
-            content=form.template_content.data,
-            reference=form.name.data,
-        )
-        broadcast_message_id = broadcast_message.id
+        if broadcast_message_id:
+            BroadcastMessage.update_from_content(
+                service_id=current_service.id,
+                broadcast_message_id=broadcast_message_id,
+                content=form.template_content.data,
+                reference=form.name.data,
+            )
+        else:
+            broadcast_message = BroadcastMessage.create_from_content(
+                service_id=current_service.id,
+                content=form.template_content.data,
+                reference=form.name.data,
+            )
         return redirect(
             url_for(
                 ".choose_broadcast_library",
@@ -197,6 +204,17 @@ def write_new_broadcast(service_id):
                 broadcast_message_id=broadcast_message_id,
             )
         )
+
+    if broadcast_message_id:
+        broadcast_message = BroadcastMessage.from_id(
+            broadcast_message_id,
+            service_id=current_service.id,
+        )
+        if broadcast_message.status == "draft":
+            form.template_content.data = broadcast_message.content
+            form.name.data = broadcast_message.reference
+        else:
+            broadcast_message = None
 
     return render_template(
         "views/broadcast/write-new-broadcast.html",
