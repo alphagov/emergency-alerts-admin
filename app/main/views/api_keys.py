@@ -1,37 +1,30 @@
+from emergency_alerts_utils.api_key import KEY_TYPE_DESCRIPTIONS, KEY_TYPE_NORMAL
 from flask import abort, flash, redirect, render_template, request, url_for
+from flask_login import current_user
 from markupsafe import Markup
 
 from app import api_key_api_client, current_service, service_api_client
-from app.formatters import email_safe
 from app.main import main
 from app.main.forms import CreateKeyForm
-from app.notify_client.api_key_api_client import (
-    KEY_TYPE_NORMAL,
-    KEY_TYPE_TEAM,
-    KEY_TYPE_TEST,
-)
+from app.utils.admin_action import ADMIN_CREATE_API_KEY, create_or_replace_admin_action
 from app.utils.user import user_has_permissions
 
 dummy_bearer_token = "bearer_token_set"
 
 
-@main.route("/services/<uuid:service_id>/api/keys")
+@main.route(
+    "/services/<uuid:service_id>/api/keys",
+)
 @user_has_permissions("manage_api_keys")
 def api_keys(service_id):
-    return render_template(
-        "views/api/keys.html",
-    )
+    return render_template("views/api/keys.html", key_type_descriptions=KEY_TYPE_DESCRIPTIONS)
 
 
 @main.route("/services/<uuid:service_id>/api/keys/create", methods=["GET", "POST"])
-@user_has_permissions("manage_api_keys", restrict_admin_usage=True)
+@user_has_permissions("manage_api_keys")
 def create_api_key(service_id):
     form = CreateKeyForm(current_service.api_keys)
-    form.key_type.choices = [
-        (KEY_TYPE_NORMAL, "Live – sends to anyone"),
-        (KEY_TYPE_TEAM, "Team and guest list – limits who you can send to"),
-        (KEY_TYPE_TEST, "Test – pretends to send messages"),
-    ]
+    form.key_type.choices = [(type, description) for type, description in KEY_TYPE_DESCRIPTIONS.items()]
     # preserve order of items extended by starting with empty dicts
     form.key_type.param_extensions = {"items": [{}, {}]}
     if current_service.trial_mode:
@@ -48,15 +41,18 @@ def create_api_key(service_id):
     if form.validate_on_submit():
         if current_service.trial_mode and form.key_type.data == KEY_TYPE_NORMAL:
             abort(400)
-        secret = api_key_api_client.create_api_key(
-            service_id=service_id, key_name=form.key_name.data, key_type=form.key_type.data
-        )
-        return render_template(
-            "views/api/keys/show.html",
-            secret=secret,
-            service_id=service_id,
-            key_name=email_safe(form.key_name.data, whitespace="_"),
-        )
+        action = {
+            "service_id": current_service.id,
+            "created_by": current_user.id,
+            "action_type": ADMIN_CREATE_API_KEY,
+            "action_data": {
+                "key_type": form.key_type.data,
+                "key_name": form.key_name.data,
+            },
+        }
+        create_or_replace_admin_action(action)
+        flash("An admin approval has been created", "default_with_tick")
+        return redirect(url_for(".api_keys", service_id=service_id))
     return render_template("views/api/keys/create.html", form=form)
 
 
@@ -72,9 +68,7 @@ def revoke_api_key(service_id, key_id):
             ],
             "revoke this API key",
         )
-        return render_template(
-            "views/api/keys.html",
-        )
+        return render_template("views/api/keys.html", key_type_descriptions=KEY_TYPE_DESCRIPTIONS)
     elif request.method == "POST":
         api_key_api_client.revoke_api_key(service_id=service_id, key_id=key_id)
         flash("‘{}’ was revoked".format(key_name), "default_with_tick")

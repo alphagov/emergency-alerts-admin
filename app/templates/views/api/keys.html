@@ -28,13 +28,7 @@
         <div class="file-list">
           {{ item.name }}
           <div class="hint">
-            {% if item.key_type == 'normal' %}
-              Live – sends to anyone
-            {% elif item.key_type == 'team' %}
-              Team and guest list – limits who you can send to
-            {% elif item.key_type == 'test' %}
-              Test – pretends to send messages
-            {% endif %}
+            {{ key_type_descriptions[item.key_type] }}
           </div>
         </div>
       {% endcall %}

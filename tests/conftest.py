@@ -2432,6 +2432,14 @@ def mock_get_invited_org_user_by_id(mocker, sample_org_invite):
 
 
 @pytest.fixture
+def mock_get_pending_admin_actions(mocker):
+    return mocker.patch(
+        "app.admin_actions_api_client.get_pending_admin_actions",
+        return_value={"pending": [], "services": {}, "users": {}},
+    )
+
+
+@pytest.fixture
 def webauthn_credential():
     return {
         "id": str(uuid4()),
