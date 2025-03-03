@@ -424,6 +424,9 @@ def broadcast_message_json(
     approved_by=None,
     rejected_by=None,
     cancelled_by=None,
+    submitted_by=None,
+    updated_by=None,
+    submitted_by_id=None,
 ):
     return {
         "id": id_,
@@ -455,6 +458,9 @@ def broadcast_message_json(
         "approved_by": approved_by,
         "rejected_by": rejected_by,
         "cancelled_by": cancelled_by or "an API call",
+        "submitted_by": submitted_by,
+        "submitted_by_id": submitted_by_id,
+        "updated_by": updated_by,
     }
 
 
