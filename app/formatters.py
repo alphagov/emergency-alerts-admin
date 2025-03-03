@@ -92,6 +92,8 @@ def format_seconds_duration_as_time(seconds):
 
 
 def parse_seconds_as_hours_and_minutes(seconds):
+    # Returned values wrap around a 24 hour period, so 1 day 22 hours 30 minutes
+    # returns the same value as 22 hours and 30 minutes
     seconds = int(seconds or 0)
     seconds %= 24 * 3600
     hours = seconds // 3600
