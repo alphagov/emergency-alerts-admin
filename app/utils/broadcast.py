@@ -1,5 +1,5 @@
 import pyproj
-from flask import render_template, url_for
+from flask import redirect, render_template, url_for
 from postcode_validator.uk.uk_postcode_validator import UKPostcode
 from shapely import Point
 from shapely.geometry import MultiPolygon, Polygon
@@ -368,4 +368,47 @@ def render_current_alert_page(
         ),
         hide_stop_link=hide_stop_link,
         broadcast_message_version_count=broadcast_message.get_count_of_versions(),
+    )
+
+
+def get_changed_alert_form_data(broadcast_message, form):
+    """
+    Compares stored alert reference and content with the initial form data, stored when page rendered.
+    If the overwrite_{field} field is True, i.e. overwrite button has been clicked for that field
+    then changes to that field are not stored and considered as we're overwriting the data for that field.
+    """
+    changes = {}
+    if broadcast_message.reference != form.initial_name.data and not form.overwrite_name.data:
+        changes["reference"] = {"updated_by": broadcast_message.updated_by}
+    if broadcast_message.content != form.initial_content.data and not form.overwrite_content.data:
+        changes["message"] = {"updated_by": broadcast_message.updated_by}
+    return changes
+
+
+def update_broadcast_message_using_changed_data(broadcast_message_id, form):
+    BroadcastMessage.update_from_content(
+        service_id=current_service.id,
+        broadcast_message_id=broadcast_message_id,
+        content=form.template_content.data if form.initial_content.data != form.template_content.data else None,
+        reference=form.name.data if form.initial_name.data != form.name.data else None,
+    )
+
+
+def redirect_dependent_on_alert_area(broadcast_message):
+    return (
+        redirect(
+            url_for(
+                ".preview_broadcast_message",
+                service_id=current_service.id,
+                broadcast_message_id=broadcast_message.id,
+            )
+        )
+        if broadcast_message.areas
+        else redirect(
+            url_for(
+                ".choose_broadcast_library",
+                service_id=current_service.id,
+                broadcast_message_id=broadcast_message.id,
+            )
+        )
     )
