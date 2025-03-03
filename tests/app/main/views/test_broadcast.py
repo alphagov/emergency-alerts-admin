@@ -1691,8 +1691,10 @@ def test_write_new_broadcast_content_from_uuid_is_displayed_before_live(
     )
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
-    page = client_request.get("main.write_new_broadcast", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
-
+    page = client_request.get(
+        "main.write_new_broadcast", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid, follow_redirects=True
+    )
+    assert normalize_spaces(page.select_one("h1").text) == "Edit alert"
     assert normalize_spaces(page.select_one("textarea").text) == "Emergency broadcast content"
 
 
@@ -1962,6 +1964,7 @@ def test_add_postcode_area_to_broadcast(
     active_user_create_broadcasts_permission,
     post_data,
     update_broadcast_data,
+    mock_get_broadcast_message_versions,
 ):
     service_one["permissions"] += ["broadcast"]
     mock_get_broadcast_message = mocker.patch(
@@ -2126,6 +2129,7 @@ def test_add_latitude_longitude_coordinate_area_to_broadcast(
     active_user_create_broadcasts_permission,
     post_data,
     update_broadcast_data,
+    mock_get_broadcast_message_versions,
 ):
     service_one["permissions"] += ["broadcast"]
     mock_get_broadcast_message = mocker.patch(
@@ -2300,6 +2304,7 @@ def test_add_easting_northing_coordinate_area_to_broadcast(
     active_user_create_broadcasts_permission,
     post_data,
     update_broadcast_data,
+    mock_get_broadcast_message_versions,
 ):
     service_one["permissions"] += ["broadcast"]
     mock_get_broadcast_message = mocker.patch(
@@ -3246,6 +3251,7 @@ def test_preview_broadcast_message_page(
     mock_get_draft_broadcast_message,
     fake_uuid,
     active_user_create_broadcasts_permission,
+    mock_get_broadcast_message_versions,
 ):
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
@@ -4791,6 +4797,7 @@ def test_view_broadcast_versions_returns_versions(
     mock_update_broadcast_message,
     mock_update_broadcast_message_status_with_reason,
     mock_get_broadcast_message_versions,
+    mock_check_can_update_status,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
