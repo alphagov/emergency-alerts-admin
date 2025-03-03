@@ -197,6 +197,7 @@ def write_new_broadcast(service_id):
                 content=form.template_content.data,
                 reference=form.name.data,
             )
+        broadcast_message_id = broadcast_message.id
         return redirect(
             url_for(
                 ".choose_broadcast_library",
