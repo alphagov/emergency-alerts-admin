@@ -34,16 +34,24 @@ from app.utils.broadcast import (
     extract_attributes_from_custom_area,
     format_areas_list,
     get_centroid_if_postcode_in_db,
+    get_changed_alert_form_data,
+    keep_alert_content_button_clicked,
+    keep_alert_reference_button_clicked,
     normalising_point,
+    overwrite_content_button_clicked,
+    overwrite_reference_button_clicked,
     parse_coordinate_form_data,
     postcode_and_radius_entered,
     postcode_entered,
     preview_button_clicked,
+    redirect_dependent_on_alert_area,
     render_coordinates_page,
     render_current_alert_page,
+    render_edit_alert_page,
     render_postcode_page,
     select_coordinate_form,
     stringify_areas,
+    update_broadcast_message_using_changed_data,
     validate_form_based_on_fields_entered,
 )
 from app.utils.user import user_has_permissions
@@ -169,46 +177,19 @@ def new_broadcast(service_id):
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
 def write_new_broadcast(service_id):
-    form = BroadcastTemplateForm()
-
     broadcast_message_id = request.args.get("broadcast_message_id")
     broadcast_message = (
         BroadcastMessage.from_id(broadcast_message_id, service_id=current_service.id) if broadcast_message_id else None
     )
-
-    if broadcast_message:
-        try:
-            broadcast_message.check_can_update_status("draft")
-        except HTTPError as e:
-            flash(e.message)
-            return render_current_alert_page(
-                broadcast_message,
-            )
+    form = BroadcastTemplateForm()
 
     if form.validate_on_submit():
-        if broadcast_message_id:
-            BroadcastMessage.update_from_content(
-                service_id=current_service.id,
-                broadcast_message_id=broadcast_message_id,
-                content=form.template_content.data,
-                reference=form.name.data,
-            )
-
-            if broadcast_message.areas:
-                return redirect(
-                    url_for(
-                        ".preview_broadcast_message",
-                        service_id=current_service.id,
-                        broadcast_message_id=broadcast_message_id,
-                    )
-                )
-        else:
-            broadcast_message = BroadcastMessage.create_from_content(
-                service_id=current_service.id,
-                content=form.template_content.data,
-                reference=form.name.data,
-            )
-            broadcast_message_id = broadcast_message.id
+        broadcast_message = BroadcastMessage.create_from_content(
+            service_id=current_service.id,
+            content=form.template_content.data,
+            reference=form.name.data,
+        )
+        broadcast_message_id = broadcast_message.id
         return redirect(
             url_for(
                 ".choose_broadcast_library",
@@ -217,15 +198,104 @@ def write_new_broadcast(service_id):
             )
         )
 
-    if broadcast_message and broadcast_message.status == "draft":
-        form.template_content.data = broadcast_message.content
-        form.name.data = broadcast_message.reference
-
     return render_template(
         "views/broadcast/write-new-broadcast.html",
         broadcast_message=broadcast_message,
         form=form,
     )
+
+
+@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/edit", methods=["GET", "POST"])
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+@service_has_permission("broadcast")
+def edit_broadcast(service_id, broadcast_message_id):
+    broadcast_message = BroadcastMessage.from_id(broadcast_message_id, service_id=current_service.id)
+
+    # If alert cannot move into draft status from its original status, an error is rendered on page
+    try:
+        broadcast_message.check_can_update_status("draft")
+    except HTTPError as e:
+        flash(e.message)
+        return render_current_alert_page(
+            broadcast_message,
+        )
+
+    if request.method == "GET":
+        # When the page loads initially, the fields are populated with alerts current data
+        form = BroadcastTemplateForm(template_content=broadcast_message.content, name=broadcast_message.reference)
+        form.initial_name.data = broadcast_message.reference
+        form.initial_content.data = broadcast_message.content
+        form.overwrite_name.data = ""
+        form.overwrite_content.data = ""
+    elif overwrite_reference_button_clicked():
+        """
+        When the button to overwrite the current reference data is clicked, the overwrite field is set
+        to True, so the banner won't be displayed again as user has confirmed that they know the data is
+        different and should be overwritten.
+        The reference field is populated with "name" data posted from the request, and the page is re-rendered to
+        reflect this.
+        """
+        form = BroadcastTemplateForm()
+        form.overwrite_name.data = True
+        form.name.data = request.form.get("name")
+        return render_edit_alert_page(broadcast_message, form)
+    elif overwrite_content_button_clicked():
+        """
+        When the button to overwrite the current message data is clicked, the overwrite field is set
+        to True, so the banner won't be displayed again for message as user has confirmed that they know the data is
+        different and should be overwritten.
+        The message field is populated with "template-content" data posted from the request, and the page is
+        re-rendered to reflect this.
+        """
+        form = BroadcastTemplateForm()
+        form.overwrite_content.data = True
+        form.template_content.data = request.form.get("template_content")
+        return render_edit_alert_page(broadcast_message, form)
+    elif keep_alert_reference_button_clicked():
+        """
+        When the button to keep the alert's current reference is clicked, the initial name field
+        and the new name field are set to alert's current reference value and the page is re-rendered.
+        """
+        form = BroadcastTemplateForm()
+        form.name.data = broadcast_message.reference
+        form.initial_name.data = broadcast_message.reference
+        return render_edit_alert_page(broadcast_message, form)
+
+    elif keep_alert_content_button_clicked():
+        """
+        When the button to keep the alert's current message is clicked, the initial content field
+        and the new template-content field are set to alert's current value and the page is re-rendered.
+        """
+        form = BroadcastTemplateForm()
+        form.template_content.data = broadcast_message.content
+        form.initial_content.data = broadcast_message.content
+        return render_edit_alert_page(broadcast_message, form)
+
+    else:
+        form = BroadcastTemplateForm(
+            name=request.form.get("name"), template_content=request.form.get("template_content")
+        )
+
+    if form.validate_on_submit():
+        """
+        Once form validated and submitted, check that the data stored in db matches form's initial data,
+        and pass any changed data to template to display banners to indicate that alert has been updated
+        while page open.
+        """
+        if changes := get_changed_alert_form_data(broadcast_message, form):
+            return render_template(
+                "views/broadcast/write-new-broadcast.html",
+                broadcast_message=broadcast_message,
+                form=form,
+                changes=changes,
+            )
+        # Updates the initial data fields to ensure only changed data posted to API
+        form.initial_name.data = broadcast_message.reference
+        form.initial_content.data = broadcast_message.content
+        update_broadcast_message_using_changed_data(broadcast_message_id, form)
+        return redirect_dependent_on_alert_area(broadcast_message)
+
+    return render_edit_alert_page(broadcast_message, form)
 
 
 @main.route("/services/<uuid:service_id>/new-broadcast/<uuid:template_id>")
@@ -779,6 +849,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
                 areas=areas,
                 label=create_map_label(areas),
                 areas_string=stringify_areas(areas),
+                broadcast_message_version_count=broadcast_message.get_count_of_versions(),
             )
         broadcast_message.request_approval()
         return redirect(
@@ -795,6 +866,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
         areas=areas,
         label=create_map_label(areas),
         areas_string=stringify_areas(areas),
+        broadcast_message_version_count=broadcast_message.get_count_of_versions(),
     )
 
 
@@ -892,6 +964,7 @@ def approve_broadcast_message(service_id, broadcast_message_id):
             areas=areas,
             label=create_map_label(areas),
             areas_string=stringify_areas(areas),
+            broadcast_message_version_count=broadcast_message.get_count_of_versions(),
         )
 
     if broadcast_message.status != "pending-approval":
