@@ -59,6 +59,7 @@ EXCLUDED_ENDPOINTS = tuple(
             "discard_broadcast_message",
             "delete_service_template",
             "delete_template_folder",
+            "edit_broadcast",
             "edit_organisation_crown_status",
             "edit_organisation_domains",
             "edit_organisation_name",
