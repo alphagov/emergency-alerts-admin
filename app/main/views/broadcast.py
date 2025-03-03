@@ -9,6 +9,7 @@ from app.main.forms import (
     BroadcastAreaFormWithSelectAll,
     BroadcastTemplateForm,
     ChooseCoordinateTypeForm,
+    ChooseDurationForm,
     ConfirmBroadcastForm,
     NewBroadcastForm,
     PostcodeForm,
@@ -224,36 +225,6 @@ def broadcast(service_id, template_id):
             ).id,
         )
     )
-
-
-# @main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/duration", methods=["GET", "POST"])
-# @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-# @service_has_permission("broadcast")
-# def choose_broadcast_duration(service_id, broadcast_message_id):
-#     form = ChooseDurationForm()
-
-#     broadcast_message = BroadcastMessage.from_id(
-#         broadcast_message_id,
-#         service_id=current_service.id,
-#     )
-
-#     back_link = url_for(
-#         ".preview_broadcast_areas", service_id=current_service.id, broadcast_message_id=broadcast_message_id
-#     )
-
-#     if form.validate_on_submit():
-#         BroadcastMessage.update_duration(
-#             service_id=current_service.id,
-#             broadcast_message_id=broadcast_message_id,
-#             duration=form.content.data,
-#         )
-#         return redirect(
-#             url_for(
-#                 ".preview_broadcast_message", service_id=current_service.id, broadcast_message_id=broadcast_message.id
-#             )
-#         )
-
-#     return render_template("views/broadcast/duration.html", form=form, back_link=back_link)
 
 
 @main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/areas")
@@ -688,6 +659,41 @@ def remove_broadcast_area(service_id, broadcast_message_id, area_slug):
             service_id=current_service.id,
             broadcast_message_id=broadcast_message_id,
         )
+    )
+
+
+@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/duration", methods=["GET", "POST"])
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+@service_has_permission("broadcast")
+def choose_broadcast_duration(service_id, broadcast_message_id):
+    broadcast_message = BroadcastMessage.from_id(
+        broadcast_message_id,
+        service_id=current_service.id,
+    )
+
+    form = ChooseDurationForm(channel=current_service.broadcast_channel, duration=broadcast_message.broadcast_duration)
+
+    back_link = url_for(
+        ".preview_broadcast_areas", service_id=current_service.id, broadcast_message_id=broadcast_message_id
+    )
+
+    if form.validate_on_submit():
+        BroadcastMessage.update_duration(
+            service_id=current_service.id,
+            broadcast_message_id=broadcast_message_id,
+            duration=f"PT{form.hours.data}H{form.minutes.data}M",
+        )
+        return redirect(
+            url_for(
+                ".preview_broadcast_message", service_id=current_service.id, broadcast_message_id=broadcast_message.id
+            )
+        )
+
+    return render_template(
+        "views/broadcast/duration.html",
+        form=form,
+        broadcast_message=broadcast_message,
+        back_link=back_link,
     )
 
 

@@ -207,6 +207,10 @@ class BroadcastMessage(JSONModel):
             return "completed"
         return self._dict["status"]
 
+    @property
+    def broadcast_duration(self):
+        return self._dict["duration"]
+
     @cached_property
     def count_of_phones(self):
         return round_to_significant_figures(sum(area.count_of_phones for area in self.areas), 1)

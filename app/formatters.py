@@ -64,6 +64,42 @@ def format_time_24h(date):
     return utc_string_to_aware_gmt_datetime(date).strftime("%H:%M")
 
 
+def format_seconds_duration_as_time(seconds):
+    seconds = int(seconds or 0)
+    days = seconds // (24 * 3600)
+    seconds %= 24 * 3600
+    hours = seconds // 3600
+    seconds %= 3600
+    minutes = seconds // 60
+    seconds %= 60
+
+    time_parts = []
+    if days > 0:
+        time_parts.append(f"{days} {'day' if days == 1 else 'days'}")
+    if hours > 0:
+        time_parts.append(f"{hours} {'hour' if hours == 1 else 'hours'}")
+    if minutes > 0:
+        time_parts.append(f"{minutes} {'minute' if minutes == 1 else 'minutes'}")
+    if seconds > 0:
+        time_parts.append(f"{seconds} {'second' if seconds == 1 else 'seconds'}")
+
+    if not time_parts:
+        return "0 seconds"
+    elif len(time_parts) == 1:
+        return time_parts[0]
+    else:
+        return ", ".join(time_parts)
+
+
+def parse_seconds_as_hours_and_minutes(seconds):
+    seconds = int(seconds or 0)
+    seconds %= 24 * 3600
+    hours = seconds // 3600
+    seconds %= 3600
+    minutes = seconds // 60
+    return (hours, minutes)
+
+
 def get_human_day(time, date_prefix=""):
     #  Add 1 minute to transform 00:00 into ‘midnight today’ instead of ‘midnight tomorrow’
     date = (utc_string_to_aware_gmt_datetime(time) - timedelta(minutes=1)).date()

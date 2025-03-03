@@ -1,32 +1,79 @@
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
+{% from "govuk_frontend_jinja/components/details/macro.html" import govukDetails %}
+{% from "components/page-header.html" import page_header %}
 {% from "components/page-footer.html" import page_footer %}
 {% from "components/form.html" import form_wrapper %}
 {% from "components/error-summary.html" import errorSummary %}
+{% from "components/input-custom-error.html" import inputWithCustomError %}
 
 {% extends "withnav_template.html" %}
 
 {% block service_page_title %}
-  Choose alert duration
+  Alert duration
 {% endblock %}
 
-{% block backLink %}
+{# {% block backLink %}
   {{ govukBackLink({ "href": back_link }) }}
+{% endblock %} #}
+
+{% block backLink %}
+  {% if custom_broadcast %}
+    {% if 'postcode' in broadcast_message.areas[0].name %}
+      {{ govukBackLink({ "href": url_for('.choose_broadcast_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug='postcodes') }) }}
+    {% elif 'latitude' in broadcast_message.areas[0].name%}
+      {{ govukBackLink({ "href": url_for('.search_coordinates', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug='coordinates', coordinate_type='latitude_longitude') }) }}
+    {% elif 'easting' in broadcast_message.areas[0].name%}
+      {{ govukBackLink({ "href": url_for('.search_coordinates', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug='coordinates', coordinate_type='easting_northing') }) }}
+    {% endif %}
+  {% else %}
+    {{ govukBackLink({ "href": url_for('.preview_broadcast_areas', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }) }}
+  {% endif %}
 {% endblock %}
 
 {% block maincolumn_content %}
   {{ errorSummary(form) }}
 
+  {{ page_header('Alert Duration')}}
+
+  {% if broadcast_message.duration %}
+    <p class="govuk-body govuk-!-margin-bottom-3">A duration has been set.</p>
+    <p class="govuk-hint govuk-!-margin-bottom-3"><strong>Duration:</strong> {{ broadcast_message.duration|format_seconds_duration_as_time }}</p>
+  {% else %}
+    <p class="govuk-body govuk-!-margin-bottom-3">A default duration will be set.</p>
+    <p class="govuk-hint govuk-!-margin-bottom-3"><strong>Duration:</strong> 22 hours</p>
+  {% endif %}
+
+  {% set change_duration %}
+    <div class="govuk-!-margin-top-2 govuk-!-margin-bottom-3">
+      <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-3">
+        This alert will be broadcast for the duration you input.
+      </p>
+      <p class="govuk-body">
+        Duration input
+      </p>
+    </div>
+    <div class="duration-container govuk-!-column-one-half">
+      {% if broadcast_message.channel in ['test', 'operator'] %}
+        {{ form.test_hours(param_extensions={
+          "classes": "duration-input",
+        }) }}
+      {% else %}
+        {{ form.hours(param_extensions={
+          "classes": "duration-input",
+        }) }}
+      {% endif %}
+      {{ form.minutes(param_extensions={
+        "classes": "duration-input",
+      }) }}
+    </div>
+  {% endset %}
+
   {% call form_wrapper(class="govuk-!-margin-top-3") %}
-    {{ form.content(
-      param_extensions={
-        'fieldset': {
-          'legend': {
-            'isPageHeading': True,
-            'classes': 'govuk-fieldset__legend--l'
-          }
-        }
-      }
-    ) }}
+    {{ govukDetails({
+      "classes": "govuk-!-margin-bottom-6",
+      "summaryText": "Change duration",
+      "html": change_duration
+    }) }}
     {{ page_footer('Preview alert') }}
   {% endcall %}
 
