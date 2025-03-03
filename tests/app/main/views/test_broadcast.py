@@ -3936,7 +3936,7 @@ def test_can_approve_own_broadcast_in_training_mode(
         create_active_user_create_broadcasts_permissions(),
     ],
 )
-def test_cant_approve_own_broadcast_if_service_is_live(
+def test_can_approve_own_broadcast_if_service_is_live_and_user_didnt_submit_alert(
     mocker, client_request, service_one, fake_uuid, user, mock_get_broadcast_message_versions
 ):
     service_one["restricted"] = False
@@ -3950,6 +3950,48 @@ def test_cant_approve_own_broadcast_if_service_is_live(
             finishes_at="2020-02-23T23:23:23.000000",
             status="pending-approval",
             created_by="Test",
+        ),
+    )
+    client_request.login(user)
+    service_one["permissions"] += ["broadcast"]
+
+    page = client_request.get(
+        ".view_current_broadcast",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        _test_page_title=False,
+    )
+
+    assert (normalize_spaces(page.select_one(".banner h1").text)) == "Test wants to broadcast Example template"
+    form = page.select("form")
+    assert form
+    assert normalize_spaces(page.select(".govuk-button")[4].text) == "Start broadcasting now"
+    assert normalize_spaces(page.select(".govuk-button")[5].text) == "Reject alert"
+
+
+@freeze_time("2020-02-22T22:22:22.000000")
+@pytest.mark.parametrize(
+    "user",
+    [
+        create_active_user_approve_broadcasts_permissions(),
+        create_active_user_create_broadcasts_permissions(),
+    ],
+)
+def test_cannot_approve_own_broadcast_if_service_is_live_and_user_submitted_alert(
+    mocker, client_request, service_one, fake_uuid, user, mock_get_broadcast_message_versions
+):
+    service_one["restricted"] = False
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            finishes_at="2020-02-23T23:23:23.000000",
+            status="pending-approval",
+            created_by="Test",
+            submitted_by_id=fake_uuid,
         ),
     )
     client_request.login(user)
