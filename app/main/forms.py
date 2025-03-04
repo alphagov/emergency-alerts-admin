@@ -1062,6 +1062,7 @@ class BroadcastTemplateForm(SMSTemplateForm):
     template_content = TextAreaField(
         "Alert message", validators=[DataRequired(message="Enter an alert message"), NoCommasInPlaceHolders()]
     )
+    # Hidden fields to store initial data and data on page when specific actions taken by user
     initial_name = HiddenField("initial_name")
     initial_content = HiddenField("initial_content")
     overwrite_name = BooleanField("overwrite_name", render_kw={"hidden": True})
