@@ -431,17 +431,33 @@ class TestPlatformAdminActions:
         fake_uuid,
         mocker,
     ):
+        pending_action = self.sample_pending_action(fake_uuid, platform_admin_user["id"])
         mocker.patch(
             "app.admin_actions_api_client.get_pending_admin_actions",
-            return_value={"pending": []},  # For the followed redirect before asserting
+            return_value={
+                "pending": [pending_action],
+                "users": {
+                    platform_admin_user["id"]: {"name": "Test", "email_address": "test@test.gov.uk"},
+                },
+                "services": {
+                    SERVICE_ONE_ID: {"name": "Test Live Service", "active": True, "restricted": False},
+                },
+            },
         )
         mocker.patch(
             "app.admin_actions_api_client.get_admin_action_by_id",
-            return_value=self.sample_pending_action(fake_uuid, platform_admin_user["id"]),
+            return_value=pending_action,
         )
+        client_request.login(platform_admin_user)
+
+        # Is the approve button disabled?
+        page = client_request.get("main.admin_actions")
+        approve_button = page.select_one("button[data-button-type=approve]")
+        assert approve_button.attrs["disabled"] is not None
+
+        # Do we enforce reject it even if they enable the button?
         mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
 
-        client_request.login(platform_admin_user)
         page = client_request.post(
             "main.review_admin_action", action_id=fake_uuid, new_status="approved", _follow_redirects=True
         )
