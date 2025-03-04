@@ -1165,4 +1165,5 @@ def view_broadcast_versions(service_id, broadcast_message_id):
         "views/broadcast/choose_history.html",
         broadcast_message_id=broadcast_message_id,
         versions=versions,
+        back_link=request.referrer,
     )
