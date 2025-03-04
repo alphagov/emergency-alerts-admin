@@ -404,9 +404,9 @@ def get_changed_alert_form_data(broadcast_message, form):
     """
     changes = {}
     if broadcast_message.reference != form.initial_name.data and not form.overwrite_name.data:
-        changes["reference"] = {"updated_by": broadcast_message.updated_by}
+        changes["reference"] = {"updated_by": broadcast_message.updated_by or "A user"}
     if broadcast_message.content != form.initial_content.data and not form.overwrite_content.data:
-        changes["message"] = {"updated_by": broadcast_message.updated_by}
+        changes["message"] = {"updated_by": broadcast_message.updated_by or "A user"}
     return changes
 
 
