@@ -60,7 +60,7 @@
           {{ govukButton({
             "text": "Approve",
             "attributes": {"data-button-type": "approve"},
-            "disabled": not allow_self_approval or (not allow_self_approval and action.created_by == current_user.id)
+            "disabled": not (allow_self_approval or action.created_by != current_user.id)
           }) }}
         </form>
         </br>
