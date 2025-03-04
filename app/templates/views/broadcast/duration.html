@@ -4,7 +4,6 @@
 {% from "components/page-footer.html" import page_footer %}
 {% from "components/form.html" import form_wrapper %}
 {% from "components/error-summary.html" import errorSummary %}
-{% from "components/input-custom-error.html" import inputWithCustomError %}
 
 {% extends "withnav_template.html" %}
 
@@ -73,7 +72,8 @@
     {{ govukDetails({
       "classes": "govuk-!-margin-bottom-6",
       "summaryText": "Change duration",
-      "html": change_duration
+      "html": change_duration,
+      "open": form.errors
     }) }}
     {{ page_footer('Preview alert') }}
   {% endcall %}
