@@ -1050,6 +1050,13 @@ class ChooseDurationForm(StripWhitespaceForm):
             (hours, minutes) = parse_seconds_as_hours_and_minutes(duration)
             self.hours.data = hours
             self.minutes.data = minutes
+        elif duration is None:
+            if channel in ["test", "operator"]:
+                self.hours.data = 4
+                self.minutes.data = 0
+            else:
+                self.hours.data = 22
+                self.minutes.data = 30
 
     hours = GovukIntegerField(
         validators=[

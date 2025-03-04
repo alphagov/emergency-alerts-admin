@@ -451,7 +451,7 @@ def search_postcodes(service_id, broadcast_message_id, library_slug):
                 broadcast_message.add_custom_areas(circle_polygon, id=id)
                 return redirect(
                     url_for(
-                        ".preview_broadcast_message",
+                        ".choose_broadcast_duration",
                         service_id=current_service.id,
                         broadcast_message_id=broadcast_message.id,
                     )
@@ -568,7 +568,7 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
             broadcast_message.add_custom_areas(polygon, id=id)
             return redirect(
                 url_for(
-                    ".preview_broadcast_message",
+                    ".choose_broadcast_duration",
                     service_id=current_service.id,
                     broadcast_message_id=broadcast_message.id,
                 )
