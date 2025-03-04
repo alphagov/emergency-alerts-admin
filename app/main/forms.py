@@ -1042,11 +1042,6 @@ class BaseTemplateForm(StripWhitespaceForm):
     )
 
 
-class RequiredForChannels(object):
-    def __init__(self, channels, message=None):
-        self.channels = channels
-
-
 class ChooseDurationForm(StripWhitespaceForm):
     def __init__(self, channel, duration, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -40,7 +40,14 @@
     <p class="govuk-hint govuk-!-margin-bottom-3"><strong>Duration:</strong> {{ broadcast_message.duration|format_seconds_duration_as_time }}</p>
   {% else %}
     <p class="govuk-body govuk-!-margin-bottom-3">A default duration will be set.</p>
-    <p class="govuk-hint govuk-!-margin-bottom-3"><strong>Duration:</strong> 22 hours</p>
+    <p class="govuk-hint govuk-!-margin-bottom-3">
+      <strong>Duration: </strong>
+        {% if form.channel in ['test', 'operator'] %}
+          4 hours, 30 minutes
+        {% else %}
+          22 hours
+        {% endif %}
+    </p>
   {% endif %}
 
   {% set change_duration %}
@@ -53,15 +60,9 @@
       </p>
     </div>
     <div class="duration-container govuk-!-column-one-half">
-      {% if broadcast_message.channel in ['test', 'operator'] %}
-        {{ form.test_hours(param_extensions={
-          "classes": "duration-input",
-        }) }}
-      {% else %}
-        {{ form.hours(param_extensions={
-          "classes": "duration-input",
-        }) }}
-      {% endif %}
+      {{ form.hours(param_extensions={
+        "classes": "duration-input",
+      }) }}
       {{ form.minutes(param_extensions={
         "classes": "duration-input",
       }) }}
