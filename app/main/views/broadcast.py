@@ -244,8 +244,6 @@ def edit_broadcast(service_id, broadcast_message_id):
         form = BroadcastTemplateForm(template_content=broadcast_message.content, name=broadcast_message.reference)
         form.initial_name.data = broadcast_message.reference
         form.initial_content.data = broadcast_message.content
-        form.overwrite_name.data = ""
-        form.overwrite_content.data = ""
     elif overwrite_reference_button_clicked():
         """
         When the button to overwrite the current reference data is clicked, the overwrite field is set
