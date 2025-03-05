@@ -992,7 +992,28 @@ def test_edit_broadcast_page_updates_broadcast_form_when_overwriting_changes(
         ),
     )
     page = client_request.get(".edit_broadcast", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
+    # Assert ref too
     assert normalize_spaces(page.select_one("textarea").text) == "This is a test for edit_broadcast"
+
+    mocker.patch(
+        "app.broadcast_message_api_client.update_broadcast_message",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        data={"reference": "Something different"},
+    )
+
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            reference="Something different",
+            content="This is a test for edit_broadcast",
+        ),
+    )
 
     page = client_request.post(
         ".edit_broadcast",
@@ -1001,7 +1022,7 @@ def test_edit_broadcast_page_updates_broadcast_form_when_overwriting_changes(
         _data={
             "name": "Emergency broadcast overwritten",
             "template_content": "Broadcast content overwritten",
-            "initial_name": "Something different",  # Differs from current broadcast message so triggers banner
+            "initial_name": "Test Edit Alert",
             "initial_content": "This is a test for edit_broadcast",
         },
         _follow_redirects=True,
@@ -1025,7 +1046,7 @@ def test_edit_broadcast_page_updates_broadcast_form_when_overwriting_changes(
             "template_content": "Broadcast content overwritten",
             "initial_name": "Something different",  # Differs from current broadcast message so triggers banner
             "initial_content": "This is a test for edit_broadcast",
-            "overwrite-reference": True,
+            "overwrite-reference": "",
         },
         _follow_redirects=True,
     )
@@ -1042,15 +1063,21 @@ def test_edit_broadcast_page_updates_broadcast_form_when_overwriting_changes(
         _data={
             "name": "Emergency broadcast overwritten",
             "template_content": "Broadcast content overwritten",
-            "initial_name": "Something different",
+            "initial_name": "Emergency broadcast overwritten",
             "initial_content": "This is a test for edit_broadcast",
-            "overwrite_name": "True",
+            "overwrite_name": "y",
         },
         _follow_redirects=True,
     )
 
     # Asserts that page redirected to is the preview-message page and broadcast message has been updated
     assert normalize_spaces(page3.select_one("h1").text) == "Preview alert"
+    assert (
+        normalize_spaces(page3.select(".govuk-summary-list__value")[0].text) == "Emergency broadcast overwritten"
+    )  # why not this?
+    assert normalize_spaces(page3.select(".govuk-summary-list__value")[1].text) == (
+        "Emergency alert " + "This is a test for edit_broadcast"
+    )
 
     mock_update_broadcast_message.assert_called_once_with(
         service_id=SERVICE_ONE_ID,
@@ -1109,6 +1136,19 @@ def test_edit_broadcast_page_updates_broadcast_form_when_keeping_changes(
         + "their change? Yes, overwrite No, keep this change"
     ]
 
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            reference="Something different",
+            content="This is a test for edit_broadcast",
+        ),
+    )
+
     page2 = client_request.post(
         ".edit_broadcast",
         service_id=SERVICE_ONE_ID,
@@ -1116,7 +1156,6 @@ def test_edit_broadcast_page_updates_broadcast_form_when_keeping_changes(
         _data={
             "name": "Emergency broadcast overwritten",
             "template_content": "Broadcast content overwritten",
-            "initial_name": "Something different",  # Differs from current broadcast message so triggers banner
             "initial_content": "This is a test for edit_broadcast",
             "keep-reference": True,
         },
@@ -1135,21 +1174,20 @@ def test_edit_broadcast_page_updates_broadcast_form_when_keeping_changes(
         _data={
             "name": "Test Edit Alert",
             "template_content": "Broadcast content overwritten",
-            "initial_name": "Something different",
+            "initial_name": "Test Edit Alert",
             "initial_content": "This is a test for edit_broadcast",
-            "overwrite_name": "True",
         },
         _follow_redirects=True,
     )
 
     # Asserts that page redirected to is the preview-message page and broadcast message has been updated
     assert normalize_spaces(page3.select_one("h1").text) == "Preview alert"
-
-    mock_update_broadcast_message.assert_called_once_with(
-        service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
-        data={"reference": "Emergency broadcast overwritten", "content": "Broadcast content overwritten"},
+    assert normalize_spaces(page3.select(".govuk-summary-list__value")[0].text) == "Test Edit Alert"
+    assert (
+        normalize_spaces(page3.select(".govuk-summary-list__value")[1].text)
+        == "Emergency alert This is a test for edit_broadcast"
     )
+    assert mock_update_broadcast_message.called is False
 
 
 @pytest.mark.parametrize(
