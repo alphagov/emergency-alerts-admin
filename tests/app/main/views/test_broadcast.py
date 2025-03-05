@@ -956,12 +956,12 @@ def test_edit_broadcast_page_displays_overwrite_banner(
         _follow_redirects=True,
     )
     assert [normalize_spaces(item.text) for item in page2.select(".banner-dangerous")][0] == (
-        "None has made changes to the alert reference. Would you like to overwrite "
+        "A user has made changes to the alert reference. Would you like to overwrite "
         + "their change? Yes, overwrite No, keep this change"
     )
 
     assert [normalize_spaces(item.text) for item in page2.select(".banner-dangerous")][1] == (
-        "None has made changes to the alert message. Would you like to overwrite "
+        "A user has made changes to the alert message. Would you like to overwrite "
         + "their change? Yes, overwrite No, keep this change"
     )
 
@@ -1012,7 +1012,7 @@ def test_edit_broadcast_page_updates_broadcast_form_when_overwriting_changes(
     the banner is displayed to say that the reference has been changed whilst page has been open
     """
     assert [normalize_spaces(item.text) for item in page.select(".banner-dangerous")] == [
-        "None has made changes to the alert reference. Would you like to overwrite "
+        "A user has made changes to the alert reference. Would you like to overwrite "
         + "their change? Yes, overwrite No, keep this change"
     ]
 
@@ -1105,7 +1105,7 @@ def test_edit_broadcast_page_updates_broadcast_form_when_keeping_changes(
     the banner is displayed to say that the reference has been changed whilst page has been open
     """
     assert [normalize_spaces(item.text) for item in page.select(".banner-dangerous")] == [
-        "None has made changes to the alert reference. Would you like to overwrite "
+        "A user has made changes to the alert reference. Would you like to overwrite "
         + "their change? Yes, overwrite No, keep this change"
     ]
 
