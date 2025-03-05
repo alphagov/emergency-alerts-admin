@@ -1022,8 +1022,6 @@ def test_edit_broadcast_page_updates_broadcast_form_when_overwriting_changes(
         _data={
             "name": "Emergency broadcast overwritten",
             "template_content": "Broadcast content overwritten",
-            "initial_name": "Test Edit Alert",
-            "initial_content": "This is a test for edit_broadcast",
         },
         _follow_redirects=True,
     )
