@@ -11,14 +11,10 @@
   Alert Duration
 {% endblock %}
 
-{# {% block backLink %}
-  {{ govukBackLink({ "href": back_link }) }}
-{% endblock %} #}
-
 {% block backLink %}
   {% if custom_broadcast %}
     {% if 'postcode' in broadcast_message.areas[0].name %}
-      {{ govukBackLink({ "href": url_for('.choose_broadcast_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug='postcodes') }) }}
+      {{ govukBackLink({ "href": url_for('.search_postcodes', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug='postcodes') }) }}
     {% elif 'latitude' in broadcast_message.areas[0].name%}
       {{ govukBackLink({ "href": url_for('.search_coordinates', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug='coordinates', coordinate_type='latitude_longitude') }) }}
     {% elif 'easting' in broadcast_message.areas[0].name%}
@@ -42,9 +38,9 @@
     <p class="govuk-hint govuk-!-margin-bottom-3">
       <strong>Duration: </strong>
         {% if form.channel in ['test', 'operator'] %}
-          4 hours, 30 minutes
+          4 hours
         {% else %}
-          22 hours
+          22 hours, 30 minutes
         {% endif %}
     </p>
   {% endif %}
