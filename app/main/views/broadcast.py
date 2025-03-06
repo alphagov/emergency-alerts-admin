@@ -867,6 +867,9 @@ def preview_broadcast_message(service_id, broadcast_message_id):
                 label=create_map_label(areas),
                 areas_string=stringify_areas(areas),
                 broadcast_message_version_count=broadcast_message.get_count_of_versions(),
+                last_updated_time=broadcast_message.get_latest_version().get("created_at")
+                if broadcast_message.get_latest_version()
+                else None,
             )
         broadcast_message.request_approval()
         return redirect(
@@ -884,6 +887,9 @@ def preview_broadcast_message(service_id, broadcast_message_id):
         label=create_map_label(areas),
         areas_string=stringify_areas(areas),
         broadcast_message_version_count=broadcast_message.get_count_of_versions(),
+        last_updated_time=broadcast_message.get_latest_version().get("created_at")
+        if broadcast_message.get_latest_version()
+        else None,
     )
 
 
@@ -982,6 +988,9 @@ def approve_broadcast_message(service_id, broadcast_message_id):
             label=create_map_label(areas),
             areas_string=stringify_areas(areas),
             broadcast_message_version_count=broadcast_message.get_count_of_versions(),
+            last_updated_time=broadcast_message.get_latest_version().get("created_at")
+            if broadcast_message.get_latest_version()
+            else None,
         )
 
     if broadcast_message.status != "pending-approval":
