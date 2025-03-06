@@ -443,6 +443,13 @@ class BroadcastMessage(JSONModel):
     def get_count_of_versions(self):
         return len(self.get_versions())
 
+    def get_latest_version(self):
+        return (
+            broadcast_message_api_client.get_broadcast_message_versions(self.service_id, self.id)[0]
+            if len(broadcast_message_api_client.get_broadcast_message_versions(self.service_id, self.id)) > 0
+            else None
+        )
+
 
 class BroadcastMessages(ModelList):
     model = BroadcastMessage
