@@ -23,6 +23,7 @@ from app.utils.broadcast import (
     all_coordinate_form_fields_empty,
     all_fields_empty,
     check_coordinates_valid_for_enclosed_polygons,
+    continue_button_clicked,
     coordinates_and_radius_entered,
     coordinates_entered_but_no_radius,
     create_coordinate_area,
@@ -37,7 +38,6 @@ from app.utils.broadcast import (
     parse_coordinate_form_data,
     postcode_and_radius_entered,
     postcode_entered,
-    preview_button_clicked,
     render_coordinates_page,
     render_postcode_page,
     select_coordinate_form,
@@ -284,7 +284,6 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
         broadcast_message_id,
         service_id=current_service.id,
     )
-
     library = BroadcastMessage.libraries.get(library_slug)
 
     if library_slug == "coordinates":
@@ -443,9 +442,9 @@ def search_postcodes(service_id, broadcast_message_id, library_slug):
                 count_of_phones_likely,
             ) = extract_attributes_from_custom_area(circle_polygon)
             id = create_postcode_area_slug(form)
-            if preview_button_clicked(request):
+            if continue_button_clicked(request):
                 """
-                If 'Preview alert' button is clicked, area is added to Broadcast Message
+                If 'Continue' button is clicked, area is added to Broadcast Message
                 and message is updated.
                 """
                 broadcast_message.add_custom_areas(circle_polygon, id=id)
@@ -560,7 +559,7 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
         else:
             adding_invalid_coords_errors_to_form(coordinate_type, form)
             form.validate_on_submit()
-        if preview_button_clicked(request):
+        if continue_button_clicked(request):
             """
             If 'Preview alert' button is clicked, area is added to Broadcast Message
             and message is updated.
@@ -670,9 +669,8 @@ def choose_broadcast_duration(service_id, broadcast_message_id):
         broadcast_message_id,
         service_id=current_service.id,
     )
-
+    is_custom_broadcast = type(broadcast_message.areas) is CustomBroadcastAreas
     form = ChooseDurationForm(channel=current_service.broadcast_channel, duration=broadcast_message.broadcast_duration)
-
     back_link = url_for(
         ".preview_broadcast_areas", service_id=current_service.id, broadcast_message_id=broadcast_message_id
     )
@@ -694,6 +692,7 @@ def choose_broadcast_duration(service_id, broadcast_message_id):
         form=form,
         broadcast_message=broadcast_message,
         back_link=back_link,
+        custom_broadcast=is_custom_broadcast,
     )
 
 
