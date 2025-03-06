@@ -1046,22 +1046,23 @@ class ChooseDurationForm(StripWhitespaceForm):
     def __init__(self, channel, duration, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.channel = channel
-        if self.hours.data is None and self.minutes.data is None and duration is not None:
+        if duration is None:
+            if self.hours.data is None and self.minutes.data is None:
+                if channel in ["test", "operator"]:
+                    self.hours.data = 4
+                    self.minutes.data = 0
+                else:
+                    self.hours.data = 22
+                    self.minutes.data = 30
+        elif self.hours.data is None and self.minutes.data is None:
             (hours, minutes) = parse_seconds_as_hours_and_minutes(duration)
             self.hours.data = hours
             self.minutes.data = minutes
-        elif duration is None:
-            if channel in ["test", "operator"]:
-                self.hours.data = 4
-                self.minutes.data = 0
-            else:
-                self.hours.data = 22
-                self.minutes.data = 30
 
     hours = GovukIntegerField(
         validators=[
-            InputRequired("Duration hours required"),
-            NumberRange(min=0, max=22, message="Enter a number between 0 and 22"),
+            InputRequired("Hours required"),
+            NumberRange(min=0, max=22, message="Hours must be between 0 and 22"),
         ],
         param_extensions={
             "hint": {"text": "Hours"},
@@ -1069,8 +1070,8 @@ class ChooseDurationForm(StripWhitespaceForm):
     )
     minutes = GovukIntegerField(
         validators=[
-            InputRequired("Duration minutes required"),
-            NumberRange(min=0, max=59, message="Enter a number between 0 and 59"),
+            InputRequired("Minutes required"),
+            NumberRange(min=0, max=59, message="Minutes must be between 0 and 59"),
         ],
         param_extensions={
             "hint": {"text": "Minutes"},

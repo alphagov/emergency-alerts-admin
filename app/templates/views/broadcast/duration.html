@@ -30,28 +30,18 @@
 
   {{ page_header('Alert Duration')}}
 
-  {% if broadcast_message.duration %}
-    <p class="govuk-body govuk-!-margin-bottom-3">A duration has been set.</p>
-    <p class="govuk-hint govuk-!-margin-bottom-3"><strong>Duration:</strong> {{ broadcast_message.duration|format_seconds_duration_as_time }}</p>
-  {% else %}
-    <p class="govuk-body govuk-!-margin-bottom-3">A default duration will be set.</p>
-    <p class="govuk-hint govuk-!-margin-bottom-3">
-      <strong>Duration: </strong>
-        {% if form.channel in ['test', 'operator'] %}
-          4 hours
-        {% else %}
-          22 hours, 30 minutes
-        {% endif %}
-    </p>
-  {% endif %}
-
-  {% set change_duration %}
+  {% call form_wrapper(class="govuk-!-margin-top-3") %}
     <div class="govuk-!-margin-top-2 govuk-!-margin-bottom-3">
-      <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-3">
-        This alert will be broadcast for the duration you input.
+      <p class="govuk-body govuk-!-margin-bottom-3">
+        Maximum permitted duration is
+        {% if form.channel in ['test', 'operator'] %}
+          4 hours.
+        {% else %}
+          22 hours, 30 minutes.
+        {% endif %}
       </p>
-      <p class="govuk-body">
-        Duration input
+      <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-3">
+        Set the alert broadcast duration:
       </p>
     </div>
     <div class="duration-container govuk-!-column-one-half">
@@ -62,15 +52,6 @@
         "classes": "duration-input",
       }) }}
     </div>
-  {% endset %}
-
-  {% call form_wrapper(class="govuk-!-margin-top-3") %}
-    {{ govukDetails({
-      "classes": "govuk-!-margin-bottom-6",
-      "summaryText": "Change duration",
-      "html": change_duration,
-      "open": form.errors
-    }) }}
     {{ page_footer('Preview alert') }}
   {% endcall %}
 
