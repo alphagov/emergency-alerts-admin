@@ -1909,7 +1909,7 @@ def test_create_postcode_area(
     "post_data, update_broadcast_data",
     (
         (
-            {"postcode": "BD1 1EE", "radius": "2", "preview": True},
+            {"postcode": "BD1 1EE", "radius": "2", "continue": True},
             {
                 "areas": {
                     "ids": ["2km around the postcode BD1 1EE in Bradford"],
@@ -1920,7 +1920,7 @@ def test_create_postcode_area(
             },
         ),
         (
-            {"postcode": "BD1 1EE", "radius": "3", "preview": True},
+            {"postcode": "BD1 1EE", "radius": "3", "continue": True},
             {
                 "areas": {
                     "ids": ["3km around the postcode BD1 1EE in Bradford"],
@@ -2073,7 +2073,7 @@ def test_create_latitude_longitude_coordinate_area(
     "post_data, update_broadcast_data",
     (
         (
-            {"first_coordinate": "54", "second_coordinate": "-1.7", "radius": "5", "preview": True},
+            {"first_coordinate": "54", "second_coordinate": "-1.7", "radius": "5", "continue": True},
             {
                 "areas": {
                     "ids": ["5km around 54.0 latitude, -1.7 longitude in North Yorkshire"],
@@ -2084,7 +2084,7 @@ def test_create_latitude_longitude_coordinate_area(
             },
         ),
         (
-            {"first_coordinate": "53.793", "second_coordinate": "-1.75", "radius": "3", "preview": True},
+            {"first_coordinate": "53.793", "second_coordinate": "-1.75", "radius": "3", "continue": True},
             {
                 "areas": {
                     "ids": ["3km around 53.793 latitude, -1.75 longitude in Bradford"],
@@ -2245,7 +2245,7 @@ def test_create_easting_northing_coordinate_area(
     "post_data, update_broadcast_data",
     (
         (
-            {"first_coordinate": "419763", "second_coordinate": "456038", "radius": "5", "preview": True},
+            {"first_coordinate": "419763", "second_coordinate": "456038", "radius": "5", "continue": True},
             {
                 "areas": {
                     "ids": ["5km around the easting of 419763 and the northing of 456038 in North Yorkshire"],
@@ -2258,7 +2258,7 @@ def test_create_easting_northing_coordinate_area(
             },
         ),
         (
-            {"first_coordinate": "416567", "second_coordinate": "432994", "radius": "3", "preview": True},
+            {"first_coordinate": "416567", "second_coordinate": "432994", "radius": "3", "continue": True},
             {
                 "areas": {
                     "ids": ["3km around the easting of 416567 and the northing of 432994 in Bradford"],
