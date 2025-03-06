@@ -368,6 +368,9 @@ def render_current_alert_page(
         ),
         hide_stop_link=hide_stop_link,
         broadcast_message_version_count=broadcast_message.get_count_of_versions(),
+        last_updated_time=broadcast_message.get_latest_version().get("created_at")
+        if broadcast_message.get_latest_version()
+        else None,
     )
 
 
