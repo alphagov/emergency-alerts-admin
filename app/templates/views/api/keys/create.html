@@ -4,6 +4,7 @@
 {% from "components/banner.html" import banner_wrapper %}
 {% from "components/form.html" import form_wrapper %}
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
+{% from "govuk_frontend_jinja/components/inset-text/macro.html" import govukInsetText %}
 
 {% block service_page_title %}
   Create an API key
@@ -16,6 +17,11 @@
 {% block maincolumn_content %}
 
   {{ page_header('Create an API key') }}
+
+  {{ govukInsetText({
+      "text": "API Keys will only be created after they're approved by a platform admin.",
+    })
+  }}
 
   {% call form_wrapper() %}
     {{ form.key_name }}
