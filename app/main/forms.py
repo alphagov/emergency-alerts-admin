@@ -44,7 +44,11 @@ from wtforms.validators import (
     Regexp,
 )
 
-from app.formatters import format_auth_type, guess_name_from_email_address
+from app.formatters import (
+    format_auth_type,
+    guess_name_from_email_address,
+    parse_seconds_as_hours_and_minutes,
+)
 from app.main.validators import (
     BroadcastLength,
     CharactersNotAllowed,
@@ -1044,12 +1048,69 @@ class BaseTemplateForm(StripWhitespaceForm):
 
 
 class ChooseDurationForm(StripWhitespaceForm):
-    content = GovukRadiosField(
-        "Choose alert duration",
-        choices=[("PT30M", "30 minutes"), ("PT3H", "3 hours"), ("PT6H", "6 hours"), ("PT22H", "22 hours")],
-        validators=[DataRequired(message="Select an alert duration to continue")],
-        param_extensions={"fieldset": {"legend": {"classes": "govuk-visually-hidden"}}},
+    def __init__(self, channel, duration, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.channel = channel
+        if duration is None:
+            if self.hours.data is None and self.minutes.data is None:
+                if channel in ["test", "operator"]:
+                    self.hours.data = 4
+                    self.minutes.data = 0
+                else:
+                    self.hours.data = 22
+                    self.minutes.data = 30
+        elif self.hours.data is None and self.minutes.data is None:
+            (hours, minutes) = parse_seconds_as_hours_and_minutes(duration)
+            self.hours.data = hours
+            self.minutes.data = minutes
+
+    hours = GovukIntegerField(
+        validators=[
+            InputRequired("Hours required"),
+            NumberRange(min=0, max=22, message="Hours must be between 0 and 22"),
+        ],
+        param_extensions={
+            "hint": {"text": "Hours"},
+        },
     )
+    minutes = GovukIntegerField(
+        validators=[
+            InputRequired("Minutes required"),
+            NumberRange(min=0, max=59, message="Minutes must be between 0 and 59"),
+        ],
+        param_extensions={
+            "hint": {"text": "Minutes"},
+        },
+    )
+
+    def validate(self, **kwargs):
+        if not super().validate(**kwargs):
+            return False
+
+        channel = self.channel
+        hours = self.hours.data
+        minutes = self.minutes.data
+
+        duration = timedelta(hours=hours, minutes=minutes)
+
+        if duration < timedelta(minutes=30):
+            self.minutes.errors.append("Duration must be at least 30 minutes")
+
+        if channel in ["test", "operator"]:
+            if duration > timedelta(hours=4):
+                if hours > 4:
+                    self.hours.errors.append("Duration must not be greater than 4 hours")
+                if hours == 4:
+                    self.minutes.errors.append("Duration must not be greater than 4 hours")
+                return False
+        elif channel in ["government", "severe"]:
+            if duration > timedelta(hours=22, minutes=30):
+                if hours > 22:
+                    self.hours.errors.append("Maximum duration is 22 hours, 30 minutes")
+                if hours == 22:
+                    self.minutes.errors.append("Maximum duration is 22 hours, 30 minutes")
+                return False
+        return True
 
 
 class SMSTemplateForm(BaseTemplateForm):

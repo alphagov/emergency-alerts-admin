@@ -44,7 +44,7 @@ EXCLUDED_ENDPOINTS = tuple(
             "check_and_resend_verification_code",
             "choose_account",
             "choose_broadcast_area",
-            # "choose_broadcast_duration",
+            "choose_broadcast_duration",
             "choose_broadcast_library",
             "choose_broadcast_sub_area",
             "choose_service",
