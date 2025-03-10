@@ -1585,6 +1585,16 @@ class ServiceBroadcastNetworkForm(StripWhitespaceForm):
         ),
     )
 
+    networks = GovukCheckboxesField(
+        "Choose one or more mobile networks",
+        choices=[
+            ("all", "All mobile networks")("ee", "EE"),
+            ("o2", "O2"),
+            ("vodafone", "Vodafone"),
+            ("three", "Three"),
+        ],
+    )
+
     @property
     def account_type(self):
         if self.all_networks.data:
