@@ -10,6 +10,7 @@ from app.main.forms import (
     BroadcastAreaFormWithSelectAll,
     BroadcastTemplateForm,
     ChooseCoordinateTypeForm,
+    ChooseDurationForm,
     ConfirmBroadcastForm,
     NewBroadcastForm,
     PostcodeForm,
@@ -23,6 +24,7 @@ from app.utils.broadcast import (
     all_coordinate_form_fields_empty,
     all_fields_empty,
     check_coordinates_valid_for_enclosed_polygons,
+    continue_button_clicked,
     coordinates_and_radius_entered,
     coordinates_entered_but_no_radius,
     create_coordinate_area,
@@ -43,7 +45,6 @@ from app.utils.broadcast import (
     parse_coordinate_form_data,
     postcode_and_radius_entered,
     postcode_entered,
-    preview_button_clicked,
     redirect_dependent_on_alert_area,
     render_coordinates_page,
     render_current_alert_page,
@@ -331,36 +332,6 @@ def broadcast(service_id, template_id):
     )
 
 
-# @main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/duration", methods=["GET", "POST"])
-# @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-# @service_has_permission("broadcast")
-# def choose_broadcast_duration(service_id, broadcast_message_id):
-#     form = ChooseDurationForm()
-
-#     broadcast_message = BroadcastMessage.from_id(
-#         broadcast_message_id,
-#         service_id=current_service.id,
-#     )
-
-#     back_link = url_for(
-#         ".preview_broadcast_areas", service_id=current_service.id, broadcast_message_id=broadcast_message_id
-#     )
-
-#     if form.validate_on_submit():
-#         BroadcastMessage.update_duration(
-#             service_id=current_service.id,
-#             broadcast_message_id=broadcast_message_id,
-#             duration=form.content.data,
-#         )
-#         return redirect(
-#             url_for(
-#                 ".preview_broadcast_message", service_id=current_service.id, broadcast_message_id=broadcast_message.id
-#             )
-#         )
-
-#     return render_template("views/broadcast/duration.html", form=form, back_link=back_link)
-
-
 @main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/areas")
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
@@ -431,7 +402,6 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
         broadcast_message_id,
         service_id=current_service.id,
     )
-
     library = BroadcastMessage.libraries.get(library_slug)
 
     if library_slug == "coordinates":
@@ -608,15 +578,15 @@ def search_postcodes(service_id, broadcast_message_id, library_slug):
                 count_of_phones_likely,
             ) = extract_attributes_from_custom_area(circle_polygon)
             id = create_postcode_area_slug(form)
-            if preview_button_clicked(request):
+            if continue_button_clicked(request):
                 """
-                If 'Preview alert' button is clicked, area is added to Broadcast Message
+                If 'Continue' button is clicked, area is added to Broadcast Message
                 and message is updated.
                 """
                 broadcast_message.add_custom_areas(circle_polygon, id=id)
                 return redirect(
                     url_for(
-                        ".preview_broadcast_message",
+                        ".choose_broadcast_duration",
                         service_id=current_service.id,
                         broadcast_message_id=broadcast_message.id,
                     )
@@ -725,7 +695,7 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
         else:
             adding_invalid_coords_errors_to_form(coordinate_type, form)
             form.validate_on_submit()
-        if preview_button_clicked(request):
+        if continue_button_clicked(request):
             """
             If 'Preview alert' button is clicked, area is added to Broadcast Message
             and message is updated.
@@ -733,7 +703,7 @@ def search_coordinates(service_id, broadcast_message_id, library_slug, coordinat
             broadcast_message.add_custom_areas(polygon, id=id)
             return redirect(
                 url_for(
-                    ".preview_broadcast_message",
+                    ".choose_broadcast_duration",
                     service_id=current_service.id,
                     broadcast_message_id=broadcast_message.id,
                 )
@@ -835,6 +805,41 @@ def remove_broadcast_area(service_id, broadcast_message_id, area_slug):
                 broadcast_message_id=broadcast_message_id,
             )
         )
+
+
+@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/duration", methods=["GET", "POST"])
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+@service_has_permission("broadcast")
+def choose_broadcast_duration(service_id, broadcast_message_id):
+    broadcast_message = BroadcastMessage.from_id(
+        broadcast_message_id,
+        service_id=current_service.id,
+    )
+    is_custom_broadcast = type(broadcast_message.areas) is CustomBroadcastAreas
+    form = ChooseDurationForm(channel=current_service.broadcast_channel, duration=broadcast_message.broadcast_duration)
+    back_link = url_for(
+        ".preview_broadcast_areas", service_id=current_service.id, broadcast_message_id=broadcast_message_id
+    )
+
+    if form.validate_on_submit():
+        BroadcastMessage.update_duration(
+            service_id=current_service.id,
+            broadcast_message_id=broadcast_message_id,
+            duration=f"PT{form.hours.data}H{form.minutes.data}M",
+        )
+        return redirect(
+            url_for(
+                ".preview_broadcast_message", service_id=current_service.id, broadcast_message_id=broadcast_message.id
+            )
+        )
+
+    return render_template(
+        "views/broadcast/duration.html",
+        form=form,
+        broadcast_message=broadcast_message,
+        back_link=back_link,
+        custom_broadcast=is_custom_broadcast,
+    )
 
 
 @main.route(

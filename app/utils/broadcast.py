@@ -179,8 +179,8 @@ def postcode_and_radius_entered(request, form):
     )
 
 
-def preview_button_clicked(request):
-    return request.form.get("preview")
+def continue_button_clicked(request):
+    return request.form.get("continue")
 
 
 def render_postcode_page(

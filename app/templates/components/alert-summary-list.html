@@ -51,6 +51,14 @@
         {% endif%}
     {% endset %}
 
+    {% set conditional_duration %}
+        {% if broadcast_message.duration|format_seconds_duration_as_time != "0 seconds" %}
+            <p class="govuk-!-margin-right-2 duration-preview">
+                <b class="govuk-!-font-weight-bold">Duration:</b> {{ broadcast_message.duration|format_seconds_duration_as_time }}
+            </p>
+        {% endif %}
+    {% endset %}
+
     {% set conditional_area_action_text %}
         {% if broadcast_message.status == "draft" and current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) %}
             {% if broadcast_message.areas %}
@@ -142,7 +150,24 @@
             }
             ]
         }
-        }
+        },
+        {
+            'key': {
+                'text': "Alert duration"
+            },
+            'value': {
+                'html': conditional_duration
+            },
+            'actions': {
+                'items': [
+                {
+                    'href': url_for(".choose_broadcast_duration", service_id=current_service.id, broadcast_message_id=broadcast_message.id,),
+                    'text': conditional_action_text,
+                    'visuallyHiddenText': "duration"
+                }
+                ]
+            }
+            }
         ] %}
 
     {% if count_of_phones %}

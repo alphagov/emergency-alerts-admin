@@ -85,20 +85,20 @@
         "value": True
       }) }}
     </div>
-    <div class="preview-button govuk-form-group">
+    <div class="continue-button govuk-form-group">
       {% if bleed %}
         {{ govukButton({
-          "text": "Save and preview alert",
+          "text": "Save and continue",
           "classes": "govuk-button mapping-margin-left notify-simple-search-form__button",
-          "name": "preview",
+          "name": "continue",
           "value": True
         }) }}
       {% else %}
         {{ govukButton({
-          "text": "Save and preview alert",
+          "text": "Save and continue",
           "classes": "govuk-button mapping-margin-left",
           "disabled": true,
-          "name": "preview"
+          "name": "continue"
         }) }}
       {% endif %}
     </div>
