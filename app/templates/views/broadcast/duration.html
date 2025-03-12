@@ -1,4 +1,6 @@
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
+{% from "govuk_frontend_jinja/components/details/macro.html" import govukDetails %}
+{% from "components/page-header.html" import page_header %}
 {% from "components/page-footer.html" import page_footer %}
 {% from "components/form.html" import form_wrapper %}
 {% from "components/error-summary.html" import errorSummary %}
@@ -6,27 +8,50 @@
 {% extends "withnav_template.html" %}
 
 {% block service_page_title %}
-  Choose alert duration
+  Alert Duration
 {% endblock %}
 
 {% block backLink %}
-  {{ govukBackLink({ "href": back_link }) }}
+  {% if custom_broadcast %}
+    {% if 'postcode' in broadcast_message.areas[0].name %}
+      {{ govukBackLink({ "href": url_for('.search_postcodes', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug='postcodes') }) }}
+    {% elif 'latitude' in broadcast_message.areas[0].name%}
+      {{ govukBackLink({ "href": url_for('.search_coordinates', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug='coordinates', coordinate_type='latitude_longitude') }) }}
+    {% elif 'easting' in broadcast_message.areas[0].name%}
+      {{ govukBackLink({ "href": url_for('.search_coordinates', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug='coordinates', coordinate_type='easting_northing') }) }}
+    {% endif %}
+  {% else %}
+    {{ govukBackLink({ "href": url_for('.preview_broadcast_areas', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }) }}
+  {% endif %}
 {% endblock %}
 
 {% block maincolumn_content %}
   {{ errorSummary(form) }}
 
+  {{ page_header('Alert Duration')}}
+
   {% call form_wrapper(class="govuk-!-margin-top-3") %}
-    {{ form.content(
-      param_extensions={
-        'fieldset': {
-          'legend': {
-            'isPageHeading': True,
-            'classes': 'govuk-fieldset__legend--l'
-          }
-        }
-      }
-    ) }}
+    <div class="govuk-!-margin-top-2 govuk-!-margin-bottom-3">
+      <p class="govuk-body govuk-!-margin-bottom-3">
+        Maximum permitted duration is
+        {% if form.channel in ['test', 'operator'] %}
+          4 hours.
+        {% else %}
+          22 hours, 30 minutes.
+        {% endif %}
+      </p>
+      <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-3">
+        Set the alert broadcast duration:
+      </p>
+    </div>
+    <div class="duration-container govuk-!-column-one-half">
+      {{ form.hours(param_extensions={
+        "classes": "duration-input",
+      }) }}
+      {{ form.minutes(param_extensions={
+        "classes": "duration-input",
+      }) }}
+    </div>
     {{ page_footer('Preview alert') }}
   {% endcall %}
 
