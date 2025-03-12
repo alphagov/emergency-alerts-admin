@@ -55,8 +55,8 @@
   </div>
 {% endmacro %}
 
-{% macro sticky_page_footer(button_text=None) %}
+{% macro sticky_page_footer(button_text=None, button_name) %}
   <div class="js-stick-at-bottom-when-scrolling">
-    {{ page_footer(button_text) }}
+    {{ page_footer(button_text, button_name) }}
   </div>
 {% endmacro %}
