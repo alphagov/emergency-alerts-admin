@@ -3302,7 +3302,7 @@ def test_preview_broadcast_message_page(
         "Scotland",
     ]
 
-    assert normalize_spaces(page.select_one("p.duration-preview").text) == "Duration: 0 seconds"
+    assert not page.select_one("p.duration-preview")  # Isn't present because there's no duration set
 
     assert normalize_spaces(page.select_one("h2.broadcast-message-heading").text) == "Emergency alert"
 
