@@ -73,7 +73,7 @@
       "element": "a",
       "text": "Save and continue",
       "name": "continue",
-      "href": url_for('.choose_broadcast_duration', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
+      "href": url_for(".preview_broadcast_message" if broadcast_message.duration else ".choose_broadcast_duration", service_id=current_service.id, broadcast_message_id=broadcast_message.id),
       "classes": "govuk-button"
     }) }}
 
