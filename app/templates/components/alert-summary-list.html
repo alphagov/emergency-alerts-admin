@@ -51,10 +51,10 @@
         {% endif%}
     {% endset %}
 
-    {% set conditional_duration %}
-        {% if broadcast_message.duration|format_seconds_duration_as_time != "0 seconds" %}
+    {% set duration_content %}
+        {% if broadcast_message.duration %}
             <p class="govuk-!-margin-right-2 duration-preview">
-                <b class="govuk-!-font-weight-bold">Duration:</b> {{ broadcast_message.duration|format_seconds_duration_as_time }}
+                {{ broadcast_message.duration|format_seconds_duration_as_time }}
             </p>
         {% endif %}
     {% endset %}
@@ -65,6 +65,16 @@
                 Change
             {% else %}
                 Add areas
+            {% endif%}
+        {% endif %}
+    {% endset %}
+
+    {% set conditional_duration_action_text %}
+        {% if broadcast_message.status == "draft" and current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) %}
+            {% if broadcast_message.duration %}
+                Change
+            {% else %}
+                Add duration
             {% endif%}
         {% endif %}
     {% endset %}
@@ -156,13 +166,13 @@
                 'text': "Alert duration"
             },
             'value': {
-                'html': conditional_duration
+                'html': duration_content
             },
             'actions': {
                 'items': [
                 {
-                    'href': url_for(".choose_broadcast_duration", service_id=current_service.id, broadcast_message_id=broadcast_message.id,),
-                    'text': conditional_action_text,
+                    'href': url_for(".choose_broadcast_duration", service_id=service_id, broadcast_message_id=broadcast_message.id,),
+                    'text': conditional_duration_action_text,
                     'visuallyHiddenText': "duration"
                 }
                 ]

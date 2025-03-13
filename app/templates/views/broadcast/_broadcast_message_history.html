@@ -21,5 +21,13 @@
         </ul>
       </div>
     {% endif %}
+    {% if broadcast_message.duration %}
+      <div>
+        <p class="govuk-!-margin-right-1 dashboard-table">Duration: </p>
+        <p class="dashboard-table govuk-!-font-weight-bold">
+          {{ broadcast_message.duration|format_seconds_duration_as_time }}
+        </p>
+      </div>
+    {% endif %}
   </div>
 </div>
