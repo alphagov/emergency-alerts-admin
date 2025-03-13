@@ -5446,3 +5446,52 @@ def test_edit_broadcast_updates_message(
             "reference": "Test Edit Alert NEW",
         },
     )
+
+
+def test_view_draft_broadcast_message_page(
+    mocker,
+    client_request,
+    service_one,
+    active_user_view_permissions,
+    fake_uuid,
+    mock_get_broadcast_message_versions,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            approved_by_id=fake_uuid,
+            starts_at="2020-02-20T20:20:20.000000",
+            content="Hello",
+            duration=10_800,
+        ),
+    )
+    service_one["permissions"] += ["broadcast"]
+
+    client_request.login(active_user_view_permissions)
+
+    page = client_request.get(
+        ".view_current_broadcast",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+    )
+
+    assert not page.select_one(".banner")
+    assert [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__key")] == [
+        "Reference",
+        "Alert message",
+        "Area",
+        "Alert duration",
+        "Phone estimate",
+    ]
+    assert [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__value")] == [
+        "Example template",
+        "Emergency alert Hello",
+        "England Scotland Use the arrow keys to move the map. "
+        + "Use the buttons to zoom the map in or out View larger map",
+        "3 hours",
+        "40,000,000 phones estimated",
+    ]
