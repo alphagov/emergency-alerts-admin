@@ -423,20 +423,23 @@ def update_broadcast_message_using_changed_data(broadcast_message_id, form):
 
 
 def redirect_dependent_on_alert_area(broadcast_message):
-    return (
-        redirect(
-            url_for(
+    redirect_url = ""
+    if broadcast_message.areas:
+        if broadcast_message.duration:
+            redirect_url = url_for(
                 ".preview_broadcast_message",
                 service_id=current_service.id,
                 broadcast_message_id=broadcast_message.id,
             )
-        )
-        if broadcast_message.areas
-        else redirect(
-            url_for(
-                ".choose_broadcast_library",
+        else:
+            redirect_url = url_for(
+                ".choose_broadcast_duration",
                 service_id=current_service.id,
                 broadcast_message_id=broadcast_message.id,
             )
+    else:
+        redirect_url = url_for(
+            ".choose_broadcast_library", service_id=current_service.id, broadcast_message_id=broadcast_message.id
         )
-    )
+
+    return redirect(redirect_url)
