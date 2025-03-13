@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import pyproj
 from flask import redirect, render_template, request, url_for
 from postcode_validator.uk.uk_postcode_validator import UKPostcode
@@ -362,6 +364,7 @@ def render_current_alert_page(
         else confirm_broadcast_form,
         is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
         areas=format_areas_list(broadcast_message.areas),
+        default_duration=get_duration(),
         back_link=url_for(
             back_link_url,
             service_id=current_service.id,
@@ -443,3 +446,12 @@ def redirect_dependent_on_alert_area(broadcast_message):
         )
 
     return redirect(redirect_url)
+
+
+def get_duration():
+    default_duration = ""
+    if current_service.broadcast_channel in ["test", "operator"]:
+        default_duration = timedelta(hours=4).total_seconds()
+    elif current_service.broadcast_channel in ["government", "severe"]:
+        default_duration = timedelta(hours=22, minutes=30).total_seconds()
+    return default_duration

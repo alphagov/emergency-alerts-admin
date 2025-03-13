@@ -267,7 +267,7 @@
   {{broadcast_details(broadcast_message, current_service)}}
   {% endif %}
 
-  {{alertSummaryList(current_user, current_service.id, broadcast_message, areas, broadcast_message.simple_polygons_with_bleed.estimated_area, broadcast_message.count_of_phones, broadcast_message.count_of_phones_likely, is_custom_broadcast)}}
+  {{alertSummaryList(current_user, current_service.id, broadcast_message, areas, broadcast_message.simple_polygons_with_bleed.estimated_area, broadcast_message.count_of_phones, broadcast_message.count_of_phones_likely, is_custom_broadcast, default_duration)}}
 
 
 {% if broadcast_message.status != 'pending-approval' %}

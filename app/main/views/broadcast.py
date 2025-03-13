@@ -37,6 +37,7 @@ from app.utils.broadcast import (
     format_areas_list,
     get_centroid_if_postcode_in_db,
     get_changed_alert_form_data,
+    get_duration,
     keep_alert_content_button_clicked,
     keep_alert_reference_button_clicked,
     normalising_point,
@@ -871,6 +872,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
                 areas=areas,
                 label=create_map_label(areas),
                 areas_string=stringify_areas(areas),
+                default_duration=get_duration(),
                 broadcast_message_version_count=broadcast_message.get_count_of_versions(),
                 last_updated_time=broadcast_message.get_latest_version().get("created_at")
                 if broadcast_message.get_latest_version()
@@ -892,6 +894,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
         label=create_map_label(areas),
         areas_string=stringify_areas(areas),
         broadcast_message_version_count=broadcast_message.get_count_of_versions(),
+        default_duration=get_duration(),
         last_updated_time=broadcast_message.get_latest_version().get("created_at")
         if broadcast_message.get_latest_version()
         else None,
@@ -992,6 +995,7 @@ def approve_broadcast_message(service_id, broadcast_message_id):
             areas=areas,
             label=create_map_label(areas),
             areas_string=stringify_areas(areas),
+            default_duration=get_duration(),
             broadcast_message_version_count=broadcast_message.get_count_of_versions(),
             last_updated_time=broadcast_message.get_latest_version().get("created_at")
             if broadcast_message.get_latest_version()
