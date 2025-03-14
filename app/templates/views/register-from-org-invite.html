@@ -37,7 +37,7 @@ Create an account
               "text" : form.password.errors[0] | safe
         } if form.password.errors[0] else None,
       }) }}
-      {{ page_footer("Continue") }}
+      {{ page_footer("Continue", button_name="continue") }}
       {{form.organisation}}
       {{form.email_address}}
     {% endcall %}

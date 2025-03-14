@@ -5,25 +5,66 @@
 {% from "components/textbox.html" import textbox %}
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
 {% from "components/error-summary.html" import errorSummary %}
+{% from "components/banner.html" import banner %}
+{% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
 
 {% block service_page_title %}
-  Write new alert
+  {% if broadcast_message %}
+    Edit alert
+  {% else %}
+    Write new alert
+  {% endif %}
 {% endblock %}
 
 
 {% block backLink %}
-  {{ govukBackLink({ "href": url_for('.new_broadcast', service_id=current_service.id) }) }}
+  {% if broadcast_message.id %}
+    {{ govukBackLink({ "href": url_for('.view_current_broadcast', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }) }}
+  {% else %}
+    {{ govukBackLink({ "href": url_for('.new_broadcast', service_id=current_service.id) }) }}
+  {% endif %}
 {% endblock %}
 
 {% block maincolumn_content %}
-
-  {{ errorSummary(form) }}
-
-  {{ page_header('Write new alert')}}
-
   {% call form_wrapper() %}
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+    {% if changes %}
+      {% for field, data in changes.items() %}
+        <div class="banner-dangerous file-list" aria-live="polite" tabindex="-1">
+        <div>{{data['updated_by']}} has made changes to the alert {{field}}.</div>
+        <div>Would you like to overwrite their change?</div>
+        <div class="banner-footer-group">
+          {{ govukButton({
+            "text": "Yes, overwrite",
+            "name": "overwrite-"+field,
+            "classes": "govuk-button govuk-!-margin-top-2",
+          }) }}
+          {{ govukButton({
+            "text": "No, keep this change",
+            "name": "keep-"+field,
+            "classes": "govuk-button--secondary govuk-!-margin-top-2",
+          }) }}
+        </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+
+    {{ errorSummary(form) }}
+
+    {% if broadcast_message %}
+      {{ page_header('Edit alert')}}
+    {% else %}
+      {{ page_header('Write new alert')}}
+    {% endif %}
+
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-two-thirds">
+        {{form.initial_name()}}
+        {{form.initial_content()}}
+        {{form.overwrite_name()}}
+        {{form.overwrite_content()}}
         {{ form.name(param_extensions={
           "classes": "govuk-!-width-full",
           "hint": {"text": "Your recipients will not see this"}
@@ -43,7 +84,9 @@
             &nbsp;
           </div>
         </div>
-        {{ page_footer('Continue') }}
+        {% if not changes %}
+          {{ page_footer('Save and continue', button_name='continue') }}
+        {% endif %}
       </div>
     </div>
   {% endcall %}
