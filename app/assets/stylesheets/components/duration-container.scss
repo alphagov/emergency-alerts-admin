@@ -1,0 +1,24 @@
+.duration-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.duration-input {
+  width: 58px;
+  margin-right: 22px;
+}
+
+.govuk-form-group:has(.duration-input) {
+  display: flex;
+  flex-direction: column-reverse;
+  margin-bottom: 0;
+}
+
+.duration-container .govuk-form-group--error .govuk-hint {
+  display: none;
+}
+
+.duration-container .govuk-form-group--error .govuk-error-message {
+  margin-bottom: 15px;
+}

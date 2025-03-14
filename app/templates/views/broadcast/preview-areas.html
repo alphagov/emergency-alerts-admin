@@ -65,8 +65,8 @@
     {{ map(broadcast_message.simple_polygons.estimated_area, broadcast_message.simple_polygons_with_bleed.estimated_area, broadcast_message.count_of_phones, broadcast_message.count_of_phones_likely, is_custom_broadcast, label) }}
     {{ govukButton({
       "element": "a",
-      "text": "Preview alert",
-      "href": url_for('.preview_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
+      "text": "Continue",
+      "href": url_for('.choose_broadcast_duration', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
       "classes": "govuk-button"
     }) }}
 

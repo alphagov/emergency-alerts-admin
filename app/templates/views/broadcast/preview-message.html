@@ -10,7 +10,7 @@
   Preview alert
 {% endblock %}
 
-{% block backLink %}
+{# {% block backLink %}
   {% if custom_broadcast %}
     {% if 'postcode' in broadcast_message.areas[0].name %}
       {{ govukBackLink({ "href": url_for('.choose_broadcast_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug='postcodes') }) }}
@@ -22,6 +22,10 @@
   {% else %}
     {{ govukBackLink({ "href": url_for('.preview_broadcast_areas', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }) }}
   {% endif %}
+{% endblock %} #}
+
+{% block backLink %}
+  {{ govukBackLink({ "href": url_for('.choose_broadcast_duration', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }) }}
 {% endblock %}
 
 {% block maincolumn_content %}
@@ -29,7 +33,6 @@
   {{ page_header("Preview alert") }}
 
   {{ broadcast_message.template|string }}
-
 
   <div class="govuk-!-margin-bottom-3">
     <p class="govuk-!-margin-right-2 area-list">Area: </p>
@@ -40,6 +43,9 @@
         </li>
       {% endfor %}
     </ul>
+    <p class="govuk-!-margin-right-2 duration-preview">
+      <b class="govuk-!-font-weight-bold">Duration:</b> {{ broadcast_message.duration|format_seconds_duration_as_time }}
+    </p>
   </div>
 
   {% call form_wrapper() %}
