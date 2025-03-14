@@ -5,7 +5,7 @@
 
 
 
-{% macro alertSummaryList(current_user, service_id, broadcast_message, areas, bleed_estimated_area, count_of_phones, count_of_phones_likely, is_custom_broadcast, default_duration) %}
+{% macro alertSummaryList(current_user, service_id, broadcast_message, areas, bleed_estimated_area, count_of_phones, count_of_phones_likely, is_custom_broadcast) %}
 
     <dialog id="enlarged-map-dialog" tabindex="-1" aria-modal="true" class="enlarged-map-dialog"
         role="dialog" aria-labelledby="enlarged-map-dialog-message">
@@ -55,10 +55,6 @@
         {% if broadcast_message.duration %}
             <p class="govuk-!-margin-right-2 duration-preview">
                 {{ broadcast_message.duration|format_seconds_duration_as_time }}
-            </p>
-        {% elif broadcast_message.status != "draft" and not broadcast_message.duration %}
-            <p class="govuk-!-margin-right-2 duration-preview">
-                {{ default_duration|format_seconds_duration_as_time }}
             </p>
         {% endif %}
     {% endset %}
