@@ -64,7 +64,7 @@
               "text" : form.password.errors[0] | safe
         } if form.password.errors[0] else None,
       }) }}
-      {{ page_footer("Continue", secondary_link=password_reset_url, secondary_link_text="Forgotten your password?") }}
+      {{ page_footer("Continue", button_name="continue", secondary_link=password_reset_url, secondary_link_text="Forgotten your password?") }}
     {% endcall %}
   </div>
 </div>
