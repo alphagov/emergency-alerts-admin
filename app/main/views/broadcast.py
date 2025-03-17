@@ -1183,4 +1183,5 @@ def view_broadcast_versions(service_id, broadcast_message_id):
             service_id=current_service.id,
             broadcast_message_id=broadcast_message.id,
         ),
+        is_edited=len(versions) > 1,
     )
