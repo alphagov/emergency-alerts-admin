@@ -4,6 +4,7 @@ from emergency_alerts_utils.api_key import KEY_TYPE_NORMAL
 from flask import abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 
+from app.formatters import email_safe
 from app.models.service import Service
 from app.models.user import InvitedUser, User
 from app.notify_client.admin_actions_api_client import admin_actions_api_client
@@ -75,7 +76,7 @@ def process_admin_action(action_obj):
             "views/api/keys/show.html",
             secret=secret,
             service_id=service_id,
-            key_name=action_data["key_name"],
+            key_name=email_safe(action_data["key_name"], whitespace="_"),
         )
     else:
         raise Exception("Unknown admin action " + action_type)
