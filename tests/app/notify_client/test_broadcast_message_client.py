@@ -55,7 +55,7 @@ def test_update_broadcast_message(mocker):
     )
     mock_post.assert_called_once_with(
         "/service/12345/broadcast-message/67890",
-        data={"abc": "def", "created_by": "1"},
+        data={"abc": "def"},
     )
 
 

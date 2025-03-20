@@ -2,7 +2,7 @@
 {% from "govuk_frontend_jinja/components/tag/macro.html" import govukTag %}
 
 <div class="ajax-block-container js-mark-focus-on-parent" data-classes-to-persist="js-child-has-focus">
-{% for item in broadcasts|list %}
+{% for item in broadcasts|sort|reverse|list %}
   <div class="keyline-block">
     <div class="file-list file-list--sectioned govuk-!-margin-bottom-2">
       <h2>
@@ -36,19 +36,12 @@
           }) }}
           since {{ item.starts_at|format_datetime_relative }}
         </p>
-      {% elif item.status == 'draft' %}
-        <p class="govuk-body live-broadcast file-list-status">
-          {{ govukTag ({
-            'text': 'draft',
-            'classes': 'govuk-!-margin-right-2 draft-tag'
-          }) }}
-        </p>
       {% else %}
         <p class="govuk-body govuk-hint file-list-status">
           {{ item.starts_at|format_date_human|title }} at {{ item.starts_at|format_time }}
         </p>
       {% endif %}
-      {% if item.status not in ['rejected', 'draft'] %}
+      {% if item.status != 'rejected' %}
         <div>
           <p class="govuk-!-margin-right-2 area-list">Area: </p>
           <ul class="area-list">
