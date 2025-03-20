@@ -1,0 +1,33 @@
+<div class="govuk-grid-column-full alert-list-item">
+  <div class="govuk-grid-column-full">
+    <h2 class="message-name">{{ broadcast_message.reference }}</h2>
+    <p class="hint">
+      {% if is_edited %}
+        Edit made {% if broadcast_message.created_at %}{{ broadcast_message.created_at|format_datetime_normal }}{% endif %}
+      {% else %}
+        Created
+        {% if broadcast_message.created_at %}{{ broadcast_message.created_at|format_datetime_normal }}{% endif %}
+      {% endif %}
+      by {{ broadcast_message.created_by }}
+    </p>
+    {{ broadcast_message.template|string }}
+    {% if broadcast_message.formatted_areas %}
+      <div>
+        <p class="govuk-!-margin-right-2 area-list">Area: </p>
+        <ul class="area-list">
+          {% for area in broadcast_message.formatted_areas %}
+            <li class="area-list-item area-list-item--unremoveable area-list-item--smaller">{{area}}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+    {% if broadcast_message.duration %}
+      <div>
+        <p class="govuk-!-margin-right-1 dashboard-table">Duration: </p>
+        <p class="dashboard-table govuk-!-font-weight-bold">
+          {{ broadcast_message.duration|format_seconds_duration_as_time }}
+        </p>
+      </div>
+    {% endif %}
+  </div>
+</div>
