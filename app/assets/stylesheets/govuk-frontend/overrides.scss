@@ -70,26 +70,6 @@ $notify-secondary-button-hover-colour: govuk-shade(govuk-colour("light-grey"), 1
   line-height: 1;
 }
 
-.govuk-tag.draft-tag {
-  @include govuk-font($size: 16);
-  background-color: govuk-colour("blue");
-  color: govuk-colour("white");
-  font-weight: 700;
-  outline: 2px solid transparent;
-  outline-offset: -2px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  padding-top: 5px;
-  padding-right: 8px;
-  padding-bottom: 4px;
-  padding-left: 8px;
-  line-height: 1;
-}
-
 .govuk-tabs {
   overflow-wrap: break-word;
-}
-
-.govuk-summary-list__actions, .govuk-summary-list__key {
-  vertical-align: top;
 }

@@ -1,19 +1,16 @@
 import pyproj
-from flask import redirect, render_template, request, url_for
+from flask import render_template, url_for
 from postcode_validator.uk.uk_postcode_validator import UKPostcode
 from shapely import Point
 from shapely.geometry import MultiPolygon, Polygon
 from shapely.ops import unary_union
 
-from app import current_service
 from app.broadcast_areas.models import CustomBroadcastArea, CustomBroadcastAreas
 from app.formatters import format_number_no_scientific, round_to_significant_figures
 from app.main.forms import (
-    ConfirmBroadcastForm,
     EastingNorthingCoordinatesForm,
     LatitudeLongitudeCoordinatesForm,
     PostcodeForm,
-    RejectionReasonForm,
 )
 from app.models.broadcast_message import BroadcastMessage
 
@@ -322,124 +319,3 @@ def format_areas_list(areas_list):
         return [format_area_name(area) for area in areas_list.items]
     else:
         return [format_area_name(area) if isinstance(area, str) else format_area_name(area.name) for area in areas_list]
-
-
-def create_map_label(areas):
-    label = ""
-    if len(areas) == 1:
-        label = f"Map of the United Kingdom, showing the area for {areas[0]}"
-    elif len(areas) > 1:
-        label = "Map of the United Kingdom, showing the areas for " + (", ").join(areas[:-1]) + " and " + areas[-1]
-    return label
-
-
-def stringify_areas(areas):
-    areas_string = ""
-    if len(areas) == 1:
-        areas_string = areas[0]
-    elif len(areas) > 1:
-        areas_string = (", ").join(areas[:-1]) + " and " + areas[-1]
-    return areas_string
-
-
-def render_current_alert_page(
-    broadcast_message,
-    rejection_form=None,
-    confirm_broadcast_form=None,
-    back_link_url=".broadcast_dashboard",
-    hide_stop_link=False,
-):
-    return render_template(
-        "views/broadcast/view-message.html",
-        broadcast_message=broadcast_message,
-        rejection_form=RejectionReasonForm() if rejection_form is None else rejection_form,
-        form=ConfirmBroadcastForm(
-            service_is_live=current_service.live,
-            channel=current_service.broadcast_channel,
-            max_phones=broadcast_message.count_of_phones_likely,
-        )
-        if confirm_broadcast_form is None
-        else confirm_broadcast_form,
-        is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
-        areas=format_areas_list(broadcast_message.areas),
-        back_link=url_for(
-            back_link_url,
-            service_id=current_service.id,
-        ),
-        hide_stop_link=hide_stop_link,
-        broadcast_message_version_count=broadcast_message.get_count_of_versions(),
-        last_updated_time=broadcast_message.get_latest_version().get("created_at")
-        if broadcast_message.get_latest_version()
-        else None,
-    )
-
-
-def render_edit_alert_page(broadcast_message, form):
-    return render_template(
-        "views/broadcast/write-new-broadcast.html",
-        broadcast_message=broadcast_message,
-        form=form,
-        changes=get_changed_alert_form_data(broadcast_message, form),
-    )
-
-
-def keep_alert_content_button_clicked():
-    return request.method == "POST" and request.form.get("keep-message") is not None
-
-
-def keep_alert_reference_button_clicked():
-    return request.method == "POST" and request.form.get("keep-reference") is not None
-
-
-def overwrite_content_button_clicked():
-    return request.method == "POST" and request.form.get("overwrite-message") is not None
-
-
-def overwrite_reference_button_clicked():
-    return request.method == "POST" and request.form.get("overwrite-reference") is not None
-
-
-def get_changed_alert_form_data(broadcast_message, form):
-    """
-    Compares stored alert reference and content with the initial form data, stored when page rendered.
-    If the overwrite_{field} field is True, i.e. overwrite button has been clicked for that field
-    then changes to that field are not stored and considered as we're overwriting the data for that field.
-    """
-    changes = {}
-    if broadcast_message.reference != form.initial_name.data and not form.overwrite_name.data:
-        changes["reference"] = {"updated_by": broadcast_message.updated_by or "A user"}
-    if broadcast_message.content != form.initial_content.data and not form.overwrite_content.data:
-        changes["message"] = {"updated_by": broadcast_message.updated_by or "A user"}
-    return changes
-
-
-def update_broadcast_message_using_changed_data(broadcast_message_id, form):
-    BroadcastMessage.update_from_content(
-        service_id=current_service.id,
-        broadcast_message_id=broadcast_message_id,
-        content=form.template_content.data if form.initial_content.data != form.template_content.data else None,
-        reference=form.name.data if form.initial_name.data != form.name.data else None,
-    )
-
-
-def redirect_dependent_on_alert_area(broadcast_message):
-    redirect_url = ""
-    if broadcast_message.areas:
-        if broadcast_message.duration:
-            redirect_url = url_for(
-                ".preview_broadcast_message",
-                service_id=current_service.id,
-                broadcast_message_id=broadcast_message.id,
-            )
-        else:
-            redirect_url = url_for(
-                ".choose_broadcast_duration",
-                service_id=current_service.id,
-                broadcast_message_id=broadcast_message.id,
-            )
-    else:
-        redirect_url = url_for(
-            ".choose_broadcast_library", service_id=current_service.id, broadcast_message_id=broadcast_message.id
-        )
-
-    return redirect(redirect_url)

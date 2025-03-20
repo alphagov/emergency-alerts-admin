@@ -41,7 +41,7 @@ class BroadcastMessageAPIClient(AdminAPIClient):
     def update_broadcast_message(self, *, service_id, broadcast_message_id, data):
         self.post(
             f"/service/{service_id}/broadcast-message/{broadcast_message_id}",
-            data=_attach_current_user(data),
+            data=data,
         )
 
     def update_broadcast_message_status(self, status, *, service_id, broadcast_message_id):
@@ -72,26 +72,6 @@ class BroadcastMessageAPIClient(AdminAPIClient):
         except HTTPError as e:
             if e.status_code == 400:
                 raise e
-
-    def get_broadcast_message_versions(self, service_id, broadcast_message_id):
-        """
-        Retrieve a list of versions for a broadcast message
-        """
-        return self.get(f"/service/{service_id}/broadcast-message-history/{broadcast_message_id}/versions")
-
-    def get_broadcast_message_version(self, service_id, broadcast_message_id, version):
-        """
-        Retrieve a specific version of a broadcast message
-        """
-        return self.get(f"/service/{service_id}/broadcast-message-history/{broadcast_message_id}/version/{version}")
-
-    def check_broadcast_status_transition_allowed(self, new_status, *, service_id, broadcast_message_id):
-        data = _attach_current_user(
-            {
-                "status": new_status,
-            }
-        )
-        return self.post(f"/service/{service_id}/broadcast-message/{broadcast_message_id}/check-status", data=data)
 
 
 broadcast_message_api_client = BroadcastMessageAPIClient()
