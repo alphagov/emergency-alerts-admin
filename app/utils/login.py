@@ -28,6 +28,8 @@ def log_in_user(user_id):
         # Check if coming from new password page
         if "password" in session.get("user_details", {}):
             user.update_password(session["user_details"]["password"])
+            user.activate()
+            return redirect(url_for(".sign_in", reset_password=True))
         user.activate()
         user.login()
     finally:
