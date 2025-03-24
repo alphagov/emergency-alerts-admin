@@ -1,0 +1,199 @@
+{% from "govuk_frontend_jinja/components/summary-list/macro.html" import govukSummaryList %}
+{% from "views/broadcast/macros/enlarged-map.html" import enlarged_map %}
+{% from "views/broadcast/macros/area-map.html" import map %}
+{% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
+
+
+
+{% macro alertSummaryList(current_user, service_id, broadcast_message, areas, bleed_estimated_area, count_of_phones, count_of_phones_likely, is_custom_broadcast) %}
+
+    <dialog id="enlarged-map-dialog" tabindex="-1" aria-modal="true" class="enlarged-map-dialog"
+        role="dialog" aria-labelledby="enlarged-map-dialog-message">
+        <div class="enlarged-map-dialog-content">
+            <h2 id="enlarged-map-dialog-message" class="govuk-visually-hidden screenreader-content" aria-live="assertive">Larger version of the map.</h2>
+            {{enlarged_map(estimated_area, bleed_estimated_area, count_of_phones, count_of_phones_likely, is_custom_broadcast, label)}}
+            {{ govukButton({
+                "text": "Close enlarged map",
+                "classes": "govuk-button",
+                "id": "close-map-btn",
+            }) }}
+        </div>
+    </dialog>
+
+    {% if areas %}
+        {% if areas|length == 1%}
+            {% set label = "Map of the United Kingdom, showing the area for "+areas[0] %}
+        {% else %}
+            {% set label = "Map of the United Kingdom, showing the areas for "+areas[:-1]|join(', ')+' and '+areas[-1] %}
+        {% endif %}
+    {% endif %}
+
+    {% set map_html = map(estimated_area, bleed_estimated_area, count_of_phones, count_of_phones_likely, is_custom_broadcast, label)%}
+
+    {% set areas_html %}
+        <ul class="area-list">
+        {% for area in broadcast_message.areas %}
+            <li class="area-list-item area-list-item--unremoveable">
+            {{area.name}}
+            </li>
+        {% endfor %}
+        </ul>
+    {% endset %}
+
+    {% set conditional_areas %}
+        {% if broadcast_message.areas %}
+            {{( areas_html | safe ~ " " ~ map_html ) | safe}}
+            {{ govukButton({
+                "text": "View larger map",
+                "classes": "govuk-button govuk-button--secondary",
+                "id": "view-larger-map-btn"
+            }) }}
+        {% endif%}
+    {% endset %}
+
+    {% set duration_content %}
+        {% if broadcast_message.duration %}
+            <p class="govuk-!-margin-right-2 duration-preview">
+                {{ broadcast_message.duration|format_seconds_duration_as_time }}
+            </p>
+        {% endif %}
+    {% endset %}
+
+    {% set conditional_area_action_text %}
+        {% if broadcast_message.status == "draft" and current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) %}
+            {% if broadcast_message.areas %}
+                Change
+            {% else %}
+                Add area
+            {% endif%}
+        {% endif %}
+    {% endset %}
+
+    {% set conditional_duration_action_text %}
+        {% if broadcast_message.status == "draft" and current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) %}
+            {% if broadcast_message.duration %}
+                Change
+            {% else %}
+                Add duration
+            {% endif%}
+        {% endif %}
+    {% endset %}
+
+    {% set conditional_action_text %}
+        {% if broadcast_message.status == "draft" and current_user.has_permissions('create_broadcasts', restrict_admin_usage=True)%}
+            Change
+        {% endif %}
+    {% endset %}
+
+    {% set count_of_phones_html %}
+        <p class="govuk-body">
+            {% if count_of_phones == 0 %}
+                Unknown number of phones
+            {% elif count_of_phones == count_of_phones_likely %}
+                {{ count_of_phones|format_thousands }} phones estimated
+            {% else %}
+                {{ count_of_phones|format_thousands }} to {{ count_of_phones_likely|format_thousands }} phones
+            {% endif %}
+        </p>
+    {% endset %}
+
+    {% set conditional_area_action_link %}
+        {% if broadcast_message.areas %}
+            {{url_for('.preview_broadcast_areas', service_id=service_id, broadcast_message_id=broadcast_message.id)}}
+        {% else %}
+            {{url_for(
+                ".choose_broadcast_library",
+                service_id=service_id,
+                broadcast_message_id=broadcast_message.id,
+            )}}
+        {% endif%}
+    {% endset %}
+
+    {% set summaryListItems = [
+        {
+        'key': {
+            'text': "Reference"
+        },
+        'value': {
+            'text': broadcast_message.reference
+        },
+        'actions': {
+            'items': [
+            {
+                'href': url_for('.edit_broadcast', service_id=service_id, broadcast_message_id=broadcast_message.id),
+                'text': conditional_action_text,
+                'visuallyHiddenText': "reference"
+            }
+            ]
+        }
+        },
+        {
+        'key': {
+            'text': "Alert message"
+        },
+        'value': {
+            'html': broadcast_message.template
+        },
+        'actions': {
+            'items': [
+            {
+                'href': url_for('.edit_broadcast', service_id=service_id, broadcast_message_id=broadcast_message.id),
+                'text': conditional_action_text,
+                'visuallyHiddenText': "message"
+            }
+            ]
+        }
+        },
+        {
+        'key': {
+            'text': "Area"
+        },
+        'value': {
+            'html': conditional_areas
+        },
+        'actions': {
+            'items': [
+            {
+                'href': conditional_area_action_link,
+                'text': conditional_area_action_text,
+                'visuallyHiddenText': "areas"
+            }
+            ]
+        }
+        },
+        {
+            'key': {
+                'text': "Alert duration"
+            },
+            'value': {
+                'html': duration_content
+            },
+            'actions': {
+                'items': [
+                {
+                    'href': url_for(".choose_broadcast_duration", service_id=service_id, broadcast_message_id=broadcast_message.id,),
+                    'text': conditional_duration_action_text,
+                    'visuallyHiddenText': "duration"
+                }
+                ]
+            }
+            }
+        ] %}
+
+    {% if count_of_phones %}
+        {% set summaryListItems = summaryListItems + [
+            {
+            'key': {
+                'text': "Phone estimate"
+            },
+            'value': {
+                'html': count_of_phones_html
+            },
+            }
+            ] %}
+    {% endif %}
+
+    {{ govukSummaryList({
+    'rows': summaryListItems
+    }) }}
+{% endmacro %}

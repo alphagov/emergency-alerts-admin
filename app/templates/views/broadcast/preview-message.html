@@ -5,51 +5,57 @@
 {% from "components/page-footer.html" import page_footer %}
 {% from "components/radios.html" import radio_select %}
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
+{% from "govuk_frontend_jinja/components/details/macro.html" import govukDetails %}
+{% from "components/alert-summary-list.html" import alertSummaryList %}
+
+{% block extra_stylesheets %}
+  {% include "views/broadcast/partials/area-map-stylesheets.html" %}
+{% endblock %}
+
+{% block extra_javascripts %}
+  {% include "views/broadcast/partials/area-map-javascripts.html" %}
+  {% include "views/broadcast/partials/enlarged-map-javascripts.html" %}
+{% endblock %}
 
 {% block service_page_title %}
   Preview alert
 {% endblock %}
 
-{# {% block backLink %}
-  {% if custom_broadcast %}
-    {% if 'postcode' in broadcast_message.areas[0].name %}
-      {{ govukBackLink({ "href": url_for('.choose_broadcast_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug='postcodes') }) }}
-    {% elif 'latitude' in broadcast_message.areas[0].name%}
-      {{ govukBackLink({ "href": url_for('.search_coordinates', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug='coordinates', coordinate_type='latitude_longitude') }) }}
-    {% elif 'easting' in broadcast_message.areas[0].name%}
-      {{ govukBackLink({ "href": url_for('.search_coordinates', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug='coordinates', coordinate_type='easting_northing') }) }}
-    {% endif %}
-  {% else %}
-    {{ govukBackLink({ "href": url_for('.preview_broadcast_areas', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }) }}
-  {% endif %}
-{% endblock %} #}
-
 {% block backLink %}
-  {{ govukBackLink({ "href": url_for('.choose_broadcast_duration', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }) }}
+  {% if back_link %}
+    {{ govukBackLink({ "href": back_link }) }}
+  {% else %}
+    {{ govukBackLink({ "href": url_for('.choose_broadcast_duration', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }) }}
+  {% endif %}
 {% endblock %}
 
 {% block maincolumn_content %}
 
   {{ page_header("Preview alert") }}
 
-  {{ broadcast_message.template|string }}
-
-  <div class="govuk-!-margin-bottom-3">
-    <p class="govuk-!-margin-right-2 area-list">Area: </p>
-    <ul class="area-list">
-      {% for area in broadcast_message.areas %}
-        <li class="area-list-item area-list-item--unremoveable">
-          {{area.name}}
-        </li>
-      {% endfor %}
-    </ul>
-    <p class="govuk-!-margin-right-2 duration-preview">
-      <b class="govuk-!-font-weight-bold">Duration:</b> {{ broadcast_message.duration|format_seconds_duration_as_time }}
-    </p>
-  </div>
+  {{alertSummaryList(current_user, current_service.id, broadcast_message, areas, broadcast_message.simple_polygons_with_bleed.estimated_area, broadcast_message.count_of_phones, broadcast_message.count_of_phones_likely, is_custom_broadcast)}}
 
   {% call form_wrapper() %}
-    {{ page_footer('Submit for approval') }}
+    {% if current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) and broadcast_message.areas and broadcast_message.content and broadcast_message.reference and broadcast_message.status == "draft" %}
+      {{ page_footer('Submit for approval') }}
+    {% endif %}
   {% endcall %}
 
+  {% if broadcast_message.status == "draft" and broadcast_message_version_count > 1 %}
+  <div class="bottom-gutter-1-2">
+    {% if last_updated_time %}
+      <h2 class="heading-small bottom-gutter-2-3 heading-inline">
+        Last edited
+        <time class="timeago" datetime="{{ last_updated_time }}">
+          {{ last_updated_time|format_delta }}
+        </time>
+      </h2>
+
+      &emsp;
+      <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('.view_broadcast_versions', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }}">See previous versions</a>
+      &emsp;
+      <br/>
+    {% endif %}
+  </div>
+{% endif %}
 {% endblock %}
