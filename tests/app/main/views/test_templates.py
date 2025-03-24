@@ -491,7 +491,7 @@ def test_view_broadcast_template(
 
     assert [(link.text.strip(), link["href"]) for link in page.select(".pill-separate-item")] == [
         (
-            "Get ready to send",
+            "Save and get ready to send",
             url_for(
                 ".broadcast",
                 service_id=SERVICE_ONE_ID,
