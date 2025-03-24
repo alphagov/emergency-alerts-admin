@@ -533,6 +533,8 @@ class GovukCheckboxesField(GovukFrontendWidgetMixin, SelectMultipleField):
     govuk_frontend_component_name = "checkbox"
     render_as_list = False
 
+    validators = [DataRequired("Please make a selection")]
+
     def get_item_from_option(self, option):
         return {
             "name": option.name,
@@ -1570,29 +1572,31 @@ class ServiceBroadcastNetworkForm(StripWhitespaceForm):
         super().__init__(*args, **kwargs)
         self.broadcast_channel = broadcast_channel
 
-    all_networks = OnOffField(
-        "Choose a mobile network",
-        choices=((True, "All networks"), (False, "A single network")),
-    )
-    network = OptionalGovukRadiosField(
-        "Choose a mobile network",
-        thing="a mobile network",
-        choices=(
+    # all_networks = OnOffField(
+    #     "Choose a mobile network",
+    #     choices=((True, "All networks"), (False, "A single network")),
+    # )
+    # network = OptionalGovukRadiosField(
+    #     "Choose a mobile network",
+    #     thing="a mobile network",
+    #     choices=(
+    #         ("ee", "EE"),
+    #         ("o2", "O2"),
+    #         ("vodafone", "Vodafone"),
+    #         ("three", "Three"),
+    #     ),
+    # )
+
+    networks = GovukCheckboxesField(
+        None,
+        choices=[
+            ("all", "All mobile networks"),
             ("ee", "EE"),
             ("o2", "O2"),
             ("vodafone", "Vodafone"),
             ("three", "Three"),
-        ),
-    )
-
-    networks = GovukCheckboxesField(
-        "Choose one or more mobile networks",
-        choices=[
-            ("all", "All mobile networks")("ee", "EE"),
-            ("o2", "O2"),
-            ("vodafone", "Vodafone"),
-            ("three", "Three"),
         ],
+        param_extensions={"hint": None, "fieldset": {"legend": {"classes": "govuk-visually-hidden"}}},
     )
 
     @property
@@ -1604,9 +1608,9 @@ class ServiceBroadcastNetworkForm(StripWhitespaceForm):
 
         return f"live-{self.broadcast_channel}-{provider}"
 
-    def validate_network(self, field):
-        if not self.all_networks.data and not field.data:
-            raise ValidationError("Select a mobile network")
+    # def validate_network(self, field):
+    #     if not self.all_networks.data and not field.data:
+    #         raise ValidationError("Select a mobile network")
 
 
 class ServiceBroadcastAccountTypeForm(StripWhitespaceForm):
