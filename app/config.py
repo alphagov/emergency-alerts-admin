@@ -44,7 +44,7 @@ class Config(object):
     HTTP_PROTOCOL = "http"
     EAS_APP_NAME = "admin"
     NOTIFY_LOG_LEVEL = "DEBUG"
-    PERMANENT_SESSION_LIFETIME = 60 * 60  # 60 minutes - maximum duration for a session
+    PERMANENT_SESSION_LIFETIME = 60 * 60 * 6  # 6 hours - maximum duration for a session
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_NAME = "emergency_alerts_session"
     SESSION_COOKIE_SECURE = False
