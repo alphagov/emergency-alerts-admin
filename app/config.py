@@ -71,7 +71,7 @@ class Config(object):
     BROADCAST_ORGANISATION_ID = "38e4bf69-93b0-445d-acee-53ea53fe02df"
 
     INACTIVITY_MINS = 28
-    EXPIRY_WARNING_MINS = 58
+    EXPIRY_WARNING_MINS = (5 * 60) + 58  # 5 hours, 58 minutes
     INACTIVITY_WARNING_DURATION = 2
 
     ADMIN_ACTION_ALLOW_SELF_APPROVAL = os.environ.get("ADMIN_ACTION_ALLOW_SELF_APPROVAL", "false").lower() == "true"
