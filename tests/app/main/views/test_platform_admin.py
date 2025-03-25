@@ -419,8 +419,8 @@ class TestPlatformAdminActions:
             "service_id": SERVICE_ONE_ID,
             "created_by": user_id,
             "created_at": "2025-02-14T12:34:56",
-            "action_type": "test",
-            "action_data": {},
+            "action_type": "create_api_key",
+            "action_data": {"key_name": "Test", "key_type": "team"},
             "status": "pending",
         }
 
@@ -431,23 +431,84 @@ class TestPlatformAdminActions:
         fake_uuid,
         mocker,
     ):
+        pending_action = self.sample_pending_action(fake_uuid, platform_admin_user["id"])
         mocker.patch(
             "app.admin_actions_api_client.get_pending_admin_actions",
-            return_value={"pending": []},  # For the followed redirect before asserting
+            return_value={
+                "pending": [pending_action],
+                "users": {
+                    platform_admin_user["id"]: {"name": "Test", "email_address": "test@test.gov.uk"},
+                },
+                "services": {
+                    SERVICE_ONE_ID: {"name": "Test Live Service", "active": True, "restricted": False},
+                },
+            },
         )
         mocker.patch(
             "app.admin_actions_api_client.get_admin_action_by_id",
-            return_value=self.sample_pending_action(fake_uuid, platform_admin_user["id"]),
+            return_value=pending_action,
         )
-        mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
-
         client_request.login(platform_admin_user)
+
+        # Is the approve button disabled?
+        page = client_request.get("main.admin_actions")
+        approve_button = page.select_one("button[data-button-type=approve]")
+        assert "disabled" in approve_button.attrs
+
+        # Do we enforce reject it even if they enable the button?
+        mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
         page = client_request.post(
             "main.review_admin_action", action_id=fake_uuid, new_status="approved", _follow_redirects=True
         )
         assert "You cannot approve your own admin approvals" in page.select_one(".banner-dangerous").text
 
         mock_review_admin_action.assert_not_called()
+
+    def test_can_approve_others_actions(
+        self,
+        client_request,
+        platform_admin_user,
+        fake_uuid,
+        mocker,
+    ):
+        random_user_uuid = str(uuid.uuid4())
+        pending_action = self.sample_pending_action(fake_uuid, random_user_uuid)  # Not created by the admin
+        mocker.patch(
+            "app.admin_actions_api_client.get_pending_admin_actions",
+            return_value={
+                "pending": [pending_action],
+                "users": {
+                    random_user_uuid: {"name": "Test", "email_address": "test@test.gov.uk"},
+                },
+                "services": {
+                    SERVICE_ONE_ID: {"name": "Test Live Service", "active": True, "restricted": False},
+                },
+            },
+        )
+        mocker.patch(
+            "app.admin_actions_api_client.get_admin_action_by_id",
+            return_value=pending_action,
+        )
+        client_request.login(platform_admin_user)
+
+        # Is the approve button enabled?
+        page = client_request.get("main.admin_actions")
+        approve_button = page.select_one("button[data-button-type=approve]")
+        assert "disabled" not in approve_button.attrs
+
+        # Does the endpoint allow it through too?
+        mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
+        mock_api_key_create = mocker.patch("app.api_key_api_client.create_api_key", return_value="test")
+        page = client_request.post(
+            "main.review_admin_action", action_id=fake_uuid, new_status="approved", _follow_redirects=True
+        )
+
+        mock_review_admin_action.assert_called_once_with(fake_uuid, "approved")
+        mock_api_key_create.assert_called_once_with(
+            service_id=SERVICE_ONE_ID,
+            key_name="Test",
+            key_type="team",
+        )
 
     @pytest.mark.parametrize("is_own_action", (True, False))
     def test_admins_can_reject_all_actions(

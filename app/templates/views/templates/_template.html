@@ -18,7 +18,7 @@
           {% if current_user.has_permissions('create_broadcasts') %}
             <div class="govuk-grid-column-one-half">
               <a href="{{ url_for(".broadcast", service_id=current_service.id, template_id=template.id) }}" class="govuk-link govuk-link--inverse pill-separate-item">
-                Get ready to send
+                Save and get ready to send
               </a>
             </div>
           {% endif %}

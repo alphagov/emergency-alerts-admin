@@ -12,7 +12,9 @@
 {% endblock %}
 
 {% block backLink %}
-  {% if custom_broadcast %}
+  {% if back_link %}
+    {{ govukBackLink({ "href": back_link }) }}
+  {% elif custom_broadcast %}
     {% if 'postcode' in broadcast_message.areas[0].name %}
       {{ govukBackLink({ "href": url_for('.search_postcodes', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug='postcodes') }) }}
     {% elif 'latitude' in broadcast_message.areas[0].name%}
@@ -52,7 +54,7 @@
         "classes": "duration-input",
       }) }}
     </div>
-    {{ page_footer('Preview alert') }}
+    {{ page_footer('Preview alert', button_name='preview') }}
   {% endcall %}
 
 {% endblock %}

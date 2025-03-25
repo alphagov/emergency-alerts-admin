@@ -165,3 +165,42 @@ $zoom-button-hover-colour: govuk-shade($zoom-button-colour, 10%);
     }
   }
 }
+
+
+
+.enlarged-map-dialog {
+  background-color: #FFF;
+  border: 1px solid #0B0C0C;
+  left: 50vw;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 30px;
+  position: fixed;
+  top: 60vh;
+  transform: translate(-50%, -50%);
+  width: 50%;
+  height: 60%;
+  z-index: 20;
+
+  &::backdrop {
+    background-color: rgba(64, 64, 64, 0.8);
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    height: 100%;
+    width:100%;
+  }
+
+
+  &-content button {
+    margin-top: govuk-spacing(2);
+  }
+}

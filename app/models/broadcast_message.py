@@ -49,6 +49,10 @@ class BroadcastMessage(JSONModel):
         "approved_by",
         "cancelled_by",
         "rejected_by_api_key_id",
+        "submitted_by_id",
+        "submitted_by",
+        "submitted_at",
+        "updated_by",
     }
 
     libraries = broadcast_area_libraries
@@ -93,14 +97,11 @@ class BroadcastMessage(JSONModel):
         )
 
     @classmethod
-    def update_from_content(cls, *, service_id, broadcast_message_id, content, reference):
+    def update_from_content(cls, *, service_id, broadcast_message_id, content=None, reference=None):
         broadcast_message_api_client.update_broadcast_message(
             service_id=service_id,
             broadcast_message_id=broadcast_message_id,
-            data={
-                "reference": reference,
-                "content": content,
-            },
+            data=({"reference": reference} if reference else {}) | ({"content": content} if content else {}),
         )
 
     @classmethod
@@ -183,7 +184,7 @@ class BroadcastMessage(JSONModel):
 
     @property
     def reference(self):
-        if self.template_id:
+        if self.template_id and not self._dict["reference"]:
             return self._dict["template_name"]
         return self._dict["cap_event"] or self._dict["reference"]
 
@@ -313,8 +314,28 @@ class BroadcastMessage(JSONModel):
         self.area_ids = list(set(self._dict["areas"]["ids"]) - {area_id})
         self._update_areas()
 
+    def replace_areas(self, new_area_ids):
+        """
+        Created this to ensure that if areas are added, that are in the libraries,
+        they will overwrite the custom area if added afterwards.
+        """
+        area_ids = (
+            list(set(self._dict["areas"]["ids"]) & {area.id for area in self.get_areas(self.area_ids)})
+            if self.area_ids
+            else []
+        )
+        self.area_ids = list(OrderedSet(area_ids + list(new_area_ids)))
+        self._update_areas()
+
     def _set_status_to(self, status):
         broadcast_message_api_client.update_broadcast_message_status(
+            status,
+            broadcast_message_id=self.id,
+            service_id=self.service_id,
+        )
+
+    def check_can_update_status(self, status):
+        broadcast_message_api_client.check_broadcast_status_transition_allowed(
             status,
             broadcast_message_id=self.id,
             service_id=self.service_id,
@@ -419,6 +440,16 @@ class BroadcastMessage(JSONModel):
             data["force_override"] = True
 
         self._update(**data)
+
+    def get_versions(self):
+        return broadcast_message_api_client.get_broadcast_message_versions(self.service_id, self.id)
+
+    def get_count_of_versions(self):
+        return len(self.get_versions())
+
+    def get_latest_version(self):
+        versions = broadcast_message_api_client.get_broadcast_message_versions(self.service_id, self.id)
+        return versions[0] if len(versions) > 0 else None
 
 
 class BroadcastMessages(ModelList):
