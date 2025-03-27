@@ -20,16 +20,6 @@
     <div class="govuk-grid-column-full">
       {{ page_header('Choose one or more mobile networks') }}
       {% call form_wrapper() %}
-        {# {% call select_wrapper(form.all_networks, hide_legend=True) %}
-          {% for option in form.all_networks %}
-            {{ radio(option, data_target='single-network' if option.data == False else None) }}
-          {% endfor %}
-        {% endcall %}
-        {% call conditional_radio_panel('single-network') %}
-          {{ form.network(
-              param_extensions={'fieldset': {'legend': {'classes': 'govuk-visually-hidden'}}}
-            ) }}
-        {% endcall %} #}
         {{ form.networks }}
         {{ page_footer('Continue', button_name='continue') }}
       {% endcall %}
