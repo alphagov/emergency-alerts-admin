@@ -10,12 +10,12 @@ from app.event_handlers import (
     create_broadcast_account_type_change_event,
 )
 from app.main import main
-from app.main.forms import (
+from app.main.forms import (  # ServiceBroadcastAccountTypeForm,
     AdminNotesForm,
     AdminSetOrganisationForm,
     RenameServiceForm,
     SearchByNameForm,
-    ServiceBroadcastAccountTypeForm,
+    ServiceBroadcastAccountForm,
     ServiceBroadcastChannelForm,
     ServiceBroadcastNetworkForm,
     ServiceOnOffSettingForm,
@@ -161,7 +161,10 @@ def service_set_broadcast_network(service_id, broadcast_channel):
 @main.route("/services/<uuid:service_id>/service-settings/broadcasts/<account_type>/confirm", methods=["GET", "POST"])
 @user_is_platform_admin
 def service_confirm_broadcast_account_type(service_id, account_type):
-    form = ServiceBroadcastAccountTypeForm(account_type=account_type)
+    # form = ServiceBroadcastAccountTypeForm(account_type=account_type)
+    # form.validate()
+
+    form = ServiceBroadcastAccountForm(account_type=account_type)
     form.validate()
 
     if form.account_type.errors:
@@ -170,16 +173,16 @@ def service_confirm_broadcast_account_type(service_id, account_type):
     if form.validate_on_submit():
         service_api_client.set_service_broadcast_settings(
             current_service.id,
-            service_mode=form.account_type.service_mode,
-            broadcast_channel=form.account_type.broadcast_channel,
-            provider_restriction=form.account_type.provider_restriction,
+            service_mode=form.service_mode,
+            broadcast_channel=form.broadcast_channel,
+            provider_restriction=form.provider_restriction,
         )
         create_broadcast_account_type_change_event(
             service_id=current_service.id,
             changed_by_id=current_user.id,
-            service_mode=form.account_type.service_mode,
-            broadcast_channel=form.account_type.broadcast_channel,
-            provider_restriction=form.account_type.provider_restriction,
+            service_mode=form.service_mode,
+            broadcast_channel=form.broadcast_channel,
+            provider_restriction=form.provider_restriction,
         )
         return redirect(url_for(".service_settings", service_id=service_id))
 
@@ -271,3 +274,7 @@ def check_contact_details_type(contact_details):
         return "email_address"
     else:
         return "phone_number"
+
+
+def format_provider_string(provider_list):
+    return ",".join(provider_list)

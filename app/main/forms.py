@@ -1619,6 +1619,32 @@ class ServiceBroadcastAccountTypeForm(StripWhitespaceForm):
     )
 
 
+class ServiceBroadcastAccountForm(Form):
+    account_type = StringField("Account type specifier")
+    service_mode = ""
+    broadcast_channel = ""
+    provider_restriction = []
+
+    def validate_account_type(self, field):
+        if not field.data:
+            raise ValidationError("Account type specifier cannot be empty")
+
+        split_values = field.data.split("-")
+        channel = split_values[1]
+        providers = split_values[2:]
+
+        if channel not in ["test", "operator", "severe", "government"]:
+            raise ValidationError("Invalid channel")
+
+        for p in providers:
+            if p not in ["all", "ee", "o2", "three", "vodafone"]:
+                raise ValidationError("Invalid provider")
+
+        self.service_mode = split_values[0]
+        self.broadcast_channel = split_values[1]
+        self.provider_restriction = split_values[2:]
+
+
 class BroadcastAreaForm(StripWhitespaceForm):
     areas = GovukCheckboxesField("Choose areas to broadcast to")
 
