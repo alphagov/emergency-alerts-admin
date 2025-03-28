@@ -1,0 +1,55 @@
+{% macro enlarged_map(estimated_area, estimated_area_with_bleed, count_of_phones, count_of_phones_likely, is_custom_broadcast, areas) %}
+{% if is_custom_broadcast %}
+  {% set area_color = "#0201FE" %}
+  {% set bleed_color = "#0201FE" %}
+  {% set fill = "none" %}
+{% else %}
+  {% set area_color = "#0B0B0C" %}
+  {% set bleed_color = "#1d70b8" %}
+  {% set fill = "#5694ca" %}
+{% endif %}
+
+<div id="enlarged-map" role="region" aria-label="{{areas}}" aria-describedby="area-list-map__description"></div>
+<p id="area-list-map__description" class="govuk-visually-hidden">
+  Use the arrow keys to move the map. Use the buttons to zoom the map in or out
+</p>
+  {% if estimated_area %}
+    <p class="area-list-key area-list-key--certain">
+      <svg class="area-list-key__icon" width="50" height="50" viewbox="0 0 50 50" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="100%" height="100%" fill="#FFFFFF" />
+        <polygon points="25 5, 45 25, 25 45, 5 25" stroke={{area_color}} stroke-width="2" fill="none" />
+      </svg>
+      <span class="govuk-visually-hidden">
+        An area of {{ (estimated_area)|square_metres_to_square_miles|round_to_significant_figures(1)|format_thousands }} square miles&nbsp;
+      </span>
+      Will get
+      <span class="govuk-visually-hidden">
+        the
+      </span>
+      alert
+    </p>
+    <p class="area-list-key area-list-key--likely">
+      <svg class="area-list-key__icon" width="50" height="50" viewbox="0 0 50 50" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="100%" height="100%" fill="#FFFFFF" />
+        <polygon points="25 5, 45 25, 25 45, 5 25" stroke={{bleed_color}} stroke-opacity="1" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" stroke-dasharray="4,7.5,5,7.5,8,8,5,8,7.5,8,5,8,7,8,5,8,4" fill={{fill}} fill-opacity="0.15" />
+      </svg>
+      <span class="govuk-visually-hidden">
+        An extra area of {{ (estimated_area_with_bleed - estimated_area)|square_metres_to_square_miles|round_to_significant_figures(1)|format_thousands }} square miles is&nbsp;
+      </span>
+      Likely to get
+      <span class="govuk-visually-hidden">
+        the
+      </span>
+      alert
+    </p>
+    <p class="area-list-key area-list-key--phone-estimate">
+      {% if count_of_phones == 0 %}
+        Unknown number of phones
+      {% elif count_of_phones == count_of_phones_likely %}
+        {{ count_of_phones|format_thousands }} phones estimated
+      {% else %}
+        {{ count_of_phones|format_thousands }} to {{ count_of_phones_likely|format_thousands }} phones
+      {% endif %}
+    </p>
+{% endif %}
+{% endmacro %}
