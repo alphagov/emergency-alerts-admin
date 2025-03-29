@@ -20,24 +20,24 @@
       {{ page_header('Confirm emergency alert settings') }}
       <p class="govuk-body">
         {{ broadcast_service_name_tag(
-          form.account_type.service_mode == 'training',
-          form.account_type.broadcast_channel,
-          form.account_type.provider_restriction,
+          form.service_mode == 'training',
+          form.broadcast_channel,
+          form.provider_restriction,
           left_margin=False,
         ) }}
       </p>
-      {% if form.account_type.service_mode == 'training' %}
+      {% if form.service_mode == 'training' %}
         <p class="govuk-body">
           No phones will receive alerts sent from this service.
         </p>
       {% else %}
         <p class="govuk-body">
           Members of the public
-          {% if form.account_type.broadcast_channel in ['test', 'operator'] %}
-            who have switched on the {{ form.account_type.broadcast_channel }} channel on their phones
+          {% if form.broadcast_channel in ['test', 'operator'] %}
+            who have switched on the {{ form.broadcast_channel }} channel on their phones
           {% endif %}
           will receive alerts sent from this service
-          {%- if form.account_type.broadcast_channel == 'government' -%}
+          {%- if form.broadcast_channel == 'government' -%}
             , even if they’ve opted out
           {%- endif %}.
         </p>

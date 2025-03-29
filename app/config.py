@@ -9,6 +9,14 @@ header_colors = {
 }
 
 
+class BroadcastProvider:
+    EE = "ee"
+    VODAFONE = "vodafone"
+    THREE = "three"
+    O2 = "o2"
+    PROVIDERS = [EE, VODAFONE, THREE, O2]
+
+
 class Config(object):
     ADMIN_CLIENT_SECRET = os.environ.get("ADMIN_CLIENT_SECRET")
 

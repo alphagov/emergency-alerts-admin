@@ -42,6 +42,9 @@ class ServiceAPIClient(AdminAPIClient):
     def find_services_by_name(self, service_name):
         return self.get("/service/find-services-by-name", params={"service_name": service_name})
 
+    def get_broadcast_providers(self, service_id):
+        return self.get("/service/{0}/broadcast-providers".format(service_id))
+
     def get_live_services_data(self, params_dict=None):
         """
         Retrieve a list of live services data with contact names and notification counts.
@@ -277,6 +280,11 @@ class ServiceAPIClient(AdminAPIClient):
         service_mode is one of "training" or "live"
         broadcast channel is one of "operator", "test", "severe", "government"
         provider_restriction is one of "all", "three", "o2", "vodafone", "ee"
+
+        NEW:
+        provider_restriction is either "all" or a list of between 1 and 3 providers
+        e.g. ["o2", "vodafone", "ee"], ["o2"], ["vodafone", "three"]
+
         """
         data = {
             "service_mode": service_mode,

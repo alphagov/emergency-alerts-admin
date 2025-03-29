@@ -16,6 +16,7 @@ class Service(JSONModel):
     ALLOWED_PROPERTIES = {
         "active",
         "allowed_broadcast_provider",
+        "broadcast_providers",
         "broadcast_channel",
         "id",
         "name",
