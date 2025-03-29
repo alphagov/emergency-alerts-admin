@@ -321,13 +321,15 @@ def character_count(count):
 
 
 def format_mobile_networks(networks):
-    list = []
+    if not isinstance(networks, list):
+        return None
+    network_list = []
     for network in networks:
         if network in ("three", "vodafone", "o2"):
-            list.append(network.capitalize())
+            network_list.append(network.capitalize())
         else:
-            list.append("EE")
-    return ", ".join(list)
+            network_list.append("EE")
+    return ", ".join(network_list)
 
 
 def format_yes_no(value, yes="Yes", no="No", none="No"):

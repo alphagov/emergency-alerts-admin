@@ -44,6 +44,7 @@ from wtforms.validators import (
     Regexp,
 )
 
+from app.config import BroadcastProvider
 from app.formatters import (
     format_auth_type,
     guess_name_from_email_address,
@@ -542,7 +543,6 @@ class GovukCheckboxesField(GovukFrontendWidgetMixin, SelectMultipleField):
             "text": option.label.text,
             "value": option._value(),
             "checked": option.checked,
-            "behaviour": "exclusive" if option.data == "all" else None,
         }
 
     def get_items_from_options(self, field):
@@ -1593,11 +1593,11 @@ class ServiceBroadcastNetworkForm(StripWhitespaceForm):
     @property
     def account_type(self):
         if "all" in self.networks.data:
-            provider = "all"
+            providers = "-".join(BroadcastProvider.PROVIDERS)
         else:
-            provider = "-".join(self.networks.data)
+            providers = "-".join(self.networks.data)
 
-        return f"live-{self.broadcast_channel}-{provider}"
+        return f"live-{self.broadcast_channel}-{providers}"
 
     # def validate_network(self, field):
     #     if not self.all_networks.data and not field.data:
