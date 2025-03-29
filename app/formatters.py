@@ -321,6 +321,9 @@ def character_count(count):
 
 
 def format_mobile_networks(networks):
+    if isinstance(networks, str):
+        return networks.capitalize()
+
     if not isinstance(networks, list):
         return None
     network_list = []

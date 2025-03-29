@@ -282,8 +282,8 @@ class ServiceAPIClient(AdminAPIClient):
         provider_restriction is one of "all", "three", "o2", "vodafone", "ee"
 
         NEW:
-        provider_restriction is either "all" or a list of between 1 and 3 providers
-        e.g. ["o2", "vodafone", "ee"], ["o2"], ["vodafone", "three"]
+        provider_restriction is a list of between 1 and 4 providers
+        e.g. ["vodafone", "ee"], ["o2"], ["ee", "o2", "vodafone", "three"]
 
         """
         data = {
