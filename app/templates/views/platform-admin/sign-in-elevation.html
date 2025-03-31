@@ -1,0 +1,41 @@
+{% extends "admin_template.html" %}
+{% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
+
+{% block per_page_title %}
+  Platform Admin Elevation
+{% endblock %}
+
+{% set mainClasses = "govuk-!-padding-top-0 govuk-!-padding-bottom-0" %}
+
+{% block content %}
+
+  <div class="banner-tour govuk-!-margin-top-0">
+    <div class="govuk-grid-row">
+        <h1 class="heading-large">
+          Platform Admin Elevation
+        </h1>
+        <p class="govuk-body heading-medium">
+          You’ve been approved to temporarily become a platform admin. Elevating will notify the Emergency Alerts team.
+        </p>
+        <p class="govuk-body heading-medium">
+          This approval will expire on {{ platform_admin_redemption|format_datetime_short }}.
+        </p>
+        <p class="govuk-body">
+          <form method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            {{ govukButton({
+              "text": "Elevate",
+            }) }}
+          </form>
+          <br/>
+          {{ govukButton({
+            "element": "a",
+            "text": "Elevate later",
+            "href": url_for("main.show_accounts_or_dashboard"),
+            "classes": "govuk-button--secondary"
+          }) }}
+        </p>
+    </div>
+  </div>
+
+{% endblock %}

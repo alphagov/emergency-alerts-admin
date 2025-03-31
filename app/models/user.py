@@ -58,6 +58,9 @@ class User(BaseUser, UserMixin):
         "state",
     }
 
+    # As a default
+    platform_admin_active = False
+
     def __init__(self, _dict):
         super().__init__(_dict)
         self.permissions = _dict.get("permissions", {})
@@ -202,7 +205,7 @@ class User(BaseUser, UserMixin):
 
     @property
     def has_pending_platform_admin_elevation(self):
-        if self.platform_admin_redemption is None:
+        if self.platform_admin_redemption is None or not self.platform_admin_capable:
             return False
 
         redemption = utc_string_to_aware_gmt_datetime(self.platform_admin_redemption)

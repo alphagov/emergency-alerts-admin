@@ -98,6 +98,7 @@ EXCLUDED_ENDPOINTS = tuple(
             "organisation_trial_mode_services",
             "organisations",
             "platform_admin",
+            "platform_admin_elevation",
             "platform_admin_search",
             "preview_broadcast_areas",
             "preview_broadcast_message",

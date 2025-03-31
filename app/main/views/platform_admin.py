@@ -156,6 +156,19 @@ def platform_review_admin_action(action_id, new_status):
     return redirect(url_for(".admin_actions"))
 
 
+@main.route("/platform-admin/elevation", endpoint="platform_admin_elevation")
+# We do *not* use user_is_platform_admin because this is their route into becoming one
+def pending_platform_admin_elevation():
+    # Assert they are actually due to become an admin
+    if not current_user.has_pending_platform_admin_elevation:
+        flash("You do not have pending platform admin elevation")
+        return redirect(url_for("main.show_accounts_or_dashboard"))
+
+    return render_template(
+        "views/platform-admin/sign-in-elevation.html", platform_admin_redemption=current_user.platform_admin_redemption
+    )
+
+
 def get_url_for_notify_record(uuid_):
     @dataclasses.dataclass
     class _EndpointSpec:

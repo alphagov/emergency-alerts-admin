@@ -106,7 +106,7 @@ def test_show_accounts_or_dashboard_redirects_if_not_logged_in(
 def test_show_accounts_or_dashboard_redirects_to_service_dashboard_if_platform_admin(
     client_request, mocker, mock_get_service
 ):
-    client_request.login(user_with_orgs_and_services(num_orgs=1, num_services=1, platform_admin=True))
+    client_request.login(user_with_orgs_and_services(num_orgs=1, num_services=1, platform_admin_active=True))
     with client_request.session_transaction() as session:
         session["service_id"] = "service2"
         session["organisation_id"] = None
@@ -123,7 +123,7 @@ def test_show_accounts_or_dashboard_redirects_to_service_dashboard_if_platform_a
 def test_show_accounts_or_dashboard_redirects_to_org_dashboard_if_platform_admin(
     client_request,
 ):
-    client_request.login(user_with_orgs_and_services(num_orgs=1, num_services=1, platform_admin=True))
+    client_request.login(user_with_orgs_and_services(num_orgs=1, num_services=1, platform_admin_active=True))
     with client_request.session_transaction() as session:
         session["service_id"] = None
         session["organisation_id"] = "org2"
