@@ -16,7 +16,6 @@ EVENT_SCHEMAS = {
         "service_mode",
         "broadcast_channel",
         "provider_restriction",
-        # "broadcast_providers",
     },  # noqa: E501 (length)
     "archive_service": {"service_id", "archived_by_id"},
 }

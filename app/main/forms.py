@@ -1599,21 +1599,11 @@ class ServiceBroadcastNetworkForm(StripWhitespaceForm):
 
         return f"live-{self.broadcast_channel}-{providers}"
 
-    # def validate_network(self, field):
-    #     if not self.all_networks.data and not field.data:
-    #         raise ValidationError("Select a mobile network")
-
 
 class ServiceBroadcastAccountTypeForm(StripWhitespaceForm):
     account_type = ServiceBroadcastAccountTypeField(
         "Change cell broadcast service type",
         thing="which type of account this cell broadcast service is",
-        # choices=[("training-test-all", "")]
-        # + [
-        #     (f"live-{broadcast_channel}-{provider}", "")
-        #     for broadcast_channel in ["test", "operator", "severe", "government"]
-        #     for provider in ["all", "ee", "o2", "three", "vodafone"]
-        # ],
         choices=[("placeholder", "")],
         validators=[DataRequired()],
     )

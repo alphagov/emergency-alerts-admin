@@ -279,11 +279,8 @@ class ServiceAPIClient(AdminAPIClient):
         """
         service_mode is one of "training" or "live"
         broadcast channel is one of "operator", "test", "severe", "government"
-        provider_restriction is one of "all", "three", "o2", "vodafone", "ee"
-
-        NEW:
         provider_restriction is a list of between 1 and 4 providers
-        e.g. ["vodafone", "ee"], ["o2"], ["ee", "o2", "vodafone", "three"]
+        e.g. ["three", "vodafone"], ["o2"], ["ee", "o2", "vodafone", "three"]
 
         """
         data = {

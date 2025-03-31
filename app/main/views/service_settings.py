@@ -10,7 +10,7 @@ from app.event_handlers import (
     create_broadcast_account_type_change_event,
 )
 from app.main import main
-from app.main.forms import (  # ServiceBroadcastAccountTypeForm,
+from app.main.forms import (
     AdminNotesForm,
     AdminSetOrganisationForm,
     RenameServiceForm,
@@ -156,9 +156,6 @@ def service_set_broadcast_network(service_id, broadcast_channel):
 @main.route("/services/<uuid:service_id>/service-settings/broadcasts/<account_type>/confirm", methods=["GET", "POST"])
 @user_is_platform_admin
 def service_confirm_broadcast_account_type(service_id, account_type):
-    # form = ServiceBroadcastAccountTypeForm(account_type=account_type)
-    # form.validate()
-
     form = ServiceBroadcastAccountForm(account_type=account_type)
     form.validate()
 
