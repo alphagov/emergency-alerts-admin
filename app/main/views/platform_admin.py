@@ -8,7 +8,15 @@ from emergency_alerts_utils.admin_action import (
     ADMIN_STATUS_PENDING,
 )
 from emergency_alerts_utils.api_key import KEY_TYPE_DESCRIPTIONS
-from flask import current_app, flash, redirect, render_template, request, url_for
+from flask import (
+    current_app,
+    flash,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
 from flask_login import current_user
 from notifications_python_client.errors import HTTPError
 
@@ -156,12 +164,19 @@ def platform_review_admin_action(action_id, new_status):
     return redirect(url_for(".admin_actions"))
 
 
-@main.route("/platform-admin/elevation", endpoint="platform_admin_elevation")
+@main.route("/platform-admin/elevation", endpoint="platform_admin_elevation", methods=["GET", "POST"])
 # We do *not* use user_is_platform_admin because this is their route into becoming one
 def pending_platform_admin_elevation():
     # Assert they are actually due to become an admin
     if not current_user.has_pending_platform_admin_elevation:
         flash("You do not have pending platform admin elevation")
+        return redirect(url_for("main.show_accounts_or_dashboard"))
+
+    if request.method == "POST":
+        # Mark the user as platform admin for the session
+        user_api_client.redeem_admin_elevation(current_user.id)
+        current_user.platform_admin_active = True
+        session["platform_admin_active"] = True
         return redirect(url_for("main.show_accounts_or_dashboard"))
 
     return render_template(

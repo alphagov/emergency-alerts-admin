@@ -249,5 +249,10 @@ class UserApiClient(AdminAPIClient):
 
         return self.delete(endpoint)
 
+    def redeem_admin_elevation(self, user_id):
+        endpoint = f"/user/{user_id}/redeem-elevation"
+
+        return self.post(endpoint, data={})
+
 
 user_api_client = UserApiClient()

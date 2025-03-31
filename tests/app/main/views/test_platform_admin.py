@@ -4,7 +4,9 @@ from functools import partial
 from unittest.mock import ANY
 
 import pytest
-from flask import url_for
+from flask import session, url_for
+from flask_login import current_user
+from freezegun import freeze_time
 
 from tests import service_json
 from tests.conftest import SERVICE_ONE_ID, SERVICE_TWO_ID, normalize_spaces
@@ -691,3 +693,72 @@ class TestPlatformAdminActions:
             ],
             folder_permissions=[],
         )
+
+
+class TestPlatformAdminElevation:
+    @freeze_time("2015-01-01 11:00:00")
+    def test_pending_elevation_can_become_active_platform_admin(
+        self,
+        client_request,
+        platform_admin_user,
+        mocker,
+    ):
+        # Make the admin elevation pending
+        platform_admin_user["platform_admin_active"] = False
+        platform_admin_user["platform_admin_capable"] = True
+        platform_admin_user["platform_admin_redemption"] = datetime.datetime(2025, 1, 1, 12, 0, 0)
+        assert not session.get("platform_admin_active")
+        assert not current_user.platform_admin
+
+        client_request.login(platform_admin_user)
+        # Should allow viewing the elevation prompt page:
+        client_request.get(
+            "main.platform_admin_elevation",
+        )
+
+        mocker.patch(
+            "app.user_api_client.redeem_admin_elevation",
+        )
+        client_request.post(
+            "main.platform_admin_elevation",
+        )
+
+        assert session.get("platform_admin_active")
+        assert current_user.platform_admin
+
+    @pytest.mark.parametrize(
+        "platform_admin_capable, platform_admin_redemption",
+        [
+            (True, None),
+            (True, datetime.datetime(2025, 1, 1, 10, 0, 0)),  # Expired an hour ago
+            (False, datetime.datetime(2025, 1, 1, 12, 0, 0)),
+        ],
+    )
+    @freeze_time("2025-01-01 11:00:00")
+    def test_invalid_elevation_cannot_become_active_platform_admin(
+        self,
+        client_request,
+        platform_admin_user,
+        platform_admin_redemption,
+        platform_admin_capable,
+    ):
+        platform_admin_user["platform_admin_active"] = False
+        platform_admin_user["platform_admin_capable"] = platform_admin_capable
+        platform_admin_user["platform_admin_redemption"] = platform_admin_redemption
+        assert not current_user.platform_admin
+
+        client_request.login(platform_admin_user)
+        client_request.get(
+            "main.platform_admin_elevation",
+            _expected_redirect=url_for(
+                "main.show_accounts_or_dashboard",
+            ),
+        )
+        client_request.post(
+            "main.platform_admin_elevation",
+            _expected_redirect=url_for(
+                "main.show_accounts_or_dashboard",
+            ),
+        )
+
+        assert not current_user.platform_admin
