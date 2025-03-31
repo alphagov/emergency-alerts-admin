@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from emergency_alerts_utils.timezones import utc_string_to_aware_gmt_datetime
 from flask import abort, request, session
@@ -51,6 +51,9 @@ class User(BaseUser, UserMixin):
         "logged_in_at",
         "mobile_number",
         "password_changed_at",
+        "platform_admin_active",
+        "platform_admin_capable",
+        "platform_admin_redemption",
         "permissions",
         "state",
     }
@@ -58,7 +61,6 @@ class User(BaseUser, UserMixin):
     def __init__(self, _dict):
         super().__init__(_dict)
         self.permissions = _dict.get("permissions", {})
-        self._platform_admin = _dict["platform_admin"]
 
     @classmethod
     def from_id(cls, user_id):
@@ -196,7 +198,15 @@ class User(BaseUser, UserMixin):
 
     @property
     def platform_admin(self):
-        return self._platform_admin and not session.get("disable_platform_admin_view", False)
+        return self.platform_admin_active and not session.get("disable_platform_admin_view", False)
+
+    @property
+    def has_pending_platform_admin_elevation(self):
+        if self.platform_admin_redemption is None:
+            return False
+
+        redemption = utc_string_to_aware_gmt_datetime(self.platform_admin_redemption)
+        return redemption > datetime.now(timezone.utc)
 
     def has_permissions(self, *permissions, restrict_admin_usage=False, allow_org_user=False):
         unknown_permissions = set(permissions) - all_ui_permissions

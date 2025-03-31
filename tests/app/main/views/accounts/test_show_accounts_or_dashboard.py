@@ -4,12 +4,12 @@ from flask import url_for
 from tests import user_json
 
 
-def user_with_orgs_and_services(num_orgs, num_services, platform_admin=False):
+def user_with_orgs_and_services(num_orgs, num_services, platform_admin_active=False):
     return user_json(
         name="leo",
         organisations=["org{}".format(i) for i in range(1, num_orgs + 1)],
         services=["service{}".format(i) for i in range(1, num_services + 1)],
-        platform_admin=platform_admin,
+        platform_admin_active=platform_admin_active,
     )
 
 
