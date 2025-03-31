@@ -534,8 +534,6 @@ class GovukCheckboxesField(GovukFrontendWidgetMixin, SelectMultipleField):
     govuk_frontend_component_name = "checkbox"
     render_as_list = False
 
-    validators = [DataRequired("Please make a selection")]
-
     def get_item_from_option(self, option):
         return {
             "name": option.name,
@@ -566,6 +564,10 @@ class GovukCheckboxesField(GovukFrontendWidgetMixin, SelectMultipleField):
         }
 
         return params
+
+
+class GovukCheckboxesFieldWithSelectionRequired(GovukCheckboxesField):
+    validators = [DataRequired("Please make a selection")]
 
 
 # Wraps checkboxes rendering in HTML needed by the collapsible JS
@@ -1578,7 +1580,7 @@ class ServiceBroadcastNetworkForm(StripWhitespaceForm):
         super().__init__(*args, **kwargs)
         self.broadcast_channel = broadcast_channel
 
-    networks = GovukCheckboxesField(
+    networks = GovukCheckboxesFieldWithSelectionRequired(
         None,
         choices=[
             ("all", "All mobile networks"),
