@@ -77,4 +77,8 @@
     <div class="keyline-block"></div>
   {% endfor %}
 
+  {% if texts|length == 0 %}
+    <p>There are no admin actions awaiting approval.</p>
+  {% endif %}
+
 {% endblock %}
