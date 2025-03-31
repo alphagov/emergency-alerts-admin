@@ -21,7 +21,6 @@ def sign_in():
 
     form = LoginForm()
     password_reset_url = url_for(".forgot_password", next=request.args.get("next"))
-    reset_password = bool(request.args.get("reset_password"))
 
     if form.validate_on_submit():
         user = User.from_email_address_and_password_or_none(form.email_address.data, form.password.data)
@@ -70,7 +69,6 @@ def sign_in():
         other_device=other_device,
         password_reset_url=password_reset_url,
         status=request.args.get("status"),
-        reset_password=reset_password,
     )
 
 

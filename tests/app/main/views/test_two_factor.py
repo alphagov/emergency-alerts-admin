@@ -223,7 +223,7 @@ def test_two_factor_sms_should_set_password_when_new_password_exists_in_session(
     client_request.post(
         "main.two_factor_sms",
         _data={"sms_code": "1234567"},
-        _expected_redirect=url_for("main.sign_in", reset_password=True),
+        _expected_redirect=url_for("main.show_accounts_or_dashboard"),
     )
 
     mock_update_user_password.assert_called_once_with(
