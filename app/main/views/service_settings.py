@@ -132,21 +132,28 @@ def service_set_broadcast_channel(service_id):
 @user_is_platform_admin
 def service_set_broadcast_network(service_id, broadcast_channel):
     # only populate old settings when the channel is unchanged
-    if current_service.broadcast_channel == broadcast_channel:
-        # provider = current_service.allowed_broadcast_provider
+    # if current_service.broadcast_channel == broadcast_channel:
+    #     # provider = current_service.allowed_broadcast_provider
 
-        broadcast_providers = service_api_client.get_broadcast_providers(
-            current_service.id,
-        )
+    #     providers = service_api_client.get_broadcast_providers(
+    #         current_service.id,
+    #     )["data"]
 
-        form = ServiceBroadcastNetworkForm(
-            broadcast_channel=broadcast_channel,
-            # all_networks=provider == "all",
-            # network=provider if provider != "all" else None,
-            networks=broadcast_providers,
-        )
-    else:
-        form = ServiceBroadcastNetworkForm(broadcast_channel=broadcast_channel)
+    #     form = ServiceBroadcastNetworkForm(
+    #         broadcast_channel=broadcast_channel,
+    #         # all_networks=provider == "all",
+    #         # network=provider if provider != "all" else None,
+    #         networks=[item["provider"] for item in providers],
+    #     )
+    # else:
+    #     form = ServiceBroadcastNetworkForm(broadcast_channel=broadcast_channel)
+
+    providers = service_api_client.get_broadcast_providers(current_service.id)["data"]
+
+    form = ServiceBroadcastNetworkForm(
+        broadcast_channel=broadcast_channel,
+        networks=[item["provider"] for item in providers],
+    )
 
     if form.validate_on_submit():
         return redirect(

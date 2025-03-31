@@ -4,6 +4,9 @@
     const addExclusiveCheckboxClickHandler = function() {
         const checkboxes = document.getElementsByName("networks");
 
+        if (checkboxes.length === 0)
+            return;
+
         let exclusiveCheckbox = null;
         const otherCheckboxes = [];
 
