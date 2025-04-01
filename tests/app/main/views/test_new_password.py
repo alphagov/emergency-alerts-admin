@@ -161,7 +161,7 @@ def test_should_sign_in_when_password_reset_is_successful_for_email_auth(
     client_request.post_url(
         url_for_endpoint_with_token(".new_password", token=token),
         _data={"password": "a-new_password_123"},
-        _expected_redirect=url_for(".show_accounts_or_dashboard"),
+        _expected_redirect=url_for("main.sign_in", reset_password=True),
     )
 
     assert mock_get_user_by_email_request_password_reset.called
