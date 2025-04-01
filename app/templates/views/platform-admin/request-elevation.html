@@ -1,0 +1,34 @@
+{% extends "views/platform-admin/_base_template.html" %}
+{% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
+{% from "govuk_frontend_jinja/components/error-message/macro.html" import govukErrorMessage %}
+
+{% block per_page_title %}
+  Request Platform Admin Elevation
+{% endblock %}
+
+{% block platform_admin_content %}
+
+  <h1 class="heading-medium">
+    Request Platform Admin Elevation
+  </h1>
+
+  <div class="keyline-block"></div>
+
+  <p class="govuk-body">You can request approval to temporarily become a full platform admin.</p>
+  <p class="govuk-body">This will go to other platform admin capable users for approval.</p>
+  <p class="govuk-body">You may approve other platform admin requests without elevating to full platform admin status.</p>
+
+  <div class="{{ 'govuk-form-group--error' if has_pending_elevation_request else '' }}">
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      {{ govukErrorMessage({
+        "text": "You already have a pending elevation request. Ask another platform admin to approve it."
+      }) if has_pending_elevation_request }}
+      {{ govukButton({
+        "text": "Request elevation",
+        "disabled": has_pending_elevation_request,
+      }) }}
+    </form>
+  </div>
+
+{% endblock %}

@@ -201,6 +201,7 @@ class User(BaseUser, UserMixin):
 
     @property
     def platform_admin(self):
+        """Whether the user is currently a platform admin (i.e. elevated), not just capable of being one"""
         return self.platform_admin_active and not session.get("disable_platform_admin_view", False)
 
     @property

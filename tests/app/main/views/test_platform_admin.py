@@ -414,6 +414,41 @@ class TestPlatformAdminActions:
 
         mock_get_pending_actions.assert_called_once()
 
+    def test_lists_elevate_user_actions(
+        self,
+        client_request,
+        platform_admin_user,
+        mocker,
+        fake_uuid,
+    ):
+        mock_get_pending_actions = mocker.patch(
+            "app.admin_actions_api_client.get_pending_admin_actions",
+            return_value={
+                "pending": [
+                    {
+                        "service_id": None,
+                        "created_by": fake_uuid,
+                        "created_at": "2025-02-14T12:34:56",
+                        "action_type": "elevate_platform_admin",
+                        "action_data": {},
+                    },
+                ],
+                "users": {
+                    fake_uuid: {"name": "Test", "email_address": "test@test.gov.uk"},
+                },
+                "services": {},
+            },
+        )
+
+        client_request.login(platform_admin_user)
+        page = client_request.get("main.admin_actions")
+        elements = page.select("main .govuk-grid-row")
+
+        assert len(elements) == 1
+        assert "Elevate to full platform admin" in normalize_spaces(elements[0].text)
+
+        mock_get_pending_actions.assert_called_once()
+
     @staticmethod
     def sample_pending_action(fake_uuid, user_id):
         return {
@@ -733,6 +768,36 @@ class TestPlatformAdminActions:
 
 
 class TestPlatformAdminElevation:
+    def test_platform_admin_capable_can_request_elevation(self, client_request, platform_admin_capable_user, mocker):
+        client_request.login(platform_admin_capable_user)
+        assert not current_user.platform_admin
+
+        mock_create_admin_action = mocker.patch("app.admin_actions_api_client.create_admin_action", return_value=None)
+        mocker.patch(
+            "app.admin_actions_api_client.get_pending_admin_actions",
+            return_value={"pending": []},
+        )
+
+        page = client_request.get(
+            "main.platform_admin_request_elevation",
+        )
+        assert normalize_spaces(page.select_one("h1").text) == "Request Platform Admin Elevation"
+
+        page = client_request.post(
+            "main.platform_admin_request_elevation", _expected_redirect=url_for("main.admin_actions")
+        )
+
+        flashes = session.get("_flashes")
+        assert len(flashes) == 1
+        assert flashes[0][1] == "An admin approval has been created"
+        mock_create_admin_action.assert_called_once_with(
+            {
+                "created_by": str(platform_admin_capable_user["id"]),
+                "action_type": "elevate_platform_admin",
+                "action_data": {},
+            }
+        )
+
     @freeze_time("2015-01-01 11:00:00")
     def test_pending_elevation_can_become_active_platform_admin(
         self,
@@ -787,15 +852,11 @@ class TestPlatformAdminElevation:
         client_request.login(platform_admin_user)
         client_request.get(
             "main.platform_admin_elevation",
-            _expected_redirect=url_for(
-                "main.show_accounts_or_dashboard",
-            ),
+            _expected_status=403,
         )
         client_request.post(
             "main.platform_admin_elevation",
-            _expected_redirect=url_for(
-                "main.show_accounts_or_dashboard",
-            ),
+            _expected_status=403,
         )
 
         assert not current_user.platform_admin

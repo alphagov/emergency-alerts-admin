@@ -464,6 +464,12 @@ def platform_admin_user(fake_uuid):
 
 
 @pytest.fixture(scope="function")
+def platform_admin_capable_user(platform_admin_user):
+    platform_admin_user["platform_admin_active"] = False
+    return platform_admin_user
+
+
+@pytest.fixture(scope="function")
 def platform_admin_user_no_service_permissions():
     """
     this fixture is for situations where we want to test that platform admin can access
