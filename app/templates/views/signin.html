@@ -20,7 +20,7 @@
       {% if status == 'expired' %}
         <h1 class="heading-large">You’ve been signed out</h1>
         <p class="govuk-body">
-          We do this every hour to keep your information secure. Sign back in to start a new session.
+          We do this every 6 hours to keep your information secure. Sign back in to start a new session.
         </p>
       {% elif status == 'inactive' %}
         <h1 class="heading-large">You’ve been signed out due to inactivity</h1>
@@ -39,6 +39,11 @@
           </p>
         {% endif %}
       {% endif %}
+    {% elif reset_password %}
+      <h1 class="heading-large">You need to sign in</h1>
+      <p class="govuk-body">
+        You've just changed your password. Sign in with your new password.
+      </p>
     {% else %}
       <h1 class="heading-large">Sign in</h1>
     {% endif %}
