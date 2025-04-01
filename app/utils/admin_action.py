@@ -3,6 +3,7 @@ from typing import Iterable
 from emergency_alerts_utils.admin_action import (
     ADMIN_CREATE_API_KEY,
     ADMIN_EDIT_PERMISSIONS,
+    ADMIN_ELEVATE_USER,
     ADMIN_INVITE_USER,
     ADMIN_SENSITIVE_PERMISSIONS,
     ADMIN_STATUS_INVALIDATED,
@@ -16,6 +17,7 @@ from app.models.service import Service
 from app.models.user import InvitedUser, User
 from app.notify_client.admin_actions_api_client import admin_actions_api_client
 from app.notify_client.api_key_api_client import api_key_api_client
+from app.notify_client.user_api_client import user_api_client
 
 
 def process_admin_action(action_obj):
@@ -64,6 +66,9 @@ def process_admin_action(action_obj):
             service_id=service_id,
             key_name=email_safe(action_data["key_name"], whitespace="_"),
         )
+    elif action_type == ADMIN_ELEVATE_USER:
+        user_api_client.elevate_admin_next_login(action_obj["created_by"], current_user.id)
+        return redirect(url_for(".admin_actions"))
     else:
         raise Exception("Unknown admin action " + action_type)
 

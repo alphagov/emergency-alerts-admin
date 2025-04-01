@@ -694,6 +694,43 @@ class TestPlatformAdminActions:
             folder_permissions=[],
         )
 
+    def test_approving_marks_admin_for_elevation_redemption(
+        self,
+        client_request,
+        platform_admin_user,
+        mocker,
+    ):
+        action_or_creator_id = str(uuid.uuid4())
+
+        mocker.patch(
+            "app.admin_actions_api_client.get_admin_action_by_id",
+            return_value={
+                "id": action_or_creator_id,
+                "service_id": None,
+                "created_by": action_or_creator_id,  # Test user is not the creator
+                "created_at": "2025-02-14T12:34:56",
+                "action_type": "elevate_platform_admin",
+                "action_data": {},
+                "status": "pending",
+            },
+        )
+        mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
+        mock_elevate_admin = mocker.patch(
+            "app.user_api_client.elevate_admin_next_login",
+            return_value=None,
+        )
+
+        client_request.login(platform_admin_user)
+        client_request.post(
+            "main.review_admin_action",
+            action_id=action_or_creator_id,
+            new_status="approved",
+            _expected_redirect=url_for(".admin_actions"),
+        )
+
+        mock_review_admin_action.assert_called_once_with(action_or_creator_id, "approved")
+        mock_elevate_admin.assert_called_once_with(action_or_creator_id, platform_admin_user["id"])
+
 
 class TestPlatformAdminElevation:
     @freeze_time("2015-01-01 11:00:00")

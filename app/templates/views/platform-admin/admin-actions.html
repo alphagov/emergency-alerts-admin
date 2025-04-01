@@ -48,11 +48,14 @@
               <br/>
               API Key type: {{ key_type_labels[action.action_data.key_type] }}
             </p>
+          {% elif action.action_type == 'elevate_platform_admin' %}
+            <h2>Elevate to platform admin</h2>
+            <br/>
           {% else %}
             {{ action }}
           {% endif %}
 
-          Created {{ action.created_at | format_datetime_human }} by {{ users[action.created_by].email_address }}
+          Created by {{ users[action.created_by].email_address }} {{ action.created_at | format_datetime_human }}
       </div>
       <div class="govuk-grid-column-one-quarter">
         <form action="{{url_for('.review_admin_action', action_id=action.id, new_status='approved')}}" method="post">

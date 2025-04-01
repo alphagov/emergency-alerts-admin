@@ -249,6 +249,11 @@ class UserApiClient(AdminAPIClient):
 
         return self.delete(endpoint)
 
+    def elevate_admin_next_login(self, user_id, approved_by_id):
+        endpoint = f"/user/{user_id}/elevate"
+
+        return self.post(endpoint, data={"approved_by": str(approved_by_id)})
+
     def redeem_admin_elevation(self, user_id):
         endpoint = f"/user/{user_id}/redeem-elevation"
 
