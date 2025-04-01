@@ -1,5 +1,12 @@
 from typing import Iterable
 
+from emergency_alerts_utils.admin_action import (
+    ADMIN_CREATE_API_KEY,
+    ADMIN_EDIT_PERMISSIONS,
+    ADMIN_INVITE_USER,
+    ADMIN_SENSITIVE_PERMISSIONS,
+    ADMIN_STATUS_INVALIDATED,
+)
 from emergency_alerts_utils.api_key import KEY_TYPE_NORMAL
 from flask import abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user
@@ -9,27 +16,6 @@ from app.models.service import Service
 from app.models.user import InvitedUser, User
 from app.notify_client.admin_actions_api_client import admin_actions_api_client
 from app.notify_client.api_key_api_client import api_key_api_client
-
-# Tasks which require another platform/org admin to approve before being actioned
-ADMIN_INVITE_USER = "invite_user"  # Only if the user has sensitive permissions
-ADMIN_EDIT_PERMISSIONS = "edit_permissions"  # Only if adding permissions, removal does not need approval
-ADMIN_CREATE_API_KEY = "create_api_key"
-
-ADMIN_ACTION_LIST = [
-    ADMIN_INVITE_USER,
-    ADMIN_EDIT_PERMISSIONS,
-    ADMIN_CREATE_API_KEY,
-]
-
-ADMIN_STATUS_PENDING = "pending"
-ADMIN_STATUS_APPROVED = "approved"
-ADMIN_STATUS_REJECTED = "rejected"
-ADMIN_STATUS_INVALIDATED = "invalidated"
-
-ADMIN_STATUS_LIST = [ADMIN_STATUS_PENDING, ADMIN_STATUS_APPROVED, ADMIN_STATUS_REJECTED, ADMIN_STATUS_INVALIDATED]
-
-# Permissions which require approval from an additional admin before being added
-ADMIN_APPROVAL_PERMISSIONS = ["create_broadcasts", "approve_broadcasts"]
 
 
 def process_admin_action(action_obj):
@@ -83,7 +69,7 @@ def process_admin_action(action_obj):
 
 
 def permissions_require_admin_action(new_permissions: Iterable[str]):
-    return bool(set(new_permissions) & set(ADMIN_APPROVAL_PERMISSIONS))
+    return bool(set(new_permissions) & set(ADMIN_SENSITIVE_PERMISSIONS))
 
 
 def create_or_replace_admin_action(proposed_action_obj):
