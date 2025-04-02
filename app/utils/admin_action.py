@@ -68,6 +68,7 @@ def process_admin_action(action_obj):
         )
     elif action_type == ADMIN_ELEVATE_USER:
         user_api_client.elevate_admin_next_login(action_obj["created_by"], current_user.id)
+        flash("The user is approved to become a full platform admin for the next session", "default_with_tick")
         return redirect(url_for(".admin_actions"))
     else:
         raise Exception("Unknown admin action " + action_type)
