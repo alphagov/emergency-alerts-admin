@@ -26,6 +26,7 @@
       }) if has_pending_elevation_request }}
       {{ govukButton({
         "text": "Request elevation",
+        "name": "continue",
         "disabled": has_pending_elevation_request,
       }) }}
     </form>
