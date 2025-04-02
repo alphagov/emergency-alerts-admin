@@ -156,6 +156,23 @@ from tests.conftest import SERVICE_ONE_ID
             },
             True,
         ),
+        # Elevation
+        (
+            [
+                {
+                    "id": str(uuid.uuid4()),
+                    "created_by": SERVICE_ONE_ID,
+                    "action_type": "elevate_platform_admin",
+                    "action_data": {},
+                }
+            ],
+            {
+                "created_by": SERVICE_ONE_ID,
+                "action_type": "elevate_platform_admin",
+                "action_data": {},
+            },
+            True,
+        ),
     ],
 )
 def test_similar_admin_actions_are_invalidated(existing_actions, proposed_action_obj, expect_invalidation, mocker):

@@ -100,7 +100,8 @@ def _admin_action_is_similar(action_obj1, action_obj2):
     """
     Similar being related to the same subject, e.g. inviting the same user to the same service.
     """
-    if action_obj1["service_id"] != action_obj2["service_id"]:
+    # service_id is optional
+    if action_obj1.get("service_id") != action_obj2.get("service_id"):
         return False
 
     if action_obj1["action_type"] != action_obj2["action_type"]:
@@ -112,5 +113,7 @@ def _admin_action_is_similar(action_obj1, action_obj2):
         return action_obj1["action_data"]["user_id"] == action_obj2["action_data"]["user_id"]
     elif action_obj1["action_type"] == ADMIN_CREATE_API_KEY:
         return action_obj1["action_data"]["key_name"] == action_obj2["action_data"]["key_name"]
+    elif action_obj1["action_type"] == ADMIN_ELEVATE_USER:
+        return action_obj1["created_by"] == action_obj2["created_by"]
     else:
         return False  # Unknown action_type
