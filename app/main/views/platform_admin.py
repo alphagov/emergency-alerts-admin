@@ -207,7 +207,7 @@ def platform_admin_elevation():
         user_api_client.redeem_admin_elevation(current_user.id)
         current_user.platform_admin_active = True
         session["platform_admin_active"] = True
-        return redirect(url_for("main.platform_admin"))
+        return redirect(url_for("main.platform_admin_search"))
 
     return render_template(
         "views/platform-admin/sign-in-elevation.html", platform_admin_redemption=current_user.platform_admin_redemption
