@@ -1,40 +1,40 @@
 (function (window) {
-    "use strict";
+  "use strict";
 
-    const addExclusiveCheckboxClickHandler = function() {
-        const checkboxes = document.getElementsByName("networks");
+  const addExclusiveCheckboxClickHandler = function () {
+    const checkboxes = document.getElementsByName("networks");
 
-        if (checkboxes.length === 0)
-            return;
+    if (checkboxes.length === 0) return;
 
-        let exclusiveCheckbox = null;
-        const otherCheckboxes = [];
+    let exclusiveCheckbox = null;
+    const otherCheckboxes = [];
 
-        checkboxes.forEach(function(checkbox) {
-            if (checkbox.value == "all") {
-                exclusiveCheckbox = checkbox;
-            } else {
-                otherCheckboxes.push(checkbox);
-            }
+    checkboxes.forEach(function (checkbox) {
+      if (checkbox.value == "all") {
+        exclusiveCheckbox = checkbox;
+      } else {
+        otherCheckboxes.push(checkbox);
+      }
+    });
+
+    exclusiveCheckbox.addEventListener("click", function () {
+      if (this.checked) {
+        otherCheckboxes.forEach(function (checkbox) {
+          checkbox.checked = false;
         });
+      }
+    });
 
-        exclusiveCheckbox.addEventListener("click", function() {
-            if (this.checked) {
-                otherCheckboxes.forEach(function(checkbox) {
-                    checkbox.checked = false;
-                });
-            }
-        });
+    otherCheckboxes.forEach(function (checkbox) {
+      checkbox.addEventListener("click", function () {
+        if (this.checked) {
+          exclusiveCheckbox.checked = false;
+        }
+      });
+    });
+  };
 
-        otherCheckboxes.forEach(function(checkbox) {
-            checkbox.addEventListener("click", function() {
-                if (this.checked) {
-                    exclusiveCheckbox.checked = false;
-                }
-            });
-        });
-    };
-
-    addExclusiveCheckboxClickHandler();
-
-  })(window);
+  addExclusiveCheckboxClickHandler();
+  window.GOVUK.addExclusiveCheckboxClickHandler =
+    addExclusiveCheckboxClickHandler;
+})(window);
