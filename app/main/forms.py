@@ -1549,18 +1549,6 @@ class TemplateAndFoldersSelectionForm(Form):
     )
 
 
-class ServiceBroadcastAccountTypeField(GovukRadiosField):
-    # After validation we split the value back into its parts of service_mode
-    # broadcast_channel and provider_restriction to be used by the flask route to send to the
-    # API
-    def post_validate(self, form, validation_stopped):
-        if not validation_stopped and self.data:
-            split_values = self.data.split("-")
-            self.service_mode = split_values[0]
-            self.broadcast_channel = split_values[1]
-            self.provider_restriction = split_values[2:]
-
-
 class ServiceBroadcastChannelForm(StripWhitespaceForm):
     channel = GovukRadiosField(
         "Emergency alerts settings",
@@ -1600,15 +1588,6 @@ class ServiceBroadcastNetworkForm(StripWhitespaceForm):
             providers = "-".join(self.networks.data)
 
         return f"live-{self.broadcast_channel}-{providers}"
-
-
-class ServiceBroadcastAccountTypeForm(StripWhitespaceForm):
-    account_type = ServiceBroadcastAccountTypeField(
-        "Change cell broadcast service type",
-        thing="which type of account this cell broadcast service is",
-        choices=[("placeholder", "")],
-        validators=[DataRequired()],
-    )
 
 
 class ServiceBroadcastAccountForm(Form):
