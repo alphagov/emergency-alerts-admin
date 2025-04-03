@@ -970,7 +970,7 @@ def test_service_set_broadcast_network_makes_you_choose(client_request, platform
             ],
         ),
         (
-            "live-operator-ee-vodafone-three-o2",
+            "live-operator-ee-o2-three-vodafone",
             [
                 "Operator",
                 "Members of the public who have switched on the operator "
@@ -1015,7 +1015,7 @@ def test_service_set_broadcast_network_makes_you_choose(client_request, platform
             ],
         ),
         (
-            "live-test-ee-vodafone-three-o2",
+            "live-test-ee-o2-three-vodafone",
             [
                 "Test",
                 "Members of the public who have switched on the test "
@@ -1024,7 +1024,7 @@ def test_service_set_broadcast_network_makes_you_choose(client_request, platform
             ],
         ),
         (
-            "live-severe-ee-vodafone-three-o2",
+            "live-severe-ee-o2-three-vodafone",
             [
                 "Live",
                 "Members of the public will receive alerts sent from this service.",
@@ -1038,7 +1038,7 @@ def test_service_set_broadcast_network_makes_you_choose(client_request, platform
             ],
         ),
         (
-            "live-government-ee-vodafone-three-o2",
+            "live-government-ee-o2-three-vodafone",
             [
                 "Government",
                 "Members of the public will receive alerts sent from this service, even if they’ve opted out.",
