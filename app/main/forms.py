@@ -566,8 +566,8 @@ class GovukCheckboxesField(GovukFrontendWidgetMixin, SelectMultipleField):
         return params
 
 
-class GovukCheckboxesFieldWithSelectionRequired(GovukCheckboxesField):
-    validators = [DataRequired("Please make a selection")]
+class GovukCheckboxesFieldWithNetworkRequired(GovukCheckboxesField):
+    validators = [DataRequired("Select a mobile network")]
 
 
 # Wraps checkboxes rendering in HTML needed by the collapsible JS
@@ -1580,7 +1580,7 @@ class ServiceBroadcastNetworkForm(StripWhitespaceForm):
         super().__init__(*args, **kwargs)
         self.broadcast_channel = broadcast_channel
 
-    networks = GovukCheckboxesFieldWithSelectionRequired(
+    networks = GovukCheckboxesFieldWithNetworkRequired(
         None,
         choices=[
             ("all", "All mobile networks"),
@@ -1622,8 +1622,12 @@ class ServiceBroadcastAccountForm(Form):
             raise ValidationError("Account type specifier cannot be empty")
 
         split_values = field.data.split("-")
+        service_mode = split_values[0]
         channel = split_values[1]
         providers = split_values[2:]
+
+        if service_mode not in ["live", "training"]:
+            raise ValidationError("Invalid service mode")
 
         if channel not in ["test", "operator", "severe", "government"]:
             raise ValidationError("Invalid channel")

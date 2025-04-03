@@ -14,7 +14,7 @@ class BroadcastProvider:
     VODAFONE = "vodafone"
     THREE = "three"
     O2 = "o2"
-    PROVIDERS = [EE, VODAFONE, THREE, O2]
+    PROVIDERS = [EE, O2, THREE, VODAFONE]
 
 
 class Config(object):

@@ -23,7 +23,7 @@
     {% else %}
     <span class="navigation-service-type navigation-service-type--{{broadcast_channel}} {{margin_class}}">{{ broadcast_channel|title }}
     {% endif %}
-    {% if broadcast_providers|length < 4 %}
+    {% if broadcast_providers and broadcast_providers|length < 4 %}
       ({{ broadcast_providers|format_mobile_networks }})
     {% endif %}
   {% endif %}

@@ -109,16 +109,16 @@ def test_platform_admin_sees_only_relevant_settings_for_broadcast_service(
 @pytest.mark.parametrize(
     "has_broadcast_permission,service_mode,broadcast_channel,allowed_broadcast_provider,expected_text",
     [
-        (False, "training", None, "all", "Off"),
-        (False, "live", None, "all", "Off"),
-        (True, "training", "test", "all", "Training"),
-        (True, "live", "test", "ee", "Test (EE)"),
-        (True, "live", "test", "three", "Test (Three)"),
-        (True, "live", "test", "all", "Test"),
-        (True, "live", "severe", "all", "Live"),
-        (True, "live", "severe", "three", "Live (Three)"),
-        (True, "live", "government", "all", "Government"),
-        (True, "live", "government", "three", "Government (Three)"),
+        (False, "training", None, ["ee", "o2", "three", "vodafone"], "Off"),
+        (False, "live", None, ["ee", "o2", "three", "vodafone"], "Off"),
+        (True, "training", "test", ["ee", "o2", "three", "vodafone"], "Training"),
+        (True, "live", "test", ["ee"], "Test (EE)"),
+        (True, "live", "test", ["three"], "Test (Three)"),
+        (True, "live", "test", ["ee", "o2", "three", "vodafone"], "Test"),
+        (True, "live", "severe", ["ee", "o2", "three", "vodafone"], "Live"),
+        (True, "live", "severe", ["three"], "Live (Three)"),
+        (True, "live", "government", ["ee", "o2", "three", "vodafone"], "Government"),
+        (True, "live", "government", ["three"], "Government (Three)"),
     ],
 )
 def test_platform_admin_sees_correct_description_of_broadcast_service_setting(
@@ -840,17 +840,16 @@ def test_service_set_broadcast_channel_redirects(
         (
             "live",
             "severe",
-            "all",
+            ["all"],
             [
-                ("All networks", "True"),
+                ("All mobile networks", "all"),
             ],
         ),
         (
             "live",
             "test",
-            "ee",
+            ["ee"],
             [
-                ("A single network", "False"),
                 ("EE", "ee"),
             ],
         ),
@@ -874,6 +873,10 @@ def test_service_set_broadcast_network_has_radio_selected(
         allowed_broadcast_provider=allowed_broadcast_provider,
     )
     mocker.patch("app.service_api_client.get_service", return_value={"data": service_one})
+    mocker.patch(
+        "app.service_api_client.get_broadcast_providers",
+        return_value={"data": [{"provider": p} for p in allowed_broadcast_provider]},
+    )
 
     page = client_request.get(
         "main.service_set_broadcast_network",
@@ -883,35 +886,45 @@ def test_service_set_broadcast_network_has_radio_selected(
 
     assert [
         (
-            normalize_spaces(radio.find_next_sibling("label").text),
-            radio["value"],
+            normalize_spaces(checkbox.find_next_sibling("label").text),
+            checkbox["value"],
         )
-        for radio in page.select("input[checked]")
+        for checkbox in page.select("input[checked]")
     ] == expected_selected
 
 
 @pytest.mark.parametrize(
     "broadcast_channel, data, expected_result",
     (
-        ("severe", {"all_networks": True}, "live-severe-all"),
-        ("government", {"all_networks": True}, "live-government-all"),
-        ("operator", {"all_networks": True}, "live-operator-all"),
-        ("test", {"all_networks": True}, "live-test-all"),
-        ("test", {"all_networks": False, "network": "o2"}, "live-test-o2"),
-        ("test", {"all_networks": False, "network": "ee"}, "live-test-ee"),
-        ("test", {"all_networks": False, "network": "three"}, "live-test-three"),
-        ("test", {"all_networks": False, "network": "vodafone"}, "live-test-vodafone"),
-        ("government", {"all_networks": False, "network": "vodafone"}, "live-government-vodafone"),
-        ("severe", {"all_networks": False, "network": "vodafone"}, "live-severe-vodafone"),
+        ("severe", {"networks": ["all"]}, "live-severe-ee-o2-three-vodafone"),
+        ("government", {"networks": ["all"]}, "live-government-ee-o2-three-vodafone"),
+        ("government", {"networks": ["ee", "o2", "three", "vodafone"]}, "live-government-ee-o2-three-vodafone"),
+        ("operator", {"networks": ["all"]}, "live-operator-ee-o2-three-vodafone"),
+        ("operator", {"networks": ["ee", "o2", "three", "vodafone"]}, "live-operator-ee-o2-three-vodafone"),
+        ("test", {"networks": ["all"]}, "live-test-ee-o2-three-vodafone"),
+        ("test", {"networks": ["o2"]}, "live-test-o2"),
+        ("test", {"networks": ["ee"]}, "live-test-ee"),
+        ("test", {"networks": ["three"]}, "live-test-three"),
+        ("test", {"networks": ["vodafone"]}, "live-test-vodafone"),
+        ("government", {"networks": ["vodafone"]}, "live-government-vodafone"),
+        ("severe", {"networks": ["vodafone"]}, "live-severe-vodafone"),
+        ("severe", {"networks": ["ee", "vodafone"]}, "live-severe-ee-vodafone"),
+        ("severe", {"networks": ["o2", "three"]}, "live-severe-o2-three"),
     ),
 )
 def test_service_set_broadcast_network(
     client_request,
     platform_admin_user,
+    mocker,
     broadcast_channel,
     data,
     expected_result,
 ):
+    mocker.patch(
+        "app.service_api_client.get_broadcast_providers",
+        return_value={"data": []},
+    )
+
     client_request.login(platform_admin_user)
     client_request.post(
         "main.service_set_broadcast_network",
@@ -927,17 +940,14 @@ def test_service_set_broadcast_network(
     )
 
 
-@pytest.mark.parametrize(
-    "data",
-    (
-        {},
-        {"all_networks": ""},  # Missing choice of MNO
-    ),
-)
 @pytest.mark.parametrize("broadcast_channel", ["government", "severe", "test", "operator"])
-def test_service_set_broadcast_network_makes_you_choose(
-    client_request, platform_admin_user, mocker, data, broadcast_channel
-):
+def test_service_set_broadcast_network_makes_you_choose(client_request, platform_admin_user, mocker, broadcast_channel):
+    data = []  # no network selected
+    mocker.patch(
+        "app.service_api_client.get_broadcast_providers",
+        return_value={"data": data},
+    )
+
     client_request.login(platform_admin_user)
     page = client_request.post(
         "main.service_set_broadcast_network",
@@ -960,7 +970,7 @@ def test_service_set_broadcast_network_makes_you_choose(
             ],
         ),
         (
-            "live-operator-all",
+            "live-operator-ee-vodafone-three-o2",
             [
                 "Operator",
                 "Members of the public who have switched on the operator "
@@ -1005,7 +1015,7 @@ def test_service_set_broadcast_network_makes_you_choose(
             ],
         ),
         (
-            "live-test-all",
+            "live-test-ee-vodafone-three-o2",
             [
                 "Test",
                 "Members of the public who have switched on the test "
@@ -1014,7 +1024,7 @@ def test_service_set_broadcast_network_makes_you_choose(
             ],
         ),
         (
-            "live-severe-all",
+            "live-severe-ee-vodafone-three-o2",
             [
                 "Live",
                 "Members of the public will receive alerts sent from this service.",
@@ -1028,7 +1038,7 @@ def test_service_set_broadcast_network_makes_you_choose(
             ],
         ),
         (
-            "live-government-all",
+            "live-government-ee-vodafone-three-o2",
             [
                 "Government",
                 "Members of the public will receive alerts sent from this service, even if they’ve opted out.",
@@ -1063,11 +1073,11 @@ def test_service_confirm_broadcast_account_type_confirmation_page(
 @pytest.mark.parametrize(
     "value,service_mode,broadcast_channel,allowed_broadcast_provider",
     [
-        ("training-test-all", "training", "test", "all"),
-        ("live-operator-o2", "live", "operator", "o2"),
-        ("live-test-vodafone", "live", "test", "vodafone"),
-        ("live-severe-all", "live", "severe", "all"),
-        ("live-government-all", "live", "government", "all"),
+        ("training-test-all", "training", "test", ["all"]),
+        ("live-operator-o2", "live", "operator", ["o2"]),
+        ("live-test-vodafone", "live", "test", ["vodafone"]),
+        ("live-severe-all", "live", "severe", ["all"]),
+        ("live-government-all", "live", "government", ["all"]),
     ],
 )
 def test_service_confirm_broadcast_account_type_posts_data_to_api_and_redirects(
