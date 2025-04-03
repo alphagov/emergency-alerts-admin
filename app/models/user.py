@@ -58,7 +58,7 @@ class User(BaseUser, UserMixin):
     def __init__(self, _dict):
         super().__init__(_dict)
         self.permissions = _dict.get("permissions", {})
-        self._platform_admin = _dict["platform_admin"]
+        self._platform_admin = _dict.get("platform_admin")
 
     @classmethod
     def from_id(cls, user_id):
@@ -71,6 +71,13 @@ class User(BaseUser, UserMixin):
     @classmethod
     def from_email_address_or_none(cls, email_address):
         response = user_api_client.get_user_by_email_or_none(email_address)
+        if response:
+            return cls(response)
+        return None
+
+    @classmethod
+    def from_email_address_invited(cls, email_address):
+        response = user_api_client.get_invited_user_by_email(email_address)
         if response:
             return cls(response)
         return None
@@ -289,7 +296,7 @@ class User(BaseUser, UserMixin):
 
     @property
     def service_ids(self):
-        return self._dict["services"]
+        return self._dict.get("services", [])
 
     @property
     def trial_mode_services(self):
