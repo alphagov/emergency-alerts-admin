@@ -44,6 +44,7 @@ from wtforms.validators import (
     Regexp,
 )
 
+from app.config import BroadcastProvider
 from app.formatters import (
     format_auth_type,
     guess_name_from_email_address,
@@ -563,6 +564,10 @@ class GovukCheckboxesField(GovukFrontendWidgetMixin, SelectMultipleField):
         }
 
         return params
+
+
+class GovukCheckboxesFieldWithNetworkRequired(GovukCheckboxesField):
+    validators = [DataRequired("Select a mobile network")]
 
 
 # Wraps checkboxes rendering in HTML needed by the collapsible JS
@@ -1544,18 +1549,6 @@ class TemplateAndFoldersSelectionForm(Form):
     )
 
 
-class ServiceBroadcastAccountTypeField(GovukRadiosField):
-    # After validation we split the value back into its parts of service_mode
-    # broadcast_channel and provider_restriction to be used by the flask route to send to the
-    # API
-    def post_validate(self, form, validation_stopped):
-        if not validation_stopped and self.data:
-            split_values = self.data.split("-")
-            self.service_mode = split_values[0]
-            self.broadcast_channel = split_values[1]
-            self.provider_restriction = split_values[2]
-
-
 class ServiceBroadcastChannelForm(StripWhitespaceForm):
     channel = GovukRadiosField(
         "Emergency alerts settings",
@@ -1575,47 +1568,56 @@ class ServiceBroadcastNetworkForm(StripWhitespaceForm):
         super().__init__(*args, **kwargs)
         self.broadcast_channel = broadcast_channel
 
-    all_networks = OnOffField(
-        "Choose a mobile network",
-        choices=((True, "All networks"), (False, "A single network")),
-    )
-    network = OptionalGovukRadiosField(
-        "Choose a mobile network",
-        thing="a mobile network",
-        choices=(
+    networks = GovukCheckboxesFieldWithNetworkRequired(
+        None,
+        choices=[
+            ("all", "All mobile networks"),
             ("ee", "EE"),
             ("o2", "O2"),
-            ("vodafone", "Vodafone"),
             ("three", "Three"),
-        ),
+            ("vodafone", "Vodafone"),
+        ],
+        param_extensions={"hint": None, "fieldset": {"legend": {"classes": "govuk-visually-hidden"}}},
     )
 
     @property
     def account_type(self):
-        if self.all_networks.data:
-            provider = "all"
+        if "all" in self.networks.data:
+            providers = "-".join(BroadcastProvider.PROVIDERS)
         else:
-            provider = self.network.data
+            providers = "-".join(self.networks.data)
 
-        return f"live-{self.broadcast_channel}-{provider}"
-
-    def validate_network(self, field):
-        if not self.all_networks.data and not field.data:
-            raise ValidationError("Select a mobile network")
+        return f"live-{self.broadcast_channel}-{providers}"
 
 
-class ServiceBroadcastAccountTypeForm(StripWhitespaceForm):
-    account_type = ServiceBroadcastAccountTypeField(
-        "Change cell broadcast service type",
-        thing="which type of account this cell broadcast service is",
-        choices=[("training-test-all", "")]
-        + [
-            (f"live-{broadcast_channel}-{provider}", "")
-            for broadcast_channel in ["test", "operator", "severe", "government"]
-            for provider in ["all", "ee", "o2", "three", "vodafone"]
-        ],
-        validators=[DataRequired()],
-    )
+class ServiceBroadcastAccountForm(Form):
+    account_type = StringField("Account type specifier")
+    service_mode = ""
+    broadcast_channel = ""
+    provider_restriction = []
+
+    def validate_account_type(self, field):
+        if not field.data:
+            raise ValidationError("Account type specifier cannot be empty")
+
+        split_values = field.data.split("-")
+        service_mode = split_values[0]
+        channel = split_values[1]
+        providers = split_values[2:]
+
+        if service_mode not in ["live", "training"]:
+            raise ValidationError("Invalid service mode")
+
+        if channel not in ["test", "operator", "severe", "government"]:
+            raise ValidationError("Invalid channel")
+
+        for p in providers:
+            if p not in ["all", "ee", "o2", "three", "vodafone"]:
+                raise ValidationError("Invalid provider")
+
+        self.service_mode = split_values[0]
+        self.broadcast_channel = split_values[1]
+        self.provider_restriction = split_values[2:]
 
 
 class BroadcastAreaForm(StripWhitespaceForm):
