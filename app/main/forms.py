@@ -1574,8 +1574,8 @@ class ServiceBroadcastNetworkForm(StripWhitespaceForm):
             ("all", "All mobile networks"),
             ("ee", "EE"),
             ("o2", "O2"),
-            ("vodafone", "Vodafone"),
             ("three", "Three"),
+            ("vodafone", "Vodafone"),
         ],
         param_extensions={"hint": None, "fieldset": {"legend": {"classes": "govuk-visually-hidden"}}},
     )
