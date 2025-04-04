@@ -260,6 +260,11 @@ class TestPlatformAdminActions:
     def test_admin_actions_is_platform_admin_only(self, client_request):
         client_request.get("main.admin_actions", _expected_status=403)
 
+    def test_admin_actions_is_allowed_by_capable(self, client_request, platform_admin_capable_user, mocker):
+        mocker.patch("app.admin_actions_api_client.get_pending_admin_actions", return_value={"pending": {}})
+        client_request.login(platform_admin_capable_user)
+        client_request.get("main.admin_actions")
+
     def test_lists_api_key_actions(
         self,
         client_request,
