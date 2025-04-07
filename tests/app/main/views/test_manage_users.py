@@ -1013,6 +1013,7 @@ def test_invite_user_with_email_auth_service(
     mocker.patch("app.models.user.Users.client_method", return_value=[active_user_with_permissions])
     mocker.patch("app.invite_api_client.create_invite", return_value=sample_invite)
     mocker.patch("app.models.user.User.from_email_address_invited", return_value=None)
+    mocker.patch("app.models.service.Service.invite_pending_for", return_value=False)
 
     page = client_request.post(
         "main.invite_user",
@@ -1179,6 +1180,7 @@ def test_invite_non_govt_user_to_broadcast_service_fails_validation(
 ):
     mocker.patch("app.models.user.User.from_email_address_invited", return_value=None)
     mocker.patch("app.invite_api_client.create_invite", return_value=sample_invite)
+    mocker.patch("app.models.service.Service.invite_pending_for", return_value=False)
     post_data = {
         "permissions_field": [
             "manage_templates",
