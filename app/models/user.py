@@ -58,7 +58,7 @@ class User(BaseUser, UserMixin):
     def __init__(self, _dict):
         super().__init__(_dict)
         self.permissions = _dict.get("permissions", {})
-        self._platform_admin = _dict.get("platform_admin")
+        self._platform_admin = _dict["platform_admin"]
 
     @classmethod
     def from_id(cls, user_id):
@@ -296,7 +296,7 @@ class User(BaseUser, UserMixin):
 
     @property
     def service_ids(self):
-        return self._dict.get("services", [])
+        return self._dict["services"]
 
     @property
     def trial_mode_services(self):
