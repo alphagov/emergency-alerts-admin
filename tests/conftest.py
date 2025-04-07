@@ -2471,3 +2471,13 @@ def webauthn_credential_2():
         "created_at": "2021-05-14T16:57:14.154185Z",
         "logged_in_at": None,
     }
+
+
+@pytest.fixture
+def mock_send_message_to_slack(mocker):
+    return mocker.patch("emergency_alerts_utils.clients.slack.slack_client.SlackClient.send_message_to_slack")
+
+
+@pytest.fixture
+def mock_admin_action_notification(mocker):
+    return mocker.patch("app.utils.admin_action.send_slack_notification")

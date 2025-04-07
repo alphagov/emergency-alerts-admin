@@ -175,7 +175,9 @@ from tests.conftest import SERVICE_ONE_ID
         ),
     ],
 )
-def test_similar_admin_actions_are_invalidated(existing_actions, proposed_action_obj, expect_invalidation, mocker):
+def test_similar_admin_actions_are_invalidated(
+    mocker, mock_admin_action_notification, existing_actions, proposed_action_obj, expect_invalidation
+):
     mocker.patch("app.admin_actions_api_client.get_pending_admin_actions", return_value={"pending": existing_actions})
     creator = mocker.patch("app.admin_actions_api_client.create_admin_action", return_value=None)
     reviewer = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
