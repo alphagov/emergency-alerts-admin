@@ -257,6 +257,11 @@ class TestPlatformAdminSearch:
 
 
 class TestPlatformAdminActions:
+    @pytest.fixture
+    def mock_admin_action_notification(self, mocker):
+        # The one in conftest.py doesn't work due to some Python namespace import oddity
+        return mocker.patch("app.main.views.platform_admin.send_slack_notification", return_value=None)
+
     def test_admin_actions_is_platform_admin_only(self, client_request):
         client_request.get("main.admin_actions", _expected_status=403)
 
@@ -511,6 +516,7 @@ class TestPlatformAdminActions:
         client_request,
         platform_admin_user,
         fake_uuid,
+        mock_admin_action_notification,
         mocker,
     ):
         random_user_uuid = str(uuid.uuid4())
@@ -539,9 +545,6 @@ class TestPlatformAdminActions:
         assert "disabled" not in approve_button.attrs
 
         # Does the endpoint allow it through too?
-        mock_admin_action_notification = mocker.patch(
-            "app.main.views.platform_admin.send_slack_notification", return_value=None
-        )
         mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
         mock_api_key_create = mocker.patch("app.api_key_api_client.create_api_key", return_value="test")
         page = client_request.post(
@@ -561,6 +564,7 @@ class TestPlatformAdminActions:
         self,
         client_request,
         platform_admin_user,
+        mock_admin_action_notification,
         mocker,
         is_own_action,
     ):
@@ -576,9 +580,6 @@ class TestPlatformAdminActions:
                 (platform_admin_user["id"] if is_own_action else action_id),
             ),
         )
-        mock_admin_action_notification = mocker.patch(
-            "app.main.views.platform_admin.send_slack_notification", return_value=None
-        )
         mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
 
         client_request.login(platform_admin_user)
@@ -593,6 +594,7 @@ class TestPlatformAdminActions:
         self,
         client_request,
         platform_admin_user,
+        mock_admin_action_notification,
         mocker,
         mock_get_service,
     ):
@@ -611,9 +613,6 @@ class TestPlatformAdminActions:
                 },
                 "status": "pending",
             },
-        )
-        mock_admin_action_notification = mocker.patch(
-            "app.main.views.platform_admin.send_slack_notification", return_value=None
         )
         mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
         mock_api_key_create = mocker.patch("app.api_key_api_client.create_api_key", return_value="key-secret")
@@ -641,6 +640,7 @@ class TestPlatformAdminActions:
         self,
         client_request,
         platform_admin_user,
+        mock_admin_action_notification,
         mocker,
     ):
         action_or_creator_id = str(uuid.uuid4())
@@ -662,9 +662,6 @@ class TestPlatformAdminActions:
                 },
                 "status": "pending",
             },
-        )
-        mock_admin_action_notification = mocker.patch(
-            "app.main.views.platform_admin.send_slack_notification", return_value=None
         )
         mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
         mock_user_invite = mocker.patch(
@@ -697,6 +694,7 @@ class TestPlatformAdminActions:
         self,
         client_request,
         platform_admin_user,
+        mock_admin_action_notification,
         mocker,
     ):
         action_or_creator_id = str(uuid.uuid4())
@@ -720,9 +718,6 @@ class TestPlatformAdminActions:
                 },
                 "status": "pending",
             },
-        )
-        mock_admin_action_notification = mocker.patch(
-            "app.main.views.platform_admin.send_slack_notification", return_value=None
         )
         mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
         mock_edit_permissions = mocker.patch(
@@ -758,6 +753,7 @@ class TestPlatformAdminActions:
         self,
         client_request,
         platform_admin_user,
+        mock_admin_action_notification,
         mocker,
     ):
         action_or_creator_id = str(uuid.uuid4())
@@ -773,9 +769,6 @@ class TestPlatformAdminActions:
                 "action_data": {},
                 "status": "pending",
             },
-        )
-        mock_admin_action_notification = mocker.patch(
-            "app.main.views.platform_admin.send_slack_notification", return_value=None
         )
         mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
         mock_elevate_admin = mocker.patch(
@@ -797,13 +790,12 @@ class TestPlatformAdminActions:
 
 
 class TestPlatformAdminElevation:
-    def test_platform_admin_capable_can_request_elevation(self, client_request, platform_admin_capable_user, mocker):
+    def test_platform_admin_capable_can_request_elevation(
+        self, client_request, platform_admin_capable_user, mock_admin_action_notification, mocker
+    ):
         client_request.login(platform_admin_capable_user)
         assert not current_user.platform_admin
 
-        mock_admin_action_notification = mocker.patch(
-            "app.utils.admin_action.send_slack_notification", return_value=None
-        )
         mock_create_admin_action = mocker.patch("app.admin_actions_api_client.create_admin_action", return_value=None)
         mocker.patch(
             "app.admin_actions_api_client.get_pending_admin_actions",
