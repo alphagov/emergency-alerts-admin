@@ -160,7 +160,7 @@ def send_slack_notification(new_status, action_obj, action_service: Service):
         message_markdown_parts,
     )
 
-    current_app.logger.info("Sending SlackMessage: %v", message.__dict__)
+    current_app.logger.info("Sending SlackMessage", message.__dict__)
     if not webhook_url.startswith("https://"):
         # Local environments aren't hooked up to Slack.
         # Hosted development environments also aren't, and Terraform defaults to 'dummy' (not a URL but also not blank)
@@ -181,7 +181,7 @@ def _get_action_description_markdown(action_obj, action_service: Service):
     if action_type == ADMIN_INVITE_USER:
         markdown = (
             f'Invite user `{action_data["email_address"]}` to '
-            + f'{"*live* " if action_service.live else ""}service {action_service.name}.'
+            + f'{"*live* " if action_service.live else ""}service `{action_service.name}`.'
             + "\n\n"
             + "With permissions:"
             + "".join("\n- " + permission_labels[x] for x in action_data["permissions"])
@@ -190,14 +190,14 @@ def _get_action_description_markdown(action_obj, action_service: Service):
         user = User.from_id(action_data["user_id"])
         markdown = (
             f"Edit user `{user.email_address}`'s permissions in "
-            + f'{"*live* " if action_service.live else ""}service {action_service.name}.'
+            + f'{"*live* " if action_service.live else ""}service `{action_service.name}`.'
             + "\n\nWith permissions:"
             + "".join("\n- " + permission_labels[x] for x in action_data["permissions"])
         )
     elif action_type == ADMIN_CREATE_API_KEY:
         markdown = (
             f'Create {action_data["key_type"]} API key `{action_data["key_name"]}` in '
-            + f'{"*live* " if action_service.live else ""}service {action_service.name}.'
+            + f'{"*live* " if action_service.live else ""}service `{action_service.name}`.'
         )
     elif action_type == ADMIN_ELEVATE_USER:
         markdown = "Elevate themselves to become a full platform admin\n_(This request will automatically expire)_"
