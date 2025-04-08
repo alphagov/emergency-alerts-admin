@@ -98,8 +98,7 @@ install-node: install-nvm
 ## DEVELOPMENT
 .PHONY: bootstrap
 bootstrap: generate-version-file install-node ## Set up everything to run the app
-	export PIP_DEFAULT_TIMEOUT=100
-	. ${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements_local_utils.txt
+	${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements_local_utils.txt
 	. ~/.nvm-source && npm ci --no-audit
 	. ~/.nvm-source && npm run build
 	. environment.sh; ./scripts/get-broadcast-areas-db.sh ./app/broadcast_areas $(BUCKET_NAME)
