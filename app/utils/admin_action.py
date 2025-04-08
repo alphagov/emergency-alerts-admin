@@ -152,7 +152,7 @@ def send_slack_notification(new_status, action_obj, action_service: Service):
         message_type = "error"  # Red SlackMessage
         message_markdown_parts.append(f":red-x-mark: Rejected by `{current_user.email_address}`")
 
-    webhook_url = current_app.config.get("SLACK_WEBHOOK_ADMIN_ACTIVITY", None)
+    webhook_url = current_app.config.get("SLACK_WEBHOOK_ADMIN_ACTIVITY", "")
     message = SlackMessage(
         webhook_url,
         message_title,
@@ -161,8 +161,10 @@ def send_slack_notification(new_status, action_obj, action_service: Service):
     )
 
     current_app.logger.info("Sending SlackMessage: %v", message.__dict__)
-    if webhook_url is None or webhook_url == "":
-        return  # Local environments aren't hooked up to Slack
+    if not webhook_url.startswith("https://"):
+        # Local environments aren't hooked up to Slack.
+        # Hosted development environments also aren't, and Terraform defaults to 'dummy' (not a URL but also not blank)
+        return
 
     try:
         slack_client.send_message_to_slack(message)
