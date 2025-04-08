@@ -105,6 +105,7 @@ def test_should_create_api_key_admin_action_with_type_normal(
     mock_get_live_service,
     mock_has_permissions,
     mock_get_pending_admin_actions,
+    mock_admin_action_notification,
     fake_uuid,
     mocker,
 ):
@@ -134,6 +135,7 @@ def test_should_create_api_key_admin_action_with_type_normal(
             },
         }
     )
+    mock_admin_action_notification.assert_called_once()
 
     mock_api_key_post.assert_not_called()
 

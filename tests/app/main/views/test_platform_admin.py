@@ -539,12 +539,16 @@ class TestPlatformAdminActions:
         assert "disabled" not in approve_button.attrs
 
         # Does the endpoint allow it through too?
+        mock_admin_action_notification = mocker.patch(
+            "app.main.views.platform_admin.send_slack_notification", return_value=None
+        )
         mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
         mock_api_key_create = mocker.patch("app.api_key_api_client.create_api_key", return_value="test")
         page = client_request.post(
             "main.review_admin_action", action_id=fake_uuid, new_status="approved", _follow_redirects=True
         )
 
+        mock_admin_action_notification.assert_called_once()
         mock_review_admin_action.assert_called_once_with(fake_uuid, "approved")
         mock_api_key_create.assert_called_once_with(
             service_id=SERVICE_ONE_ID,
@@ -572,6 +576,9 @@ class TestPlatformAdminActions:
                 (platform_admin_user["id"] if is_own_action else action_id),
             ),
         )
+        mock_admin_action_notification = mocker.patch(
+            "app.main.views.platform_admin.send_slack_notification", return_value=None
+        )
         mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
 
         client_request.login(platform_admin_user)
@@ -579,6 +586,7 @@ class TestPlatformAdminActions:
             "main.review_admin_action", action_id=action_id, new_status="rejected", _follow_redirects=True
         )
 
+        mock_admin_action_notification.assert_called_once()
         mock_review_admin_action.assert_called_once_with(action_id, "rejected")
 
     def test_approving_creates_api_key(
@@ -604,6 +612,9 @@ class TestPlatformAdminActions:
                 "status": "pending",
             },
         )
+        mock_admin_action_notification = mocker.patch(
+            "app.main.views.platform_admin.send_slack_notification", return_value=None
+        )
         mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
         mock_api_key_create = mocker.patch("app.api_key_api_client.create_api_key", return_value="key-secret")
 
@@ -615,6 +626,7 @@ class TestPlatformAdminActions:
             _expected_status=200,  # POSTs expect a redirect, but for API keys we want the secret to be a once only
         )
 
+        mock_admin_action_notification.assert_called_once()
         mock_review_admin_action.assert_called_once_with(action_id, "approved")
         mock_api_key_create.assert_called_once_with(
             service_id=SERVICE_ONE_ID,
@@ -651,6 +663,9 @@ class TestPlatformAdminActions:
                 "status": "pending",
             },
         )
+        mock_admin_action_notification = mocker.patch(
+            "app.main.views.platform_admin.send_slack_notification", return_value=None
+        )
         mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
         mock_user_invite = mocker.patch(
             "app.invite_api_client.create_invite",
@@ -665,6 +680,7 @@ class TestPlatformAdminActions:
             _expected_redirect=url_for(".manage_users", service_id=SERVICE_ONE_ID),
         )
 
+        mock_admin_action_notification.assert_called_once()
         mock_review_admin_action.assert_called_once_with(action_or_creator_id, "approved")
         mock_user_invite.assert_called_once_with(
             action_or_creator_id,
@@ -705,6 +721,9 @@ class TestPlatformAdminActions:
                 "status": "pending",
             },
         )
+        mock_admin_action_notification = mocker.patch(
+            "app.main.views.platform_admin.send_slack_notification", return_value=None
+        )
         mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
         mock_edit_permissions = mocker.patch(
             "app.user_api_client.set_user_permissions",
@@ -724,6 +743,7 @@ class TestPlatformAdminActions:
             _expected_redirect=url_for(".manage_users", service_id=SERVICE_ONE_ID),
         )
 
+        mock_admin_action_notification.assert_called_once()
         mock_review_admin_action.assert_called_once_with(action_or_creator_id, "approved")
         mock_edit_permissions.assert_called_once_with(
             edited_user_id,
@@ -754,6 +774,9 @@ class TestPlatformAdminActions:
                 "status": "pending",
             },
         )
+        mock_admin_action_notification = mocker.patch(
+            "app.main.views.platform_admin.send_slack_notification", return_value=None
+        )
         mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
         mock_elevate_admin = mocker.patch(
             "app.user_api_client.elevate_admin_next_login",
@@ -768,6 +791,7 @@ class TestPlatformAdminActions:
             _expected_redirect=url_for(".admin_actions"),
         )
 
+        mock_admin_action_notification.assert_called_once()
         mock_review_admin_action.assert_called_once_with(action_or_creator_id, "approved")
         mock_elevate_admin.assert_called_once_with(action_or_creator_id, platform_admin_user["id"])
 
@@ -777,6 +801,9 @@ class TestPlatformAdminElevation:
         client_request.login(platform_admin_capable_user)
         assert not current_user.platform_admin
 
+        mock_admin_action_notification = mocker.patch(
+            "app.utils.admin_action.send_slack_notification", return_value=None
+        )
         mock_create_admin_action = mocker.patch("app.admin_actions_api_client.create_admin_action", return_value=None)
         mocker.patch(
             "app.admin_actions_api_client.get_pending_admin_actions",
@@ -802,6 +829,7 @@ class TestPlatformAdminElevation:
                 "action_data": {},
             }
         )
+        mock_admin_action_notification.assert_called_once()
 
     @freeze_time("2015-01-01 11:00:00")
     def test_pending_elevation_can_become_active_platform_admin(
