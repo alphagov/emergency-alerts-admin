@@ -25,9 +25,14 @@ from notifications_python_client.errors import HTTPError
 from app import service_api_client, user_api_client
 from app.main import main
 from app.main.forms import DateFilterForm, PlatformAdminSearch
+from app.models.service import Service
 from app.notify_client.admin_actions_api_client import admin_actions_api_client
 from app.notify_client.platform_admin_api_client import admin_api_client
-from app.utils.admin_action import create_or_replace_admin_action, process_admin_action
+from app.utils.admin_action import (
+    create_or_replace_admin_action,
+    process_admin_action,
+    send_slack_notification,
+)
 from app.utils.user import user_is_platform_admin, user_is_platform_admin_capable
 from app.utils.user_permissions import broadcast_permission_options, permission_options
 
@@ -156,6 +161,9 @@ def platform_review_admin_action(action_id, new_status):
     ):
         flash("You cannot approve your own admin approvals")
     else:
+        service = Service.from_id(action["service_id"]) if bool(action.get("service_id")) else None
+        send_slack_notification(new_status, action, service)
+
         admin_actions_api_client.review_admin_action(action_id, new_status)
 
         if new_status == ADMIN_STATUS_APPROVED:
