@@ -13,6 +13,8 @@ ENV SERVICE='admin'
 # Create root directory and copy repo
 COPY . $DIR_ADMIN
 
+RUN apt-get update
+
 # Run emergency-alerts-admin
 RUN python$PYTHON_VERSION -m venv $VENV_ADMIN && cd $DIR_ADMIN && . $VENV_ADMIN/bin/activate && \
     pip3 install wheel && make bootstrap
