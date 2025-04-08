@@ -1066,7 +1066,7 @@ def test_service_confirm_broadcast_account_type_confirmation_page(
         account_type=value,
     )
     assert [normalize_spaces(p.text) for p in page.select("main p")] == expected_paragraphs + [
-        "All team member permissions will be removed."
+        "Changing service mode from Training to one of the live channels will remove all team member permissions."
     ]
 
 
