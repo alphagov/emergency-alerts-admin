@@ -115,6 +115,20 @@ def test_logged_in_user_doesnt_do_evil_redirect(client_request):
     )
 
 
+def test_sign_in_explains_password_reset(client_request, api_user_active, mocker):
+    api_user_active["current_session_id"] = str(uuid.UUID(int=1))
+    mocker.patch("app.user_api_client.get_user", return_value=api_user_active)
+
+    with client_request.session_transaction() as session:
+        session["current_session_id"] = str(uuid.UUID(int=2))
+
+    page = client_request.get(
+        "main.sign_in", reset_password=True, _test_page_prefix="Sign in – GOV.UK Emergency Alerts"
+    )
+
+    assert "You've just changed your password. Sign in with your new password." in page.text
+
+
 @pytest.mark.parametrize(
     "redirect_url",
     [
