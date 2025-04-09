@@ -320,10 +320,19 @@ def character_count(count):
     return f"{format_thousands(count)} characters"
 
 
-def format_mobile_network(network):
-    if network in ("three", "vodafone", "o2"):
-        return network.capitalize()
-    return "EE"
+def format_mobile_networks(networks):
+    if isinstance(networks, str):
+        return networks.capitalize()
+
+    if not isinstance(networks, list):
+        return None
+    network_list = []
+    for network in networks:
+        if network in ("three", "vodafone", "o2"):
+            network_list.append(network.capitalize())
+        else:
+            network_list.append("EE")
+    return ", ".join(network_list)
 
 
 def format_yes_no(value, yes="Yes", no="No", none="No"):
