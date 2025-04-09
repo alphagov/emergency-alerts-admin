@@ -5,6 +5,7 @@ import pytest
 from app.models.service import Service
 from app.utils.admin_action import (
     create_or_replace_admin_action,
+    send_elevation_slack_notification,
     send_slack_notification,
 )
 from tests.conftest import SERVICE_ONE_ID, USER_ONE_ID, set_config
@@ -276,3 +277,22 @@ def test_slack_notification_message(
     assert slack_message_properties["markdown_sections"][0] == expected_markdown
     assert slack_message_properties["markdown_sections"][1] == "_Created by `platform@admin.gov.uk`_"
     assert slack_message_properties["markdown_sections"][2] == ":green_tick: Approved by `platform@admin.gov.uk`"
+
+
+def test_elevation_slack_notification_message(mocker, mock_get_user, notify_admin, client_request, platform_admin_user):
+    sender = mocker.patch("emergency_alerts_utils.clients.slack.slack_client.SlackClient.send_message_to_slack")
+
+    with set_config(notify_admin, "SLACK_WEBHOOK_ADMIN_ACTIVITY", "https://test"):
+        # Uses current_user so we need a 'logged in' user and a request context:
+        client_request.login(platform_admin_user)
+        with notify_admin.test_request_context(method="POST"):
+            send_elevation_slack_notification()
+
+    sender.assert_called_once()
+    slack_message = sender.call_args[0][0]
+    slack_message_properties = slack_message.__dict__
+
+    assert (
+        slack_message_properties["markdown_sections"][0]
+        == "`platform@admin.gov.uk` has elevated to become a full platform admin for their session"
+    )

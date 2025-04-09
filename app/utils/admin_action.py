@@ -152,15 +152,31 @@ def send_slack_notification(new_status, action_obj, action_service: Service):
         message_type = "error"  # Red SlackMessage
         message_markdown_parts.append(f":red-x-mark: Rejected by `{current_user.email_address}`")
 
-    webhook_url = current_app.config.get("SLACK_WEBHOOK_ADMIN_ACTIVITY", "")
     message = SlackMessage(
-        webhook_url,
+        None,  # Filled in later
         message_title,
         message_type,
         message_markdown_parts,
     )
+    return _send_slack_message(message)
 
+
+def send_elevation_slack_notification():
+    """Send a notification that the current user has elevated to full platform admin status."""
+    message = SlackMessage(
+        None,  # Filled in later
+        "Platform Admin Elevated",
+        "success",  # Green SlackMessage
+        [f"`{current_user.email_address}` has elevated to become a full platform admin for their session"],
+    )
+    return _send_slack_message(message)
+
+
+def _send_slack_message(message: SlackMessage):
+    webhook_url = current_app.config.get("SLACK_WEBHOOK_ADMIN_ACTIVITY", "")
+    message.webhook_url = webhook_url
     current_app.logger.info("Sending SlackMessage", message.__dict__)
+
     if not webhook_url.startswith("https://"):
         # Local environments aren't hooked up to Slack.
         # Hosted development environments also aren't, and Terraform defaults to 'dummy' (not a URL but also not blank)
