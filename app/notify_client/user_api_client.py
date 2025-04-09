@@ -48,17 +48,11 @@ class UserApiClient(AdminAPIClient):
                 abort(429)
             raise e
 
-    def get_invited_user_by_email(self, email_address):
-        try:
-            user_data = self.post("/user/invited", data={"email": email_address})
-            return user_data["data"]
-        except HTTPError as e:
-            if e.status_code == 404:
-                return None
-            raise e
-
     def check_user_exists(self, email_address):
         return self.post("/user/email-in-use", data={"email": email_address})
+
+    def get_user_by_email_if_exists(self, email_address):
+        return self.post("/user/email-or-none", data={"email": email_address})["data"]
 
     def get_user_by_email_or_none(self, email_address):
         try:
