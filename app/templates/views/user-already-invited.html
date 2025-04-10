@@ -14,16 +14,9 @@
 
   {{ page_header('This person has already received an invite') }}
 
-  {% if user_to_invite.name %}
-    <p class="govuk-body">
-      {{ user_to_invite.name }} has not accepted their invitation to
-      ‘{{ current_service.name }}’ yet. You do not need to do anything.
-    </p>
-  {% else %}
-    <p class="govuk-body">
-      User has not accepted their invitation to
-      ‘{{ current_service.name }}’ yet. You do not need to do anything.
-    </p>
-  {% endif %}
+  <p class="govuk-body">
+    {{ (user_to_invite and user_to_invite.name) or 'User' }} has not accepted their invitation to
+    ‘{{ current_service.name }}’ yet. You do not need to do anything.
+  </p>
 
 {% endblock %}
