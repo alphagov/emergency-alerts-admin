@@ -51,6 +51,11 @@ class UserApiClient(AdminAPIClient):
     def check_user_exists(self, email_address):
         return self.post("/user/email-in-use", data={"email": email_address})
 
+    def get_user_by_email_if_exists(self, email_address):
+        """Returns user from database if they exist there already, but unlike get_user_by_email
+        if user doesn't exist, no failed login attempt is recorded as this is for inviting users"""
+        return self.post("/user/email-or-none", data={"email": email_address})["data"]
+
     def get_user_by_email_or_none(self, email_address):
         try:
             return self.get_user_by_email(email_address)

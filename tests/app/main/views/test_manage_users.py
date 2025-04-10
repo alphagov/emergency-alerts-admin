@@ -909,7 +909,7 @@ def test_invite_user(
     mocker.patch("app.models.user.InvitedUsers.client_method", return_value=[sample_invite])
     mocker.patch("app.models.user.Users.client_method", return_value=[active_user_with_permissions])
     mocker.patch("app.invite_api_client.create_invite", return_value=sample_invite)
-    mocker.patch("app.models.user.User.from_email_address_or_none", return_value=None)
+    mocker.patch("app.models.user.User.from_email_address_invited", return_value=None)
     mocker.patch("app.models.user.User.belongs_to_service", return_value=gov_user)
     mocker.patch("app.models.service.Service.invite_pending_for", return_value=False)
 
@@ -1012,7 +1012,8 @@ def test_invite_user_with_email_auth_service(
     mocker.patch("app.models.user.InvitedUsers.client_method", return_value=[sample_invite])
     mocker.patch("app.models.user.Users.client_method", return_value=[active_user_with_permissions])
     mocker.patch("app.invite_api_client.create_invite", return_value=sample_invite)
-    mocker.patch("app.models.user.User.from_email_address_or_none", return_value=None)
+    mocker.patch("app.models.user.User.from_email_address_invited", return_value=None)
+    mocker.patch("app.models.service.Service.invite_pending_for", return_value=False)
 
     page = client_request.post(
         "main.invite_user",
@@ -1123,7 +1124,7 @@ def test_invite_user_to_broadcast_service(
     expected_permissions,
     requires_admin_action,
 ):
-    mocker.patch("app.models.user.User.from_email_address_or_none", return_value=User(active_new_user_with_permissions))
+    mocker.patch("app.models.user.User.from_email_address_invited", return_value=User(active_new_user_with_permissions))
     mocker.patch("app.models.user.PendingUsers.client_method", return_value=[sample_invite])
     mocker.patch("app.invite_api_client.create_invite", return_value=sample_invite)
     mocker.patch("app.admin_actions_api_client.create_admin_action", return_value=None)
@@ -1177,8 +1178,9 @@ def test_invite_non_govt_user_to_broadcast_service_fails_validation(
     mock_get_template_folders,
     mock_get_organisations,
 ):
-    mocker.patch("app.models.user.User.from_email_address_or_none", return_value=None)
+    mocker.patch("app.models.user.User.from_email_address_invited", return_value=None)
     mocker.patch("app.invite_api_client.create_invite", return_value=sample_invite)
+    mocker.patch("app.models.service.Service.invite_pending_for", return_value=False)
     post_data = {
         "permissions_field": [
             "manage_templates",
@@ -1305,7 +1307,7 @@ def test_user_cant_invite_themselves(
     mock_create_invite,
     mock_get_template_folders,
 ):
-    mocker.patch("app.models.user.User.from_email_address_or_none", return_value=User(active_user_with_permissions))
+    mocker.patch("app.models.user.User.from_email_address_invited", return_value=User(active_user_with_permissions))
     mocker.patch("app.models.user.User.belongs_to_service", return_value=True)
     mocker.patch("app.models.service.Service.invite_pending_for", return_value=False)
 
@@ -1342,7 +1344,7 @@ def test_broadcast_user_cant_invite_themselves_or_their_aliases(
     mock_get_template_folders,
     email_address,
 ):
-    mocker.patch("app.models.user.User.from_email_address_or_none", return_value=User(active_user_with_permissions))
+    mocker.patch("app.models.user.User.from_email_address_invited", return_value=User(active_user_with_permissions))
     mocker.patch("app.models.user.User.belongs_to_service", return_value=True)
     mocker.patch("app.models.service.Service.invite_pending_for", return_value=False)
 
@@ -1365,7 +1367,7 @@ def test_platform_admin_cant_invite_themselves_to_broadcast_services(
     mock_create_invite,
     mock_get_template_folders,
 ):
-    mocker.patch("app.models.user.User.from_email_address_or_none", return_value=User(platform_admin_user))
+    mocker.patch("app.models.user.User.from_email_address_invited", return_value=User(platform_admin_user))
     mocker.patch("app.models.user.User.belongs_to_service", return_value=True)
     mocker.patch("app.models.service.Service.invite_pending_for", return_value=False)
 
