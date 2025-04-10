@@ -1,3 +1,7 @@
+from emergency_alerts_utils.admin_action import (
+    ADMIN_EDIT_PERMISSIONS,
+    ADMIN_INVITE_USER,
+)
 from flask import abort, flash, redirect, render_template, request, session, url_for
 from flask_login import current_user
 from notifications_python_client.errors import HTTPError
@@ -21,8 +25,6 @@ from app.main.forms import (
 )
 from app.models.user import InvitedUser, User
 from app.utils.admin_action import (
-    ADMIN_EDIT_PERMISSIONS,
-    ADMIN_INVITE_USER,
     create_or_replace_admin_action,
     permissions_require_admin_action,
 )

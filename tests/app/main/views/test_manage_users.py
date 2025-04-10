@@ -501,6 +501,7 @@ def test_edit_user_permissions_for_broadcast_service(
     mock_set_user_permissions,
     mock_get_template_folders,
     mock_get_pending_admin_actions,
+    mock_admin_action_notification,
     fake_uuid,
     existing_permissions,
     submitted_permissions,
@@ -547,12 +548,14 @@ def test_edit_user_permissions_for_broadcast_service(
                 },
             }
         )
+        mock_admin_action_notification.assert_called_once()
         mock_set_user_permissions.assert_not_called()
     else:
         # The added permissions are not sensitive
         mock_set_user_permissions.assert_called_with(
             fake_uuid, SERVICE_ONE_ID, permissions=expected_sent_permissions, folder_permissions=[]
         )
+        mock_admin_action_notification.assert_not_called()
         app.admin_actions_api_client.create_admin_action.assert_not_called()
 
 
@@ -1119,6 +1122,7 @@ def test_invite_user_to_broadcast_service(
     mock_get_template_folders,
     mock_get_organisations,
     mock_get_pending_admin_actions,
+    mock_admin_action_notification,
     post_data,
     expected_permissions,
     requires_admin_action,

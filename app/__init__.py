@@ -229,7 +229,12 @@ def init_app(application):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.from_id(user_id)
+    user = User.from_id(user_id)
+    # Elevating to a platform admin is scoped to a session and isn't stored in the API
+    if session.get("platform_admin_active", False):
+        user.platform_admin_active = True
+
+    return user
 
 
 def load_service_before_request():

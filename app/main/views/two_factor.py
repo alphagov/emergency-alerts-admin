@@ -40,7 +40,9 @@ def two_factor_email_interstitial(token):
 def two_factor_email(token):
     redirect_url = request.args.get("next")
     if current_user.is_authenticated:
-        return redirect_when_logged_in(platform_admin=current_user.platform_admin)
+        return redirect_when_logged_in(
+            platform_admin_elevation_pending=current_user.has_pending_platform_admin_elevation
+        )
 
     # checks url is valid, and hasn't timed out
     try:

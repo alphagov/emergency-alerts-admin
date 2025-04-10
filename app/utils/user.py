@@ -40,6 +40,18 @@ def user_is_gov_user(f):
     return wrapped
 
 
+def user_is_platform_admin_capable(f):
+    @wraps(f)
+    def wrapped(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return current_app.login_manager.unauthorized()
+        if not current_user.platform_admin_capable:
+            abort(403)
+        return f(*args, **kwargs)
+
+    return wrapped
+
+
 def user_is_platform_admin(f):
     @wraps(f)
     def wrapped(*args, **kwargs):

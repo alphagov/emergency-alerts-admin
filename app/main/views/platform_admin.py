@@ -4,21 +4,37 @@ from datetime import datetime
 from typing import Optional
 
 from emergency_alerts_utils.admin_action import (
+    ADMIN_ELEVATE_USER,
     ADMIN_STATUS_APPROVED,
     ADMIN_STATUS_PENDING,
 )
 from emergency_alerts_utils.api_key import KEY_TYPE_DESCRIPTIONS
-from flask import current_app, flash, redirect, render_template, request, url_for
+from flask import (
+    abort,
+    current_app,
+    flash,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
 from flask_login import current_user
 from notifications_python_client.errors import HTTPError
 
 from app import service_api_client, user_api_client
 from app.main import main
 from app.main.forms import DateFilterForm, PlatformAdminSearch
+from app.models.service import Service
 from app.notify_client.admin_actions_api_client import admin_actions_api_client
 from app.notify_client.platform_admin_api_client import admin_api_client
-from app.utils.admin_action import process_admin_action
-from app.utils.user import user_is_platform_admin
+from app.utils.admin_action import (
+    create_or_replace_admin_action,
+    process_admin_action,
+    send_elevation_slack_notification,
+    send_slack_notification,
+)
+from app.utils.user import user_is_platform_admin, user_is_platform_admin_capable
 from app.utils.user_permissions import broadcast_permission_options, permission_options
 
 COMPLAINT_THRESHOLD = 0.02
@@ -34,7 +50,7 @@ def redirect_old_search_pages():
 
 
 @main.route("/platform-admin", methods=["GET", "POST"])
-@user_is_platform_admin
+@user_is_platform_admin_capable
 def platform_admin_search():
     users, services = [], []
     search_form = PlatformAdminSearch()
@@ -115,7 +131,7 @@ def platform_admin_services():
 
 
 @main.route("/platform-admin/admin-actions", endpoint="admin_actions")
-@user_is_platform_admin
+@user_is_platform_admin_capable
 def platform_admin_actions():
     pending_actions = admin_actions_api_client.get_pending_admin_actions()
 
@@ -133,7 +149,7 @@ def platform_admin_actions():
     endpoint="review_admin_action",
     methods=["POST"],
 )
-@user_is_platform_admin
+@user_is_platform_admin_capable
 def platform_review_admin_action(action_id, new_status):
     action = admin_actions_api_client.get_admin_action_by_id(action_id)
 
@@ -146,6 +162,9 @@ def platform_review_admin_action(action_id, new_status):
     ):
         flash("You cannot approve your own admin approvals")
     else:
+        service = Service.from_id(action["service_id"]) if bool(action.get("service_id")) else None
+        send_slack_notification(new_status, action, service)
+
         admin_actions_api_client.review_admin_action(action_id, new_status)
 
         if new_status == ADMIN_STATUS_APPROVED:
@@ -154,6 +173,55 @@ def platform_review_admin_action(action_id, new_status):
             return process_admin_action(action)
 
     return redirect(url_for(".admin_actions"))
+
+
+@main.route("/platform-admin/request-elevation", endpoint="platform_admin_request_elevation", methods=["GET", "POST"])
+@user_is_platform_admin_capable
+def platform_admin_request_elevation():
+    if current_user.has_pending_platform_admin_elevation:
+        # It has been approved already, just prompt the user elevate without signing out
+        return redirect(url_for(".platform_admin_elevation"))
+
+    if request.method == "POST":
+        action = {
+            "created_by": current_user.id,
+            "action_type": ADMIN_ELEVATE_USER,
+            "action_data": {},
+        }
+        create_or_replace_admin_action(action)
+        flash("An admin approval has been created", "default_with_tick")
+        return redirect(url_for(".admin_actions"))
+
+    pending_actions = admin_actions_api_client.get_pending_admin_actions()["pending"]
+    has_pending_elevation_request = [
+        x for x in pending_actions if x["action_type"] == ADMIN_ELEVATE_USER and x["created_by"] == str(current_user.id)
+    ]
+
+    return render_template(
+        "views/platform-admin/request-elevation.html",
+        has_pending_elevation_request=has_pending_elevation_request,
+    )
+
+
+@main.route("/platform-admin/elevation", endpoint="platform_admin_elevation", methods=["GET", "POST"])
+@user_is_platform_admin_capable
+def platform_admin_elevation():
+    # Assert they are actually due to become an admin
+    if not current_user.has_pending_platform_admin_elevation:
+        flash("You do not have a pending platform admin elevation")
+        return abort(403)
+
+    if request.method == "POST":
+        # Mark the user as platform admin for the session
+        user_api_client.redeem_admin_elevation(current_user.id)
+        current_user.platform_admin_active = True
+        session["platform_admin_active"] = True
+        send_elevation_slack_notification()
+        return redirect(url_for("main.platform_admin_search"))
+
+    return render_template(
+        "views/platform-admin/sign-in-elevation.html", platform_admin_redemption=current_user.platform_admin_redemption
+    )
 
 
 def get_url_for_notify_record(uuid_):

@@ -464,6 +464,12 @@ def platform_admin_user(fake_uuid):
 
 
 @pytest.fixture(scope="function")
+def platform_admin_capable_user(platform_admin_user):
+    platform_admin_user["platform_admin_active"] = False
+    return platform_admin_user
+
+
+@pytest.fixture(scope="function")
 def platform_admin_user_no_service_permissions():
     """
     this fixture is for situations where we want to test that platform admin can access
@@ -1945,7 +1951,8 @@ def create_platform_admin_user(with_unique_id=False, auth_type="webauthn_auth", 
         name="Platform admin user",
         email_address="platform@admin.gov.uk",
         permissions=permissions or {},
-        platform_admin=True,
+        platform_admin_capable=True,
+        platform_admin_active=True,
         auth_type=auth_type,
         can_use_webauthn=True,
     )
@@ -1985,7 +1992,10 @@ def create_user(**overrides):
         "state": "active",
         "failed_login_count": 0,
         "permissions": {},
-        "platform_admin": False,
+        "platform_admin_capable": False,
+        "platform_admin_redemption": None,
+        # This is not a part of the database user object, but for tests can be used to elevate:
+        "platform_admin_active": False,
         "auth_type": "sms_auth",
         "password_changed_at": str(datetime.utcnow()),
         "services": [],
@@ -2461,3 +2471,8 @@ def webauthn_credential_2():
         "created_at": "2021-05-14T16:57:14.154185Z",
         "logged_in_at": None,
     }
+
+
+@pytest.fixture
+def mock_admin_action_notification(mocker):
+    return mocker.patch("app.utils.admin_action.send_slack_notification", return_value=None)
