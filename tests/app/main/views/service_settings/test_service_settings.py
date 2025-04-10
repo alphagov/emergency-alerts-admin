@@ -1084,7 +1084,7 @@ def test_service_confirm_broadcast_account_type_confirmation_page(
 @pytest.mark.parametrize(
     "value,service_mode,broadcast_channel,allowed_broadcast_provider",
     [
-        ("training-test-all", "training", "test", ["all"]),
+        ("training-test-all", "training", "test", ["ee", "o2", "three", "vodafone"]),
         ("live-operator-o2", "live", "operator", ["o2"]),
         ("live-test-vodafone", "live", "test", ["vodafone"]),
         ("live-severe-ee-o2-three-vodafone", "live", "severe", ["ee", "o2", "three", "vodafone"]),
