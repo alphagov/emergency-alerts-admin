@@ -60,8 +60,9 @@ def invite_user(service_id, user_id=None):
         user_to_invite = User.from_id(user_id)
     elif form.email_address.data:
         # Check if user with email address already exists
-        if User.from_email_address_invited(form.email_address.data) is not None:
-            user_to_invite = User.from_email_address_invited(form.email_address.data)
+        already_invited_user = User.from_email_address_invited(form.email_address.data)
+        if already_invited_user is not None:
+            user_to_invite = already_invited_user
         elif current_service.invite_pending_for(form.email_address.data):
             # Checks this email address hasn't already been invited to service
             return render_template(
