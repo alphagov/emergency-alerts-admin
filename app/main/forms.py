@@ -1615,9 +1615,12 @@ class ServiceBroadcastAccountForm(Form):
             if p not in ["all", "ee", "o2", "three", "vodafone"]:
                 raise ValidationError("Invalid provider")
 
-        self.service_mode = split_values[0]
-        self.broadcast_channel = split_values[1]
-        self.provider_restriction = split_values[2:]
+        if providers == ["all"]:
+            providers = ["ee", "o2", "three", "vodafone"]
+
+        self.service_mode = service_mode
+        self.broadcast_channel = channel
+        self.provider_restriction = providers
 
 
 class BroadcastAreaForm(StripWhitespaceForm):

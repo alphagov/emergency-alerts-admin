@@ -840,6 +840,17 @@ def test_service_set_broadcast_channel_redirects(
         (
             "live",
             "severe",
+            ["ee", "o2", "three", "vodafone"],
+            [
+                ("EE", "ee"),
+                ("O2", "o2"),
+                ("Three", "three"),
+                ("Vodafone", "vodafone"),
+            ],
+        ),
+        (
+            "live",
+            "severe",
             ["all"],
             [
                 ("All mobile networks", "all"),
@@ -896,12 +907,12 @@ def test_service_set_broadcast_network_has_radio_selected(
 @pytest.mark.parametrize(
     "broadcast_channel, data, expected_result",
     (
-        ("severe", {"networks": ["all"]}, "live-severe-ee-o2-three-vodafone"),
-        ("government", {"networks": ["all"]}, "live-government-ee-o2-three-vodafone"),
+        ("severe", {"networks": ["ee", "o2", "three", "vodafone"]}, "live-severe-ee-o2-three-vodafone"),
         ("government", {"networks": ["ee", "o2", "three", "vodafone"]}, "live-government-ee-o2-three-vodafone"),
-        ("operator", {"networks": ["all"]}, "live-operator-ee-o2-three-vodafone"),
+        ("government", {"networks": ["ee", "o2", "three", "vodafone"]}, "live-government-ee-o2-three-vodafone"),
         ("operator", {"networks": ["ee", "o2", "three", "vodafone"]}, "live-operator-ee-o2-three-vodafone"),
-        ("test", {"networks": ["all"]}, "live-test-ee-o2-three-vodafone"),
+        ("operator", {"networks": ["ee", "o2", "three", "vodafone"]}, "live-operator-ee-o2-three-vodafone"),
+        ("test", {"networks": ["ee", "o2", "three", "vodafone"]}, "live-test-ee-o2-three-vodafone"),
         ("test", {"networks": ["o2"]}, "live-test-o2"),
         ("test", {"networks": ["ee"]}, "live-test-ee"),
         ("test", {"networks": ["three"]}, "live-test-three"),
@@ -1073,11 +1084,11 @@ def test_service_confirm_broadcast_account_type_confirmation_page(
 @pytest.mark.parametrize(
     "value,service_mode,broadcast_channel,allowed_broadcast_provider",
     [
-        ("training-test-all", "training", "test", ["all"]),
+        ("training-test-all", "training", "test", ["ee", "o2", "three", "vodafone"]),
         ("live-operator-o2", "live", "operator", ["o2"]),
         ("live-test-vodafone", "live", "test", ["vodafone"]),
-        ("live-severe-all", "live", "severe", ["all"]),
-        ("live-government-all", "live", "government", ["all"]),
+        ("live-severe-ee-o2-three-vodafone", "live", "severe", ["ee", "o2", "three", "vodafone"]),
+        ("live-government-ee-o2-three-vodafone", "live", "government", ["ee", "o2", "three", "vodafone"]),
     ],
 )
 def test_service_confirm_broadcast_account_type_posts_data_to_api_and_redirects(
