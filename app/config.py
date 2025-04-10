@@ -78,7 +78,7 @@ class Config(object):
     # as defined in api db migration 0331_add_broadcast_org.py
     BROADCAST_ORGANISATION_ID = "38e4bf69-93b0-445d-acee-53ea53fe02df"
 
-    INACTIVITY_MINS = 28
+    INACTIVITY_MINS = 58
     EXPIRY_WARNING_MINS = (5 * 60) + 58  # 5 hours, 58 minutes
     INACTIVITY_WARNING_DURATION = 2
 
