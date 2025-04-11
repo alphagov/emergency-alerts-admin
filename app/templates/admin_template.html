@@ -3,7 +3,8 @@
 {% extends "govuk_frontend_jinja/template.html"%}
 {% from "components/banner.html" import banner %}
 {%- from "govuk_frontend_jinja/components/notification-banner/macro.html" import govukNotificationBanner -%}
-{%- from "partials/notifications/sessionInactivityDialog.html" import sessionInactivityDialog -%}
+{%- from "partials/notifications/inactivityLogoutDialog.html" import inactivityLogoutDialog -%}
+{%- from "partials/notifications/inactivityWarningDialog.html" import inactivityWarningDialog -%}
 {%- from "partials/notifications/sessionExpiryDialog.html" import sessionExpiryDialog -%}
 {% from "components/cookie-banner.html" import cookie_banner %}
 {% from "components/page-title-prefix.html" import page_title_prefix %}
@@ -50,7 +51,8 @@
 
 {% block header %}
   {% if current_user.is_authenticated %}
-    {{ sessionInactivityDialog() }}
+    {{ inactivityLogoutDialog() }}
+    {{ inactivityWarningDialog() }}
     {{ sessionExpiryDialog(request.path) }}
     {% if current_user.platform_admin %}
       {% set navigation = [
@@ -199,13 +201,15 @@
     if ((current_user_id != 'None') && (current_user_id != functional_test_user_id)) {
       permanent_session_lifetime = "{{config.get('PERMANENT_SESSION_LIFETIME')}}";
       inactivity_mins = "{{config.get('INACTIVITY_MINS')}}";
+      inactivity_warning_mins = "{{config.get('INACTIVITY_WARNING_MINS')}}";
       expiry_warning_mins = "{{config.get('EXPIRY_WARNING_MINS')}}";
       inactivity_warning_duration = "{{config.get('INACTIVITY_WARNING_DURATION')}}";
     } else if ((current_user_id != 'None') && (current_user_id == functional_test_user_id)) {
-      permanent_session_lifetime = "{{config.get('FUNCTIONAL_TEST_PERMANENT_SESSION_LIFETIME')}}"
-      inactivity_mins = "{{config.get('FUNCTIONAL_TEST_INACTIVITY_MINS')}}"
-      expiry_warning_mins = "{{config.get('FUNCTIONAL_TEST_EXPIRY_WARNING_MINS')}}"
-      inactivity_warning_duration = "{{config.get('FUNCTIONAL_TEST_INACTIVITY_WARNING_DURATION')}}"
+      permanent_session_lifetime = "{{config.get('FUNCTIONAL_TEST_PERMANENT_SESSION_LIFETIME')}}";
+      inactivity_mins = "{{config.get('FUNCTIONAL_TEST_INACTIVITY_MINS')}}";
+      inactivity_warning_mins = "{{config.get('FUNCTIONAL_TEST_INACTIVITY_WARNING_MINS')}}";
+      expiry_warning_mins = "{{config.get('FUNCTIONAL_TEST_EXPIRY_WARNING_MINS')}}";
+      inactivity_warning_duration = "{{config.get('FUNCTIONAL_TEST_INACTIVITY_WARNING_DURATION')}}";
     }
 
   </script>
