@@ -37,10 +37,13 @@ def log_in_user(user_id):
         # get rid of anything in the session that we don't expect to have been set during register/sign in flow
         session.pop("user_details", None)
 
-    return redirect_when_logged_in(platform_admin=user.platform_admin)
+    return redirect_when_logged_in(platform_admin_elevation_pending=user.has_pending_platform_admin_elevation)
 
 
-def redirect_when_logged_in(platform_admin):
+def redirect_when_logged_in(platform_admin_elevation_pending):
+    if platform_admin_elevation_pending:
+        return redirect(url_for("main.platform_admin_elevation"))
+
     next_url = request.args.get("next")
     if next_url and is_safe_redirect_url(next_url):
         return redirect(next_url)

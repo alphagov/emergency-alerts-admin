@@ -97,6 +97,8 @@ class Config(object):
 
     FUNCTIONAL_TEST_USER_ID = os.environ.get("FUNCTIONAL_TEST_USER_ID", "")
 
+    SLACK_WEBHOOK_ADMIN_ACTIVITY = os.environ.get("SLACK_WEBHOOK_ADMIN_ACTIVITY", "")
+
 
 class Hosted(Config):
     HOST = "hosted"

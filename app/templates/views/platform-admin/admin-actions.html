@@ -48,11 +48,14 @@
               <br/>
               API Key type: {{ key_type_labels[action.action_data.key_type] }}
             </p>
+          {% elif action.action_type == 'elevate_platform_admin' %}
+            <h2>Elevate to full platform admin</h2>
+            <br/>
           {% else %}
             {{ action }}
           {% endif %}
 
-          Created {{ action.created_at | format_datetime_human }} by {{ users[action.created_by].email_address }}
+          Created by {{ users[action.created_by].email_address }} {{ action.created_at | format_datetime_human }}
       </div>
       <div class="govuk-grid-column-one-quarter">
         <form action="{{url_for('.review_admin_action', action_id=action.id, new_status='approved')}}" method="post">
@@ -63,7 +66,7 @@
             "disabled": not (allow_self_approval or action.created_by != current_user.id)
           }) }}
         </form>
-        </br>
+        <br/>
         <form action="{{url_for('.review_admin_action', action_id=action.id, new_status='rejected')}}" method="post">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
           {{ govukButton({
@@ -76,5 +79,9 @@
     </div>
     <div class="keyline-block"></div>
   {% endfor %}
+
+  {% if pending | length == 0 %}
+    <p class="govuk-body">There are no admin actions awaiting approval.</p>
+  {% endif %}
 
 {% endblock %}

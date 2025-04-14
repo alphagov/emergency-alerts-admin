@@ -1,3 +1,4 @@
+from emergency_alerts_utils.admin_action import ADMIN_CREATE_API_KEY
 from emergency_alerts_utils.api_key import KEY_TYPE_DESCRIPTIONS, KEY_TYPE_NORMAL
 from flask import abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user
@@ -6,7 +7,7 @@ from markupsafe import Markup
 from app import api_key_api_client, current_service, service_api_client
 from app.main import main
 from app.main.forms import CreateKeyForm
-from app.utils.admin_action import ADMIN_CREATE_API_KEY, create_or_replace_admin_action
+from app.utils.admin_action import create_or_replace_admin_action
 from app.utils.user import user_has_permissions
 
 dummy_bearer_token = "bearer_token_set"

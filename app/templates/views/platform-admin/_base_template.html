@@ -13,12 +13,15 @@
       <div class="govuk-grid-column-one-quarter">
         <nav class="navigation" aria-label="Platform admin">
           <ul>
-            {% for link_text, url in [
+            {% for link_text, url in ([
               ('Search', url_for('main.platform_admin_search')),
               ('Live services', url_for('main.live_services')),
               ('Trial mode services', url_for('main.trial_services')),
               ('Admin approvals', url_for('main.admin_actions'))
-            ] %}
+            ] if current_user.platform_admin else [
+              ('Request elevation', url_for('main.platform_admin_request_elevation')),
+              ('Admin approvals', url_for('main.admin_actions'))
+            ]) %}
               <li>
                 <a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline" href="{{ url }}">
                   {{ link_text }}
