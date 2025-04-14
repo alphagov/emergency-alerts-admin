@@ -192,6 +192,7 @@
     let logged_in_at = "{{session.get('session_start_utc')}}"; // Created for inactivity and expiry dialogs
     let current_user_id = "{{session.get('user_id')}}";
     let inactivity_mins;
+    let inactivity_warning_mins;
     let permanent_session_lifetime;
     let expiry_warning_mins;
     let inactivity_warning_duration;
