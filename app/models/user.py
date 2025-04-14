@@ -75,6 +75,13 @@ class User(BaseUser, UserMixin):
             return cls(response)
         return None
 
+    @classmethod
+    def from_email_address_invited(cls, email_address):
+        response = user_api_client.get_user_by_email_if_exists(email_address)
+        if response:
+            return cls(response)
+        return None
+
     @staticmethod
     def already_registered(email_address):
         return bool(user_api_client.check_user_exists(email_address))
