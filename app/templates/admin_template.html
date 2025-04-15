@@ -51,7 +51,7 @@
 
 {% block header %}
   {% if current_user.is_authenticated %}
-    {{ inactivityLogoutDialog(session.get('session_end_utc')) }}
+    {{ inactivityLogoutDialog() }}
     {{ inactivityWarningDialog() }}
     {{ sessionExpiryDialog(request.path) }}
     {% if current_user.platform_admin_capable %}
