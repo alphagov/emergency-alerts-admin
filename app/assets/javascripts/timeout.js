@@ -44,28 +44,12 @@ let sessionExpiryTimeout;
         if (checkLocalStorage()) { // if last activity was less than set time ago,
           setLastActiveTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
         } else {
-          setTimeRemainingMessage();
           inactivityDialog.showModal();
           inactivityDialog.focus();
           startInactivityDialogTimeout(inactivityDialog);
         }
       }, 1000 * 60 * inactivityMins);
     }
-  };
-
-  const setTimeRemainingMessage = function() {
-    const inactivityTimeRemainingMsg = document.getElementById("time-remaining-message");
-    let timeLeftInMinutes = Math.floor(getTimeLeftUntilSessionExpiry() / 60000);
-    let timeLeft = formatTime(timeLeftInMinutes);
-    let message;
-    if (timeLeftInMinutes == 1) {
-      message = "You have 1 minute remaining in your session.";
-    } else if (timeLeftInMinutes > 1) {
-      message = "You have "+timeLeft+" remaining in your session.";
-    } else {
-      message = "You have less than a minute remaining in your session.";
-    }
-    inactivityTimeRemainingMsg.innerHTML = message;
   };
 
   const resetInactivityTimeouts = function(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog) {
@@ -76,10 +60,9 @@ let sessionExpiryTimeout;
     if (staySignedInButton) {
       staySignedInButton.addEventListener("click", function () {
         inactivityDialog.close();
-        inactivityWarningDialog.close();
-        clearTimeout(inactivityDialogDisplayedTimeout);
-        clearTimeout(inactivityLogoutTimeout);
-        clearTimeout(inactivityWarningDialogDisplayedTimeout);
+        clearTimeout(inactivityDialogDisplayedTimeout); // dialog
+        clearTimeout(inactivityLogoutTimeout); // actual logout
+        clearTimeout(inactivityWarningDialogDisplayedTimeout); // warning dialog displayed
         startInactivityTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
         startInactivityWarningTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
       });
@@ -137,7 +120,7 @@ let sessionExpiryTimeout;
   };
 
   const updateLocalStorage = function() {
-    // With each request in any tab, the lastActive attribute is updated
+    // With each request in any tab, the lastActivity attribute is updated
     localStorage.setItem("lastActivity", new Date());
   };
 
@@ -151,7 +134,6 @@ let sessionExpiryTimeout;
     // If activity in another tab, inactivity timeout period adjusted
     let lastActive = new Date(localStorage.getItem("lastActivity"));
     lastActiveTimeout = setTimeout(() => {
-      setTimeRemainingMessage();
       inactivityDialog.showModal();
       inactivityDialog.focus();
       startInactivityDialogTimeout(inactivityDialog);
@@ -206,6 +188,7 @@ let sessionExpiryTimeout;
                   setLastActiveTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
                 }
         else if (!(inactivityDialog.hasAttribute('open')) & !(sessionExpiryDialog.hasAttribute('open'))) {
+          // Only open this dialog if the other dialogs are closed
                     inactivityWarningDialog.showModal();
                     inactivityWarningDialog.focus();
                     startInactivityWarningTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
@@ -215,7 +198,7 @@ let sessionExpiryTimeout;
   };
 
   const checkLocalStorageForInactivityWarning = function() {
-    // Checking local storage for any activity in other tabs & returns true if last activity less than set time ago
+    // Checking local storage for any activity in other tabs & returns true if last activity less than inactivity_warning_mins ago
     let lastActive = new Date(localStorage.getItem("lastActivity"));
     return (differenceInSeconds(new Date(), lastActive) < inactivityWarningMins * 60);
   };
@@ -253,5 +236,6 @@ let sessionExpiryTimeout;
   window.GOVUK.inactivityWarningDisplayedDuration = inactivityWarningDisplayedDuration;
   window.GOVUK.isLoggedIn = isLoggedIn;
   window.GOVUK.startSessionExpiryTimeout = startSessionExpiryTimeout;
+  window.GOVUK.closeWarningDialog = closeWarningDialog;
 
 })(window);
