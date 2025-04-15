@@ -166,20 +166,6 @@ let sessionExpiryTimeout;
     }
   };
 
-  const formatTime = function(timeInMinutes) {
-    let minutes = timeInMinutes;
-    const hours = Math.floor(minutes / 60);
-    if (hours == 0) {
-      return `${minutes} minutes`;
-    }
-    else if (minutes == 0) {
-      return `${hours} hours`;
-    } else {
-      minutes %= 60;
-      return `${hours} hour${hours !== 1 ? 's' : ''} and ${minutes} minute${minutes !== 1 ? 's' : ''}`;
-    }
-  };
-
   const startInactivityWarningTimeout = function(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog) {
     // Initial inactivity warning timeout that is restarted by request activity
     if (isLoggedIn()) {
