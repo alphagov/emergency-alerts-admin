@@ -194,6 +194,11 @@ def format_delta_days(date):
     return naturaltime_without_indefinite_article(now - date)
 
 
+def format_timeout_datetime(date):
+    delta = utc_string_to_aware_gmt_datetime(date) - datetime.now(timezone.utc) - timedelta(hours=5, minutes=10)
+    return humanize.naturaldelta(value=delta)
+
+
 def valid_phone_number(phone_number):
     try:
         validate_phone_number(phone_number)
