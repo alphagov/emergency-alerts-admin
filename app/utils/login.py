@@ -1,9 +1,9 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from functools import wraps
 
 import pytz
 from dateutil import parser
-from flask import redirect, request, session, url_for
+from flask import current_app, redirect, request, session, url_for
 
 from app.models.user import User
 
@@ -25,6 +25,9 @@ def log_in_user(user_id):
         # the user will have a new current_session_id set by the API - store it in the cookie for future requests
         session["current_session_id"] = user.current_session_id
         session["session_start_utc"] = str(datetime.now(timezone.utc))
+        session["session_end_utc"] = str(
+            datetime.now(timezone.utc) + timedelta(seconds=current_app.config["PERMANENT_SESSION_LIFETIME"])
+        )
         # Check if coming from new password page
         if "password" in session.get("user_details", {}):
             user.update_password(session["user_details"]["password"])
