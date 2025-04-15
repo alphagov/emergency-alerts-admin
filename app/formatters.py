@@ -195,7 +195,7 @@ def format_delta_days(date):
 
 
 def format_timeout_datetime(date):
-    delta = utc_string_to_aware_gmt_datetime(date) - datetime.now(timezone.utc) - timedelta(hours=5, minutes=10)
+    delta = utc_string_to_aware_gmt_datetime(date) - datetime.now(timezone.utc)
     return humanize.naturaldelta(value=delta)
 
 
