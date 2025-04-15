@@ -1,11 +1,11 @@
 {% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
-{% macro inactivityLogoutDialog() %}
+{% macro inactivityLogoutDialog(session_expiry_time) %}
 
 <dialog id="activity" tabindex="-1" aria-modal="true" class="hmrc-timeout-dialog"
     role="dialog" aria-labelledby="hmrc-timeout-heading hmrc-timeout-message">
     <div class="hmrc-timeout-dialog-content">
         <h2 id="hmrc-timeout-heading" class="govuk-heading-m push--top">You're about to be signed out</h2>
-        <h2 class="govuk-body hmrc-timeout-dialog__message" aria-hidden="true" id="time-remaining-message">You have n minutes remaining in your session.</h2>
+        <h2 class="govuk-body hmrc-timeout-dialog__message timeago" aria-hidden="true" id="time-remaining-message" datetime="{{ session_expiry_time }}">You have {{ session_expiry_time|format_timeout_datetime }} remaining in your session.</h2>
         <h2 id="hmrc-timeout-message" class="govuk-visually-hidden screenreader-content" aria-live="assertive">If you do not sign in within 2 mins, your session will end. We do this to keep your information secure.</h2>
         {{ govukButton({
             "text": "Stay signed in",
