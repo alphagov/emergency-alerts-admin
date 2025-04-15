@@ -6,7 +6,12 @@
     <div class="hmrc-timeout-dialog-content">
         <h2 id="hmrc-timeout-heading" class="govuk-heading-m push--top">You've been inactive for 28 minutes</h2>
         <h2 class="govuk-body hmrc-timeout-dialog__message" aria-hidden="true">You'll be signed out if you're inactive for 60 minutes.</h2>
-        <a id="close-button" class="govuk-link hmrc-timeout-dialog__link">Close</a>
+        {{ govukButton({
+            "text": "Close",
+            "classes": "govuk-button",
+            "id": "close-button",
+            "name": "close-inactivity-warning-button"
+        }) }}
     </div>
 </dialog>
 
