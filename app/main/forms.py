@@ -5,6 +5,7 @@ from itertools import chain
 from numbers import Number
 
 import pytz
+from emergency_alerts_utils.admin_action import ADMIN_SENSITIVE_PERMISSIONS
 from emergency_alerts_utils.formatters import strip_all_whitespace
 from emergency_alerts_utils.insensitive_dict import InsensitiveDict
 from emergency_alerts_utils.validation import InvalidPhoneError, validate_phone_number
@@ -570,6 +571,15 @@ class GovukCheckboxesFieldWithNetworkRequired(GovukCheckboxesField):
     validators = [DataRequired("Select a mobile network")]
 
 
+class GovukCheckboxesFieldWithSensitivePermissionAttribute(GovukCheckboxesField):
+    def get_item_from_option(self, option):
+        item = super().get_item_from_option(option)
+        item["attributes"] = (
+            {"data-permission-sensitive": "true"} if item["value"] in ADMIN_SENSITIVE_PERMISSIONS else {}
+        )
+        return item
+
+
 # Wraps checkboxes rendering in HTML needed by the collapsible JS
 class GovukCollapsibleCheckboxesField(GovukCheckboxesField):
     param_extensions = {"hint": {"html": '<div class="selection-summary" role="region" aria-live="polite"></div>'}}
@@ -819,7 +829,7 @@ class PermissionsForm(BasePermissionsForm):
 
 
 class BroadcastPermissionsForm(BasePermissionsForm):
-    permissions_field = GovukCheckboxesField(
+    permissions_field = GovukCheckboxesFieldWithSensitivePermissionAttribute(
         "Permissions",
         choices=[(value, label) for value, label in broadcast_permission_options],
         filters=[filter_by_broadcast_permissions],
@@ -827,7 +837,7 @@ class BroadcastPermissionsForm(BasePermissionsForm):
             "hint": {
                 "text": "Team members who can create or approve alerts can also reject them."
                 + " Platform admin approval is required to enable creating or approving alerts."
-            }
+            },
         },
     )
 
