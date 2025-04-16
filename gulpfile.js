@@ -144,6 +144,7 @@ const javascripts = () => {
     paths.src + 'javascripts/main.js',
     paths.src + 'javascripts/timeout.js',
     paths.src + 'javascripts/exclusiveCheckbox.js',
+    paths.src + 'javascripts/permissionFormButtons.js',
   ])
   .pipe(plugins.prettyerror())
   .pipe(plugins.babel({
