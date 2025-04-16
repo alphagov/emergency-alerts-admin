@@ -1,9 +1,9 @@
 (function (Modules) {
   "use strict";
 
-  // PermissionFormButtons will dynamically adjust the submit button text if sensitive permissions are added.
+  // PermissionFormSubmitButton will dynamically adjust the submit button text if sensitive permissions are added.
   // It expects to be given a parent <form> element, and will note those with "data-permission-sensitive".
-  Modules.PermissionFormButtons = function () {
+  Modules.PermissionFormSubmitButton = function () {
     this.start = function (permissionForm) {
       var $permissionForm = $(permissionForm)
       var submitButton = $permissionForm.find(":submit");

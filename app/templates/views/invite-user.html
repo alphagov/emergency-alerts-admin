@@ -16,7 +16,7 @@
 
   {{ page_header('Invite {}'.format(user_to_invite.name if user_to_invite else 'a team member')) }}
 
-  {% call form_wrapper(module="permission-form-buttons") %}
+  {% call form_wrapper(module="permission-form-submit-button") %}
 
     {% if user_to_invite %}
       <p class="govuk-body">
