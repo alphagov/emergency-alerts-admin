@@ -21,8 +21,8 @@ const htmlContent = `
   <dialog id="activity" tabindex="-1" aria-modal="true" class="hmrc-timeout-dialog"
     role="dialog" aria-labelledby="hmrc-timeout-heading hmrc-timeout-message">
     <div class="hmrc-timeout-dialog-content">
-        <h2 id="hmrc-timeout-heading" class="govuk-heading-m push--top">You're about to be signed out</h2>
-        <h2 class="govuk-body hmrc-timeout-dialog__message" aria-hidden="true" id="time-remaining-message">You have n minutes remaining in your session.</h2>
+        <h2 id="hmrc-timeout-heading" class="govuk-heading-m push--top">You've been inactive for 58 minutes</h2>
+        <h2 class="govuk-body hmrc-timeout-dialog__message timeago" aria-hidden="true" id="time-remaining-message">You'll be signed out if you're inactive for 60 minutes.</h2>
         <h2 id="hmrc-timeout-message" class="govuk-visually-hidden screenreader-content" aria-live="assertive">If you do not sign in within 2 mins, your session will end. We do this to keep your information secure.</h2>
         {{ govukButton({
             "text": "Stay signed in",
@@ -52,14 +52,42 @@ const htmlContent = `
     </div>
   </dialog>
   <dialog id="activity-warning" tabindex="-1" aria-modal="true" class="hmrc-timeout-dialog"
-      role="dialog" aria-labelledby="hmrc-timeout-heading hmrc-timeout-message">
-      <div class="hmrc-timeout-dialog-content">
-          <h2 id="hmrc-timeout-heading" class="govuk-heading-m push--top">You've been inactive for 28 minutes</h2>
-          <h2 class="govuk-body hmrc-timeout-dialog__message" aria-hidden="true">You'll be signed out if you're inactive for 60 minutes.</h2>
-          <a id="close-button" class="govuk-link hmrc-timeout-dialog__link">Close</a>
-      </div>
-  </dialog>
+    role="dialog" aria-labelledby="hmrc-timeout-heading hmrc-timeout-message">
+    <div class="hmrc-timeout-dialog-content">
+        <h2 id="hmrc-timeout-heading" class="govuk-heading-m push--top">You've been inactive for 28 minutes</h2>
+        <h2 class="govuk-body hmrc-timeout-dialog__message" aria-hidden="true">You'll be signed out if you're inactive for 60 minutes.</h2>
+        {{ govukButton({
+            "text": "Close",
+            "classes": "govuk-button",
+            "id": "close-button",
+            "name": "close-inactivity-warning-button"
+        }) }}
+    </div>
+</dialog>
 `;
+
+describe("Inactivity warning dialog appears and components within it function correctly", () => {
+  beforeEach(() => {
+    document.body.innerHTML = htmlContent;
+    jest.useFakeTimers();
+    window.GOVUK.displaySessionExpiryDialog(inactivityDialog, sessionExpiryDialog, inactivityWarningDialog);
+    window.GOVUK.startInactivityWarningTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
+    window.GOVUK.resetInactivityTimeouts(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
+    window.GOVUK.closeWarningDialog(inactivityWarningDialog);
+  });
+
+  afterEach(() => {
+    document.body.innerHTML = "";
+    jest.clearAllMocks();
+  });
+
+  test("Warning dialog opens after inactivity warning timeout", () => {
+    expect(inactivityWarningDialog.showModal).not.toHaveBeenCalled();
+    jest.advanceTimersByTime(60 * window.GOVUK.inactivityWarningMins * 1000);
+    expect(inactivityWarningDialog.showModal).toHaveBeenCalled();
+  });
+
+});
 
 describe("Inactivity dialog appears and components within it function correctly", () => {
   beforeEach(() => {
@@ -113,6 +141,7 @@ describe("Activity in another tab delays inactivity timeout", () => {
     document.body.innerHTML = htmlContent;
     jest.useFakeTimers();
     window.GOVUK.startInactivityTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
+    window.GOVUK.startInactivityWarningTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
   });
 
   afterEach(() => {
@@ -124,9 +153,9 @@ describe("Activity in another tab delays inactivity timeout", () => {
     later = new Date();
     later.setSeconds(window.logged_in_at.getSeconds() + 30);
     localStorage.setItem("lastActivity", later); // Set lastActivity to 30s later so timeout should appear 30s later
-    jest.advanceTimersByTime(60 * window.GOVUK.inactivityMins * 1000);
+    jest.advanceTimersByTime(60 * window.GOVUK.inactivityWarningMins * 1000);
     expect(inactivityWarningDialog.showModal).not.toHaveBeenCalled();
-    jest.advanceTimersByTime(60 * 1 * 1000);
+    jest.advanceTimersByTime(60 * 0.5 * 1000);
     expect(inactivityWarningDialog.showModal).toHaveBeenCalled();
   });
 
@@ -137,7 +166,7 @@ describe("Activity in another tab delays inactivity timeout", () => {
     localStorage.setItem("lastActivity", later); // Set lastActivity to 30s later so timeout should appear 30s later
     jest.advanceTimersByTime(60 * window.GOVUK.inactivityMins * 1000);
     expect(inactivityDialog.showModal).not.toHaveBeenCalled();
-    jest.advanceTimersByTime(60 * 0.8 * 1000);
+    jest.advanceTimersByTime(60 * 0.5 * 1000);
     expect(inactivityDialog.showModal).toHaveBeenCalled();
   });
 });
