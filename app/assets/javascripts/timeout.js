@@ -18,24 +18,97 @@ let sessionExpiryTimeout;
 
   const {differenceInSeconds, addMinutes} = window.GOVUK.vendor;
 
+  // Utility functions
+
   const isLoggedIn = function() {
     // Checking whether user logged in or not based on whether loginTimestamp exists and is a date
     return (loginTimestamp && !isNaN(new Date(loginTimestamp)));
   };
 
-  const getTimeLeftUntilExpiryDialogDisplayed = function() {
-    // calculates how long left in session before expiry dialog displayed, before final timeout, after each request
-    const current_time = new Date();
-    const expiry_warning_time = addMinutes(loginTimestamp, expiryWarningMins);
-    return differenceInSeconds(expiry_warning_time, current_time) * 1000;
+  const resetInactivityTimeouts = function(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog){
+    clearTimeout(inactivityDialogDisplayedTimeout); // dialog
+    clearTimeout(inactivityLogoutTimeout); // actual logout
+    clearTimeout(inactivityWarningDialogDisplayedTimeout); // warning dialog displayed
+    startInactivityTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
+    startInactivityWarningTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
   };
 
-  const getTimeLeftUntilSessionExpiry = function() {
-    // calculates how long left in session, before final timeout, after each request
-    const current_time = new Date();
-    const expiry_time = addMinutes(loginTimestamp, sessionExpiryMins);
-    return differenceInSeconds(expiry_time, current_time) * 1000;
+  const updateLocalStorage = function() {
+    // With each request in any tab, the lastActivity attribute is updated
+    localStorage.setItem("lastActivity", new Date());
   };
+
+  const checkLocalStorage = function() {
+    // Checking local storage for any activity in other tabs & returns true if last activity less than set time ago
+    let lastActive = new Date(localStorage.getItem("lastActivity"));
+    return (differenceInSeconds(new Date(), lastActive) < inactivityMins * 60);
+  };
+
+  const signOutRedirect = function(status) {
+    // send logout request and redirect to previous page upon relogging in
+    let currentPage = encodeURIComponent(window.location.pathname);
+    $.ajax("/sign-out", {
+      method: "GET",
+      success: function() {
+        window.location.href = "/sign-in?next="+currentPage+"&status="+status;
+      },
+      error: function(error) {
+        console.log(error);
+      },
+    });
+  };
+
+  // Inactivity warning functions
+
+  const startInactivityWarningTimeout = function(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog) {
+    // Initial inactivity warning timeout that is restarted by request activity
+    if (isLoggedIn()) {
+      inactivityWarningDialogDisplayedTimeout = setTimeout(function () {
+        if (checkLocalStorageForInactivityWarning()) { // if last activity was less than set time ago,
+            setLastActiveInactivityWarningTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
+                }
+        else if (!(inactivityDialog.hasAttribute('open')) && !(sessionExpiryDialog.hasAttribute('open'))) {
+          // Only open this dialog if the other dialogs are closed
+                    inactivityWarningDialog.showModal();
+                    inactivityWarningDialog.focus();
+                    startInactivityWarningTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
+                  }
+      }, 1000 * 60 * inactivityWarningMins);
+    }
+  };
+
+  const checkLocalStorageForInactivityWarning = function() {
+    // Checking local storage for any activity in other tabs & returns true if last activity less than inactivity_warning_mins ago
+    let lastActive = new Date(localStorage.getItem("lastActivity"));
+    return (differenceInSeconds(new Date(), lastActive) < inactivityWarningMins * 60);
+  };
+
+  const closeWarningDialog = function(inactivityWarningDialog) {
+    const closeButton = document.getElementById(
+      "close-button"
+    );
+    if (closeButton) {
+      closeButton.addEventListener("click", function () {
+        resetInactivityTimeouts(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
+        inactivityWarningDialog.close();
+      });
+    }
+  };
+
+  const setLastActiveInactivityWarningTimeout = function(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog) {
+    // If activity in another tab, inactivity warning timeout period adjusted
+    let lastActive = new Date(localStorage.getItem("lastActivity"));
+    lastActiveTimeout = setTimeout(() => {
+      if (!(inactivityWarningDialog.hasAttribute('open'))) {
+        inactivityWarningDialog.showModal();
+        inactivityWarningDialog.focus();
+        clearTimeout(inactivityWarningDialogDisplayedTimeout);
+        startInactivityWarningTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
+      }
+    }, ((inactivityWarningMins * 60) - differenceInSeconds(new Date(), lastActive)) * 1000);
+  };
+
+  // Inactivity logout functions
 
   const startInactivityTimeout = function(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog) {
     // Inactivity logout timeout that is restarted by request activity
@@ -55,23 +128,6 @@ let sessionExpiryTimeout;
     }
   };
 
-  const resetInactivityTimeouts = function(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog) {
-    // If stay signed in button is clicked then activity timeout is restarted
-    const staySignedInButton = document.getElementById(
-      "hmrc-timeout-keep-signin-btn"
-    );
-    if (staySignedInButton) {
-      staySignedInButton.addEventListener("click", function () {
-        inactivityDialog.close();
-        clearTimeout(inactivityDialogDisplayedTimeout); // dialog
-        clearTimeout(inactivityLogoutTimeout); // actual logout
-        clearTimeout(inactivityWarningDialogDisplayedTimeout); // warning dialog displayed
-        startInactivityTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
-        startInactivityWarningTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
-      });
-    }
-  };
-
   const startInactivityDialogTimeout = function(inactivityDialog) {
     // Logs user out if no response when the inactivity popup shows
     inactivityLogoutTimeout = setTimeout(function () {
@@ -79,6 +135,37 @@ let sessionExpiryTimeout;
       signOutRedirect('inactive');
     }, 1000 * 60 * inactivityWarningDisplayedDuration);
   };
+
+  const staySignedIn = function(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog) {
+    // If stay signed in button is clicked then activity timeout is restarted
+    const staySignedInButton = document.getElementById(
+      "hmrc-timeout-keep-signin-btn"
+    );
+    if (staySignedInButton) {
+      staySignedInButton.addEventListener("click", function () {
+        inactivityDialog.close();
+        resetInactivityTimeouts(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
+      });
+    }
+  };
+
+  const setLastActiveInactivityTimeout = function(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog) {
+    // If activity in another tab, inactivity timeout period adjusted
+    let lastActive = new Date(localStorage.getItem("lastActivity"));
+    lastActiveTimeout = setTimeout(() => {
+      if (inactivityWarningDialog.hasAttribute('open')) {
+        inactivityWarningDialog.close();
+      }
+      if (!(inactivityDialog.hasAttribute('open'))) {
+        inactivityDialog.showModal();
+        inactivityDialog.focus();
+        clearTimeout(inactivityLogoutTimeout);
+        startInactivityDialogTimeout(inactivityDialog);
+      }
+    }, ((inactivityMins * 60) - differenceInSeconds(new Date(), lastActive)) * 1000);
+  };
+
+  // Session expiry functions
 
   const startSessionExpiryTimeout = function(inactivityDialog, sessionExpiryDialog, inactivityWarningDialog) {
     // Logs user out after session lifetime expires, flask terminates session
@@ -96,6 +183,20 @@ let sessionExpiryTimeout;
         signOutRedirect('expired');
       }, getTimeLeftUntilSessionExpiry());
     }
+  };
+
+  const getTimeLeftUntilExpiryDialogDisplayed = function() {
+    // calculates how long left in session before expiry dialog displayed, before final timeout, after each request
+    const current_time = new Date();
+    const expiry_warning_time = addMinutes(loginTimestamp, expiryWarningMins);
+    return differenceInSeconds(expiry_warning_time, current_time) * 1000;
+  };
+
+  const getTimeLeftUntilSessionExpiry = function() {
+    // calculates how long left in session, before final timeout, after each request
+    const current_time = new Date();
+    const expiry_time = addMinutes(loginTimestamp, sessionExpiryMins);
+    return differenceInSeconds(expiry_time, current_time) * 1000;
   };
 
   const displaySessionExpiryDialog = function(inactivityDialog, sessionExpiryDialog, inactivityWarningDialog) {
@@ -122,58 +223,6 @@ let sessionExpiryTimeout;
     }
   };
 
-  const updateLocalStorage = function() {
-    // With each request in any tab, the lastActivity attribute is updated
-    localStorage.setItem("lastActivity", new Date());
-  };
-
-  const checkLocalStorage = function() {
-    // Checking local storage for any activity in other tabs & returns true if last activity less than set time ago
-    let lastActive = new Date(localStorage.getItem("lastActivity"));
-    return (differenceInSeconds(new Date(), lastActive) < inactivityMins * 60);
-  };
-
-  const setLastActiveInactivityTimeout = function(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog) {
-    // If activity in another tab, inactivity timeout period adjusted
-    let lastActive = new Date(localStorage.getItem("lastActivity"));
-    lastActiveTimeout = setTimeout(() => {
-      if (inactivityWarningDialog.hasAttribute('open')) {
-        inactivityWarningDialog.close();
-      }
-      inactivityDialog.showModal();
-      inactivityDialog.focus();
-      clearTimeout(inactivityLogoutTimeout);
-      startInactivityDialogTimeout(inactivityDialog);
-    }, ((inactivityMins * 60) - differenceInSeconds(new Date(), lastActive)) * 1000);
-  };
-
-  const setLastActiveInactivityWarningTimeout = function(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog) {
-    // If activity in another tab, inactivity warning timeout period adjusted
-    let lastActive = new Date(localStorage.getItem("lastActivity"));
-    lastActiveTimeout = setTimeout(() => {
-      if (!(inactivityWarningDialog.hasAttribute('open'))) {
-        inactivityWarningDialog.showModal();
-        inactivityWarningDialog.focus();
-        clearTimeout(inactivityWarningDialogDisplayedTimeout);
-        startInactivityWarningTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
-      }
-    }, ((inactivityWarningMins * 60) - differenceInSeconds(new Date(), lastActive)) * 1000);
-  };
-
-  const signOutRedirect = function(status) {
-    // send logout request and redirect to previous page upon relogging in
-    let currentPage = encodeURIComponent(window.location.pathname);
-    $.ajax("/sign-out", {
-      method: "GET",
-      success: function() {
-        window.location.href = "/sign-in?next="+currentPage+"&status="+status;
-      },
-      error: function(error) {
-        console.log(error);
-      },
-    });
-  };
-
   const closeExpiryDialog = function(sessionExpiryDialog) {
     const continueButton = document.getElementById(
       "continue-button"
@@ -185,47 +234,12 @@ let sessionExpiryTimeout;
     }
   };
 
-  const startInactivityWarningTimeout = function(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog) {
-    // Initial inactivity warning timeout that is restarted by request activity
-    if (isLoggedIn()) {
-      inactivityWarningDialogDisplayedTimeout = setTimeout(function () {
-        if (checkLocalStorageForInactivityWarning()) { // if last activity was less than set time ago,
-            setLastActiveInactivityWarningTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
-                }
-        else if (!(inactivityDialog.hasAttribute('open')) & !(sessionExpiryDialog.hasAttribute('open'))) {
-          // Only open this dialog if the other dialogs are closed
-                    inactivityWarningDialog.showModal();
-                    inactivityWarningDialog.focus();
-                    startInactivityWarningTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
-                  }
-      }, 1000 * 60 * inactivityWarningMins);
-    }
-  };
-
-  const checkLocalStorageForInactivityWarning = function() {
-    // Checking local storage for any activity in other tabs & returns true if last activity less than inactivity_warning_mins ago
-    let lastActive = new Date(localStorage.getItem("lastActivity"));
-    return (differenceInSeconds(new Date(), lastActive) < inactivityWarningMins * 60);
-  };
-
-
-  const closeWarningDialog = function(inactivityWarningDialog) {
-    const closeButton = document.getElementById(
-      "close-button"
-    );
-    if (closeButton) {
-      closeButton.addEventListener("click", function () {
-        inactivityWarningDialog.close();
-      });
-    }
-  };
-
   updateLocalStorage();
   startSessionExpiryTimeout(inactivityDialog, sessionExpiryDialog, inactivityWarningDialog);
   displaySessionExpiryDialog(inactivityDialog, sessionExpiryDialog, inactivityWarningDialog);
   startInactivityTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
   startInactivityWarningTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
-  resetInactivityTimeouts(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
+  staySignedIn(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
   closeExpiryDialog(sessionExpiryDialog);
   closeWarningDialog(inactivityWarningDialog);
 
@@ -233,7 +247,7 @@ let sessionExpiryTimeout;
   window.GOVUK.startInactivityWarningTimeout = startInactivityWarningTimeout;
   window.GOVUK.displaySessionExpiryDialog = displaySessionExpiryDialog;
   window.GOVUK.signOutRedirect = signOutRedirect;
-  window.GOVUK.resetInactivityTimeouts = resetInactivityTimeouts;
+  window.GOVUK.staySignedIn = staySignedIn;
   window.GOVUK.updateLocalStorage = updateLocalStorage;
   window.GOVUK.inactivityMins = inactivityMins;
   window.GOVUK.expiryWarningMins = expiryWarningMins;
