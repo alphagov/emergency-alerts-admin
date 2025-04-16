@@ -26,22 +26,25 @@ let sessionExpiryTimeout;
   };
 
   const resetInactivityTimeouts = function(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog){
-    clearTimeout(inactivityDialogDisplayedTimeout); // dialog
-    clearTimeout(inactivityLogoutTimeout); // actual logout
+    clearTimeout(inactivityDialogDisplayedTimeout); // inactivity dialog
+    clearTimeout(inactivityLogoutTimeout); // inactivity logout
     clearTimeout(inactivityWarningDialogDisplayedTimeout); // warning dialog displayed
+    clearTimeout(lastActiveTimeout);
+    updateLocalStorage(); // Ensures this 'activity' captured and updates lastActive time
+    // Restarts any activity related timeouts
     startInactivityTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
     startInactivityWarningTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
+  };
+
+  const checkLocalStorage = function(minutes) {
+    // Checking local storage for any activity in other tabs & returns true if last activity less than set time ago
+    let lastActive = new Date(localStorage.getItem("lastActivity"));
+    return (differenceInSeconds(new Date(), lastActive) < minutes * 60);
   };
 
   const updateLocalStorage = function() {
     // With each request in any tab, the lastActivity attribute is updated
     localStorage.setItem("lastActivity", new Date());
-  };
-
-  const checkLocalStorage = function() {
-    // Checking local storage for any activity in other tabs & returns true if last activity less than set time ago
-    let lastActive = new Date(localStorage.getItem("lastActivity"));
-    return (differenceInSeconds(new Date(), lastActive) < inactivityMins * 60);
   };
 
   const signOutRedirect = function(status) {
@@ -58,13 +61,27 @@ let sessionExpiryTimeout;
     });
   };
 
-  // Inactivity warning functions
+  const closeDialogIfOpen = function(dialog){
+    if (dialog.hasAttribute('open')) {
+      dialog.close();
+    }
+  };
+
+  const getTimeDifferenceMilliseconds = function(minutes_later) {
+    // calculates how long left in session before expiry dialog displayed, before final timeout, after each request
+    const current_time = new Date();
+    const later_time = addMinutes(loginTimestamp, minutes_later);
+    return differenceInSeconds(later_time, current_time) * 1000;
+  };
+
+  // Inactivity warning functions - regarding the 'soft' warning that lets user know they've been inactive
+  // for inactivity_warning_mins
 
   const startInactivityWarningTimeout = function(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog) {
     // Initial inactivity warning timeout that is restarted by request activity
     if (isLoggedIn()) {
       inactivityWarningDialogDisplayedTimeout = setTimeout(function () {
-        if (checkLocalStorageForInactivityWarning()) { // if last activity was less than set time ago,
+        if (checkLocalStorage(inactivityWarningMins)) { // if last activity was less than set time ago,
             setLastActiveInactivityWarningTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
                 }
         else if (!(inactivityDialog.hasAttribute('open')) && !(sessionExpiryDialog.hasAttribute('open'))) {
@@ -77,18 +94,13 @@ let sessionExpiryTimeout;
     }
   };
 
-  const checkLocalStorageForInactivityWarning = function() {
-    // Checking local storage for any activity in other tabs & returns true if last activity less than inactivity_warning_mins ago
-    let lastActive = new Date(localStorage.getItem("lastActivity"));
-    return (differenceInSeconds(new Date(), lastActive) < inactivityWarningMins * 60);
-  };
-
   const closeWarningDialog = function(inactivityWarningDialog) {
     const closeButton = document.getElementById(
       "close-button"
     );
     if (closeButton) {
       closeButton.addEventListener("click", function () {
+        // if close button clicked, timeouts are reset and the 'activity' is recorded and lastActive updated
         resetInactivityTimeouts(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
         inactivityWarningDialog.close();
       });
@@ -108,18 +120,17 @@ let sessionExpiryTimeout;
     }, ((inactivityWarningMins * 60) - differenceInSeconds(new Date(), lastActive)) * 1000);
   };
 
-  // Inactivity logout functions
+  // Inactivity logout functions - regarding the warning that lets user know they've been inactive for
+  // inactivity_mins and in 2 mins they'll be logged out
 
   const startInactivityTimeout = function(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog) {
     // Inactivity logout timeout that is restarted by request activity
     if (isLoggedIn()) {
       inactivityDialogDisplayedTimeout = setTimeout(function () {
-        if (checkLocalStorage()) { // if last activity was less than set time ago,
+        if (checkLocalStorage(inactivityMins)) { // if last activity was less than set time ago,
           setLastActiveInactivityTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
         } else {
-          if (inactivityWarningDialog.hasAttribute('open')) {
-            inactivityWarningDialog.close();
-          }
+          closeDialogIfOpen(inactivityWarningDialog);
           inactivityDialog.showModal();
           inactivityDialog.focus();
           startInactivityDialogTimeout(inactivityDialog);
@@ -153,9 +164,7 @@ let sessionExpiryTimeout;
     // If activity in another tab, inactivity timeout period adjusted
     let lastActive = new Date(localStorage.getItem("lastActivity"));
     lastActiveTimeout = setTimeout(() => {
-      if (inactivityWarningDialog.hasAttribute('open')) {
-        inactivityWarningDialog.close();
-      }
+      closeDialogIfOpen(inactivityWarningDialog);
       if (!(inactivityDialog.hasAttribute('open'))) {
         inactivityDialog.showModal();
         inactivityDialog.focus();
@@ -165,55 +174,35 @@ let sessionExpiryTimeout;
     }, ((inactivityMins * 60) - differenceInSeconds(new Date(), lastActive)) * 1000);
   };
 
-  // Session expiry functions
+  // Session expiry functions - regarding the warning that lets user know they have 2 mins remaining in their session
 
   const startSessionExpiryTimeout = function(inactivityDialog, sessionExpiryDialog, inactivityWarningDialog) {
     // Logs user out after session lifetime expires, flask terminates session
     if (isLoggedIn()) {
       sessionExpiryTimeout = setTimeout(function () {
-        if (sessionExpiryDialog.hasAttribute('open')) {
-          sessionExpiryDialog.close();
-        }
-        if (inactivityDialog.hasAttribute('open')) {
-          inactivityDialog.close();
-        }
-        if (inactivityWarningDialog.hasAttribute('open')) {
-          inactivityWarningDialog.close();
-        }
+        closeDialogIfOpen(sessionExpiryDialog);
+        closeDialogIfOpen(inactivityDialog);
+        closeDialogIfOpen(inactivityWarningDialog);
         signOutRedirect('expired');
-      }, getTimeLeftUntilSessionExpiry());
+      }, getTimeDifferenceMilliseconds(sessionExpiryMins));
     }
   };
 
-  const getTimeLeftUntilExpiryDialogDisplayed = function() {
-    // calculates how long left in session before expiry dialog displayed, before final timeout, after each request
-    const current_time = new Date();
-    const expiry_warning_time = addMinutes(loginTimestamp, expiryWarningMins);
-    return differenceInSeconds(expiry_warning_time, current_time) * 1000;
-  };
-
-  const getTimeLeftUntilSessionExpiry = function() {
-    // calculates how long left in session, before final timeout, after each request
-    const current_time = new Date();
-    const expiry_time = addMinutes(loginTimestamp, sessionExpiryMins);
-    return differenceInSeconds(expiry_time, current_time) * 1000;
-  };
-
   const displaySessionExpiryDialog = function(inactivityDialog, sessionExpiryDialog, inactivityWarningDialog) {
-    let timeUntilDialogDisplay = getTimeLeftUntilExpiryDialogDisplayed();
+    let timeUntilDialogDisplay = getTimeDifferenceMilliseconds(expiryWarningMins);
     // displays session expiry popup after timeout
     if (isLoggedIn() && timeUntilDialogDisplay > 0) {
       inactivityLogoutTimeout = setTimeout(function () {
         if (sessionExpiryDialog)
         {
-          if (inactivityDialog.hasAttribute('open')){
-            inactivityDialog.close();
-          }
-          if (inactivityWarningDialog.hasAttribute('open')) {
-            inactivityWarningDialog.close();
-          }
+          // Close any open dialogs to replace with this one
+          closeDialogIfOpen(inactivityDialog);
+          closeDialogIfOpen(inactivityWarningDialog);
+
           sessionExpiryDialog.showModal();
           sessionExpiryDialog.focus();
+
+          // Clears any timeouts to ensure no contradicting dialogs displayed in final 2 mins of session
           clearTimeout(inactivityDialogDisplayedTimeout);
           clearTimeout(inactivityLogoutTimeout);
           clearTimeout(inactivityWarningDialogDisplayedTimeout);
