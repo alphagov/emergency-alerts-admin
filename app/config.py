@@ -78,7 +78,7 @@ class Config(object):
     # as defined in api db migration 0331_add_broadcast_org.py
     BROADCAST_ORGANISATION_ID = "38e4bf69-93b0-445d-acee-53ea53fe02df"
 
-    INACTIVITY_WARNING_MINS = 28  # Number of minutes of inactivity before warning dialog displayed
+    INACTIVITY_WARNING_MINS = 30  # Number of minutes of inactivity before warning dialog displayed
     INACTIVITY_MINS = 58  # Number of minutes of inactivity before inactivity logout dialog displayed
     INACTIVITY_WARNING_DURATION = (
         2  # Number of minutes that inactivity logout dialog is displayed before auto logout, if inactivity persists
