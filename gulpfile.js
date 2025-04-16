@@ -146,10 +146,10 @@ const javascripts = () => {
     paths.src + 'javascripts/exclusiveCheckbox.js',
     paths.src + 'javascripts/permissionFormSubmitButton.js',
   ])
-    .pipe(plugins.prettyerror())
-    .pipe(plugins.babel({
-      presets: ['@babel/preset-env']
-    }));
+  .pipe(plugins.prettyerror())
+  .pipe(plugins.babel({
+    presets: ['@babel/preset-env']
+  }));
 
   // return single stream of all vinyl objects piped from the end of the vendored stream, then
   // those from the end of the local stream
@@ -162,10 +162,10 @@ const javascripts = () => {
 
 const sass = () => {
   return src([
-    paths.src + '/stylesheets/main*.scss',
-    paths.src + '/stylesheets/map.scss',
-    paths.src + '/stylesheets/print.scss'
-  ])
+      paths.src + '/stylesheets/main*.scss',
+      paths.src + '/stylesheets/map.scss',
+      paths.src + '/stylesheets/print.scss'
+    ])
     .pipe(plugins.prettyerror())
     .pipe(plugins.sass.sync({
       includePaths: [
@@ -183,9 +183,9 @@ const sass = () => {
 
 const images = () => {
   return src([
-    paths.src + 'images/**/*',
-    paths.govuk_frontend + 'govuk/assets/images/**/*'
-  ])
+      paths.src + 'images/**/*',
+      paths.govuk_frontend + 'govuk/assets/images/**/*'
+    ])
     .pipe(dest(paths.dist + 'images/'))
 };
 
@@ -213,10 +213,10 @@ const watchFiles = {
 const lint = {
   'sass': () => {
     return src([
-      paths.src + 'stylesheets/*.scss',
-      paths.src + 'stylesheets/components/*.scss',
-      paths.src + 'stylesheets/views/*.scss',
-    ])
+        paths.src + 'stylesheets/*.scss',
+        paths.src + 'stylesheets/components/*.scss',
+        paths.src + 'stylesheets/views/*.scss',
+      ])
       .pipe(plugins.sassLint({
         'options': { 'formatter': 'stylish' },
         'rules': { 'mixins-before-declarations': [2, { 'exclude': ['media', 'govuk-media-query'] } ] }
@@ -226,8 +226,8 @@ const lint = {
   },
   'js': (cb) => {
     return src(
-      paths.src + 'javascripts/**/*.js'
-    )
+        paths.src + 'javascripts/**/*.js'
+      )
       .pipe(plugins.jshint())
       .pipe(plugins.jshint.reporter(stylish))
       .pipe(plugins.jshint.reporter('fail'))
