@@ -42,8 +42,11 @@ let sessionExpiryTimeout;
     if (isLoggedIn()) {
       inactivityDialogDisplayedTimeout = setTimeout(function () {
         if (checkLocalStorage()) { // if last activity was less than set time ago,
-          setLastActiveTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
+          setLastActiveInactivityTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
         } else {
+          if (inactivityWarningDialog.hasAttribute('open')) {
+            inactivityWarningDialog.close();
+          }
           inactivityDialog.showModal();
           inactivityDialog.focus();
           startInactivityDialogTimeout(inactivityDialog);
@@ -130,15 +133,31 @@ let sessionExpiryTimeout;
     return (differenceInSeconds(new Date(), lastActive) < inactivityMins * 60);
   };
 
-  const setLastActiveTimeout = function(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog) {
+  const setLastActiveInactivityTimeout = function(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog) {
     // If activity in another tab, inactivity timeout period adjusted
     let lastActive = new Date(localStorage.getItem("lastActivity"));
     lastActiveTimeout = setTimeout(() => {
+      if (inactivityWarningDialog.hasAttribute('open')) {
+        inactivityWarningDialog.close();
+      }
       inactivityDialog.showModal();
       inactivityDialog.focus();
+      clearTimeout(inactivityLogoutTimeout);
       startInactivityDialogTimeout(inactivityDialog);
-      startInactivityWarningTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
     }, ((inactivityMins * 60) - differenceInSeconds(new Date(), lastActive)) * 1000);
+  };
+
+  const setLastActiveInactivityWarningTimeout = function(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog) {
+    // If activity in another tab, inactivity warning timeout period adjusted
+    let lastActive = new Date(localStorage.getItem("lastActivity"));
+    lastActiveTimeout = setTimeout(() => {
+      if (!(inactivityWarningDialog.hasAttribute('open'))) {
+        inactivityWarningDialog.showModal();
+        inactivityWarningDialog.focus();
+        clearTimeout(inactivityWarningDialogDisplayedTimeout);
+        startInactivityWarningTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
+      }
+    }, ((inactivityWarningMins * 60) - differenceInSeconds(new Date(), lastActive)) * 1000);
   };
 
   const signOutRedirect = function(status) {
@@ -171,7 +190,7 @@ let sessionExpiryTimeout;
     if (isLoggedIn()) {
       inactivityWarningDialogDisplayedTimeout = setTimeout(function () {
         if (checkLocalStorageForInactivityWarning()) { // if last activity was less than set time ago,
-                  setLastActiveTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
+            setLastActiveInactivityWarningTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
                 }
         else if (!(inactivityDialog.hasAttribute('open')) & !(sessionExpiryDialog.hasAttribute('open'))) {
           // Only open this dialog if the other dialogs are closed
