@@ -72,7 +72,7 @@ describe("Inactivity warning dialog appears and components within it function co
     jest.useFakeTimers();
     window.GOVUK.displaySessionExpiryDialog(inactivityDialog, sessionExpiryDialog, inactivityWarningDialog);
     window.GOVUK.startInactivityWarningTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
-    window.GOVUK.resetInactivityTimeouts(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
+    window.GOVUK.staySignedIn(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
     window.GOVUK.closeWarningDialog(inactivityWarningDialog);
   });
 
@@ -96,7 +96,7 @@ describe("Inactivity dialog appears and components within it function correctly"
     jest.useFakeTimers();
     window.GOVUK.displaySessionExpiryDialog(inactivityDialog, sessionExpiryDialog, inactivityWarningDialog);
     window.GOVUK.startInactivityTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
-    window.GOVUK.resetInactivityTimeouts(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
+    window.GOVUK.staySignedIn(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
   });
 
   afterEach(() => {
