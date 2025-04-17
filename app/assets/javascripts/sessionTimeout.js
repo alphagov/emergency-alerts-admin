@@ -118,7 +118,7 @@ let expiryDialogDisplayedTimeout;
     }
   };
 
-  const sessionAboutToExpire = function(){
+  const sessionIsAboutToExpire = function(){
     // if time from session start to when expiry dialog appears
     if (isLoggedIn()) {
       const current_time = new Date();
@@ -141,7 +141,7 @@ let expiryDialogDisplayedTimeout;
 
   const startInactivityWarningTimeout = function(inactivityLogoutDialog, inactivityWarningDialog, sessionExpiryDialog) {
     // Initial inactivity warning timeout that is restarted by request activity
-    if (isLoggedIn() && !sessionAboutToExpire()) {
+    if (isLoggedIn() && !sessionIsAboutToExpire()) {
       inactivityWarningDialogDisplayedTimeout = setTimeout(function () {
         if (checkLocalStorage(inactivityWarningMins)) { // if last activity was less than set time ago,
             setLastActiveInactivityWarningTimeout(inactivityLogoutDialog, inactivityWarningDialog, sessionExpiryDialog);
@@ -186,7 +186,7 @@ let expiryDialogDisplayedTimeout;
 
   const startInactivityTimeout = function(inactivityLogoutDialog, inactivityWarningDialog, sessionExpiryDialog) {
     // Inactivity logout timeout that is restarted by request activity
-    if (isLoggedIn() && !sessionAboutToExpire()) {
+    if (isLoggedIn() && !sessionIsAboutToExpire()) {
       inactivityLogoutDialogDisplayedTimeout = setTimeout(function () {
         if (checkLocalStorage(inactivityMins)) { // if last activity was less than set time ago,
           setLastActiveInactivityTimeout(inactivityLogoutDialog, inactivityWarningDialog, sessionExpiryDialog);
