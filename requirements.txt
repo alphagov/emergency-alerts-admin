@@ -5,9 +5,7 @@
 #    pip-compile requirements.in
 #
 attrs==25.3.0
-    # via
-    #   flake8-bugbear
-    #   pytest
+    # via flake8-bugbear
 beautifulsoup4==4.11.1
     # via -r requirements.in
 black==23.3.0
@@ -68,6 +66,8 @@ flask-wtf==1.2.1
 freezegun==1.2.2
     # via -r requirements.in
 gds-metrics @ git+https://github.com/alphagov/gds_metrics_python.git@6f1840a57b6fb1ee40b7e84f2f18ec229de8aa72
+    # via -r requirements.in
+govuk-bank-holidays==0.15
     # via -r requirements.in
 govuk-frontend-jinja==3.3.0
     # via -r requirements.in
@@ -138,17 +138,17 @@ pyjwt==2.10.1
     # via notifications-python-client
 pyproj==3.6.1
     # via -r requirements.in
-pytest==7.2.0
+pytest==8.3.5
     # via
     #   -r requirements.in
     #   pytest-env
     #   pytest-mock
     #   pytest-xdist
-pytest-env==0.8.1
+pytest-env==1.1.5
     # via -r requirements.in
-pytest-mock==3.10.0
+pytest-mock==3.14.0
     # via -r requirements.in
-pytest-xdist==3.0.2
+pytest-xdist==3.6.1
     # via -r requirements.in
 python-dateutil==2.9.0.post0
     # via
@@ -161,6 +161,7 @@ pyyaml==6.0.2
     # via responses
 requests==2.32.3
     # via
+    #   govuk-bank-holidays
     #   moto
     #   notifications-python-client
     #   requests-mock
