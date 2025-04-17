@@ -5,7 +5,7 @@ beforeAll(() => {
     differenceInSeconds: require('date-fns/differenceInSeconds').differenceInSeconds,
     addMinutes: require('date-fns/addMinutes').addMinutes,
   };
-  require("../../app/assets/javascripts/timeout.js");
+  require("../../app/assets/javascripts/sessionTimeout.js");
 });
 
 afterAll(() => {
@@ -14,7 +14,7 @@ afterAll(() => {
   document.body.innerHTML = "";
 });
 
-const inactivityDialog = {open: false, showModal: jest.fn(), close: jest.fn(), hasAttribute: jest.fn(), focus: jest.fn()}
+const inactivityLogoutDialog = {open: false, showModal: jest.fn(), close: jest.fn(), hasAttribute: jest.fn(), focus: jest.fn()}
 const inactivityWarningDialog = {open: false, showModal: jest.fn(), close: jest.fn(), hasAttribute: jest.fn(), focus: jest.fn()}
 const sessionExpiryDialog = {open: false, showModal: jest.fn(), close: jest.fn(), hasAttribute: jest.fn(), focus: jest.fn()}
 const htmlContent = `
@@ -70,10 +70,9 @@ describe("Inactivity warning dialog appears and components within it function co
   beforeEach(() => {
     document.body.innerHTML = htmlContent;
     jest.useFakeTimers();
-    window.GOVUK.displaySessionExpiryDialog(inactivityDialog, sessionExpiryDialog, inactivityWarningDialog);
-    window.GOVUK.startInactivityWarningTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
-    window.GOVUK.staySignedIn(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
-    window.GOVUK.closeWarningDialog(inactivityWarningDialog);
+    window.GOVUK.displaySessionExpiryDialog(inactivityLogoutDialog, sessionExpiryDialog, inactivityWarningDialog);
+    window.GOVUK.startInactivityWarningTimeout(inactivityLogoutDialog, inactivityWarningDialog, sessionExpiryDialog);
+    window.GOVUK.staySignedIn(inactivityLogoutDialog, inactivityWarningDialog, sessionExpiryDialog);
   });
 
   afterEach(() => {
@@ -94,9 +93,9 @@ describe("Inactivity dialog appears and components within it function correctly"
     document.body.innerHTML = htmlContent;
     link = document.getElementById("hmrc-timeout-sign-out-link");
     jest.useFakeTimers();
-    window.GOVUK.displaySessionExpiryDialog(inactivityDialog, sessionExpiryDialog, inactivityWarningDialog);
-    window.GOVUK.startInactivityTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
-    window.GOVUK.staySignedIn(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
+    window.GOVUK.displaySessionExpiryDialog(inactivityLogoutDialog, sessionExpiryDialog, inactivityWarningDialog);
+    window.GOVUK.startInactivityTimeout(inactivityLogoutDialog, inactivityWarningDialog, sessionExpiryDialog);
+    window.GOVUK.staySignedIn(inactivityLogoutDialog, inactivityWarningDialog, sessionExpiryDialog);
   });
 
   afterEach(() => {
@@ -109,9 +108,9 @@ describe("Inactivity dialog appears and components within it function correctly"
   })
 
   test("Dialog opens after inactivity timeout", () => {
-    expect(inactivityDialog.showModal).not.toHaveBeenCalled();
+    expect(inactivityLogoutDialog.showModal).not.toHaveBeenCalled();
     jest.advanceTimersByTime(60 * window.GOVUK.inactivityMins * 1000);
-    expect(inactivityDialog.showModal).toHaveBeenCalled();
+    expect(inactivityLogoutDialog.showModal).toHaveBeenCalled();
   });
 
 });
@@ -120,7 +119,7 @@ describe("Timeout dialog appears", () => {
   beforeEach(() => {
     document.body.innerHTML = htmlContent;
     jest.useFakeTimers();
-    window.GOVUK.displaySessionExpiryDialog(inactivityDialog, sessionExpiryDialog, inactivityWarningDialog);
+    window.GOVUK.displaySessionExpiryDialog(inactivityLogoutDialog, sessionExpiryDialog, inactivityWarningDialog);
   });
 
   afterEach(() => {
@@ -140,8 +139,8 @@ describe("Activity in another tab delays inactivity timeout", () => {
     jest.clearAllMocks();
     document.body.innerHTML = htmlContent;
     jest.useFakeTimers();
-    window.GOVUK.startInactivityTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
-    window.GOVUK.startInactivityWarningTimeout(inactivityDialog, inactivityWarningDialog, sessionExpiryDialog);
+    window.GOVUK.startInactivityTimeout(inactivityLogoutDialog, inactivityWarningDialog, sessionExpiryDialog);
+    window.GOVUK.startInactivityWarningTimeout(inactivityLogoutDialog, inactivityWarningDialog, sessionExpiryDialog);
   });
 
   afterEach(() => {
@@ -160,13 +159,13 @@ describe("Activity in another tab delays inactivity timeout", () => {
   });
 
   test("Inactivity dialog doesn't appear after local storage updated", () => {
-    expect(inactivityDialog.showModal).not.toHaveBeenCalled();
+    expect(inactivityLogoutDialog.showModal).not.toHaveBeenCalled();
     later = new Date();
     later.setSeconds(window.logged_in_at.getSeconds() + 30);
     localStorage.setItem("lastActivity", later); // Set lastActivity to 30s later so timeout should appear 30s later
     jest.advanceTimersByTime(60 * window.GOVUK.inactivityMins * 1000);
-    expect(inactivityDialog.showModal).not.toHaveBeenCalled();
+    expect(inactivityLogoutDialog.showModal).not.toHaveBeenCalled();
     jest.advanceTimersByTime(60 * 0.5 * 1000);
-    expect(inactivityDialog.showModal).toHaveBeenCalled();
+    expect(inactivityLogoutDialog.showModal).toHaveBeenCalled();
   });
 });
