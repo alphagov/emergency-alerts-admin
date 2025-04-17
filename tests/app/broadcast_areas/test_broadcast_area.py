@@ -183,11 +183,11 @@ def test_every_area_has_count_of_phones(library):
         # Unitary authority
         ("ctyua23-E10000014", "Hampshire", 1_006_824.87),
         # District
-        ("lad23-E07000087", "Fareham", 80_028.62000000001),
+        ("lad23-E07000087", "Fareham", 80_028.62),
         # Ward
         ("wd23-E05004516", "Fareham East", 5_383.320000000001),
         # Unitary authority
-        ("lad23-E09000012", "Hackney", 208_390.13000000003),
+        ("lad23-E09000012", "Hackney", 208_390.13),
         # Ward
         ("wd23-E05009373", "Hackney Downs", 10_449.059999999998),
         # Special case: ward with hard-coded population
@@ -195,16 +195,16 @@ def test_every_area_has_count_of_phones(library):
         # Areas with missing data
         ("lad23-E07000008", "Cambridge", 118_198.88),
         ("lad23-E07000084", "Basingstoke and Deane", 137_302.38),
-        ("lad23-E07000118", "Chorley", 84_921.76999999999),
-        ("lad23-E07000178", "Oxford", 130_069.15999999999),
+        ("lad23-E07000118", "Chorley", 84_921.77),
+        ("lad23-E07000178", "Oxford", 130_069.16),
         # In Scotland
-        ("lad23-S12000013", "Na h-Eileanan Siar", 18_430.030000000002),
+        ("lad23-S12000013", "Na h-Eileanan Siar", 18_430.03),
         ("wd23-S13003135", "Barraigh agus Bhatarsaigh", 893.0300000000001),
         # In Wales
-        ("lad23-W06000021", "Monmouthshire", 64_997.89000000001),
+        ("lad23-W06000021", "Monmouthshire", 64_997.89),
         ("wd23-W05001785", "Mitchel Troy and Trellech United", 2_431.44),
         # In Northern Ireland
-        ("lad23-N09000005", "Derry City and Strabane", 132_917.33000000005),
+        ("lad23-N09000005", "Derry City and Strabane", 132_917.33000000002),
         ("wd23-N08000508", "City Walls", 3_129.4900000000002),
     ),
 )

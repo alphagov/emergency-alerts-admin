@@ -8,7 +8,7 @@ from emergency_alerts_utils.sanitise_text import SanitiseSMS
 from emergency_alerts_utils.template import BroadcastMessageTemplate
 from emergency_alerts_utils.validation import InvalidEmailError, validate_email_address
 from flask_login import current_user
-from orderedset import OrderedSet
+from ordered_set import OrderedSet
 from postcode_validator.uk.uk_postcode_regex import postcode_regex
 from wtforms import ValidationError
 
