@@ -133,7 +133,7 @@ describe('Permission form dynamic submit button text', () => {
       expect(submitButton.textContent).toBe("Save");
     });
 
-    test("The submit button does not change when an unsensitive permission is unchecked", () => {
+    test("The submit button does not change when an unsensitive permission is checked", () => {
 
       window.GOVUK.notifyModules.start();
       expect(submitButton.textContent).toBe("Save");
