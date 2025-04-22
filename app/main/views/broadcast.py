@@ -110,6 +110,7 @@ def broadcast_dashboard_previous(service_id):
         page_title="Past alerts",
         empty_message="You do not have any past alerts",
         view_broadcast_endpoint=".view_previous_broadcast",
+        reverse_chronological_sort=True,
     )
 
 
@@ -125,6 +126,7 @@ def broadcast_dashboard_rejected(service_id):
         page_title="Rejected alerts",
         empty_message="You do not have any rejected alerts",
         view_broadcast_endpoint=".view_rejected_broadcast",
+        reverse_chronological_sort=True,
     )
 
 
@@ -143,6 +145,7 @@ def get_broadcast_dashboard_partials(service_id):
             broadcasts=broadcast_messages.with_status("pending-approval", "broadcasting", "draft"),
             empty_message="You do not have any current alerts",
             view_broadcast_endpoint=".view_current_broadcast",
+            reverse_chronological_sort=False,  # Keep order that API returns - by status then alphabetically
         ),
     )
 
