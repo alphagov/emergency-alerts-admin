@@ -1,7 +1,7 @@
 {% from "components/table.html" import list_table, field, right_aligned_field_heading, row_heading %}
 {% from "govuk_frontend_jinja/components/tag/macro.html" import govukTag %}
 
-{% set sorted_broadcasts = broadcasts|list|sort|reverse if chronological_sort else broadcasts|list %}
+{% set sorted_broadcasts = broadcasts|list|sort|reverse if reverse_chronological_sort else broadcasts|list %}
 
 <div class="ajax-block-container js-mark-focus-on-parent" data-classes-to-persist="js-child-has-focus">
 {% for item in sorted_broadcasts %}
