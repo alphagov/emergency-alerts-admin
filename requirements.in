@@ -21,6 +21,7 @@ pwdpy==1.0.1
 
 itsdangerous==2.1.2
 govuk-frontend-jinja==3.3.0
+govuk-bank-holidays==0.11
 
 # gds-metrics requires prometheseus 0.2.0, override that requirement as later versions bring significant performance gains
 prometheus-client==0.15.0

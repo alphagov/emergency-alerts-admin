@@ -71,6 +71,8 @@ freezegun==1.2.2
     # via -r requirements.in
 gds-metrics @ git+https://github.com/alphagov/gds_metrics_python.git@6f1840a57b6fb1ee40b7e84f2f18ec229de8aa72
     # via -r requirements.in
+govuk-bank-holidays==0.11
+    # via -r requirements.in
 govuk-frontend-jinja==3.3.0
     # via -r requirements.in
 humanize==4.4.0
@@ -165,6 +167,7 @@ pyyaml==6.0.1
     # via responses
 requests==2.28.1
     # via
+    #   govuk-bank-holidays
     #   moto
     #   notifications-python-client
     #   requests-mock
