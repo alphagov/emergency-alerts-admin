@@ -142,7 +142,7 @@ const javascripts = () => {
     paths.src + 'javascripts/errorBanner.js',
     paths.src + 'javascripts/homepage.js',
     paths.src + 'javascripts/main.js',
-    paths.src + 'javascripts/timeout.js',
+    paths.src + 'javascripts/sessionTimeout.js',
     paths.src + 'javascripts/exclusiveCheckbox.js',
   ])
   .pipe(plugins.prettyerror())

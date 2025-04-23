@@ -4007,8 +4007,8 @@ def test_can_approve_own_broadcast_if_service_is_live_and_user_didnt_submit_aler
     assert (normalize_spaces(page.select_one(".banner h1").text)) == "Test wants to broadcast Example template"
     form = page.select("form")
     assert form
-    assert normalize_spaces(page.select(".govuk-button")[4].text) == "Start broadcasting now"
-    assert normalize_spaces(page.select(".govuk-button")[5].text) == "Reject alert"
+    assert normalize_spaces(page.select(".govuk-button")[5].text) == "Start broadcasting now"
+    assert normalize_spaces(page.select(".govuk-button")[6].text) == "Reject alert"
 
 
 @freeze_time("2020-02-22T22:22:22.000000")
