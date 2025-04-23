@@ -70,17 +70,14 @@ $notify-secondary-button-hover-colour: govuk-shade(govuk-colour("light-grey"), 1
 }
 
 .govuk-tag.broadcast-tag {
-  @include govuk-tag-uppercase;
   background-color: govuk-colour("red");
 }
 
 .govuk-tag.draft-tag {
-  @include govuk-tag-uppercase;
   background-color: govuk-colour("blue");
 }
 
 .govuk-tag.elevated-tag {
-  @include govuk-tag-uppercase;
   background-color: govuk-colour("green");
 }
 
