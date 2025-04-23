@@ -78,14 +78,20 @@ class Config(object):
     # as defined in api db migration 0331_add_broadcast_org.py
     BROADCAST_ORGANISATION_ID = "38e4bf69-93b0-445d-acee-53ea53fe02df"
 
-    INACTIVITY_MINS = 28
-    EXPIRY_WARNING_MINS = (5 * 60) + 58  # 5 hours, 58 minutes
-    INACTIVITY_WARNING_DURATION = 2
+    INACTIVITY_WARNING_MINS = 30  # Number of minutes of inactivity before warning dialog displayed
+    INACTIVITY_MINS = 58  # Number of minutes of inactivity before inactivity logout dialog displayed
+    INACTIVITY_WARNING_DURATION = (
+        2  # Number of minutes that inactivity logout dialog is displayed before auto logout, if inactivity persists
+    )
+    EXPIRY_WARNING_MINS = (
+        5 * 60
+    ) + 58  # 5 hours, 58 minutes, number of minutes of inactivity before session expiry dialog displayed
 
     ADMIN_ACTION_ALLOW_SELF_APPROVAL = os.environ.get("ADMIN_ACTION_ALLOW_SELF_APPROVAL", "false").lower() == "true"
 
     FUNCTIONAL_TEST_PERMANENT_SESSION_LIFETIME = 0.667 * 60
     FUNCTIONAL_TEST_INACTIVITY_MINS = 0.167
+    FUNCTIONAL_TEST_INACTIVITY_WARNING_MINS = 0.1
     FUNCTIONAL_TEST_EXPIRY_WARNING_MINS = 0.5
     FUNCTIONAL_TEST_INACTIVITY_WARNING_DURATION = 0.167
 
