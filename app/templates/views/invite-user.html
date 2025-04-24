@@ -33,7 +33,10 @@
 
     {% include 'views/manage-users/permissions.html' %}
 
-    {{ page_footer('Send invitation email') }}
+    {{ page_footer(
+      'Send invitation email',
+      button_attributes={"aria-live": "polite"}
+    ) }}
 
   {% endcall %}
 
