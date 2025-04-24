@@ -13,7 +13,8 @@
   centered_button=False,
   button_url=None,
   search=False,
-  classes=""
+  classes="",
+  button_attributes={}
 ) %}
   <div class="page-footer {{ classes }}">
     {% if button_text %}
@@ -40,6 +41,7 @@
         }) %}
       {% endif %}
 
+      {% set _ = button_data.update({"attributes": button_attributes}) %}
       {{ govukButton(button_data) }}
 
     {% endif %}
