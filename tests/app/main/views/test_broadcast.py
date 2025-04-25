@@ -3308,6 +3308,24 @@ def test_preview_broadcast_message_page(
 
     assert normalize_spaces(page.select_one(".broadcast-message-wrapper").text) == "Emergency alert This is a test"
 
+    assert [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__key")] == [
+        "Reference",
+        "Alert message",
+        "Area",
+        "Alert duration",
+        "Phone estimate",
+        "Downloads",
+    ]
+    assert [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__value")] == [
+        "Example template",
+        "Emergency alert Hello",
+        "England Scotland Use the arrow keys to move the map. "
+        + "Use the buttons to zoom the map in or out View larger map",
+        "3 hours",
+        "40,000,000 phones estimated",
+        "Download geoJSON",
+    ]
+
     form = page.select_one("form")
     assert form["method"] == "post"
     assert "action" not in form
@@ -5486,6 +5504,7 @@ def test_view_draft_broadcast_message_page(
         "Area",
         "Alert duration",
         "Phone estimate",
+        "Downloads",
     ]
     assert [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__value")] == [
         "Example template",
@@ -5494,4 +5513,9 @@ def test_view_draft_broadcast_message_page(
         + "Use the buttons to zoom the map in or out View larger map",
         "3 hours",
         "40,000,000 phones estimated",
+        "Download geoJSON",
     ]
+
+
+def test_can_get_geojson():
+    pass
