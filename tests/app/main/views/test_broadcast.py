@@ -5517,5 +5517,62 @@ def test_view_draft_broadcast_message_page(
     ]
 
 
-def test_can_get_geojson():
-    pass
+def test_can_get_geojson_simple(
+    mocker,
+    client_request,
+    service_one,
+    active_user_view_permissions,
+    fake_uuid,
+    mock_get_broadcast_message_versions,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            approved_by_id=fake_uuid,
+            starts_at="2020-02-20T20:20:20.000000",
+            content="Hello",
+            duration=10_800,
+            areas={
+                "ids": ["Bristol ID"],
+                "simple_polygons": [BRISTOL],
+                "names": ["Bristol Name"],
+            },
+        ),
+    )
+    service_one["permissions"] += ["broadcast"]
+
+    client_request.login(active_user_view_permissions)
+    json_response = client_request.get_response(
+        ".get_broadcast_geojson",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+    )
+
+    assert json_response.content_type == "application/geo+json"
+    json_contents = json.loads(json_response.text)
+
+    assert json_contents == {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                        [
+                            [-2.6216, 51.4371],
+                            [-2.575, 51.4371],
+                            [-2.575, 51.4668],
+                            [-2.6216, 51.4668],
+                            [-2.6216, 51.4371],
+                        ]
+                    ],
+                },
+                "properties": {"name": "Bristol Name"},
+            }
+        ],
+    }
