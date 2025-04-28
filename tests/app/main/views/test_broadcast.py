@@ -3318,10 +3318,10 @@ def test_preview_broadcast_message_page(
     ]
     assert [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__value")] == [
         "Example template",
-        "Emergency alert Hello",
+        "Emergency alert This is a test",
         "England Scotland Use the arrow keys to move the map. "
         + "Use the buttons to zoom the map in or out View larger map",
-        "3 hours",
+        "",
         "40,000,000 phones estimated",
         "Download geoJSON",
     ]
@@ -5539,6 +5539,7 @@ def test_can_get_geojson_simple(
             areas={
                 "ids": ["Bristol ID"],
                 "simple_polygons": [BRISTOL],
+                # We want the name in the JSON so make them different to the IDs for asserting``
                 "names": ["Bristol Name"],
             },
         ),

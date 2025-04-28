@@ -1223,6 +1223,7 @@ def get_broadcast_geojson(service_id, broadcast_message_id):
                 "type": "Feature",
                 "geometry": {
                     "type": "Polygon",
+                    # geoJSON spec uses WGS84: https://datatracker.ietf.org/doc/html/rfc7946#section-4
                     "coordinates": area.polygons.as_wgs84_coordinates,
                 },
                 "properties": {"name": area.__dict__.get("name")},
