@@ -65,19 +65,20 @@
             Change
         {% endset %}
         {% set conditional_duration_action_text %}
-            {% if broadcast_message.duration %}
+            {%- if broadcast_message.duration -%}
                 Change
-            {% else %}
+            {%- else -%}
                 Add duration
             {% endif %}
         {% endset%}
-        {% set conditional_area_action_text %}
-            {% if broadcast_message.areas %}
-                Change
-            {% else %}
-                Add area
-            {% endif%}
-        {% endset %}
+
+        {% if broadcast_message.areas %}
+            {% set conditional_area_action_text = "Change" %}
+            {% set visually_hidden_area_text = " areas" %}
+        {% else %}
+            {% set conditional_area_action_text = "Add area" %}
+        {% endif %}
+
     {% endif %}
 
 
@@ -152,7 +153,7 @@
             {
                 'href': conditional_area_action_link,
                 'text': conditional_area_action_text,
-                'visuallyHiddenText': "areas"
+                'visuallyHiddenText': visually_hidden_area_text
             }
             ] if display_action else []
         }
