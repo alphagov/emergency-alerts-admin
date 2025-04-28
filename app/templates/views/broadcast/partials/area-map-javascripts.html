@@ -38,43 +38,45 @@
 
 
   let mapElement = document.getElementById('area-list-map');
-  const grandparent = mapElement.parentNode.parentNode;
-  const isInDetails = grandparent.className.indexOf('govuk-details') !== -1;
-  let details;
+  if (mapElement != null) {
+    const grandparent = mapElement.parentNode.parentNode;
+    const isInDetails = grandparent.className.indexOf('govuk-details') !== -1;
+    let details;
 
-  // if element is inside a details element then to make the map render correctly we open the details element
-  // and set up the map before closing the details map after
-  if (isInDetails) {
-    details = grandparent;
-    details.open = true;
-  }
-
-  mapElement.style.height = Math.max(320, window.innerHeight - mapElement.offsetTop - 100) + 'px';
-
-  const mymap = L.map(
-    'area-list-map',
-    {
-      scrollWheelZoom: false
+    // if element is inside a details element then to make the map render correctly we open the details element
+    // and set up the map before closing the details map after
+    if (isInDetails) {
+      details = grandparent;
+      details.open = true;
     }
-  )
 
-  mymap.setView(
-    [55.378052, -3.435973],
-    5
-  );
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  }).addTo(mymap);
+    mapElement.style.height = Math.max(320, window.innerHeight - mapElement.offsetTop - 100) + 'px';
 
-  let polygonGroup = L.featureGroup(polygons).addTo(mymap);
-  mymap.fitBounds(
-    polygonGroup.getBounds(),
-    {padding: [1, 1]}
-  );
+    const mymap = L.map(
+      'area-list-map',
+      {
+        scrollWheelZoom: false
+      }
+    )
 
-  // if element is inside a details element then close the details element
-  if (isInDetails) {
-    details.open = false;
+    mymap.setView(
+      [55.378052, -3.435973],
+      5
+    );
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(mymap);
+
+    let polygonGroup = L.featureGroup(polygons).addTo(mymap);
+    mymap.fitBounds(
+      polygonGroup.getBounds(),
+      {padding: [1, 1]}
+    );
+
+    // if element is inside a details element then close the details element
+    if (isInDetails) {
+      details.open = false;
+    }
   }
 
 </script>
