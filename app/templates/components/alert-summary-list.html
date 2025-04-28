@@ -64,13 +64,13 @@
         {% set conditional_action_text %}
             Change
         {% endset %}
-        {% set conditional_duration_action_text %}
-            {%- if broadcast_message.duration -%}
-                Change
-            {%- else -%}
-                Add duration
-            {% endif %}
-        {% endset%}
+
+        {% if broadcast_message.duration %}
+            {% set conditional_duration_action_text = "Change" %}
+            {% set visually_hidden_duration_text = " duration" %}
+        {% else %}
+            {% set conditional_duration_action_text = "Add duration" %}
+        {% endif %}
 
         {% if broadcast_message.areas %}
             {% set conditional_area_action_text = "Change" %}
@@ -170,7 +170,7 @@
                 {
                     'href': url_for(".choose_broadcast_duration", service_id=service_id, broadcast_message_id=broadcast_message.id,),
                     'text': conditional_duration_action_text,
-                    'visuallyHiddenText': "duration"
+                    'visuallyHiddenText': visually_hidden_duration_text
                 }
                 ] if display_action else []
             }
