@@ -137,6 +137,12 @@ sample_uuid = sample_uuid()
             405,
         ),
         (
+            ".get_broadcast_geojson",
+            {"broadcast_message_id": sample_uuid},
+            403,
+            405,
+        ),
+        (
             ".cancel_broadcast_message",
             {"broadcast_message_id": sample_uuid},
             403,
@@ -3308,6 +3314,24 @@ def test_preview_broadcast_message_page(
 
     assert normalize_spaces(page.select_one(".broadcast-message-wrapper").text) == "Emergency alert This is a test"
 
+    assert [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__key")] == [
+        "Reference",
+        "Alert message",
+        "Area",
+        "Alert duration",
+        "Phone estimate",
+        "Downloads",
+    ]
+    assert [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__value")] == [
+        "Example template",
+        "Emergency alert This is a test",
+        "England Scotland Use the arrow keys to move the map. "
+        + "Use the buttons to zoom the map in or out View larger map",
+        "",
+        "40,000,000 phones estimated",
+        "Download geoJSON",
+    ]
+
     form = page.select_one("form")
     assert form["method"] == "post"
     assert "action" not in form
@@ -5486,6 +5510,7 @@ def test_view_draft_broadcast_message_page(
         "Area",
         "Alert duration",
         "Phone estimate",
+        "Downloads",
     ]
     assert [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__value")] == [
         "Example template",
@@ -5494,4 +5519,67 @@ def test_view_draft_broadcast_message_page(
         + "Use the buttons to zoom the map in or out View larger map",
         "3 hours",
         "40,000,000 phones estimated",
+        "Download geoJSON",
     ]
+
+
+def test_can_get_geojson_simple(
+    mocker,
+    client_request,
+    service_one,
+    active_user_view_permissions,
+    fake_uuid,
+    mock_get_broadcast_message_versions,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            approved_by_id=fake_uuid,
+            starts_at="2020-02-20T20:20:20.000000",
+            content="Hello",
+            duration=10_800,
+            areas={
+                "ids": ["Bristol ID"],
+                "simple_polygons": [BRISTOL],
+                # We want the name in the JSON so make them different to the IDs for asserting``
+                "names": ["Bristol Name"],
+            },
+        ),
+    )
+    service_one["permissions"] += ["broadcast"]
+
+    client_request.login(active_user_view_permissions)
+    json_response = client_request.get_response(
+        ".get_broadcast_geojson",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+    )
+
+    assert json_response.content_type == "application/geo+json"
+    json_contents = json.loads(json_response.text)
+
+    assert json_contents == {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                        [
+                            [-2.6216, 51.4371],
+                            [-2.575, 51.4371],
+                            [-2.575, 51.4668],
+                            [-2.6216, 51.4668],
+                            [-2.6216, 51.4371],
+                        ]
+                    ],
+                },
+                "properties": {"name": "Bristol Name"},
+            }
+        ],
+    }

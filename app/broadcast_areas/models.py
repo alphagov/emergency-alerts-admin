@@ -26,12 +26,12 @@ class GetItemByIdMixin:
 class BaseBroadcastArea(ABC):
     @property
     @abstractmethod
-    def simple_polygons(self):
+    def simple_polygons(self) -> Polygons:
         pass
 
     @property
     @abstractmethod
-    def polygons(self):
+    def polygons(self) -> Polygons:
         pass
 
     @property
@@ -40,7 +40,7 @@ class BaseBroadcastArea(ABC):
         pass
 
     @cached_property
-    def simple_polygons_with_bleed(self):
+    def simple_polygons_with_bleed(self) -> Polygons:
         return self.simple_polygons.bleed_by(self.estimated_bleed_in_m)
 
     @cached_property
