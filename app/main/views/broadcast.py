@@ -1207,7 +1207,7 @@ def view_broadcast_versions(service_id, broadcast_message_id):
 
 
 @main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/geojson", methods=["GET"])
-@service_has_permission("broadcast")
+@user_has_permissions()
 def get_broadcast_geojson(service_id, broadcast_message_id):
     broadcast_message = BroadcastMessage.from_id(
         broadcast_message_id,
