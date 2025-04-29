@@ -574,11 +574,11 @@ def test_broadcast_dashboard(
     assert len(page.select(".ajax-block-container")) == len(page.select("h1")) == 1
 
     assert [normalize_spaces(row.text) for row in page.select(".ajax-block-container")[0].select(".file-list")] == [
-        "Example template This is a test draft",
+        "Example template This is a test Draft",
         "Half an hour ago This is a test Waiting for approval Area: England Scotland",
         "Hour and a half ago This is a test Waiting for approval Area: England Scotland",
-        "Example template This is a test live since today at 2:20am Area: England Scotland",
-        "Example template This is a test live since today at 1:20am Area: England Scotland",
+        "Example template This is a test Live since today at 2:20am Area: England Scotland",
+        "Example template This is a test Live since today at 1:20am Area: England Scotland",
     ]
 
 
@@ -664,7 +664,7 @@ def test_broadcast_dashboard_json(
 
     assert response_json.keys() == {"current_broadcasts"}
     assert "Waiting for approval" in broadcasts
-    assert "live since today at 2:20am" in broadcasts
+    assert "Live since today at 2:20am" in broadcasts
 
 
 @pytest.mark.parametrize(
@@ -720,7 +720,7 @@ def test_rejected_broadcasts_page(
     assert normalize_spaces(page.select_one("main h1").text) == "Rejected alerts"
     assert len(page.select(".ajax-block-container")) == 1
     assert [normalize_spaces(row.text) for row in page.select(".ajax-block-container")[0].select(".file-list")] == [
-        "Example template rejected today at 1:20am This is a test",
+        "Example template Rejected today at 1:20am This is a test",
     ]
 
 
@@ -3378,7 +3378,7 @@ def test_start_broadcasting(
                 "approved_by": "Bob",
             },
             [
-                "live since 20 February at 8:20pm Stop sending",
+                "Live since 20 February at 8:20pm Stop sending",
                 "40,000,000 phones estimated",
                 "Created by Alice and approved by Bob.",
                 "Broadcasting stops tomorrow at 11:23pm.",
@@ -3389,7 +3389,7 @@ def test_start_broadcasting(
             True,
             {"status": "broadcasting", "finishes_at": "2020-02-23T23:23:23.000000", "approved_by": "Alice"},
             [
-                "live since 20 February at 8:20pm Stop sending",
+                "Live since 20 February at 8:20pm Stop sending",
                 "40,000,000 phones estimated",
                 "Created from an API call and approved by Alice.",
                 "Broadcasting stops tomorrow at 11:23pm.",
