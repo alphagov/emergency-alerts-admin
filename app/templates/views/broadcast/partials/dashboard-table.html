@@ -22,8 +22,8 @@
       {% elif item.status == 'rejected' %}
         <p class="govuk-body live-broadcast file-list-status govuk-!-margin-top-2">
           {{ govukTag ({
-            'text': 'rejected',
-            'classes': 'govuk-!-margin-right-1 govuk-!-margin-top-2 broadcast-tag'
+            'text': 'Rejected',
+            'classes': 'govuk-!-margin-right-1 govuk-!-margin-top-2 govuk-tag--red'
           }) }}
           {{ item.updated_at|format_datetime_human }}
         </p>
@@ -33,16 +33,16 @@
       {% elif item.status == 'broadcasting' %}
         <p class="govuk-body live-broadcast file-list-status">
           {{ govukTag ({
-            'text': 'live',
-            'classes': 'govuk-!-margin-right-2 broadcast-tag'
+            'text': 'Live',
+            'classes': 'govuk-!-margin-right-2 govuk-tag--red'
           }) }}
           since {{ item.starts_at|format_datetime_relative }}
         </p>
       {% elif item.status == 'draft' %}
         <p class="govuk-body live-broadcast file-list-status">
           {{ govukTag ({
-            'text': 'draft',
-            'classes': 'govuk-!-margin-right-2 draft-tag'
+            'text': 'Draft',
+            'classes': 'govuk-!-margin-right-2 govuk-tag govuk-tag--blue'
           }) }}
         </p>
       {% else %}
