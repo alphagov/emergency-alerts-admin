@@ -73,6 +73,21 @@ class BroadcastMessageAPIClient(AdminAPIClient):
             if e.status_code == 400:
                 raise e
 
+    def return_broadcast_message_for_edit_with_reason(self, *, service_id, broadcast_message_id, edit_reason):
+        data = _attach_current_user(
+            {
+                "edit_reason": edit_reason,
+            }
+        )
+        try:
+            self.post(
+                f"/service/{service_id}/broadcast-message/{broadcast_message_id}/return-for-edit",
+                data=data,
+            )
+        except HTTPError as e:
+            if e.status_code == 400:
+                raise e
+
     def get_broadcast_message_versions(self, service_id, broadcast_message_id):
         """
         Retrieve a list of versions for a broadcast message
