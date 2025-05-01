@@ -416,6 +416,11 @@ class BroadcastMessage(JSONModel):
             "rejected", broadcast_message_id=self.id, service_id=self.service_id, rejection_reason=rejection_reason
         )
 
+    def return_broadcast_message_for_edit(self, return_for_edit_reason):
+        broadcast_message_api_client.return_broadcast_message_for_edit_with_reason(
+            broadcast_message_id=self.id, service_id=self.service_id, edit_reason=return_for_edit_reason
+        )
+
     def cancel_broadcast(self):
         self._set_status_to("cancelled")
 
