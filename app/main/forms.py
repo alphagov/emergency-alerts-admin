@@ -1851,7 +1851,7 @@ class ReturnForEditForm(StripWhitespaceForm):
     hint = """ Detailed reason for returning the alert for edit, including how it may be reworked.
         For example, "The alert message has spelling mistakes"."""
 
-    returning_for_edit_reason = GovukTextareaField(
+    return_for_edit_reason = GovukTextareaField(
         validators=[DataRequired(message="Enter the reason for returning the alert for edit")],
         param_extensions={"hint": {"text": hint}, "rows": 3},
     )
