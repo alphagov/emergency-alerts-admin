@@ -14,6 +14,7 @@ from app.main.forms import (
     LatitudeLongitudeCoordinatesForm,
     PostcodeForm,
     RejectionReasonForm,
+    ReturnForEditForm,
 )
 from app.models.broadcast_message import BroadcastMessage
 
@@ -345,6 +346,7 @@ def stringify_areas(areas):
 def render_current_alert_page(
     broadcast_message,
     rejection_form=None,
+    return_for_edit_form=None,
     confirm_broadcast_form=None,
     back_link_url=".broadcast_dashboard",
     hide_stop_link=False,
@@ -353,6 +355,7 @@ def render_current_alert_page(
         "views/broadcast/view-message.html",
         broadcast_message=broadcast_message,
         rejection_form=RejectionReasonForm() if rejection_form is None else rejection_form,
+        return_for_edit_form=ReturnForEditForm() if return_for_edit_form is None else return_for_edit_form,
         form=ConfirmBroadcastForm(
             service_is_live=current_service.live,
             channel=current_service.broadcast_channel,
