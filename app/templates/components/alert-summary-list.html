@@ -59,31 +59,28 @@
         {% endif %}
     {% endset %}
 
-    {% set conditional_area_action_text %}
-        {% if broadcast_message.status == "draft" and current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) %}
-            {% if broadcast_message.areas %}
-                Change
-            {% else %}
-                Add area
-            {% endif%}
-        {% endif %}
-    {% endset %}
-
-    {% set conditional_duration_action_text %}
-        {% if broadcast_message.status == "draft" and current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) %}
-            {% if broadcast_message.duration %}
-                Change
-            {% else %}
-                Add duration
-            {% endif%}
-        {% endif %}
-    {% endset %}
-
-    {% set conditional_action_text %}
-        {% if broadcast_message.status == "draft" and current_user.has_permissions('create_broadcasts', restrict_admin_usage=True)%}
+    {% if broadcast_message.status == "draft" and current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) %}
+        {% set display_action = True %}
+        {% set conditional_action_text %}
             Change
+        {% endset %}
+
+        {% if broadcast_message.duration %}
+            {% set conditional_duration_action_text = "Change" %}
+            {% set visually_hidden_duration_text = " duration" %}
+        {% else %}
+            {% set conditional_duration_action_text = "Add duration" %}
         {% endif %}
-    {% endset %}
+
+        {% if broadcast_message.areas %}
+            {% set conditional_area_action_text = "Change" %}
+            {% set visually_hidden_area_text = " areas" %}
+        {% else %}
+            {% set conditional_area_action_text = "Add area" %}
+        {% endif %}
+
+    {% endif %}
+
 
     {% set count_of_phones_html %}
         <p class="govuk-body">
@@ -124,7 +121,7 @@
                 'text': conditional_action_text,
                 'visuallyHiddenText': "reference"
             }
-            ]
+            ] if display_action else []
         }
         },
         {
@@ -139,9 +136,9 @@
             {
                 'href': url_for('.edit_broadcast', service_id=service_id, broadcast_message_id=broadcast_message.id),
                 'text': conditional_action_text,
-                'visuallyHiddenText': "message"
+                'visuallyHiddenText': "message",
             }
-            ]
+            ] if display_action else []
         }
         },
         {
@@ -156,9 +153,9 @@
             {
                 'href': conditional_area_action_link,
                 'text': conditional_area_action_text,
-                'visuallyHiddenText': "areas"
+                'visuallyHiddenText': visually_hidden_area_text
             }
-            ]
+            ] if display_action else []
         }
         },
         {
@@ -173,9 +170,9 @@
                 {
                     'href': url_for(".choose_broadcast_duration", service_id=service_id, broadcast_message_id=broadcast_message.id,),
                     'text': conditional_duration_action_text,
-                    'visuallyHiddenText': "duration"
+                    'visuallyHiddenText': visually_hidden_duration_text
                 }
-                ]
+                ] if display_action else []
             }
             }
         ] %}
