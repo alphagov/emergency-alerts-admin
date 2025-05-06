@@ -5545,7 +5545,7 @@ def test_can_get_geojson_simple(
             areas={
                 "ids": ["Bristol ID"],
                 "simple_polygons": [BRISTOL],
-                # We want the name in the JSON so make them different to the IDs for asserting``
+                # We want the name in the JSON so make them different to the IDs for asserting
                 "names": ["Bristol Name"],
             },
         ),
@@ -5583,3 +5583,49 @@ def test_can_get_geojson_simple(
             }
         ],
     }
+
+
+def test_can_get_unsigned_cap_xml(
+    mocker,
+    client_request,
+    service_one,
+    active_user_view_permissions,
+    fake_uuid,
+    mock_get_broadcast_message_versions,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            approved_by_id=fake_uuid,
+            starts_at="2020-02-20T20:20:20.000000",
+            finishes_at="2020-02-20T23:20:20.000000",
+            duration=10_800,
+            content="Test content",
+            areas={
+                "ids": ["Bristol"],
+                "simple_polygons": [BRISTOL],
+                "names": ["Bristol"],
+            },
+        ),
+    )
+    # This nets us an 'Alert' msgType
+    service_one["broadcast_channel"] = "severe"
+    service_one["permissions"] += ["broadcast"]
+
+    client_request.login(active_user_view_permissions)
+    xml_response = client_request.get_response(
+        ".get_broadcast_unsigned_cap",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+    )
+
+    assert xml_response.content_type == "application/xml; charset=utf-8"
+
+    assert (
+        xml_response.text
+        == '<alert xmlns="urn:oasis:names:tc:emergency:cap:1.2"><identifier>6ce466d0-fd6a-11e5-82f5-e0accb9d11a6</identifier><sender>broadcasts@notifications.service.gov.uk</sender><sent>2020-02-20T20:20:20-00:00</sent><status>Actual</status><msgType>Alert</msgType><scope>Public</scope><info><language>English</language><category>Safety</category><event>Alert</event><urgency>Expected</urgency><severity>Severe</severity><certainty>Likely</certainty><expires>2020-02-20T23:20:20-00:00</expires><senderName>GOV.UK Emergency Alerts</senderName><headline>GOV.UK Emergency Alert</headline><description>Test content</description><area><areaDesc>area-1</areaDesc><polygon>51.4371,-2.6216 51.4371,-2.575 51.4668,-2.575 51.4668,-2.6216 51.4371,-2.6216</polygon></area></info></alert>'  # noqa: E501
+    )
