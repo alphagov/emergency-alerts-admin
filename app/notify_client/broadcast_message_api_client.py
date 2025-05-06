@@ -108,5 +108,13 @@ class BroadcastMessageAPIClient(AdminAPIClient):
         )
         return self.post(f"/service/{service_id}/broadcast-message/{broadcast_message_id}/check-status", data=data)
 
+    def get_latest_broadcast_message_returned_for_edit_reason(self, service_id, broadcast_message_id):
+        """
+        Retrieve a list of ...
+        """
+        return self.get(
+            f"/service/{service_id}/broadcast-message-edit-reasons/{broadcast_message_id}/latest-edit-reason"
+        ).get("edit_reason")
+
 
 broadcast_message_api_client = BroadcastMessageAPIClient()
