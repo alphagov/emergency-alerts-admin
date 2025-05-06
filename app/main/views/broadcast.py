@@ -1,9 +1,21 @@
+import json
+from typing import Collection
+
 from emergency_alerts_utils.template import BroadcastPreviewTemplate
-from flask import abort, flash, jsonify, redirect, render_template, request, url_for
+from flask import (
+    Response,
+    abort,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 from notifications_python_client.errors import HTTPError
 
 from app import current_service
-from app.broadcast_areas.models import CustomBroadcastAreas
+from app.broadcast_areas.models import BaseBroadcastArea, CustomBroadcastAreas
 from app.main import main
 from app.main.forms import (
     BroadcastAreaForm,
@@ -875,9 +887,11 @@ def preview_broadcast_message(service_id, broadcast_message_id):
                 label=create_map_label(areas),
                 areas_string=stringify_areas(areas),
                 broadcast_message_version_count=broadcast_message.get_count_of_versions(),
-                last_updated_time=broadcast_message.get_latest_version().get("created_at")
-                if broadcast_message.get_latest_version()
-                else None,
+                last_updated_time=(
+                    broadcast_message.get_latest_version().get("created_at")
+                    if broadcast_message.get_latest_version()
+                    else None
+                ),
             )
         broadcast_message.request_approval()
         return redirect(
@@ -895,9 +909,9 @@ def preview_broadcast_message(service_id, broadcast_message_id):
         label=create_map_label(areas),
         areas_string=stringify_areas(areas),
         broadcast_message_version_count=broadcast_message.get_count_of_versions(),
-        last_updated_time=broadcast_message.get_latest_version().get("created_at")
-        if broadcast_message.get_latest_version()
-        else None,
+        last_updated_time=(
+            broadcast_message.get_latest_version().get("created_at") if broadcast_message.get_latest_version() else None
+        ),
     )
 
 
@@ -996,9 +1010,11 @@ def approve_broadcast_message(service_id, broadcast_message_id):
             label=create_map_label(areas),
             areas_string=stringify_areas(areas),
             broadcast_message_version_count=broadcast_message.get_count_of_versions(),
-            last_updated_time=broadcast_message.get_latest_version().get("created_at")
-            if broadcast_message.get_latest_version()
-            else None,
+            last_updated_time=(
+                broadcast_message.get_latest_version().get("created_at")
+                if broadcast_message.get_latest_version()
+                else None
+            ),
         )
 
     if broadcast_message.status != "pending-approval":
@@ -1187,4 +1203,37 @@ def view_broadcast_versions(service_id, broadcast_message_id):
             broadcast_message_id=broadcast_message.id,
         ),
         is_edited=len(versions) > 1,
+    )
+
+
+@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/geojson", methods=["GET"])
+@user_has_permissions()
+def get_broadcast_geojson(service_id, broadcast_message_id):
+    broadcast_message = BroadcastMessage.from_id(
+        broadcast_message_id,
+        service_id=service_id,
+    )
+
+    areas: Collection[BaseBroadcastArea] = broadcast_message.areas
+
+    geojson = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Polygon",
+                    # geoJSON spec uses WGS84: https://datatracker.ietf.org/doc/html/rfc7946#section-4
+                    "coordinates": area.polygons.as_wgs84_coordinates,
+                },
+                "properties": {"name": area.__dict__.get("name")},
+            }
+            for area in areas
+        ],
+    }
+
+    return Response(
+        json.dumps(geojson),
+        mimetype="application/geo+json",
+        headers={"Content-Disposition": f"attachment;filename={broadcast_message.reference}.geojson"},
     )
