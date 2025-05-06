@@ -3329,7 +3329,7 @@ def test_preview_broadcast_message_page(
         + "Use the buttons to zoom the map in or out View larger map",
         "",
         "40,000,000 phones estimated",
-        "Download geoJSON",
+        "Download geoJSON Download CAP XML",
     ]
 
     form = page.select_one("form")
@@ -5519,7 +5519,7 @@ def test_view_draft_broadcast_message_page(
         + "Use the buttons to zoom the map in or out View larger map",
         "3 hours",
         "40,000,000 phones estimated",
-        "Download geoJSON",
+        "Download geoJSON Download CAP XML",
     ]
 
 
