@@ -27,6 +27,7 @@ from app.main.forms import (
     NewBroadcastForm,
     PostcodeForm,
     RejectionReasonForm,
+    ReturnForEditForm,
     SearchByNameForm,
 )
 from app.models.broadcast_message import BroadcastMessage, BroadcastMessages
@@ -77,6 +78,7 @@ def _get_back_link_from_view_broadcast_endpoint():
         "main.view_rejected_broadcast": ".broadcast_dashboard_rejected",
         "main.approve_broadcast_message": ".broadcast_dashboard",
         "main.reject_broadcast_message": ".broadcast_dashboard",
+        "main.return_broadcast_for_edit": ".broadcast_dashboard",
         "main.discard_broadcast_message": ".broadcast_dashboard",
     }[request.endpoint]
 
@@ -1093,6 +1095,45 @@ def reject_broadcast_message(service_id, broadcast_message_id):
 
     return render_current_alert_page(
         broadcast_message, form, back_link_url=_get_back_link_from_view_broadcast_endpoint()
+    )
+
+
+@main.route(
+    "/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/return-for-edit", methods=["GET", "POST"]
+)
+@user_has_permissions("create_broadcasts", "approve_broadcasts", restrict_admin_usage=True)
+@service_has_permission("broadcast")
+def return_broadcast_for_edit(service_id, broadcast_message_id):
+    broadcast_message = BroadcastMessage.from_id(
+        broadcast_message_id,
+        service_id=current_service.id,
+    )
+
+    form = ReturnForEditForm()
+
+    try:
+        broadcast_message.check_can_update_status("draft")
+    except HTTPError as e:
+        flash(e.message)
+        return render_current_alert_page(broadcast_message, back_link_url=_get_back_link_from_view_broadcast_endpoint())
+
+    if broadcast_message.status != "pending-approval":
+        return redirect(
+            url_for(
+                ".view_current_broadcast",
+                service_id=current_service.id,
+                broadcast_message_id=broadcast_message.id,
+            )
+        )
+
+    broadcast_message.return_broadcast_message_for_edit(return_for_edit_reason=form.return_for_edit_reason.data)
+    broadcast_message = BroadcastMessage.from_id(
+        broadcast_message_id,
+        service_id=current_service.id,
+    )
+    return render_current_alert_page(
+        broadcast_message,
+        back_link_url=_get_back_link_from_view_broadcast_endpoint(),
     )
 
 
