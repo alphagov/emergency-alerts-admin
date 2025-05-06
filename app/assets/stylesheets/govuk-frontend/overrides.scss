@@ -84,6 +84,11 @@ $notify-secondary-button-hover-colour: govuk-shade(govuk-colour("light-grey"), 1
   background-color: govuk-colour("green");
 }
 
+.govuk-tag.returned-tag {
+  @include govuk-tag-uppercase;
+  background-color: govuk-colour("orange");
+}
+
 .govuk-tabs {
   overflow-wrap: break-word;
 }
