@@ -53,6 +53,7 @@ class BroadcastMessage(JSONModel):
         "submitted_by",
         "submitted_at",
         "updated_by",
+        "edit_reason",
     }
 
     libraries = broadcast_area_libraries
@@ -455,6 +456,16 @@ class BroadcastMessage(JSONModel):
     def get_latest_version(self):
         versions = broadcast_message_api_client.get_broadcast_message_versions(self.service_id, self.id)
         return versions[0] if len(versions) > 0 else None
+
+    def get_returned_for_edit_reasons(self):
+        return broadcast_message_api_client.get_latest_broadcast_message_returned_for_edit_reason(
+            self.service_id, self.id
+        )
+
+    def get_latest_returned_for_edit_reason(self):
+        return broadcast_message_api_client.get_latest_broadcast_message_returned_for_edit_reason(
+            self.service_id, self.id
+        )
 
 
 class BroadcastMessages(ModelList):
