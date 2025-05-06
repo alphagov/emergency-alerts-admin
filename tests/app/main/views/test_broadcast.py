@@ -36,6 +36,7 @@ from tests.conftest import (
     create_platform_admin_user,
     normalize_spaces,
 )
+from tests.utils import xml_path
 
 sample_uuid = sample_uuid()
 
@@ -5612,7 +5613,7 @@ def test_can_get_unsigned_cap_xml(
             },
         ),
     )
-    # This nets us an 'Alert' msgType
+    # This nets us an 'Alert' msgType:
     service_one["broadcast_channel"] = "severe"
     service_one["permissions"] += ["broadcast"]
 
@@ -5625,7 +5626,67 @@ def test_can_get_unsigned_cap_xml(
 
     assert xml_response.content_type == "application/xml; charset=utf-8"
 
-    assert (
-        xml_response.text
-        == '<alert xmlns="urn:oasis:names:tc:emergency:cap:1.2"><identifier>6ce466d0-fd6a-11e5-82f5-e0accb9d11a6</identifier><sender>broadcasts@notifications.service.gov.uk</sender><sent>2020-02-20T20:20:20-00:00</sent><status>Actual</status><msgType>Alert</msgType><scope>Public</scope><info><language>English</language><category>Safety</category><event>Alert</event><urgency>Expected</urgency><severity>Severe</severity><certainty>Likely</certainty><expires>2020-02-20T23:20:20-00:00</expires><senderName>GOV.UK Emergency Alerts</senderName><headline>GOV.UK Emergency Alert</headline><description>Test content</description><area><areaDesc>area-1</areaDesc><polygon>51.4371,-2.6216 51.4371,-2.575 51.4668,-2.575 51.4668,-2.6216 51.4371,-2.6216</polygon></area></info></alert>'  # noqa: E501
-    )
+    assert xml_path(
+        xml_response.text,
+        "/cap:alert/cap:identifier//text()",
+    ) == [fake_uuid]
+
+    assert xml_path(
+        xml_response.text,
+        "/cap:alert/cap:status//text()",
+    ) == ["Actual"]
+
+    assert xml_path(
+        xml_response.text,
+        "/cap:alert/cap:sent//text()",
+    ) == ["2020-02-20T20:20:20-00:00"]
+
+    assert xml_path(
+        xml_response.text,
+        "/cap:alert/cap:info/cap:language//text()",
+    ) == ["en-GB"]
+
+    assert xml_path(
+        xml_response.text,
+        "/cap:alert/cap:info/cap:expires//text()",
+    ) == ["2020-02-20T23:20:20-00:00"]
+
+    assert xml_path(
+        xml_response.text,
+        "/cap:alert/cap:info/cap:headline//text()",
+    ) == ["GOV.UK Emergency Alert"]
+
+    assert xml_path(
+        xml_response.text,
+        "/cap:alert/cap:info/cap:description//text()",
+    ) == ["Test content"]
+
+    assert xml_path(
+        xml_response.text,
+        "/cap:alert/cap:info/cap:area/cap:areaDesc//text()",
+    ) == ["area-1"]
+
+    assert xml_path(
+        xml_response.text,
+        "/cap:alert/cap:info/cap:area/cap:polygon//text()",
+    ) == ["51.4371,-2.6216 51.4371,-2.575 51.4668,-2.575 51.4668,-2.6216 51.4371,-2.6216"]
+
+    assert xml_path(
+        xml_response.text,
+        "/cap:alert/cap:info/cap:event//text()",
+    ) == ["Alert"]
+
+    assert xml_path(
+        xml_response.text,
+        "/cap:alert/cap:info/cap:urgency//text()",
+    ) == ["Expected"]
+
+    assert xml_path(
+        xml_response.text,
+        "/cap:alert/cap:info/cap:severity//text()",
+    ) == ["Severe"]
+
+    assert xml_path(
+        xml_response.text,
+        "/cap:alert/cap:info/cap:certainty//text()",
+    ) == ["Likely"]

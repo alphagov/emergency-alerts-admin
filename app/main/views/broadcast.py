@@ -1261,7 +1261,7 @@ def get_broadcast_unsigned_cap(service_id, broadcast_message_id):
         "message_format": "cap",
         "headline": HEADLINE,
         "description": broadcast_message.content,
-        "language": "English",
+        "language": "en-GB",
         "areas": [
             {
                 # as_coordinate_pairs_lat_long returns an extra surrounding list.
