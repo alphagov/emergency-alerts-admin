@@ -1300,5 +1300,5 @@ def get_broadcast_unsigned_xml(service_id, broadcast_message_id, xml_type):
     return Response(
         cap_xml,
         mimetype="application/xml",
-        headers={"Content-Disposition": f"attachment;filename={broadcast_message.reference}.cap.xml"},
+        headers={"Content-Disposition": f"attachment;filename={broadcast_message.reference}.{xml_type}.xml"},
     )

@@ -5605,6 +5605,7 @@ def test_can_get_unsigned_cap_xml(
             starts_at="2020-02-20T20:20:20.000000",
             finishes_at="2020-02-20T23:20:20.000000",
             duration=10_800,
+            reference="Test name",
             content="Test content",
             areas={
                 "ids": ["Bristol"],
@@ -5626,6 +5627,7 @@ def test_can_get_unsigned_cap_xml(
     )
 
     assert xml_response.content_type == "application/xml; charset=utf-8"
+    assert xml_response.headers.get("Content-Disposition") == "attachment;filename=Test name.cap.xml"
 
     assert xml_path(
         xml_response.text,
@@ -5712,6 +5714,7 @@ def test_can_get_unsigned_ibag_xml(
             starts_at="2020-02-20T20:20:20.000000",
             finishes_at="2020-02-20T23:20:20.000000",
             duration=10_800,
+            reference="Test name",
             content="Test content",
             areas={
                 "ids": ["Bristol"],
@@ -5731,6 +5734,7 @@ def test_can_get_unsigned_ibag_xml(
     )
 
     assert xml_response.content_type == "application/xml; charset=utf-8"
+    assert xml_response.headers.get("Content-Disposition") == "attachment;filename=Test name.ibag.xml"
 
     assert xml_path(
         xml_response.text,
