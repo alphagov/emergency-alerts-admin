@@ -198,15 +198,17 @@
         ) }}">
             <span class="govuk-visually-hidden">Download </span>geoJSON
         </a>
-        <br/>
-        <a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline" href="{{ url_for(
-            ".get_broadcast_unsigned_xml",
-            service_id=service_id,
-            broadcast_message_id=broadcast_message.id,
-            xml_type="cap",
-        ) }}">
-            <span class="govuk-visually-hidden">Download </span>CAP XML
-        </a>
+        {% for xml_type in ["cap", "ibag"] %}
+            <br/>
+            <a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline" href="{{ url_for(
+                ".get_broadcast_unsigned_xml",
+                service_id=service_id,
+                broadcast_message_id=broadcast_message.id,
+                xml_type=xml_type,
+            ) }}">
+                <span class="govuk-visually-hidden">Download </span>{{ xml_type | upper }} XML
+            </a>
+        {% endfor %}
     {% endset %}
     {% set summaryListItems = summaryListItems + [
         {
