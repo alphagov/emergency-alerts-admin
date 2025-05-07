@@ -1243,13 +1243,17 @@ def get_broadcast_geojson(service_id, broadcast_message_id):
     )
 
 
-@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/xml/cap", methods=["GET"])
+@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/xml/<xml_type>", methods=["GET"])
 @user_has_permissions()
-def get_broadcast_unsigned_cap(service_id, broadcast_message_id):
+def get_broadcast_unsigned_xml(service_id, broadcast_message_id, xml_type):
     broadcast_message = BroadcastMessage.from_id(
         broadcast_message_id,
         service_id=current_service.id,
     )
+
+    is_cap_format = True
+    if xml_type == "ibag":
+        is_cap_format = False
 
     areas: Collection[BaseBroadcastArea] = broadcast_message.areas
 
@@ -1258,10 +1262,11 @@ def get_broadcast_unsigned_cap(service_id, broadcast_message_id):
         # We don't have such a thing here so we just use the overall BroadcastMessage
         "identifier": broadcast_message_id,
         "message_type": "alert",
-        "message_format": "cap",
+        "message_format": "cap" if is_cap_format else "ibag",
+        "message_number": "00000001",  # Only relevant for IBAG, and is made up here
         "headline": HEADLINE,
         "description": broadcast_message.content,
-        "language": "en-GB",
+        "language": "en-GB" if is_cap_format else "English",
         "areas": [
             {
                 # as_coordinate_pairs_lat_long returns an extra surrounding list.

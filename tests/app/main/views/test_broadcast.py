@@ -5619,9 +5619,10 @@ def test_can_get_unsigned_cap_xml(
 
     client_request.login(active_user_view_permissions)
     xml_response = client_request.get_response(
-        ".get_broadcast_unsigned_cap",
+        ".get_broadcast_unsigned_xml",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
+        xml_type="cap",
     )
 
     assert xml_response.content_type == "application/xml; charset=utf-8"
@@ -5689,4 +5690,149 @@ def test_can_get_unsigned_cap_xml(
     assert xml_path(
         xml_response.text,
         "/cap:alert/cap:info/cap:certainty//text()",
+    ) == ["Likely"]
+
+
+def test_can_get_unsigned_ibag_xml(
+    mocker,
+    client_request,
+    service_one,
+    active_user_view_permissions,
+    fake_uuid,
+    mock_get_broadcast_message_versions,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            approved_by_id=fake_uuid,
+            starts_at="2020-02-20T20:20:20.000000",
+            finishes_at="2020-02-20T23:20:20.000000",
+            duration=10_800,
+            content="Test content",
+            areas={
+                "ids": ["Bristol"],
+                "simple_polygons": [BRISTOL],
+                "names": ["Bristol"],
+            },
+        ),
+    )
+    # TODO:
+    # This nets us an 'Alert' msgType:
+    service_one["broadcast_channel"] = "severe"
+    service_one["permissions"] += ["broadcast"]
+
+    client_request.login(active_user_view_permissions)
+    xml_response = client_request.get_response(
+        ".get_broadcast_unsigned_xml", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid, xml_type="ibag"
+    )
+
+    assert xml_response.content_type == "application/xml; charset=utf-8"
+
+    assert xml_path(
+        xml_response.text,
+        "/ibag:IBAG_Alert_Attributes/ibag:IBAG_sending_gateway_id//text()",
+        "ibag",
+    ) == ["broadcasts@notifications.service.gov.uk"]
+
+    assert xml_path(
+        xml_response.text,
+        "/ibag:IBAG_Alert_Attributes/ibag:IBAG_message_number//text()",
+        "ibag",
+    ) == ["00000001"]
+
+    assert xml_path(
+        xml_response.text,
+        "/ibag:IBAG_Alert_Attributes/ibag:IBAG_sender//text()",
+        "ibag",
+    ) == ["broadcasts@notifications.service.gov.uk"]
+
+    assert xml_path(
+        xml_response.text,
+        "/ibag:IBAG_Alert_Attributes/ibag:IBAG_sent_date_time//text()",
+        "ibag",
+    ) == ["2020-02-20T20:20:20-00:00"]
+
+    assert xml_path(
+        xml_response.text,
+        "/ibag:IBAG_Alert_Attributes/ibag:IBAG_status//text()",
+        "ibag",
+    ) == ["Actual"]
+
+    assert xml_path(
+        xml_response.text,
+        "/ibag:IBAG_Alert_Attributes/ibag:IBAG_message_type//text()",
+        "ibag",
+    ) == ["Alert"]
+
+    assert xml_path(
+        xml_response.text,
+        "/ibag:IBAG_Alert_Attributes/ibag:IBAG_cap_alert_uri//text()",
+        "ibag",
+    ) == ["https://www.gov.uk/alerts"]
+
+    assert xml_path(
+        xml_response.text,
+        "/ibag:IBAG_Alert_Attributes/ibag:IBAG_alert_info/ibag:IBAG_text_language//text()",
+        "ibag",
+    ) == ["English"]
+
+    assert xml_path(
+        xml_response.text,
+        "/ibag:IBAG_Alert_Attributes/ibag:IBAG_alert_info/ibag:IBAG_expires_date_time//text()",
+        "ibag",
+    ) == ["2020-02-20T23:20:20-00:00"]
+
+    assert xml_path(
+        xml_response.text,
+        "/ibag:IBAG_Alert_Attributes/ibag:IBAG_alert_info/ibag:IBAG_text_alert_message//text()",
+        "ibag",
+    ) == ["Test content"]
+
+    assert xml_path(
+        xml_response.text,
+        "/ibag:IBAG_Alert_Attributes/ibag:IBAG_alert_info/ibag:IBAG_text_alert_message_length//text()",
+        "ibag",
+    ) == [str(len("Test content"))]
+
+    assert xml_path(
+        xml_response.text,
+        "/ibag:IBAG_Alert_Attributes/ibag:IBAG_alert_info/ibag:IBAG_Alert_Area[1]/ibag:IBAG_area_description//text()",
+        "ibag",
+    ) == ["area-1"]
+
+    assert xml_path(
+        xml_response.text,
+        "/ibag:IBAG_Alert_Attributes/ibag:IBAG_alert_info/ibag:IBAG_Alert_Area[1]/ibag:IBAG_polygon//text()",
+        "ibag",
+        # TODO: Coordinate type?
+    ) == ["51.4371,-2.6216 51.4371,-2.575 51.4668,-2.575 51.4668,-2.6216 51.4371,-2.6216"]
+
+    assert xml_path(
+        xml_response.text,
+        "/ibag:IBAG_Alert_Attributes/ibag:IBAG_alert_info/ibag:IBAG_channel_category//text()",
+        "ibag",
+    ) == [
+        "4378-CAT3-ENGLISH"
+    ]  # Severe alert
+
+    assert xml_path(
+        xml_response.text,
+        "/ibag:IBAG_Alert_Attributes/ibag:IBAG_alert_info/ibag:IBAG_severity//text()",
+        "ibag",
+    ) == ["Severe"]
+
+    assert xml_path(
+        xml_response.text,
+        "/ibag:IBAG_Alert_Attributes/ibag:IBAG_alert_info/ibag:IBAG_urgency//text()",
+        "ibag",
+    ) == ["Expected"]
+
+    assert xml_path(
+        xml_response.text,
+        "/ibag:IBAG_Alert_Attributes/ibag:IBAG_alert_info/ibag:IBAG_certainty//text()",
+        "ibag",
     ) == ["Likely"]

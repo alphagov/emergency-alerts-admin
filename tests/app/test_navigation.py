@@ -79,7 +79,7 @@ EXCLUDED_ENDPOINTS = tuple(
             "find_users_by_email",
             "forgot_password",
             "get_broadcast_geojson",
-            "get_broadcast_unsigned_cap",
+            "get_broadcast_unsigned_xml",
             "history",
             "index",
             "information_risk_management",
