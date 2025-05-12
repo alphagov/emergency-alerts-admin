@@ -1,7 +1,11 @@
 import json
+from datetime import datetime, timedelta, timezone
 from typing import Collection
 
 from emergency_alerts_utils.template import BroadcastPreviewTemplate
+from emergency_alerts_utils.xml.broadcast import generate_xml_body
+from emergency_alerts_utils.xml.cap import convert_utc_datetime_to_cap_standard_string
+from emergency_alerts_utils.xml.common import HEADLINE
 from flask import (
     Response,
     abort,
@@ -1211,7 +1215,7 @@ def view_broadcast_versions(service_id, broadcast_message_id):
 def get_broadcast_geojson(service_id, broadcast_message_id):
     broadcast_message = BroadcastMessage.from_id(
         broadcast_message_id,
-        service_id=service_id,
+        service_id=current_service.id,
     )
 
     areas: Collection[BaseBroadcastArea] = broadcast_message.areas
@@ -1236,4 +1240,65 @@ def get_broadcast_geojson(service_id, broadcast_message_id):
         json.dumps(geojson),
         mimetype="application/geo+json",
         headers={"Content-Disposition": f"attachment;filename={broadcast_message.reference}.geojson"},
+    )
+
+
+@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/xml/<xml_type>", methods=["GET"])
+@user_has_permissions()
+def get_broadcast_unsigned_xml(service_id, broadcast_message_id, xml_type):
+    broadcast_message = BroadcastMessage.from_id(
+        broadcast_message_id,
+        service_id=current_service.id,
+    )
+
+    is_cap_format = True
+    if xml_type == "ibag":
+        is_cap_format = False
+
+    areas: Collection[BaseBroadcastArea] = broadcast_message.areas
+
+    event = {
+        # In a signed CAP message the identifier refers to a BroadcastProviderMessage which is unique per MNO
+        # We don't have such a thing here so we just use the overall BroadcastMessage
+        "identifier": broadcast_message_id,
+        "message_type": "alert",
+        "message_format": "cap" if is_cap_format else "ibag",
+        "message_number": "00000001",  # Only relevant for IBAG, and is made up here
+        "headline": HEADLINE,
+        "description": broadcast_message.content,
+        "language": "en-GB" if is_cap_format else "English",
+        "areas": [
+            {
+                # as_coordinate_pairs_lat_long returns an extra surrounding list.
+                # We do not expect this to ever have multiple items in.
+                # (API doesn't need to do this when generating events as it doesn't use the Polygon classes)
+                "polygon": area.polygons.as_coordinate_pairs_lat_long[0],
+            }
+            for area in areas
+        ],
+        "channel": current_service.broadcast_channel,
+        # starts_at and finishes_at can be None if it's a draft/awaiting approval, so we just use now
+        # sent and expires expect a string in 'CAP' format (see convert_utc_... method's description)
+        "sent": (
+            convert_utc_datetime_to_cap_standard_string(
+                datetime.fromisoformat(broadcast_message.starts_at)
+                if broadcast_message.starts_at
+                else datetime.now(timezone.utc)
+            )
+        ),
+        "expires": (
+            convert_utc_datetime_to_cap_standard_string(
+                datetime.fromisoformat(broadcast_message.finishes_at)
+                if broadcast_message.finishes_at
+                else datetime.now(timezone.utc) + timedelta(seconds=broadcast_message.broadcast_duration)
+            )
+        ),
+    }
+
+    cap_xml = generate_xml_body(event)
+
+    return Response(
+        cap_xml,
+        mimetype="application/xml",
+        headers={"Content-Disposition": f"attachment;filename={broadcast_message.reference}.{xml_type}.xml"},
     )
