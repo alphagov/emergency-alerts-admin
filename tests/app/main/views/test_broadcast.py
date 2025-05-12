@@ -5723,7 +5723,6 @@ def test_can_get_unsigned_ibag_xml(
             },
         ),
     )
-    # TODO:
     # This nets us an 'Alert' msgType:
     service_one["broadcast_channel"] = "severe"
     service_one["permissions"] += ["broadcast"]
