@@ -4,8 +4,8 @@
 {% if broadcast_message.status == 'broadcasting' %}
 <p class="govuk-body govuk-!-margin-bottom-2 live-broadcast live-broadcast--left">
   {{ govukTag ({
-    'text': 'live',
-    'classes': 'govuk-!-margin-right-2 broadcast-tag'
+    'text': 'Live',
+    'classes': 'govuk-!-margin-right-2 govuk-tag--red'
   }) }}
   since {{ broadcast_message.starts_at|format_datetime_relative }}&ensp;
   {%- if not hide_stop_link %}
