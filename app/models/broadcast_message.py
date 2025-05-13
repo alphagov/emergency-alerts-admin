@@ -419,7 +419,9 @@ class BroadcastMessage(JSONModel):
 
     def return_broadcast_message_for_edit(self, return_for_edit_reason):
         broadcast_message_api_client.return_broadcast_message_for_edit_with_reason(
-            broadcast_message_id=self.id, service_id=self.service_id, edit_reason=return_for_edit_reason
+            broadcast_message_id=self.id,
+            service_id=self.service_id,
+            edit_reason=return_for_edit_reason,
         )
 
     def cancel_broadcast(self):
@@ -458,14 +460,10 @@ class BroadcastMessage(JSONModel):
         return versions[0] if len(versions) > 0 else None
 
     def get_returned_for_edit_reasons(self):
-        return broadcast_message_api_client.get_latest_broadcast_message_returned_for_edit_reason(
-            self.service_id, self.id
-        )
+        return broadcast_message_api_client.get_broadcast_returned_for_edit_reasons(self.service_id, self.id)
 
     def get_latest_returned_for_edit_reason(self):
-        return broadcast_message_api_client.get_latest_broadcast_message_returned_for_edit_reason(
-            self.service_id, self.id
-        )
+        return broadcast_message_api_client.get_latest_returned_for_edit_reason(self.service_id, self.id)
 
 
 class BroadcastMessages(ModelList):
