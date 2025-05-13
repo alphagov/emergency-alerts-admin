@@ -74,11 +74,7 @@ class BroadcastMessageAPIClient(AdminAPIClient):
                 raise e
 
     def return_broadcast_message_for_edit_with_reason(self, *, service_id, broadcast_message_id, edit_reason):
-        data = _attach_current_user(
-            {
-                "edit_reason": edit_reason,
-            }
-        )
+        data = _attach_current_user({"edit_reason": edit_reason})
         try:
             self.post(
                 f"/service/{service_id}/broadcast-message/{broadcast_message_id}/return-for-edit",
@@ -108,13 +104,16 @@ class BroadcastMessageAPIClient(AdminAPIClient):
         )
         return self.post(f"/service/{service_id}/broadcast-message/{broadcast_message_id}/check-status", data=data)
 
-    def get_latest_broadcast_message_returned_for_edit_reason(self, service_id, broadcast_message_id):
+    def get_broadcast_returned_for_edit_reasons(self, service_id, broadcast_message_id):
+        return self.get(f"/service/{service_id}/broadcast-message-edit-reasons/{broadcast_message_id}/edit-reasons")
+
+    def get_latest_returned_for_edit_reason(self, service_id, broadcast_message_id):
         """
         Retrieve a list of ...
         """
         return self.get(
             f"/service/{service_id}/broadcast-message-edit-reasons/{broadcast_message_id}/latest-edit-reason"
-        ).get("edit_reason")
+        )
 
 
 broadcast_message_api_client = BroadcastMessageAPIClient()
