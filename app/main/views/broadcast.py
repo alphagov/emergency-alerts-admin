@@ -894,6 +894,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
                     if broadcast_message.get_latest_version()
                     else None
                 ),
+                approver=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
             )
         broadcast_message.request_approval()
         return redirect(
@@ -914,6 +915,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
         last_updated_time=(
             broadcast_message.get_latest_version().get("created_at") if broadcast_message.get_latest_version() else None
         ),
+        approver=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
     )
 
 
@@ -1017,6 +1019,7 @@ def approve_broadcast_message(service_id, broadcast_message_id):
                 if broadcast_message.get_latest_version()
                 else None
             ),
+            approver=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
         )
 
     if broadcast_message.status != "pending-approval":
