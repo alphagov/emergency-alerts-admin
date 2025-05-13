@@ -32,11 +32,19 @@
 {% block maincolumn_content %}
 
   {{ page_header("Preview alert") }}
+  {% if broadcast_message.status == 'draft' and broadcast_message.edit_reason %}
+    <div class="banner-dangerous govuk-!-margin-bottom-6">
+      <p class="govuk-!-margin-right-1 dashboard-table govuk-!-font-weight-bold">Reason for being returned for edit: </p>
+      <p class="dashboard-table">
+        {{broadcast_message.edit_reason}}
+      </p>
+    </div>
+  {% endif %}
 
   {{alertSummaryList(current_user, current_service.id, broadcast_message, areas, broadcast_message.simple_polygons_with_bleed.estimated_area, broadcast_message.count_of_phones, broadcast_message.count_of_phones_likely, is_custom_broadcast)}}
 
   {% call form_wrapper() %}
-    {% if current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) and broadcast_message.areas and broadcast_message.content and broadcast_message.reference and broadcast_message.status == "draft" %}
+    {% if current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) and broadcast_message.areas and broadcast_message.content and broadcast_message.reference and broadcast_message.status == "draft" and current_user.id != approver %}
       {{ page_footer('Submit for approval') }}
     {% endif %}
   {% endcall %}
