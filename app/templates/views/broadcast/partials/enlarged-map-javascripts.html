@@ -59,24 +59,26 @@
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   }).addTo(enlargedMap);
 
-  let polygonGroup2 = L.featureGroup(enlarged_polygons).addTo(enlargedMap);
-  enlargedMap.fitBounds(
-    polygonGroup2.getBounds(),
-    {padding: [0.5, 0.5]}
-  );
-
-  enlargeMapButton.addEventListener("click", function () {
-    enlargedMapModal.showModal();
-    enlargedMap.invalidateSize();
+  if (enlarged_polygons.length > 0) {
+    let polygonGroup2 = L.featureGroup(enlarged_polygons).addTo(enlargedMap);
     enlargedMap.fitBounds(
-    polygonGroup2.getBounds(),
-    {padding: [1, 1]}
+      polygonGroup2.getBounds(),
+      {padding: [0.5, 0.5]}
     );
-    enlargedMapModal.focus();
-  });
 
-  closeMapButton.addEventListener("click", function () {
-    enlargedMapModal.close();
-  });
+    enlargeMapButton.addEventListener("click", function () {
+      enlargedMapModal.showModal();
+      enlargedMap.invalidateSize();
+      enlargedMap.fitBounds(
+      polygonGroup2.getBounds(),
+      {padding: [1, 1]}
+      );
+      enlargedMapModal.focus();
+    });
+
+    closeMapButton.addEventListener("click", function () {
+      enlargedMapModal.close();
+    });
+  }
 
 </script>
