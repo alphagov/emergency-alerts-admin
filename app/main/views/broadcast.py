@@ -1117,30 +1117,31 @@ def return_broadcast_for_edit(service_id, broadcast_message_id):
     )
 
     form = ReturnForEditForm()
-
-    try:
-        broadcast_message.check_can_update_status("draft")
-    except HTTPError as e:
-        flash(e.message)
-        return render_current_alert_page(broadcast_message, back_link_url=_get_back_link_from_view_broadcast_endpoint())
-
-    if broadcast_message.status != "pending-approval":
-        return redirect(
-            url_for(
-                ".view_current_broadcast",
-                service_id=current_service.id,
-                broadcast_message_id=broadcast_message.id,
+    if form.validate_on_submit():
+        try:
+            broadcast_message.check_can_update_status("draft")
+        except HTTPError as e:
+            flash(e.message)
+            return render_current_alert_page(
+                broadcast_message, back_link_url=_get_back_link_from_view_broadcast_endpoint()
             )
-        )
 
-    broadcast_message.return_broadcast_message_for_edit(return_for_edit_reason=form.return_for_edit_reason.data)
-    broadcast_message = BroadcastMessage.from_id(
-        broadcast_message_id,
-        service_id=current_service.id,
-    )
+        if broadcast_message.status != "pending-approval":
+            return redirect(
+                url_for(
+                    ".view_current_broadcast",
+                    service_id=current_service.id,
+                    broadcast_message_id=broadcast_message.id,
+                )
+            )
+
+        broadcast_message.return_broadcast_message_for_edit(return_for_edit_reason=form.return_for_edit_reason.data)
+        broadcast_message = BroadcastMessage.from_id(
+            broadcast_message_id,
+            service_id=current_service.id,
+        )
     return render_current_alert_page(
-        broadcast_message,
-        back_link_url=_get_back_link_from_view_broadcast_endpoint(),
+        broadcast_message, back_link_url=_get_back_link_from_view_broadcast_endpoint(), return_for_edit_form=form
     )
 
 
