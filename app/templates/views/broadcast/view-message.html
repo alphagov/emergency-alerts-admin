@@ -73,6 +73,18 @@
               "Start broadcasting now"
             ) }}
           {% endcall %}
+          {% set return_for_edit_details %}
+            <div class="govuk-!-margin-top-3 govuk-!-margin-bottom-3">
+              <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for returning the alert for edit</h1>
+              {% call form_wrapper(id='return_for_edit',action=url_for('main.return_broadcast_for_edit', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
+                {{ return_for_edit_form.return_for_edit_reason }}
+                {{ page_footer(
+                  'Return alert for edit',
+                  destructive=True,
+                ) }}
+              {% endcall %}
+            </div>
+          {% endset %}
           {% set rejection_reason_details %}
             <div class="govuk-!-margin-top-3">
               <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for rejecting the alert</h1>
@@ -85,6 +97,15 @@
               {% endcall %}
             </div>
           {% endset %}
+          <div class="govuk-!-margin-top-1">
+            {{ govukDetails({
+              "classes": "govuk-!-margin-bottom-0",
+              "summaryText": "Return this alert for edit",
+              "html": return_for_edit_details,
+              "open": return_for_edit_form.return_for_edit_reason.errors | convert_to_boolean,
+              "id": "return_for_edit_reason"
+            }) }}
+          </div>
           <div class="govuk-!-margin-top-1">
             {{ govukDetails({
               "classes": "govuk-!-margin-bottom-0",
@@ -129,7 +150,18 @@
                 {% endcall %}
               </div>
             {% endset %}
-
+            {% set return_for_edit_details %}
+              <div class="govuk-!-margin-top-3 govuk-!-margin-bottom-3">
+                <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for returning the alert for edit</h1>
+                {% call form_wrapper(id='return_for_edit',action=url_for('main.return_broadcast_for_edit', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
+                  {{ return_for_edit_form.return_for_edit_reason }}
+                  {{ page_footer(
+                    'Return alert for edit',
+                    destructive=True,
+                  ) }}
+                {% endcall %}
+              </div>
+            {% endset %}
             {% set rejection_reason_details %}
               <div class="govuk-!-margin-top-3">
                 <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for rejecting the alert</h1>
@@ -148,6 +180,15 @@
               "summaryText": "Approve your own alert",
               "html": approve_details
             }) }}
+            <div class="govuk-!-margin-top-1">
+              {{ govukDetails({
+                "classes": "govuk-!-margin-bottom-0",
+                "summaryText": "Return this alert for edit",
+                "html": return_for_edit_details,
+                "open": return_for_edit_form.return_for_edit_reason.errors | convert_to_boolean,
+                "id": "return_for_edit_reason"
+              }) }}
+            </div>
             <div class="govuk-!-margin-top-1">
               {{ govukDetails({
                 "classes": "govuk-!-margin-bottom-0",
@@ -213,6 +254,18 @@
             "Start broadcasting now"
           ) }}
         {% endcall %}
+        {% set return_for_edit_details %}
+          <div class="govuk-!-margin-top-3 govuk-!-margin-bottom-3">
+            <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for returning the alert for edit</h1>
+            {% call form_wrapper(id='return_for_edit',action=url_for('main.return_broadcast_for_edit', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
+              {{ return_for_edit_form.return_for_edit_reason }}
+              {{ page_footer(
+                'Return alert for edit',
+                destructive=True,
+              ) }}
+            {% endcall %}
+          </div>
+        {% endset %}
         {% set rejection_reason_details %}
           <div class="govuk-!-margin-top-3">
             <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for rejecting the alert</h1>
@@ -225,6 +278,15 @@
             {% endcall %}
           </div>
         {% endset %}
+        <div class="govuk-!-margin-top-1">
+          {{ govukDetails({
+            "classes": "govuk-!-margin-bottom-0",
+            "summaryText": "Return this alert for edit",
+            "html": return_for_edit_details,
+            "open": return_for_edit_form.return_for_edit_reason.errors | convert_to_boolean,
+            "id": "return_for_edit_reason"
+          }) }}
+        </div>
         <div class="govuk-!-margin-top-1">
           {{ govukDetails({
             "classes": "govuk-!-margin-bottom-0",
@@ -260,6 +322,14 @@
       </div>
     {% endif %}
   {% elif broadcast_message.status == 'draft' %}
+    {% if broadcast_message.edit_reason %}
+    <div class="banner-dangerous govuk-!-margin-bottom-6">
+      <p class="govuk-!-margin-right-1 dashboard-table govuk-!-font-weight-bold">Reason for being returned for edit: </p>
+      <p class="dashboard-table">
+        {{broadcast_message.edit_reason}}
+      </p>
+    </div>
+    {% endif %}
     {{ page_header(broadcast_message.template.name) }}
   {% else %}
     {{ page_header(broadcast_message.template.name) }}
@@ -267,38 +337,42 @@
     {{broadcast_details(broadcast_message, current_service)}}
   {% endif %}
 
-  {{alertSummaryList(current_user, current_service.id, broadcast_message, areas, broadcast_message.simple_polygons_with_bleed.estimated_area, broadcast_message.count_of_phones, broadcast_message.count_of_phones_likely, is_custom_broadcast)}}
+  {% set is_editable = current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) and current_user.id != approver %}
 
-{% if broadcast_message.status != 'pending-approval' %}
+  {{alertSummaryList(is_editable, current_service.id, broadcast_message, areas, broadcast_message.simple_polygons_with_bleed.estimated_area, broadcast_message.count_of_phones, broadcast_message.count_of_phones_likely, is_custom_broadcast)}}
+
   <p class="govuk-body govuk-!-margin-bottom-3">
     {% if broadcast_message.created_by %}
-      Created by {{ broadcast_message.created_by }}
+      Created by {{ broadcast_message.created_by }} on {{broadcast_message.created_at | format_datetime_short}}
     {%- else %}
-      Created from an API call
+      Created from an API call on {{broadcast_message.created_at | format_datetime_short}}
     {%- endif %}
-    {%- if broadcast_message.submitted_by -%}
-    , submitted by {{ broadcast_message.submitted_by }}
+    {%- if edit_reasons -%}
+      {% for item in edit_reasons %}
+        <p class="govuk-body govuk-!-margin-bottom-3">
+          Submitted by {{item.submitted_by}} on {{item.submitted_at | format_datetime_short}}
+        </p>
+        <p class="govuk-body govuk-!-margin-bottom-3">
+          Returned by {{item.created_by}} on {{item.created_at | format_datetime_short}}
+        </p>
+      {% endfor %}
     {%- endif %}
+    {% if broadcast_message.submitted_by and broadcast_message.status == 'pending-approval' %}
+      <p class="govuk-body govuk-!-margin-bottom-3">
+        Submitted by {{broadcast_message.submitted_by}} on {{broadcast_message.submitted_at | format_datetime_short}}
+      </p>
+    {% endif %}
     {%- if broadcast_message.approved_by %}
-      and approved by {{ broadcast_message.approved_by }}
+      <p class="govuk-body govuk-!-margin-bottom-3">
+        Approved by {{ broadcast_message.approved_by }} on {{broadcast_message.approved_at | format_datetime_short}}
+      </p>
     {%- endif %}
-    {{- '.' }}
+    {%- if broadcast_message.rejected_by %}
+      <p class="govuk-body govuk-!-margin-bottom-3">
+        Rejected by {{broadcast_message.rejected_by}} on {{broadcast_message.rejected_at | format_datetime_short}}
+      </p>
+    {%- endif %}
   </p>
-{% endif %}
-
-{% if broadcast_message.status == 'pending-approval' %}
-  <p class="govuk-body govuk-!-margin-bottom-3">
-    {% if broadcast_message.created_by %}
-      Created by {{ broadcast_message.created_by }}
-    {%- else %}
-      Created from an API call
-    {%- endif %}
-    {%- if broadcast_message.submitted_by %}
-    and submitted by {{ broadcast_message.submitted_by }}
-    {%- endif %}
-    {{- '.' }}
-  </p>
-{% endif %}
 
 {% if broadcast_message.status == 'broadcasting' %}
   <p class="govuk-body">
@@ -319,7 +393,7 @@
   </p>
 {% endif %}
 
-{% if current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) and broadcast_message.areas and broadcast_message.content and broadcast_message.reference and broadcast_message.duration and broadcast_message.status == "draft" %}
+{% if current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) and broadcast_message.areas and broadcast_message.content and broadcast_message.reference and broadcast_message.duration and broadcast_message.status == "draft" and current_user.id != approver %}
   {{ govukButton({
     "element": "a",
     "text": "Submit for approval",
