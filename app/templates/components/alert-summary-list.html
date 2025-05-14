@@ -5,7 +5,7 @@
 
 
 
-{% macro alertSummaryList(current_user, service_id, broadcast_message, areas, bleed_estimated_area, count_of_phones, count_of_phones_likely, is_custom_broadcast) %}
+{% macro alertSummaryList(is_editable, service_id, broadcast_message, areas, bleed_estimated_area, count_of_phones, count_of_phones_likely, is_custom_broadcast) %}
 
     <dialog id="enlarged-map-dialog" tabindex="-1" aria-modal="true" class="enlarged-map-dialog"
         role="dialog" aria-labelledby="enlarged-map-dialog-message">
@@ -59,7 +59,7 @@
         {% endif %}
     {% endset %}
 
-    {% if broadcast_message.status == "draft" and current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) %}
+    {% if broadcast_message.status == "draft" and is_editable %}
         {% set display_action = True %}
         {% set conditional_action_text %}
             Change
