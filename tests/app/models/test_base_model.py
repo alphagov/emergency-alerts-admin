@@ -23,7 +23,7 @@ def test_raises_when_overriding_custom_properties():
     with pytest.raises(AttributeError) as e:
         Custom({"foo": "NOPE"})
 
-    assert str(e.value) == "can't set attribute"
+    assert "object has no setter" in str(e.value)
 
 
 @pytest.mark.parametrize(
