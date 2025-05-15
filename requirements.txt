@@ -15,9 +15,9 @@ blinker==1.7.0
     #   -r requirements.in
     #   flask
     #   gds-metrics
-boto3==1.38.11
+boto3==1.38.16
     # via moto
-botocore==1.38.11
+botocore==1.38.16
     # via
     #   boto3
     #   moto
@@ -30,7 +30,7 @@ cffi==1.17.1
     # via cryptography
 charset-normalizer==3.4.2
     # via requests
-click==8.1.8
+click==8.2.0
     # via
     #   black
     #   flask
@@ -114,7 +114,7 @@ packaging==25.0
     #   pytest
 pathspec==0.12.1
     # via black
-platformdirs==4.3.7
+platformdirs==4.3.8
     # via black
 pluggy==1.5.0
     # via pytest
