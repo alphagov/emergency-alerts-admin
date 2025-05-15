@@ -71,6 +71,7 @@ from app.utils.broadcast import (
     update_broadcast_message_using_changed_data,
     validate_form_based_on_fields_entered,
 )
+from app.utils.datetime import fromisoformat_allow_z_tz
 from app.utils.user import user_has_permissions
 
 
@@ -1283,14 +1284,14 @@ def get_broadcast_unsigned_xml(service_id, broadcast_message_id, xml_type):
         # sent and expires expect a string in 'CAP' format (see convert_utc_... method's description)
         "sent": (
             convert_utc_datetime_to_cap_standard_string(
-                datetime.fromisoformat(broadcast_message.starts_at)
+                fromisoformat_allow_z_tz(broadcast_message.starts_at)
                 if broadcast_message.starts_at
                 else datetime.now(timezone.utc)
             )
         ),
         "expires": (
             convert_utc_datetime_to_cap_standard_string(
-                datetime.fromisoformat(broadcast_message.finishes_at)
+                fromisoformat_allow_z_tz(broadcast_message.finishes_at)
                 if broadcast_message.finishes_at
                 else datetime.now(timezone.utc) + timedelta(seconds=broadcast_message.broadcast_duration)
             )
