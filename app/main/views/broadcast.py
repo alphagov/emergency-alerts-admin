@@ -1239,7 +1239,9 @@ def get_broadcast_geojson(service_id, broadcast_message_id):
     return Response(
         json.dumps(geojson),
         mimetype="application/geo+json",
-        headers={"Content-Disposition": f"attachment;filename={broadcast_message.reference}.geojson"},
+        headers={
+            "Content-Disposition": f"attachment;filename={broadcast_message.reference}-{broadcast_message.id}.geojson"
+        },
     )
 
 
@@ -1300,5 +1302,8 @@ def get_broadcast_unsigned_xml(service_id, broadcast_message_id, xml_type):
     return Response(
         cap_xml,
         mimetype="application/xml",
-        headers={"Content-Disposition": f"attachment;filename={broadcast_message.reference}.{xml_type}.xml"},
+        headers={
+            "Content-Disposition": f"attachment;filename={broadcast_message.reference}-{broadcast_message.id}"
+            f".{xml_type}.xml"
+        },
     )
