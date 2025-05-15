@@ -5541,6 +5541,7 @@ def test_can_get_geojson_simple(
             created_by_id=fake_uuid,
             approved_by_id=fake_uuid,
             starts_at="2020-02-20T20:20:20.000000",
+            reference="Test name",
             content="Hello",
             duration=10_800,
             areas={
@@ -5561,6 +5562,7 @@ def test_can_get_geojson_simple(
     )
 
     assert json_response.content_type == "application/geo+json"
+    assert json_response.headers.get("Content-Disposition") == f"attachment;filename=Test name-{fake_uuid}.geojson"
     json_contents = json.loads(json_response.text)
 
     assert json_contents == {
@@ -5627,7 +5629,7 @@ def test_can_get_unsigned_cap_xml(
     )
 
     assert xml_response.content_type == "application/xml; charset=utf-8"
-    assert xml_response.headers.get("Content-Disposition") == "attachment;filename=Test name.cap.xml"
+    assert xml_response.headers.get("Content-Disposition") == f"attachment;filename=Test name-{fake_uuid}.cap.xml"
 
     assert xml_path(
         xml_response.text,
@@ -5733,7 +5735,7 @@ def test_can_get_unsigned_ibag_xml(
     )
 
     assert xml_response.content_type == "application/xml; charset=utf-8"
-    assert xml_response.headers.get("Content-Disposition") == "attachment;filename=Test name.ibag.xml"
+    assert xml_response.headers.get("Content-Disposition") == f"attachment;filename=Test name-{fake_uuid}.ibag.xml"
 
     assert xml_path(
         xml_response.text,
