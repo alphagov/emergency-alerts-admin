@@ -1135,7 +1135,11 @@ def return_broadcast_for_edit(service_id, broadcast_message_id):
                 )
             )
 
-        broadcast_message.return_broadcast_message_for_edit(return_for_edit_reason=form.return_for_edit_reason.data)
+        try:
+            broadcast_message.return_broadcast_message_for_edit(return_for_edit_reason=form.return_for_edit_reason.data)
+        except Exception as e:
+            form.return_for_edit_reason.errors.append(e.message[0])
+
         broadcast_message = BroadcastMessage.from_id(
             broadcast_message_id,
             service_id=current_service.id,
