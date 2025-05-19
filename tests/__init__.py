@@ -428,6 +428,10 @@ def broadcast_message_json(
     submitted_by=None,
     updated_by=None,
     submitted_by_id=None,
+    submitted_at=None,
+    created_at=None,
+    approved_at=None,
+    rejected_at=None,
 ):
     return {
         "id": id_,
@@ -448,8 +452,8 @@ def broadcast_message_json(
         "duration": duration,
         "starts_at": starts_at,
         "finishes_at": finishes_at,
-        "created_at": None,
-        "approved_at": None,
+        "created_at": created_at,
+        "approved_at": approved_at,
         "cancelled_at": cancelled_at,
         "updated_at": updated_at,
         "created_by_id": created_by_id,
@@ -458,9 +462,11 @@ def broadcast_message_json(
         "created_by": created_by,
         "approved_by": approved_by,
         "rejected_by": rejected_by,
+        "rejected_at": rejected_at,
         "cancelled_by": cancelled_by or "an API call",
         "submitted_by": submitted_by,
         "submitted_by_id": submitted_by_id,
+        "submitted_at": submitted_at,
         "updated_by": updated_by,
     }
 
@@ -496,4 +502,31 @@ def broadcast_message_version_json(
         "approved_at": None,
         "created_by": created_by,
         "version": version or 1,
+    }
+
+
+def broadcast_message_edit_reason_json(
+    *,
+    broadcast_message_id=None,
+    id=None,
+    service_id=None,
+    created_by_id=None,
+    created_by=None,
+    edit_reason="Test Edit Reason",
+    submitted_by,
+    submitted_by_id,
+    created_at=None,
+    submitted_at=None,
+):
+    return {
+        "broadcast_message_id": broadcast_message_id,
+        "created_at": created_at,
+        "created_by": created_by,
+        "created_by_id": created_by_id,
+        "edit_reason": edit_reason,
+        "id": id,
+        "service_id": service_id,
+        "submitted_at": submitted_at,
+        "submitted_by": submitted_by,
+        "submitted_by_id": submitted_by_id,
     }
