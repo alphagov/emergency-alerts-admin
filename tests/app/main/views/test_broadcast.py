@@ -4653,6 +4653,55 @@ def test_reject_broadcast_displays_error_when_no_reason_provided(
 
 @pytest.mark.parametrize(
     "user",
+    (create_active_user_approve_broadcasts_permissions(),),
+)
+@freeze_time("2020-02-22T22:22:22.000000")
+def test_return_broadcast_for_edit_displays_error_when_no_reason_provided(
+    mocker,
+    client_request,
+    service_one,
+    fake_uuid,
+    mock_update_broadcast_message,
+    mock_update_broadcast_message_status_with_reason,
+    user,
+    mock_get_broadcast_message_versions,
+    mock_check_can_update_status,
+    mock_get_broadcast_returned_for_edit_reasons,
+    mock_get_latest_edit_reason,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            finishes_at="2020-02-23T23:23:23.000000",
+            status="pending-approval",
+            created_at="2020-02-23T20:23:23.000000",
+        ),
+    )
+    service_one["permissions"] += ["broadcast"]
+
+    client_request.login(user)
+    page = client_request.post(
+        ".return_broadcast_for_edit",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        _expected_status=200,
+        _data={"return_for_edit_reason": ""},
+    )
+
+    assert (
+        normalize_spaces(page.select_one(".govuk-error-message").text)
+        == "Error: Enter the reason for returning the alert for edit"
+    )
+
+    assert mock_update_broadcast_message.called is False
+
+
+@pytest.mark.parametrize(
+    "user",
     (create_active_user_create_broadcasts_permissions(),),
 )
 @freeze_time("2020-02-22T22:22:22.000000")
