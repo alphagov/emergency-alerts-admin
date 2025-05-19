@@ -1,0 +1,70 @@
+{% macro broadcast_message_status_history(broadcast_message, edit_reasons) %}
+        <p class="govuk-body govuk-!-margin-bottom-3">
+            {% if broadcast_message.created_by %}
+                Created by {{ broadcast_message.created_by }} on {{broadcast_message.created_at | format_datetime_short}}.
+            {%- else %}
+                Created from an API call on {{broadcast_message.created_at | format_datetime_short}}.
+            {%- endif %}
+        </p>
+
+        {%- if edit_reasons -%}
+            {% for item in edit_reasons %}
+                <p class="govuk-body govuk-!-margin-bottom-3">
+                Submitted by {{item.submitted_by}} on {{item.submitted_at | format_datetime_short}}.
+                </p>
+                <p class="govuk-body govuk-!-margin-bottom-3">
+                Returned by {{item.created_by}} on {{item.created_at | format_datetime_short}}.
+                </p>
+            {% endfor %}
+        {%- endif %}
+
+        {% if broadcast_message.status != 'draft' and broadcast_message.submitted_at %}
+            {% if broadcast_message.submitted_by %}
+                <p class="govuk-body govuk-!-margin-bottom-3">
+                    Submitted by {{broadcast_message.submitted_by}} on {{broadcast_message.submitted_at | format_datetime_short}}.
+                </p>
+            {% else %}
+                <p class="govuk-body govuk-!-margin-bottom-3">
+                    Submitted on {{broadcast_message.submitted_at | format_datetime_short}}.
+                </p>
+            {% endif %}
+        {% endif %}
+
+        {%- if broadcast_message.status == 'rejected' and broadcast_message.rejected_by %}
+            <p class="govuk-body govuk-!-margin-bottom-3">
+                Rejected by {{broadcast_message.rejected_by}} on {{broadcast_message.rejected_at | format_datetime_short}}.
+            </p>
+        {%- endif %}
+
+        {%- if broadcast_message.status in ['broadcasting', 'completed', 'cancelled'] %}
+            {% if broadcast_message.approved_by %}
+                <p class="govuk-body govuk-!-margin-bottom-3">
+                Approved by {{ broadcast_message.approved_by }} on {{broadcast_message.approved_at | format_datetime_short}}.
+                </p>
+            {% else %}
+                <p class="govuk-body govuk-!-margin-bottom-3">
+                Approved on {{broadcast_message.approved_at | format_datetime_short}}.
+                </p>
+            {%- endif %}
+        {% endif %}
+
+        {% if broadcast_message.status == 'broadcasting' %}
+        <p class="govuk-body govuk-!-margin-bottom-3">
+            Broadcasting stops {{ broadcast_message.finishes_at|format_datetime_human }}.
+        </p>
+        {% elif broadcast_message.status == 'cancelled' %}
+            <p class="govuk-body govuk-!-margin-bottom-3">
+                {% if broadcast_message.cancelled_by_id %}
+                Stopped by {{ broadcast_message.cancelled_by }}
+                {%- else %}
+                Stopped by an API call
+                {%- endif %}
+                {{ broadcast_message.cancelled_at|format_datetime_human }}.
+            </p>
+        {% elif broadcast_message.status == 'completed' %}
+            <p class="govuk-body govuk-!-margin-bottom-3">
+                Finished broadcasting {{ broadcast_message.finishes_at|format_datetime_human }}.
+            </p>
+        {% endif %}
+
+{% endmacro %}

@@ -8,6 +8,7 @@
 {% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
 {% from "components/alert-summary-list.html" import alertSummaryList %}
 {% from "views/broadcast/partials/broadcast-details.html" import broadcast_details %}
+{% from "views/broadcast/partials/status-history.html" import broadcast_message_status_history %}
 
 
 {% extends "withnav_template.html" %}
@@ -345,57 +346,7 @@
 
   {{alertSummaryList(is_editable, current_service.id, broadcast_message, areas, broadcast_message.simple_polygons_with_bleed.estimated_area, broadcast_message.count_of_phones, broadcast_message.count_of_phones_likely, is_custom_broadcast)}}
 
-  <p class="govuk-body govuk-!-margin-bottom-3">
-    {% if broadcast_message.created_by %}
-      Created by {{ broadcast_message.created_by }} on {{broadcast_message.created_at | format_datetime_short}}
-    {%- else %}
-      Created from an API call on {{broadcast_message.created_at | format_datetime_short}}
-    {%- endif %}
-    {%- if edit_reasons -%}
-      {% for item in edit_reasons %}
-        <p class="govuk-body govuk-!-margin-bottom-3">
-          Submitted by {{item.submitted_by}} on {{item.submitted_at | format_datetime_short}}
-        </p>
-        <p class="govuk-body govuk-!-margin-bottom-3">
-          Returned by {{item.created_by}} on {{item.created_at | format_datetime_short}}
-        </p>
-      {% endfor %}
-    {%- endif %}
-    {% if broadcast_message.submitted_by and broadcast_message.status == 'pending-approval' %}
-      <p class="govuk-body govuk-!-margin-bottom-3">
-        Submitted by {{broadcast_message.submitted_by}} on {{broadcast_message.submitted_at | format_datetime_short}}
-      </p>
-    {% endif %}
-    {%- if broadcast_message.approved_by %}
-      <p class="govuk-body govuk-!-margin-bottom-3">
-        Approved by {{ broadcast_message.approved_by }} on {{broadcast_message.approved_at | format_datetime_short}}
-      </p>
-    {%- endif %}
-    {%- if broadcast_message.rejected_by %}
-      <p class="govuk-body govuk-!-margin-bottom-3">
-        Rejected by {{broadcast_message.rejected_by}} on {{broadcast_message.rejected_at | format_datetime_short}}
-      </p>
-    {%- endif %}
-  </p>
-
-{% if broadcast_message.status == 'broadcasting' %}
-  <p class="govuk-body">
-    Broadcasting stops {{ broadcast_message.finishes_at|format_datetime_human }}.
-  </p>
-{% elif broadcast_message.status == 'cancelled' %}
-  <p class="govuk-body">
-    {% if broadcast_message.cancelled_by_id %}
-      Stopped by {{ broadcast_message.cancelled_by }}
-    {%- else %}
-      Stopped by an API call
-    {%- endif %}
-    {{ broadcast_message.cancelled_at|format_datetime_human }}.
-  </p>
-{% elif broadcast_message.status == 'completed' %}
-  <p class="govuk-body">
-    Finished broadcasting {{ broadcast_message.finishes_at|format_datetime_human }}.
-  </p>
-{% endif %}
+  {{broadcast_message_status_history(broadcast_message, edit_reasons)}}
 
 {% set can_submit_for_approval = (
   current_user.has_permissions('create_broadcasts', restrict_admin_usage=True)
