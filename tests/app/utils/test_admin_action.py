@@ -5,8 +5,8 @@ import pytest
 from app.models.service import Service
 from app.utils.admin_action import (
     create_or_replace_admin_action,
-    send_elevation_slack_notification,
-    send_slack_notification,
+    send_elevation_notifications,
+    send_notifications,
 )
 from tests.conftest import SERVICE_ONE_ID, USER_ONE_ID, set_config
 
@@ -268,7 +268,7 @@ def test_slack_notification_message(
         # Uses current_user so we need a 'logged in' user and a request context:
         client_request.login(platform_admin_user)
         with notify_admin.test_request_context(method="POST"):
-            send_slack_notification("approved", action_obj, service)
+            send_notifications("approved", action_obj, service)
 
     sender.assert_called_once()
     slack_message = sender.call_args[0][0]
@@ -286,7 +286,7 @@ def test_elevation_slack_notification_message(mocker, mock_get_user, notify_admi
         # Uses current_user so we need a 'logged in' user and a request context:
         client_request.login(platform_admin_user)
         with notify_admin.test_request_context(method="POST"):
-            send_elevation_slack_notification()
+            send_elevation_notifications()
 
     sender.assert_called_once()
     slack_message = sender.call_args[0][0]

@@ -104,7 +104,7 @@ def create_or_replace_admin_action(proposed_action_obj):
             )
 
     admin_actions_api_client.create_admin_action(proposed_action_obj)
-    send_slack_notification(ADMIN_STATUS_PENDING, proposed_action_obj, current_service)
+    send_notifications(ADMIN_STATUS_PENDING, proposed_action_obj, current_service)
 
 
 def _admin_action_is_similar(action_obj1, action_obj2):
@@ -130,7 +130,14 @@ def _admin_action_is_similar(action_obj1, action_obj2):
         return False  # Unknown action_type
 
 
-def send_slack_notification(new_status, action_obj, action_service: Service):
+def send_notifications(new_status, action_obj, action_service: Service):
+    _send_slack_notification(new_status, action_obj, action_service)
+
+    # If we're out of hours and this concerns an admin elevation (request, approval or elevation)
+    # then we'll create a Zendesk ticket too.
+
+
+def _send_slack_notification(new_status, action_obj, action_service: Service):
     creator_user = User.from_id(action_obj["created_by"])
 
     message_title = None
