@@ -1,4 +1,3 @@
-import os
 from typing import Iterable
 
 from emergency_alerts_utils.admin_action import (
@@ -24,6 +23,7 @@ from app.models.user import InvitedUser, User
 from app.notify_client.admin_actions_api_client import admin_actions_api_client
 from app.notify_client.api_key_api_client import api_key_api_client
 from app.notify_client.user_api_client import user_api_client
+from app.utils.functional_tests import is_request_from_functional_tests
 from app.utils.user_permissions import broadcast_permission_options, permission_options
 
 slack_client = SlackClient()
@@ -132,7 +132,7 @@ def _admin_action_is_similar(action_obj1, action_obj2):
 
 
 def send_slack_notification(new_status, action_obj, action_service: Service):
-    if _is_request_from_functional_tests():
+    if is_request_from_functional_tests():
         current_app.logger.info("Skipping sending SlackMessage because this was from functional tests", action_obj)
         return
 
@@ -169,7 +169,7 @@ def send_slack_notification(new_status, action_obj, action_service: Service):
 def send_elevation_slack_notification():
     """Send a notification that the current user has elevated to full platform admin status."""
 
-    if _is_request_from_functional_tests():
+    if is_request_from_functional_tests():
         current_app.logger.info(
             "Skipping sending elevated SlackMessage because this was from functional tests", current_user.email_address
         )
@@ -231,12 +231,3 @@ def _get_action_description_markdown(action_obj, action_service: Service):
         markdown = "Elevate themselves to become a full platform admin\n_(This request will automatically expire)_"
 
     return markdown
-
-
-def _is_request_from_functional_tests():
-    functional_test_ips = os.environ.get("FUNCTIONAL_TEST_IPS", "").split(",")
-    for ip in functional_test_ips:
-        if request.remote_addr == ip:
-            return True
-
-    return False
