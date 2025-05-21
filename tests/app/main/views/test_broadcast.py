@@ -3763,7 +3763,7 @@ def test_view_pending_broadcast(
         "No phones will get this alert. "
         "Start broadcasting now "
         "Return this alert for edit "
-        "Give a reason for returning the alert for edit "
+        "Give a reason for returning the alert to draft "
         "Detailed reason for returning the alert for edit, including how it may be reworked. "
         'For example, "The alert message has spelling mistakes". '
         "Return alert for edit "
@@ -3795,7 +3795,7 @@ def test_view_pending_broadcast(
                 "No phones will get this alert. "
                 "Start broadcasting now "
                 "Return this alert for edit "
-                "Give a reason for returning the alert for edit "
+                "Give a reason for returning the alert to draft "
                 "Detailed reason for returning the alert for edit, including how it may be reworked. "
                 'For example, "The alert message has spelling mistakes". '
                 "Return alert for edit "
@@ -3813,7 +3813,7 @@ def test_view_pending_broadcast(
                 "No phones will get this alert. "
                 "Start broadcasting now "
                 "Return this alert for edit "
-                "Give a reason for returning the alert for edit "
+                "Give a reason for returning the alert to draft "
                 "Detailed reason for returning the alert for edit, including how it may be reworked. "
                 'For example, "The alert message has spelling mistakes". '
                 "Return alert for edit "
@@ -3911,7 +3911,7 @@ def test_view_pending_broadcast_from_api_call(
         "An API call wants to broadcast abc123 No phones will get this alert. "
         "Start broadcasting now "
         "Return this alert for edit "
-        "Give a reason for returning the alert for edit "
+        "Give a reason for returning the alert to draft "
         "Detailed reason for returning the alert for edit, including how it may be reworked. "
         'For example, "The alert message has spelling mistakes". '
         "Return alert for edit "

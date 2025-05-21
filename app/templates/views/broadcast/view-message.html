@@ -76,7 +76,7 @@
           {% endcall %}
           {% set return_for_edit_details %}
             <div class="govuk-!-margin-top-3 govuk-!-margin-bottom-3">
-              <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for returning the alert for edit</h1>
+              <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for returning the alert to draft</h1>
               {% call form_wrapper(id='return_for_edit',action=url_for('main.return_broadcast_for_edit', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
                 {{ return_for_edit_form.return_for_edit_reason }}
                 {{ page_footer(
@@ -153,7 +153,7 @@
             {% endset %}
             {% set return_for_edit_details %}
               <div class="govuk-!-margin-top-3 govuk-!-margin-bottom-3">
-                <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for returning the alert for edit</h1>
+                <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for returning the alert to draft</h1>
                 {% call form_wrapper(id='return_for_edit',action=url_for('main.return_broadcast_for_edit', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
                   {{ return_for_edit_form.return_for_edit_reason }}
                   {{ page_footer(
@@ -257,7 +257,7 @@
         {% endcall %}
         {% set return_for_edit_details %}
           <div class="govuk-!-margin-top-3 govuk-!-margin-bottom-3">
-            <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for returning the alert for edit</h1>
+            <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for returning the alert to draft</h1>
             {% call form_wrapper(id='return_for_edit',action=url_for('main.return_broadcast_for_edit', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
               {{ return_for_edit_form.return_for_edit_reason }}
               {{ page_footer(
