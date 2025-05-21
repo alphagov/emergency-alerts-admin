@@ -1,3 +1,4 @@
+import os
 from typing import Iterable
 
 from emergency_alerts_utils.admin_action import (
@@ -131,6 +132,10 @@ def _admin_action_is_similar(action_obj1, action_obj2):
 
 
 def send_slack_notification(new_status, action_obj, action_service: Service):
+    if _is_request_from_functional_tests():
+        current_app.logger.info("Skipping sending SlackMessage because this was from functional tests", action_obj)
+        return
+
     creator_user = User.from_id(action_obj["created_by"])
 
     message_title = None
@@ -163,6 +168,13 @@ def send_slack_notification(new_status, action_obj, action_service: Service):
 
 def send_elevation_slack_notification():
     """Send a notification that the current user has elevated to full platform admin status."""
+
+    if _is_request_from_functional_tests():
+        current_app.logger.info(
+            "Skipping sending elevated SlackMessage because this was from functional tests", current_user.email_address
+        )
+        return
+
     message = SlackMessage(
         None,  # Filled in later
         "Platform Admin Elevated",
@@ -219,3 +231,12 @@ def _get_action_description_markdown(action_obj, action_service: Service):
         markdown = "Elevate themselves to become a full platform admin\n_(This request will automatically expire)_"
 
     return markdown
+
+
+def _is_request_from_functional_tests():
+    functional_test_ips = os.environ.get("FUNCTIONAL_TEST_IPS", "").split(",")
+    for ip in functional_test_ips:
+        if request.remote_addr == ip:
+            return True
+
+    return False
