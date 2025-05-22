@@ -99,6 +99,8 @@ class Config(object):
 
     SLACK_WEBHOOK_ADMIN_ACTIVITY = os.environ.get("SLACK_WEBHOOK_ADMIN_ACTIVITY", "")
 
+    ADMIN_ACTIVITY_ZENDESK_ENABLED = os.environ.get("ADMIN_ACTIVITY_ZENDESK_ENABLED", "false").lower() == "true"
+
 
 class Hosted(Config):
     HOST = "hosted"

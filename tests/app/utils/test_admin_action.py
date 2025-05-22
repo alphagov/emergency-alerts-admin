@@ -8,6 +8,7 @@ from app.models.service import Service
 from app.utils.admin_action import (
     _create_or_upgrade_zendesk_ticket,
     _is_out_of_office_hours,
+    _should_send_zendesk_ticket,
     create_or_replace_admin_action,
     send_elevation_notifications,
     send_notifications,
@@ -408,3 +409,13 @@ def test_create_or_upgrade_zendesk_ticket_updates_if_exists(mocker):
 def test_is_out_of_office_hours(datetime_utc, expected_out_of_hours):
     with freeze_time(datetime_utc):
         assert _is_out_of_office_hours() == expected_out_of_hours
+
+
+@pytest.mark.parametrize("zendesk_enabled", [True, False])
+def test_should_send_zendesk_ticket_uses_config(mocker, notify_admin, zendesk_enabled):
+    with freeze_time("2020-11-11T01:00:00Z"):  # Out of hours
+        with set_config(notify_admin, "ADMIN_ACTIVITY_ZENDESK_ENABLED", zendesk_enabled):
+            assert _should_send_zendesk_ticket() == zendesk_enabled
+
+    with freeze_time("2020-11-11T12:00:00Z"):  # In hours
+        assert not _should_send_zendesk_ticket()

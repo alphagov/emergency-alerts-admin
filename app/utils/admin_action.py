@@ -179,7 +179,7 @@ def send_elevation_notifications():
     """Send a notification that the current user has elevated to full platform admin status."""
     _send_elevation_slack_notification()
 
-    if _is_out_of_office_hours():
+    if _should_send_zendesk_ticket():
         _send_elevation_zendesk_notification()
 
 
@@ -232,6 +232,14 @@ def _create_or_upgrade_zendesk_ticket(priority: str, comment: str, relevant_admi
             user_email=relevant_admin_email,
         )
         zendesk_client.send_ticket_to_zendesk(ticket)
+
+
+def _should_send_zendesk_ticket():
+    if current_app.config["ADMIN_ACTIVITY_ZENDESK_ENABLED"]:
+        if _is_out_of_office_hours():
+            return True
+
+    return False
 
 
 def _get_action_description_markdown(action_obj, action_service: Service):
