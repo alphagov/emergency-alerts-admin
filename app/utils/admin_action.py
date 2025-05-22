@@ -168,7 +168,11 @@ def _send_slack_notification(new_status, action_obj, action_service: Service):
     return _send_slack_message(message)
 
 
-def send_elevation_slack_notification():
+def send_elevation_notifications():
+    _send_elevation_slack_notification()
+
+
+def _send_elevation_slack_notification():
     """Send a notification that the current user has elevated to full platform admin status."""
     message = SlackMessage(
         None,  # Filled in later
