@@ -175,15 +175,16 @@ def _send_slack_notification(new_status, action_obj, action_service: Service):
     return _send_slack_message(message)
 
 
-def send_elevation_notifications():
+
+def send_elevated_notifications():
     """Send a notification that the current user has elevated to full platform admin status."""
-    _send_elevation_slack_notification()
+    _send_elevated_slack_notification()
 
     if _should_send_zendesk_ticket():
         _send_elevation_zendesk_notification()
 
 
-def _send_elevation_slack_notification():
+def _send_elevated_slack_notification():
     message = SlackMessage(
         None,  # Filled in later
         "Platform Admin Elevated",

@@ -31,7 +31,7 @@ from app.notify_client.platform_admin_api_client import admin_api_client
 from app.utils.admin_action import (
     create_or_replace_admin_action,
     process_admin_action,
-    send_elevation_notifications,
+    send_elevated_notifications,
     send_notifications,
 )
 from app.utils.user import user_is_platform_admin, user_is_platform_admin_capable
@@ -216,7 +216,7 @@ def platform_admin_elevation():
         user_api_client.redeem_admin_elevation(current_user.id)
         current_user.platform_admin_active = True
         session["platform_admin_active"] = True
-        send_elevation_notifications()
+        send_elevated_notifications()
         return redirect(url_for("main.platform_admin_search"))
 
     return render_template(

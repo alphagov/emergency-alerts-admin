@@ -10,7 +10,7 @@ from app.utils.admin_action import (
     _is_out_of_office_hours,
     _should_send_zendesk_ticket,
     create_or_replace_admin_action,
-    send_elevation_notifications,
+    send_elevated_notifications,
     send_notifications,
 )
 from tests.conftest import SERVICE_ONE_ID, USER_ONE_ID, set_config
@@ -304,7 +304,7 @@ def test_elevation_notifications_message(
                 # Uses current_user so we need a 'logged in' user and a request context:
                 client_request.login(platform_admin_user)
                 with notify_admin.test_request_context(method="POST"):
-                    send_elevation_notifications()
+                    send_elevated_notifications()
 
     slack_sender.assert_called_once()
     slack_message = slack_sender.call_args[0][0]
