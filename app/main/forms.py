@@ -1838,7 +1838,7 @@ class ChooseCoordinateTypeForm(StripWhitespaceForm):
 
 
 class RejectionReasonForm(StripWhitespaceForm):
-    hint = """ Provide details of why you are rejecting this alert the alert.
+    hint = """ Provide details of why you are rejecting the alert.
         For example, "The emergency has passed"."""
 
     rejection_reason = GovukTextareaField(
