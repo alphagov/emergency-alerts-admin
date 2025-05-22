@@ -3764,13 +3764,13 @@ def test_view_pending_broadcast(
         "Start broadcasting now "
         "Return this alert for edit "
         "Give a reason for returning the alert to draft "
-        "Detailed reason for returning the alert for edit, including how it may be reworked. "
+        "Provide details of why you're returning the alert to draft, including how it can be improved. "
         'For example, "The alert message has spelling mistakes". '
         "Return alert for edit "
         "Reject this alert "
         "Give a reason for rejecting the alert "
-        "Detailed reason for rejecting the alert. "
-        'For example, "The alert message is incorrect" or "The emergency has passed". '
+        "Provide details of why you are rejecting the alert. "
+        'For example, "The emergency has passed". '
         "Reject alert"
     )
     assert not page.select(".banner input[type=checkbox]")
@@ -3796,13 +3796,13 @@ def test_view_pending_broadcast(
                 "Start broadcasting now "
                 "Return this alert for edit "
                 "Give a reason for returning the alert to draft "
-                "Detailed reason for returning the alert for edit, including how it may be reworked. "
+                "Provide details of why you're returning the alert to draft, including how it can be improved. "
                 'For example, "The alert message has spelling mistakes". '
                 "Return alert for edit "
                 "Reject this alert "
                 "Give a reason for rejecting the alert "
-                "Detailed reason for rejecting the alert. "
-                'For example, "The alert message is incorrect" or "The emergency has passed". '
+                "Provide details of why you are rejecting the alert. "
+                'For example, "The emergency has passed". '
                 "Reject alert"
             ),
         ),
@@ -3814,13 +3814,13 @@ def test_view_pending_broadcast(
                 "Start broadcasting now "
                 "Return this alert for edit "
                 "Give a reason for returning the alert to draft "
-                "Detailed reason for returning the alert for edit, including how it may be reworked. "
+                "Provide details of why you're returning the alert to draft, including how it can be improved. "
                 'For example, "The alert message has spelling mistakes". '
                 "Return alert for edit "
                 "Reject this alert "
                 "Give a reason for rejecting the alert "
-                "Detailed reason for rejecting the alert. "
-                'For example, "The alert message is incorrect" or "The emergency has passed". '
+                "Provide details of why you are rejecting the alert. "
+                'For example, "The emergency has passed". '
                 "Reject alert"
             ),
         ),
@@ -3912,13 +3912,13 @@ def test_view_pending_broadcast_from_api_call(
         "Start broadcasting now "
         "Return this alert for edit "
         "Give a reason for returning the alert to draft "
-        "Detailed reason for returning the alert for edit, including how it may be reworked. "
+        "Provide details of why you're returning the alert to draft, including how it can be improved. "
         'For example, "The alert message has spelling mistakes". '
         "Return alert for edit "
         "Reject this alert "
         "Give a reason for rejecting the alert "
-        "Detailed reason for rejecting the alert. "
-        'For example, "The alert message is incorrect" or "The emergency has passed". '
+        "Provide details of why you are rejecting the alert. "
+        'For example, "The emergency has passed". '
         "Reject alert"
     )
     assert (normalize_spaces(page.select_one(".broadcast-message-wrapper").text)) == "Emergency alert Uh-oh"
