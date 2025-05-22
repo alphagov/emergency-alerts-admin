@@ -131,6 +131,10 @@ def _admin_action_is_similar(action_obj1, action_obj2):
 
 
 def send_slack_notification(new_status, action_obj, action_service: Service):
+    if _should_supress_notifications():
+        current_app.logger.info("Skipping sending SlackMessage because it was supressed", action_obj)
+        return
+
     creator_user = User.from_id(action_obj["created_by"])
 
     message_title = None
@@ -163,6 +167,13 @@ def send_slack_notification(new_status, action_obj, action_service: Service):
 
 def send_elevation_slack_notification():
     """Send a notification that the current user has elevated to full platform admin status."""
+
+    if _should_supress_notifications():
+        current_app.logger.info(
+            "Skipping sending elevated SlackMessage because it was supressed", current_user.email_address
+        )
+        return
+
     message = SlackMessage(
         None,  # Filled in later
         "Platform Admin Elevated",
@@ -219,3 +230,20 @@ def _get_action_description_markdown(action_obj, action_service: Service):
         markdown = "Elevate themselves to become a full platform admin\n_(This request will automatically expire)_"
 
     return markdown
+
+
+def _should_supress_notifications():
+    """
+    Determine if we're in a state where we should supress sending notifications
+    externally about admin activity.
+
+    Currently this just looks if the request context has come from a known
+    functional test IP (if configured for the environment).
+    """
+
+    for ip in current_app.config["FUNCTIONAL_TEST_IPS"]:
+        if request.remote_addr == ip:
+            current_app.logger.info("Supressing notification because this request was from a functional test")
+            return True
+
+    return False
