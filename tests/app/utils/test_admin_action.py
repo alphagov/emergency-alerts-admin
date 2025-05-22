@@ -1,10 +1,12 @@
 import uuid
 
 import pytest
+from emergency_alerts_utils.clients.zendesk.zendesk_client import EASSupportTicket
 from freezegun import freeze_time
 
 from app.models.service import Service
 from app.utils.admin_action import (
+    _create_or_upgrade_zendesk_ticket,
     _is_out_of_office_hours,
     create_or_replace_admin_action,
     send_elevation_notifications,
@@ -281,23 +283,85 @@ def test_slack_notification_message(
     assert slack_message_properties["markdown_sections"][2] == ":green_tick: Approved by `platform@admin.gov.uk`"
 
 
-def test_elevation_slack_notification_message(mocker, mock_get_user, notify_admin, client_request, platform_admin_user):
-    sender = mocker.patch("emergency_alerts_utils.clients.slack.slack_client.SlackClient.send_message_to_slack")
+@pytest.mark.parametrize("is_out_of_hours", [False, True])
+def test_elevation_notifications_message(
+    mocker, mock_get_user, notify_admin, client_request, platform_admin_user, is_out_of_hours
+):
+    slack_sender = mocker.patch("emergency_alerts_utils.clients.slack.slack_client.SlackClient.send_message_to_slack")
+    zendesk_sender = mocker.patch(
+        "emergency_alerts_utils.clients.zendesk.zendesk_client.ZendeskClient.send_ticket_to_zendesk"
+    )
 
-    with set_config(notify_admin, "SLACK_WEBHOOK_ADMIN_ACTIVITY", "https://test"):
-        # Uses current_user so we need a 'logged in' user and a request context:
-        client_request.login(platform_admin_user)
-        with notify_admin.test_request_context(method="POST"):
-            send_elevation_notifications()
+    with freeze_time("2020-11-11T01:00:00Z" if is_out_of_hours else "2020-11-11T12:00:00Z"):
+        with set_config(notify_admin, "SLACK_WEBHOOK_ADMIN_ACTIVITY", "https://test"):
+            # Uses current_user so we need a 'logged in' user and a request context:
+            client_request.login(platform_admin_user)
+            with notify_admin.test_request_context(method="POST"):
+                send_elevation_notifications()
 
-    sender.assert_called_once()
-    slack_message = sender.call_args[0][0]
+    slack_sender.assert_called_once()
+    slack_message = slack_sender.call_args[0][0]
     slack_message_properties = slack_message.__dict__
 
     assert (
         slack_message_properties["markdown_sections"][0]
         == "`platform@admin.gov.uk` has elevated to become a full platform admin for their session"
     )
+
+    if is_out_of_hours:
+        zendesk_sender.assert_not_called()
+    else:
+        zendesk_sender.assert_called_once()
+        zendesk_ticket_json = zendesk_sender.call_args[0][0]
+        assert zendesk_ticket_json == {"id": "yes"}
+
+
+def test_create_or_upgrade_zendesk_ticket_creates(mocker):
+    zendesk_get = mocker.patch(
+        "emergency_alerts_utils.clients.zendesk.zendesk_client"
+        + ".ZendeskClient.get_open_admin_zendesk_ticket_id_for_email",
+        return_value=None,
+    )
+    zendesk_sender = mocker.patch(
+        "emergency_alerts_utils.clients.zendesk.zendesk_client.ZendeskClient.send_ticket_to_zendesk"
+    )
+
+    email = "test@digital.cabinet-office.gov.uk"
+    _create_or_upgrade_zendesk_ticket("urgent", "test", email)
+
+    zendesk_get.assert_called_once_with(email)
+    zendesk_sender.assert_called_once()
+    assert (
+        zendesk_sender.call_args[0][0].__dict__
+        == EASSupportTicket(
+            subject="Out of Hours Admin Activity",
+            message="test",
+            ticket_type=EASSupportTicket.TYPE_INCIDENT,
+            p1=True,
+            user_email=email,
+        ).__dict__
+    )
+
+
+def test_create_or_upgrade_zendesk_ticket_updates_if_exists(mocker):
+    zendesk_get = mocker.patch(
+        "emergency_alerts_utils.clients.zendesk.zendesk_client"
+        + ".ZendeskClient.get_open_admin_zendesk_ticket_id_for_email",
+        return_value=123,
+    )
+    zendesk_update = mocker.patch(
+        "emergency_alerts_utils.clients.zendesk.zendesk_client.ZendeskClient.update_ticket_priority_with_comment"
+    )
+    zendesk_sender = mocker.patch(
+        "emergency_alerts_utils.clients.zendesk.zendesk_client.ZendeskClient.send_ticket_to_zendesk"
+    )
+
+    email = "test@digital.cabinet-office.gov.uk"
+    _create_or_upgrade_zendesk_ticket("urgent", "test", email)
+
+    zendesk_get.assert_called_once_with(email)
+    zendesk_update.assert_called_once_with(123, "urgent", "test")
+    zendesk_sender.assert_not_called()
 
 
 @pytest.mark.parametrize(

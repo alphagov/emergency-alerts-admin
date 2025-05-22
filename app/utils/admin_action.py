@@ -14,13 +14,16 @@ from emergency_alerts_utils.admin_action import (
     ADMIN_ZENDESK_OFFICE_HOURS_END,
     ADMIN_ZENDESK_OFFICE_HOURS_START,
     ADMIN_ZENDESK_OFFICE_HOURS_TIMEZONE,
+    ADMIN_ZENDESK_PRIORITY_ELEVATED,
 )
 from emergency_alerts_utils.api_key import KEY_TYPE_NORMAL
 from emergency_alerts_utils.clients.slack.slack_client import SlackClient, SlackMessage
+from emergency_alerts_utils.clients.zendesk.zendesk_client import EASSupportTicket
 from flask import abort, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 
 from app import current_service
+from app.extensions import zendesk_client
 from app.formatters import email_safe
 from app.models.service import Service
 from app.models.user import InvitedUser, User
@@ -173,11 +176,14 @@ def _send_slack_notification(new_status, action_obj, action_service: Service):
 
 
 def send_elevation_notifications():
+    """Send a notification that the current user has elevated to full platform admin status."""
     _send_elevation_slack_notification()
+
+    if _is_out_of_office_hours():
+        _send_elevation_zendesk_notification()
 
 
 def _send_elevation_slack_notification():
-    """Send a notification that the current user has elevated to full platform admin status."""
     message = SlackMessage(
         None,  # Filled in later
         "Platform Admin Elevated",
@@ -185,6 +191,13 @@ def _send_elevation_slack_notification():
         [f"`{current_user.email_address}` has elevated to become a full platform admin for their session"],
     )
     return _send_slack_message(message)
+
+
+def _send_elevation_zendesk_notification():
+    # Only expected to be called out of hours
+    _create_or_upgrade_zendesk_ticket(
+        ADMIN_ZENDESK_PRIORITY_ELEVATED, f"{current_user.email_address} has elevated to full platform admin"
+    )
 
 
 def _send_slack_message(message: SlackMessage):
@@ -201,6 +214,22 @@ def _send_slack_message(message: SlackMessage):
         slack_client.send_message_to_slack(message)
     except Exception as e:
         current_app.logger.error("Could not post to Slack", e)
+
+
+def _create_or_upgrade_zendesk_ticket(priority: str, comment: str, relevant_admin_email: str):
+    """Create a new Zendesk ticket, or if there's one open for the email, update the priority and add a comment."""
+    existing_ticket_id = zendesk_client.get_open_admin_zendesk_ticket_id_for_email(relevant_admin_email)
+    if existing_ticket_id is not None:
+        zendesk_client.update_ticket_priority_with_comment(existing_ticket_id, priority, comment)
+    else:
+        ticket = EASSupportTicket(
+            subject="Out of Hours Admin Activity",
+            message=comment,
+            ticket_type=EASSupportTicket.TYPE_INCIDENT,
+            p1=True,
+            user_email=relevant_admin_email,
+        )
+        zendesk_client.send_ticket_to_zendesk(ticket)
 
 
 def _get_action_description_markdown(action_obj, action_service: Service):
