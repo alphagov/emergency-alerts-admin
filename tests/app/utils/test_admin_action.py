@@ -283,21 +283,27 @@ def test_slack_notification_message(
     assert slack_message_properties["markdown_sections"][2] == ":green_tick: Approved by `platform@admin.gov.uk`"
 
 
-@pytest.mark.parametrize("is_out_of_hours", [False, True])
+@pytest.mark.parametrize("is_out_of_hours", [True, False])
 def test_elevation_notifications_message(
     mocker, mock_get_user, notify_admin, client_request, platform_admin_user, is_out_of_hours
 ):
     slack_sender = mocker.patch("emergency_alerts_utils.clients.slack.slack_client.SlackClient.send_message_to_slack")
+    mocker.patch(
+        "emergency_alerts_utils.clients.zendesk.zendesk_client"
+        + ".ZendeskClient.get_open_admin_zendesk_ticket_id_for_email",
+        return_value=None,
+    )
     zendesk_sender = mocker.patch(
         "emergency_alerts_utils.clients.zendesk.zendesk_client.ZendeskClient.send_ticket_to_zendesk"
     )
 
     with freeze_time("2020-11-11T01:00:00Z" if is_out_of_hours else "2020-11-11T12:00:00Z"):
         with set_config(notify_admin, "SLACK_WEBHOOK_ADMIN_ACTIVITY", "https://test"):
-            # Uses current_user so we need a 'logged in' user and a request context:
-            client_request.login(platform_admin_user)
-            with notify_admin.test_request_context(method="POST"):
-                send_elevation_notifications()
+            with set_config(notify_admin, "ADMIN_ACTIVITY_ZENDESK_ENABLED", True):
+                # Uses current_user so we need a 'logged in' user and a request context:
+                client_request.login(platform_admin_user)
+                with notify_admin.test_request_context(method="POST"):
+                    send_elevation_notifications()
 
     slack_sender.assert_called_once()
     slack_message = slack_sender.call_args[0][0]
@@ -309,11 +315,20 @@ def test_elevation_notifications_message(
     )
 
     if is_out_of_hours:
-        zendesk_sender.assert_not_called()
-    else:
         zendesk_sender.assert_called_once()
-        zendesk_ticket_json = zendesk_sender.call_args[0][0]
-        assert zendesk_ticket_json == {"id": "yes"}
+        zendesk_ticket = zendesk_sender.call_args[0][0]
+        assert (
+            zendesk_ticket.__dict__
+            == EASSupportTicket(
+                subject="Out of Hours Admin Activity",
+                message="platform@admin.gov.uk has elevated to full platform admin",
+                ticket_type=EASSupportTicket.TYPE_INCIDENT,
+                p1=True,
+                user_email="platform@admin.gov.uk",
+            ).__dict__
+        )
+    else:
+        zendesk_sender.assert_not_called()
 
 
 def test_create_or_upgrade_zendesk_ticket_creates(mocker):

@@ -196,7 +196,9 @@ def _send_elevation_slack_notification():
 def _send_elevation_zendesk_notification():
     # Only expected to be called out of hours
     _create_or_upgrade_zendesk_ticket(
-        ADMIN_ZENDESK_PRIORITY_ELEVATED, f"{current_user.email_address} has elevated to full platform admin"
+        ADMIN_ZENDESK_PRIORITY_ELEVATED,
+        f"{current_user.email_address} has elevated to full platform admin",
+        current_user.email_address,
     )
 
 
