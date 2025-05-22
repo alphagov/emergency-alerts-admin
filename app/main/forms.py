@@ -1838,10 +1838,20 @@ class ChooseCoordinateTypeForm(StripWhitespaceForm):
 
 
 class RejectionReasonForm(StripWhitespaceForm):
-    hint = """ Detailed reason for rejecting the alert, including how it may be reworked.
-        For example, "The alert message has spelling mistakes"."""
+    hint = """ Provide details of why you are rejecting the alert.
+        For example, "The emergency has passed"."""
 
     rejection_reason = GovukTextareaField(
         validators=[DataRequired(message="Enter the reason for rejecting the alert")],
+        param_extensions={"hint": {"text": hint}, "rows": 3},
+    )
+
+
+class ReturnForEditForm(StripWhitespaceForm):
+    hint = """Provide details of why you're returning the alert to draft, including how it can be improved.
+    For example, "The alert message has spelling mistakes"."""
+
+    return_for_edit_reason = GovukTextareaField(
+        validators=[DataRequired(message="Enter the reason for returning the alert for edit")],
         param_extensions={"hint": {"text": hint}, "rows": 3},
     )

@@ -119,6 +119,7 @@ EXCLUDED_ENDPOINTS = tuple(
             "reports",
             "resend_email_link",
             "resend_email_verification",
+            "return_broadcast_for_edit",
             "revalidate_email_sent",
             "review_admin_action",
             "revoke_api_key",

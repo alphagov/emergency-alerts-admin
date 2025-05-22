@@ -31,6 +31,7 @@ from app.main.forms import (
     NewBroadcastForm,
     PostcodeForm,
     RejectionReasonForm,
+    ReturnForEditForm,
     SearchByNameForm,
 )
 from app.models.broadcast_message import BroadcastMessage, BroadcastMessages
@@ -82,6 +83,7 @@ def _get_back_link_from_view_broadcast_endpoint():
         "main.view_rejected_broadcast": ".broadcast_dashboard_rejected",
         "main.approve_broadcast_message": ".broadcast_dashboard",
         "main.reject_broadcast_message": ".broadcast_dashboard",
+        "main.return_broadcast_for_edit": ".broadcast_dashboard",
         "main.discard_broadcast_message": ".broadcast_dashboard",
     }[request.endpoint]
 
@@ -897,6 +899,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
                     if broadcast_message.get_latest_version()
                     else None
                 ),
+                approver=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
             )
         broadcast_message.request_approval()
         return redirect(
@@ -917,6 +920,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
         last_updated_time=(
             broadcast_message.get_latest_version().get("created_at") if broadcast_message.get_latest_version() else None
         ),
+        approver=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
     )
 
 
@@ -1020,6 +1024,7 @@ def approve_broadcast_message(service_id, broadcast_message_id):
                 if broadcast_message.get_latest_version()
                 else None
             ),
+            approver=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
         )
 
     if broadcast_message.status != "pending-approval":
@@ -1098,6 +1103,50 @@ def reject_broadcast_message(service_id, broadcast_message_id):
 
     return render_current_alert_page(
         broadcast_message, form, back_link_url=_get_back_link_from_view_broadcast_endpoint()
+    )
+
+
+@main.route(
+    "/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/return-for-edit", methods=["GET", "POST"]
+)
+@user_has_permissions("create_broadcasts", "approve_broadcasts", restrict_admin_usage=True)
+@service_has_permission("broadcast")
+def return_broadcast_for_edit(service_id, broadcast_message_id):
+    broadcast_message = BroadcastMessage.from_id(
+        broadcast_message_id,
+        service_id=current_service.id,
+    )
+
+    form = ReturnForEditForm()
+    if form.validate_on_submit():
+        try:
+            broadcast_message.check_can_update_status("draft")
+        except HTTPError as e:
+            flash(e.message)
+            return render_current_alert_page(
+                broadcast_message, back_link_url=_get_back_link_from_view_broadcast_endpoint()
+            )
+
+        if broadcast_message.status != "pending-approval":
+            return redirect(
+                url_for(
+                    ".view_current_broadcast",
+                    service_id=current_service.id,
+                    broadcast_message_id=broadcast_message.id,
+                )
+            )
+
+        try:
+            broadcast_message.return_broadcast_message_for_edit(return_for_edit_reason=form.return_for_edit_reason.data)
+        except Exception as e:
+            form.return_for_edit_reason.errors.append(e.message)
+
+        broadcast_message = BroadcastMessage.from_id(
+            broadcast_message_id,
+            service_id=current_service.id,
+        )
+    return render_current_alert_page(
+        broadcast_message, back_link_url=_get_back_link_from_view_broadcast_endpoint(), return_for_edit_form=form
     )
 
 
