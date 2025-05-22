@@ -1,9 +1,11 @@
 import uuid
 
 import pytest
+from freezegun import freeze_time
 
 from app.models.service import Service
 from app.utils.admin_action import (
+    _is_out_of_office_hours,
     create_or_replace_admin_action,
     send_elevation_notifications,
     send_notifications,
@@ -296,3 +298,34 @@ def test_elevation_slack_notification_message(mocker, mock_get_user, notify_admi
         slack_message_properties["markdown_sections"][0]
         == "`platform@admin.gov.uk` has elevated to become a full platform admin for their session"
     )
+
+
+@pytest.mark.parametrize(
+    "datetime_utc, expected_out_of_hours",
+    [
+        # Winter time
+        ("2020-11-11T06:59:00Z", True),
+        ("2020-11-11T07:00:00Z", True),
+        ("2020-11-11T07:59:00Z", True),
+        ("2020-11-11T08:00:00Z", False),
+        ("2020-11-11T08:01:00Z", False),
+        ("2020-11-11T17:59:00Z", False),
+        ("2020-11-11T18:00:00Z", True),
+        ("2020-11-11T18:01:00Z", True),
+        ("2020-11-11T19:00:00Z", True),
+        # Summer time: these times will have one hour added on locally due to DST
+        # as it's parsed with the Europe/London timezone
+        ("2020-05-05T06:59:00Z", True),
+        ("2020-05-05T07:00:00Z", False),
+        ("2020-05-05T07:59:00Z", False),
+        ("2020-05-05T08:00:00Z", False),
+        ("2020-05-05T08:01:00Z", False),
+        ("2020-05-05T16:59:00Z", False),
+        ("2020-05-05T17:00:00Z", True),
+        ("2020-05-05T18:00:00Z", True),
+        ("2020-05-05T19:00:00Z", True),
+    ],
+)
+def test_is_out_of_office_hours(datetime_utc, expected_out_of_hours):
+    with freeze_time(datetime_utc):
+        assert _is_out_of_office_hours() == expected_out_of_hours

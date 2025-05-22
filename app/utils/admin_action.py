@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Iterable
 
 from emergency_alerts_utils.admin_action import (
@@ -10,6 +11,9 @@ from emergency_alerts_utils.admin_action import (
     ADMIN_STATUS_INVALIDATED,
     ADMIN_STATUS_PENDING,
     ADMIN_STATUS_REJECTED,
+    ADMIN_ZENDESK_OFFICE_HOURS_END,
+    ADMIN_ZENDESK_OFFICE_HOURS_START,
+    ADMIN_ZENDESK_OFFICE_HOURS_TIMEZONE,
 )
 from emergency_alerts_utils.api_key import KEY_TYPE_NORMAL
 from emergency_alerts_utils.clients.slack.slack_client import SlackClient, SlackMessage
@@ -230,3 +234,13 @@ def _get_action_description_markdown(action_obj, action_service: Service):
         markdown = "Elevate themselves to become a full platform admin\n_(This request will automatically expire)_"
 
     return markdown
+
+
+def _is_out_of_office_hours():
+    now = datetime.now(ADMIN_ZENDESK_OFFICE_HOURS_TIMEZONE)
+    # datetime hour is zero-indexed but our constants are 1-indexed to make sense to humans
+    if now.hour >= ADMIN_ZENDESK_OFFICE_HOURS_END:
+        return True
+    if now.hour < ADMIN_ZENDESK_OFFICE_HOURS_START:
+        return True
+    return False
