@@ -14,7 +14,9 @@ from emergency_alerts_utils.admin_action import (
     ADMIN_ZENDESK_OFFICE_HOURS_END,
     ADMIN_ZENDESK_OFFICE_HOURS_START,
     ADMIN_ZENDESK_OFFICE_HOURS_TIMEZONE,
+    ADMIN_ZENDESK_PRIORITY_APPROVE,
     ADMIN_ZENDESK_PRIORITY_ELEVATED,
+    ADMIN_ZENDESK_PRIORITY_REQUEST,
 )
 from emergency_alerts_utils.api_key import KEY_TYPE_NORMAL
 from emergency_alerts_utils.clients.slack.slack_client import SlackClient, SlackMessage
@@ -138,15 +140,16 @@ def _admin_action_is_similar(action_obj1, action_obj2):
 
 
 def send_notifications(new_status, action_obj, action_service: Service):
-    _send_slack_notification(new_status, action_obj, action_service)
-
-    # If we're out of hours and this concerns an admin elevation (request, approval or elevation)
-    # then we'll create a Zendesk ticket too.
-
-
-def _send_slack_notification(new_status, action_obj, action_service: Service):
     creator_user = User.from_id(action_obj["created_by"])
+    _send_slack_notification(new_status, action_obj, action_service, creator_user)
 
+    # If we're out of hours and this concerns an admin elevation (request or approval)
+    # then we'll create a Zendesk ticket too. Elevating itself is handled elsewhere.
+    if action_obj["action_type"] == ADMIN_ELEVATE_USER and _should_send_zendesk_ticket():
+        _send_admin_elevation_zendesk_notification(new_status, creator_user)
+
+
+def _send_slack_notification(new_status, action_obj, action_service: Service, creator_user: User):
     message_title = None
     message_type = None
     message_markdown_parts = [
@@ -174,6 +177,19 @@ def _send_slack_notification(new_status, action_obj, action_service: Service):
     )
     return _send_slack_message(message)
 
+
+def _send_admin_elevation_zendesk_notification(new_status, creator_user: User):
+    comment = f"{creator_user.email_address} requested to become a platform admin"
+    priority = ADMIN_ZENDESK_PRIORITY_REQUEST
+
+    # We add the approval onto initial the comment.
+    # We don't know here if the original request was out of hours and thus went to Zendesk
+    # or just the approval was out of hours.
+    if new_status == ADMIN_STATUS_APPROVED:
+        comment = comment + f"\nApproved by {current_user.email_address}"
+        priority = ADMIN_ZENDESK_PRIORITY_APPROVE
+
+    _create_or_upgrade_zendesk_ticket(priority, comment, creator_user.email_address)
 
 
 def send_elevated_notifications():

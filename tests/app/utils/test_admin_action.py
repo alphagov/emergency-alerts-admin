@@ -203,7 +203,7 @@ def test_similar_admin_actions_are_invalidated(
 
 
 @pytest.mark.parametrize(
-    "action_obj, expected_markdown",
+    "action_obj, expected_slack_markdown, expected_zendesk_comment",
     [
         (
             {
@@ -221,6 +221,7 @@ def test_similar_admin_actions_are_invalidated(
 
 With permissions:
 - Create new alerts""",
+            None,
         ),
         (
             {
@@ -233,6 +234,7 @@ With permissions:
                 },
             },
             "Create normal API key `New Key` in service `service one`.",
+            None,
         ),
         (
             {
@@ -252,6 +254,7 @@ With permissions:
 - Create new alerts
 - Approve alerts
 - Add and edit templates""",
+            None,
         ),
         (
             {
@@ -261,28 +264,60 @@ With permissions:
             },
             """Elevate themselves to become a full platform admin
 _(This request will automatically expire)_""",
+            "platform@admin.gov.uk requested to become a platform admin\nApproved by platform@admin.gov.uk",
         ),
     ],
 )
 def test_slack_notification_message(
-    action_obj, expected_markdown, mocker, mock_get_user, service_one, notify_admin, client_request, platform_admin_user
+    action_obj,
+    expected_slack_markdown,
+    expected_zendesk_comment,
+    mocker,
+    mock_get_user,
+    service_one,
+    notify_admin,
+    client_request,
+    platform_admin_user,
 ):
-    sender = mocker.patch("emergency_alerts_utils.clients.slack.slack_client.SlackClient.send_message_to_slack")
+    slack_sender = mocker.patch("emergency_alerts_utils.clients.slack.slack_client.SlackClient.send_message_to_slack")
+    zendesk_get = mocker.patch(
+        "emergency_alerts_utils.clients.zendesk.zendesk_client"
+        + ".ZendeskClient.get_open_admin_zendesk_ticket_id_for_email",
+        return_value=None,
+    )
+    zendesk_sender = mocker.patch(
+        "emergency_alerts_utils.clients.zendesk.zendesk_client.ZendeskClient.send_ticket_to_zendesk"
+    )
     service = Service(service_one)
 
-    with set_config(notify_admin, "SLACK_WEBHOOK_ADMIN_ACTIVITY", "https://test"):
-        # Uses current_user so we need a 'logged in' user and a request context:
-        client_request.login(platform_admin_user)
-        with notify_admin.test_request_context(method="POST"):
-            send_notifications("approved", action_obj, service)
+    with _zendesk_configured(notify_admin):
+        with set_config(notify_admin, "SLACK_WEBHOOK_ADMIN_ACTIVITY", "https://test"):
+            # Uses current_user so we need a 'logged in' user and a request context:
+            client_request.login(platform_admin_user)
+            with notify_admin.test_request_context(method="POST"):
+                send_notifications("approved", action_obj, service)
 
-    sender.assert_called_once()
-    slack_message = sender.call_args[0][0]
+    slack_sender.assert_called_once()
+    slack_message = slack_sender.call_args[0][0]
     slack_message_properties = slack_message.__dict__
 
-    assert slack_message_properties["markdown_sections"][0] == expected_markdown
+    assert slack_message_properties["markdown_sections"][0] == expected_slack_markdown
     assert slack_message_properties["markdown_sections"][1] == "_Created by `platform@admin.gov.uk`_"
     assert slack_message_properties["markdown_sections"][2] == ":green_tick: Approved by `platform@admin.gov.uk`"
+
+    if expected_zendesk_comment is not None:
+        zendesk_get.assert_called_once_with(platform_admin_user["email_address"])
+        zendesk_ticket = zendesk_sender.call_args[0][0]
+        assert (
+            zendesk_ticket.__dict__
+            == EASSupportTicket(
+                subject="Out of Hours Admin Activity",
+                message=expected_zendesk_comment,
+                ticket_type=EASSupportTicket.TYPE_INCIDENT,
+                p1=True,
+                user_email=platform_admin_user["email_address"],
+            ).__dict__
+        )
 
 
 @pytest.mark.parametrize("is_out_of_hours", [True, False])
