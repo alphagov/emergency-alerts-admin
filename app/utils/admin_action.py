@@ -246,6 +246,7 @@ def _create_or_upgrade_zendesk_ticket(priority: str, comment: str, relevant_admi
             message=comment,
             ticket_type=EASSupportTicket.TYPE_INCIDENT,
             p1=True,
+            custom_priority=priority,
             user_email=relevant_admin_email,
         )
         zendesk_client.send_ticket_to_zendesk(ticket)

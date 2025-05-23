@@ -315,6 +315,7 @@ def test_slack_notification_message(
                 message=expected_zendesk_comment,
                 ticket_type=EASSupportTicket.TYPE_INCIDENT,
                 p1=True,
+                custom_priority="normal",  # What we've defined for an approval event
                 user_email=platform_admin_user["email_address"],
             ).__dict__
         )
@@ -360,6 +361,7 @@ def test_elevation_notifications_message(
                 message="platform@admin.gov.uk has elevated to full platform admin",
                 ticket_type=EASSupportTicket.TYPE_INCIDENT,
                 p1=True,
+                custom_priority="urgent",  # What we've mapped an out of hours elevation to
                 user_email="platform@admin.gov.uk",
             ).__dict__
         )
@@ -389,6 +391,7 @@ def test_create_or_upgrade_zendesk_ticket_creates(mocker):
             message="test",
             ticket_type=EASSupportTicket.TYPE_INCIDENT,
             p1=True,
+            custom_priority="urgent",
             user_email=email,
         ).__dict__
     )
