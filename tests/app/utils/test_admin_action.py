@@ -1,4 +1,5 @@
 import uuid
+from contextlib import contextmanager
 
 import pytest
 from emergency_alerts_utils.clients.zendesk.zendesk_client import EASSupportTicket
@@ -298,13 +299,12 @@ def test_elevation_notifications_message(
         "emergency_alerts_utils.clients.zendesk.zendesk_client.ZendeskClient.send_ticket_to_zendesk"
     )
 
-    with freeze_time("2020-11-11T01:00:00Z" if is_out_of_hours else "2020-11-11T12:00:00Z"):
+    with _zendesk_configured(notify_admin, is_out_of_hours):
         with set_config(notify_admin, "SLACK_WEBHOOK_ADMIN_ACTIVITY", "https://test"):
-            with set_config(notify_admin, "ADMIN_ACTIVITY_ZENDESK_ENABLED", True):
-                # Uses current_user so we need a 'logged in' user and a request context:
-                client_request.login(platform_admin_user)
-                with notify_admin.test_request_context(method="POST"):
-                    send_elevated_notifications()
+            # Uses current_user so we need a 'logged in' user and a request context:
+            client_request.login(platform_admin_user)
+            with notify_admin.test_request_context(method="POST"):
+                send_elevated_notifications()
 
     slack_sender.assert_called_once()
     slack_message = slack_sender.call_args[0][0]
@@ -413,9 +413,15 @@ def test_is_out_of_office_hours(datetime_utc, expected_out_of_hours):
 
 @pytest.mark.parametrize("zendesk_enabled", [True, False])
 def test_should_send_zendesk_ticket_uses_config(mocker, notify_admin, zendesk_enabled):
-    with freeze_time("2020-11-11T01:00:00Z"):  # Out of hours
-        with set_config(notify_admin, "ADMIN_ACTIVITY_ZENDESK_ENABLED", zendesk_enabled):
-            assert _should_send_zendesk_ticket() == zendesk_enabled
+    with _zendesk_configured(notify_admin, zendesk_enabled):
+        assert _should_send_zendesk_ticket() == zendesk_enabled
 
     with freeze_time("2020-11-11T12:00:00Z"):  # In hours
         assert not _should_send_zendesk_ticket()
+
+
+@contextmanager
+def _zendesk_configured(notify_admin, is_out_of_hours=True):
+    with freeze_time("2020-11-11T01:00:00Z" if is_out_of_hours else "2020-11-11T12:00:00Z"):
+        with set_config(notify_admin, "ADMIN_ACTIVITY_ZENDESK_ENABLED", True):
+            yield
