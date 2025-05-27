@@ -296,3 +296,48 @@ def test_elevation_slack_notification_message(mocker, mock_get_user, notify_admi
         slack_message_properties["markdown_sections"][0]
         == "`platform@admin.gov.uk` has elevated to become a full platform admin for their session"
     )
+
+
+@pytest.mark.parametrize(
+    "request_ip, functional_test_ips, expected_send",
+    [
+        ("1.2.3.4", ["5.6.7.8", "1.2.3.4"], False),
+        ("1.2.3.4", ["1.2.3.4"], False),
+        ("1.2.3.4", ["5.6.7.8"], True),
+        ("1.2.3.4", [], True),
+    ],
+)
+def test_notifications_are_not_sent_if_from_functional_ips(
+    mocker,
+    notify_admin,
+    platform_admin_user,
+    client_request,
+    service_one,
+    request_ip,
+    functional_test_ips,
+    expected_send,
+):
+    slack = mocker.patch("emergency_alerts_utils.clients.slack.slack_client.SlackClient.send_message_to_slack")
+    service = Service(service_one)
+
+    with set_config(notify_admin, "SLACK_WEBHOOK_ADMIN_ACTIVITY", "https://test"):
+        with set_config(notify_admin, "FUNCTIONAL_TEST_IPS", functional_test_ips):
+            # Uses current_user so we need a 'logged in' user and a request context:
+            client_request.login(platform_admin_user)
+            with notify_admin.test_request_context(method="POST", environ_base={"REMOTE_ADDR": request_ip}):
+                # We test both the general AdminAction logic as well as the elevated notification util
+                send_slack_notification(
+                    "approved",
+                    {
+                        "created_by": SERVICE_ONE_ID,
+                        "action_type": "elevate_platform_admin",
+                        "action_data": {},
+                    },
+                    service,
+                )
+                send_elevation_slack_notification()
+
+    if expected_send:
+        assert slack.call_count == 2
+    else:
+        slack.assert_not_called()
