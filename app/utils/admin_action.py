@@ -17,6 +17,7 @@ from emergency_alerts_utils.admin_action import (
     ADMIN_ZENDESK_PRIORITY_APPROVE,
     ADMIN_ZENDESK_PRIORITY_ELEVATED,
     ADMIN_ZENDESK_PRIORITY_REQUEST,
+    ADMIN_ZENDESK_TICKET_TITLE_PREFIX,
 )
 from emergency_alerts_utils.api_key import KEY_TYPE_NORMAL
 from emergency_alerts_utils.clients.slack.slack_client import SlackClient, SlackMessage
@@ -242,7 +243,7 @@ def _create_or_upgrade_zendesk_ticket(priority: str, comment: str, relevant_admi
         zendesk_client.update_ticket_priority_with_comment(existing_ticket_id, priority, comment)
     else:
         ticket = EASSupportTicket(
-            subject="Out of Hours Admin Activity",
+            subject=ADMIN_ZENDESK_TICKET_TITLE_PREFIX,
             message=comment,
             ticket_type=EASSupportTicket.TYPE_INCIDENT,
             p1=True,
