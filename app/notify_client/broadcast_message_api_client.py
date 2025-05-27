@@ -105,11 +105,15 @@ class BroadcastMessageAPIClient(AdminAPIClient):
         return self.post(f"/service/{service_id}/broadcast-message/{broadcast_message_id}/check-status", data=data)
 
     def get_broadcast_returned_for_edit_reasons(self, service_id, broadcast_message_id):
+        """
+        Retrieve a list of edit_reasons for specific broadcast message
+        i.e. the reasons that the message has been returned to draft state
+        """
         return self.get(f"/service/{service_id}/broadcast-message-edit-reasons/{broadcast_message_id}/edit-reasons")
 
     def get_latest_returned_for_edit_reason(self, service_id, broadcast_message_id):
         """
-        Retrieve a list of ...
+        Retrieve latest edit_reason for specific broadcast message
         """
         return self.get(
             f"/service/{service_id}/broadcast-message-edit-reasons/{broadcast_message_id}/latest-edit-reason"

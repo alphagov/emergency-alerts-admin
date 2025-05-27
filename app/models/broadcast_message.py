@@ -460,9 +460,14 @@ class BroadcastMessage(JSONModel):
         return versions[0] if len(versions) > 0 else None
 
     def get_returned_for_edit_reasons(self):
+        """Returns a list of 'edit_reason' records - these consist of the reason that alert has been returned,
+        who submitted the alert for approval and who returned (as well as other attributes that we don't currently use)
+        """
         return broadcast_message_api_client.get_broadcast_returned_for_edit_reasons(self.service_id, self.id)
 
     def get_latest_returned_for_edit_reason(self):
+        """Returns latest edit_reason record submitted to the broadcast_message_edit_reasons
+        table for the broadcast_message_id"""
         return broadcast_message_api_client.get_latest_returned_for_edit_reason(self.service_id, self.id)
 
 
