@@ -282,7 +282,7 @@
   {% elif broadcast_message.status == 'draft' %}
     {% if broadcast_message.edit_reason %}
     <div class="banner-dangerous govuk-!-margin-bottom-6 " id="returned-reason-banner" data-notify-module="autofocus" aria-live="polite" tabindex="-1">
-      <p class="govuk-!-margin-right-1 dashboard-table govuk-!-font-weight-bold">Reason for being returned for edit: </p>
+      <p class="govuk-!-margin-right-1 dashboard-table govuk-!-font-weight-bold">Reason why alert has been returned to edit: </p>
       <p class="dashboard-table">
         {{broadcast_message.edit_reason}}
       </p>
