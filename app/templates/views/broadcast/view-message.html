@@ -359,6 +359,16 @@
 
   {{broadcast_message_status_history(broadcast_message, edit_reasons)}}
 
+  {#
+  can_submit_for_approval determines whether or not the 'Submit for approval' button is displayed for user.
+  can_submit_for_approval is True if:
+  - the user has create_broadcasts permission
+  - the alert has all required fields (area, content, reference and duration)
+  - the alert is in draft state
+  - the current service isn't live or if it is, the current user is not the user that returned
+    the alert to draft state (so they aren't able to make the requested changes themselves)
+  #}
+
 {% set can_submit_for_approval = (
   current_user.has_permissions('create_broadcasts', restrict_admin_usage=True)
   and broadcast_message.areas
