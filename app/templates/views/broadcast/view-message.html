@@ -95,6 +95,7 @@
                 {{ page_footer(
                   'Reject alert',
                   destructive=True,
+                  button_name="reject-alert"
                 ) }}
               {% endcall %}
             </div>
@@ -173,6 +174,7 @@
                   {{ page_footer(
                     'Reject alert',
                     destructive=True,
+                    button_name="reject-alert"
                   ) }}
                 {% endcall %}
               </div>
@@ -278,6 +280,7 @@
               {{ page_footer(
                 'Reject alert',
                 destructive=True,
+                button_name="reject-alert"
               ) }}
             {% endcall %}
           </div>
@@ -327,7 +330,7 @@
     {% endif %}
   {% elif broadcast_message.status == 'draft' %}
     {% if broadcast_message.edit_reason %}
-    <div class="banner-dangerous govuk-!-margin-bottom-6">
+    <div class="banner-dangerous govuk-!-margin-bottom-6" id="returned-reason-banner">
       <p class="govuk-!-margin-right-1 dashboard-table govuk-!-font-weight-bold">Reason for being returned for edit: </p>
       <p class="dashboard-table">
         {{broadcast_message.edit_reason}}
