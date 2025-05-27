@@ -47,6 +47,51 @@
   {{ govukBackLink({ "href": back_link }) }}
 {% endblock %}
 
+{% set return_for_edit_details %}
+  <div class="govuk-!-margin-top-3 govuk-!-margin-bottom-3">
+    <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for returning the alert to draft</h1>
+    {% call form_wrapper(id='return_for_edit',action=url_for('main.return_broadcast_for_edit', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
+      {{ return_for_edit_form.return_for_edit_reason }}
+      {{ page_footer(
+        'Return alert for edit',
+        destructive=True,
+        button_name="return-alert-for-edit"
+      ) }}
+    {% endcall %}
+  </div>
+{% endset %}
+
+{% set rejection_reason_details %}
+  <div class="govuk-!-margin-top-3">
+    <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for rejecting the alert</h1>
+    {% call form_wrapper(id='reject',action=url_for('main.reject_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
+      {{ rejection_form.rejection_reason }}
+      {{ page_footer(
+        'Reject alert',
+        destructive=True,
+        button_name="reject-alert"
+      ) }}
+    {% endcall %}
+  </div>
+{% endset %}
+
+{% set approve_details %}
+  <div class="govuk-!-margin-bottom-5">
+    {% call form_wrapper(id='approve') %}
+    <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-3">
+      Because you’re in training mode you can approve
+      your own alerts, to see how it works.
+    </p>
+    <p class="govuk-body govuk-!-margin-top-0 govuk-!-margin-bottom-3">
+      No real alerts will be broadcast to anyone’s phone.
+    </p>
+    {{ page_footer(
+      "Start broadcasting now"
+    ) }}
+    {% endcall %}
+  </div>
+{% endset %}
+
 {% block maincolumn_content %}
 
   {% if broadcast_message.status == 'pending-approval' %}
@@ -74,32 +119,6 @@
               "Start broadcasting now"
             ) }}
           {% endcall %}
-          {% set return_for_edit_details %}
-            <div class="govuk-!-margin-top-3 govuk-!-margin-bottom-3">
-              <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for returning the alert to draft</h1>
-              {% call form_wrapper(id='return_for_edit',action=url_for('main.return_broadcast_for_edit', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
-                {{ return_for_edit_form.return_for_edit_reason }}
-                {{ page_footer(
-                  'Return alert for edit',
-                  destructive=True,
-                  button_name="return-alert-for-edit"
-                ) }}
-              {% endcall %}
-            </div>
-          {% endset %}
-          {% set rejection_reason_details %}
-            <div class="govuk-!-margin-top-3">
-              <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for rejecting the alert</h1>
-              {% call form_wrapper(id='reject',action=url_for('main.reject_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
-                {{ rejection_form.rejection_reason }}
-                {{ page_footer(
-                  'Reject alert',
-                  destructive=True,
-                  button_name="reject-alert"
-                ) }}
-              {% endcall %}
-            </div>
-          {% endset %}
           <div class="govuk-!-margin-top-1">
             {{ govukDetails({
               "classes": "govuk-!-margin-bottom-0",
@@ -137,48 +156,6 @@
               When you use a live account you’ll need another member of
               your team to approve your alert.
             </p>
-            {% set approve_details %}
-              <div class="govuk-!-margin-bottom-5">
-                {% call form_wrapper(id='approve') %}
-                <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-3">
-                  Because you’re in training mode you can approve
-                  your own alerts, to see how it works.
-                </p>
-                <p class="govuk-body govuk-!-margin-top-0 govuk-!-margin-bottom-3">
-                  No real alerts will be broadcast to anyone’s phone.
-                </p>
-                {{ page_footer(
-                  "Start broadcasting now"
-                ) }}
-                {% endcall %}
-              </div>
-            {% endset %}
-            {% set return_for_edit_details %}
-              <div class="govuk-!-margin-top-3 govuk-!-margin-bottom-3">
-                <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for returning the alert to draft</h1>
-                {% call form_wrapper(id='return_for_edit',action=url_for('main.return_broadcast_for_edit', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
-                  {{ return_for_edit_form.return_for_edit_reason }}
-                  {{ page_footer(
-                    'Return alert for edit',
-                    destructive=True,
-                    button_name="return-alert-for-edit"
-                  ) }}
-                {% endcall %}
-              </div>
-            {% endset %}
-            {% set rejection_reason_details %}
-              <div class="govuk-!-margin-top-3">
-                <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for rejecting the alert</h1>
-                {% call form_wrapper(id='reject', action=url_for('main.reject_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
-                  {{ rejection_form.rejection_reason }}
-                  {{ page_footer(
-                    'Reject alert',
-                    destructive=True,
-                    button_name="reject-alert"
-                  ) }}
-                {% endcall %}
-              </div>
-            {% endset %}
 
             {{ govukDetails({
               "classes": "govuk-!-margin-bottom-0",
@@ -259,32 +236,6 @@
             "Start broadcasting now"
           ) }}
         {% endcall %}
-        {% set return_for_edit_details %}
-          <div class="govuk-!-margin-top-3 govuk-!-margin-bottom-3">
-            <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for returning the alert to draft</h1>
-            {% call form_wrapper(id='return_for_edit',action=url_for('main.return_broadcast_for_edit', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
-              {{ return_for_edit_form.return_for_edit_reason }}
-              {{ page_footer(
-                'Return alert for edit',
-                destructive=True,
-                button_name="return-alert-for-edit"
-              ) }}
-            {% endcall %}
-          </div>
-        {% endset %}
-        {% set rejection_reason_details %}
-          <div class="govuk-!-margin-top-3">
-            <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for rejecting the alert</h1>
-            {% call form_wrapper(id='reject',action=url_for('main.reject_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
-              {{ rejection_form.rejection_reason }}
-              {{ page_footer(
-                'Reject alert',
-                destructive=True,
-                button_name="reject-alert"
-              ) }}
-            {% endcall %}
-          </div>
-        {% endset %}
         <div class="govuk-!-margin-top-1">
           {{ govukDetails({
             "classes": "govuk-!-margin-bottom-0",
