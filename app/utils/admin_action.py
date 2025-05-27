@@ -194,7 +194,9 @@ def _send_admin_elevation_zendesk_notification(new_status, creator_user: User):
         comment = comment + f"\nApproved by {current_user.email_address}"
         priority = ADMIN_ZENDESK_PRIORITY_APPROVE
 
-    _create_or_upgrade_zendesk_ticket(priority, comment, creator_user.email_address)
+    # Don't fire off a rejected/invalidated event if done out of hours, could be harmless tidy up
+    if new_status == ADMIN_STATUS_PENDING or new_status == ADMIN_STATUS_APPROVED:
+        _create_or_upgrade_zendesk_ticket(priority, comment, creator_user.email_address)
 
 
 def send_elevated_notifications():

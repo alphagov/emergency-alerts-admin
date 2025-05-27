@@ -321,6 +321,59 @@ def test_slack_notification_message(
         )
 
 
+@pytest.mark.parametrize(
+    "action_status, expect_zendesk",
+    [
+        ("pending", True),
+        ("approved", True),
+        ("rejected", False),
+        ("invalidated", False),
+    ],
+)
+def test_zendesk_is_only_attempted_for_relevant_statuses(
+    action_status,
+    expect_zendesk,
+    mocker,
+    mock_get_user,
+    service_one,
+    notify_admin,
+    client_request,
+    platform_admin_user,
+):
+    slack_sender = mocker.patch("emergency_alerts_utils.clients.slack.slack_client.SlackClient.send_message_to_slack")
+    zendesk_get = mocker.patch(
+        "emergency_alerts_utils.clients.zendesk.zendesk_client"
+        + ".ZendeskClient.get_open_admin_zendesk_ticket_id_for_email",
+        return_value=None,
+    )
+    zendesk_sender = mocker.patch(
+        "emergency_alerts_utils.clients.zendesk.zendesk_client.ZendeskClient.send_ticket_to_zendesk"
+    )
+    service = Service(service_one)
+
+    action_obj = {
+        "created_by": SERVICE_ONE_ID,
+        "action_type": "elevate_platform_admin",
+        "action_data": {},
+    }
+
+    with _zendesk_configured(notify_admin):
+        with set_config(notify_admin, "SLACK_WEBHOOK_ADMIN_ACTIVITY", "https://test"):
+            # Uses current_user so we need a 'logged in' user and a request context:
+            client_request.login(platform_admin_user)
+            with notify_admin.test_request_context(method="POST"):
+                send_notifications(action_status, action_obj, service)
+
+    slack_sender.assert_called_once()
+
+    if expect_zendesk:
+        zendesk_get.assert_called_once()
+        zendesk_sender.assert_called_once()
+    else:
+        zendesk_get.assert_not_called()
+        zendesk_sender.assert_not_called()
+
+
 @pytest.mark.parametrize("is_out_of_hours", [True, False])
 def test_elevation_notifications_message(
     mocker, mock_get_user, notify_admin, client_request, platform_admin_user, is_out_of_hours
