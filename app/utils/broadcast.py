@@ -375,7 +375,7 @@ def render_current_alert_page(
         if broadcast_message.get_latest_version()
         else None,
         edit_reasons=broadcast_message.get_returned_for_edit_reasons(),
-        approver=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
+        returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
     )
 
 

@@ -344,8 +344,13 @@
     {{broadcast_details(broadcast_message, current_service)}}
   {% endif %}
 
+   {#
+    is_editable is passed into alertSummaryList component and determines whether or not user can edit the fields for an alert.
+    is_editable is True if the service is not live and has create_broadcasts permission OR if the service is live but the user has create_broadcasts
+    permission AND is not the user that returned the alert to draft state (so they aren't able to make the requested changes themselves)
+  #}
   {% if current_service.live %}
-    {% set is_editable = current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) and current_user.id != approver %}
+    {% set is_editable = current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) and current_user.id != returned_for_edit_by %}
   {% else %}
     {% set is_editable = current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) %}
   {% endif %}
@@ -360,7 +365,7 @@
   and broadcast_message.content
   and broadcast_message.reference
   and broadcast_message.status == "draft"
-  and (not current_service.live or current_user.id != approver)
+  and (not current_service.live or current_user.id != returned_for_edit_by)
 ) %}
 
 {% if can_submit_for_approval %}

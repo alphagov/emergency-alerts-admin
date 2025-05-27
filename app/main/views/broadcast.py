@@ -899,7 +899,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
                     if broadcast_message.get_latest_version()
                     else None
                 ),
-                approver=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
+                returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
             )
         broadcast_message.request_approval()
         return redirect(
@@ -920,7 +920,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
         last_updated_time=(
             broadcast_message.get_latest_version().get("created_at") if broadcast_message.get_latest_version() else None
         ),
-        approver=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
+        returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
     )
 
 
@@ -1024,7 +1024,7 @@ def approve_broadcast_message(service_id, broadcast_message_id):
                 if broadcast_message.get_latest_version()
                 else None
             ),
-            approver=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
+            returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
         )
 
     if broadcast_message.status != "pending-approval":
@@ -1112,6 +1112,12 @@ def reject_broadcast_message(service_id, broadcast_message_id):
 @user_has_permissions("create_broadcasts", "approve_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
 def return_broadcast_for_edit(service_id, broadcast_message_id):
+    """
+    This route first checks that the form submitted is valid (i.e. that the return_for_edit_reason
+    passes its validation) and then checks that the alert can be moved into draft state.
+    If both are successful, the alert is moved into draft state and the return_for_edit_reason is submitted.
+    If there are any errors at any point, the page is re-rendered with those errors displayed.
+    """
     broadcast_message = BroadcastMessage.from_id(
         broadcast_message_id,
         service_id=current_service.id,
