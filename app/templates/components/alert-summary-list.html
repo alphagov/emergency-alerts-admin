@@ -59,7 +59,7 @@
         {% endif %}
     {% endset %}
 
-    {% if broadcast_message.status == "draft" and is_editable %}
+    {% if broadcast_message.status in ["draft", "returned"] and is_editable %}
         {% set display_action = True %}
         {% set conditional_action_text %}
             Change

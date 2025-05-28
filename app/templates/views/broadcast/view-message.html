@@ -279,15 +279,15 @@
         </p>
       </div>
     {% endif %}
-  {% elif broadcast_message.status == 'draft' %}
-    {% if broadcast_message.edit_reason %}
+  {% elif broadcast_message.status == 'returned' %}
     <div class="banner-dangerous govuk-!-margin-bottom-6 " id="returned-reason-banner" data-notify-module="autofocus" aria-live="polite" tabindex="-1">
       <p class="govuk-!-margin-right-1 dashboard-table govuk-!-font-weight-bold">Reason why alert has been returned to edit: </p>
       <p class="dashboard-table">
         {{broadcast_message.edit_reason}}
       </p>
     </div>
-    {% endif %}
+    {{ page_header(broadcast_message.template.name) }}
+  {% elif broadcast_message.status == 'draft' %}
     {{ page_header(broadcast_message.template.name) }}
   {% else %}
     {{ page_header(broadcast_message.template.name) }}
@@ -316,6 +316,7 @@
   - the user has create_broadcasts permission
   - the alert has all required fields (area, content, reference and duration)
   - the alert is in draft state
+  - the alert is in returned state
   - the current service isn't live or if it is, the current user is not the user that returned
     the alert to draft state (so they aren't able to make the requested changes themselves)
   #}
@@ -325,7 +326,7 @@
   and broadcast_message.areas
   and broadcast_message.content
   and broadcast_message.reference
-  and broadcast_message.status == "draft"
+  and broadcast_message.status in ["draft", "returned"]
   and (not current_service.live or current_user.id != returned_for_edit_by)
 ) %}
 
@@ -342,7 +343,7 @@
   }) }}
 {% endif %}
 
-{% if broadcast_message.status == "draft" and broadcast_message_version_count > 1 %}
+{% if broadcast_message.status in ["draft", "returned"] and broadcast_message_version_count > 1 %}
   <div class="bottom-gutter-1-2">
     {% if last_updated_time %}
     <h2 class="heading-small bottom-gutter-2-3 heading-inline">

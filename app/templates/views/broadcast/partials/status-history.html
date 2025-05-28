@@ -18,7 +18,7 @@
             {% endfor %}
         {%- endif %}
 
-        {% if broadcast_message.status != 'draft' and broadcast_message.submitted_at %}
+        {% if broadcast_message.status not in ['returned', 'draft'] and broadcast_message.submitted_at %}
             {% if broadcast_message.submitted_by %}
                 <p class="govuk-body govuk-!-margin-bottom-3">
                     Submitted by {{broadcast_message.submitted_by}} on {{broadcast_message.submitted_at | format_datetime_short}}.
