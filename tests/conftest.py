@@ -2401,6 +2401,20 @@ def mock_update_broadcast_message(
 
 
 @pytest.fixture(scope="function")
+def mock_return_broadcast_message_for_edit_with_reason(
+    mocker,
+    fake_uuid,
+):
+    def _update(*, service_id, broadcast_message_id, edit_reason):
+        pass
+
+    return mocker.patch(
+        "app.broadcast_message_api_client.return_broadcast_message_for_edit_with_reason",
+        side_effect=_update,
+    )
+
+
+@pytest.fixture(scope="function")
 def mock_check_can_update_status(mocker):
     return mocker.patch("app.broadcast_message_api_client.check_broadcast_status_transition_allowed")
 
