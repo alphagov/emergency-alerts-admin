@@ -1116,7 +1116,7 @@ def reject_broadcast_message(service_id, broadcast_message_id):
 def return_broadcast_for_edit(service_id, broadcast_message_id):
     """
     This route first checks that the form submitted is valid (i.e. that the return_for_edit_reason
-    field passes its validation) and then checks that the alert can be moved into draft state.
+    field passes its validation) and then checks that the alert can be moved into returned state.
     If both are successful, the alert is moved into draft state and the return_for_edit_reason is submitted.
     If there are any errors at any point, the page is re-rendered with those errors displayed.
     """
