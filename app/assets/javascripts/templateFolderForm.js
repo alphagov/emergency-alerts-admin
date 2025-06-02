@@ -189,12 +189,16 @@
 
     this.$singleNotificationChannel = (document.querySelector('div[id=add_new_template_form]')).getAttribute("data-channel");
     this.$singleChannelService = (document.querySelector('div[id=add_new_template_form]')).getAttribute("data-service");
+    const parts = window.location.pathname.split("/").filter(Boolean);
+    this.$parentFolderID = parts.includes('folders') ? parts.slice(parts.indexOf('folders') + 1).join('/') : false;
 
     this.actionButtonClicked = function(event) {
       event.preventDefault();
       this.currentState = $(event.currentTarget).val();
 
-      if (event.currentTarget.value === 'add-new-template' && this.$singleNotificationChannel) {
+      if (event.currentTarget.value === 'add-new-template' && this.$singleNotificationChannel && this.$parentFolderID) {
+        window.location = "/services/" + this.$singleChannelService + "/templates/folders/" + this.$parentFolderID + "/add-" + this.$singleNotificationChannel;
+      } else if (event.currentTarget.value === 'add-new-template' && this.$singleNotificationChannel) {
         window.location = "/services/" + this.$singleChannelService + "/templates/add-" + this.$singleNotificationChannel;
       } else {
         if (this.stateChanged()) {
