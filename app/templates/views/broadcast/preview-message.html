@@ -32,16 +32,54 @@
 {% block maincolumn_content %}
 
   {{ page_header("Preview alert") }}
+  {% if broadcast_message.status == 'returned' %}
+    <div class="banner-dangerous govuk-!-margin-bottom-6" id="returned-reason-banner" data-notify-module="autofocus" aria-live="polite" tabindex="-1">
+      <p class="govuk-!-margin-right-1 dashboard-table govuk-!-font-weight-bold">Reason why alert has been returned to edit: </p>
+      <p class="dashboard-table">
+        {{broadcast_message.edit_reason}}
+      </p>
+    </div>
+  {% endif %}
 
-  {{alertSummaryList(current_user, current_service.id, broadcast_message, areas, broadcast_message.simple_polygons_with_bleed.estimated_area, broadcast_message.count_of_phones, broadcast_message.count_of_phones_likely, is_custom_broadcast)}}
+  {#
+    is_editable is passed into alertSummaryList component and determines whether or not user can edit the fields for an alert.
+    is_editable is True if the service is not live and has create_broadcasts permission OR if the service is live but the user has create_broadcasts
+    permission AND is not the user that returned the alert to draft state (so they aren't able to make the requested changes themselves)
+  #}
+  {% if current_service.live %}
+    {% set is_editable = current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) and current_user.id != returned_for_edit_by %}
+  {% else %}
+    {% set is_editable = current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) %}
+  {% endif %}
 
+  {{alertSummaryList(is_editable, current_service.id, broadcast_message, areas, broadcast_message.simple_polygons_with_bleed.estimated_area, broadcast_message.count_of_phones, broadcast_message.count_of_phones_likely, is_custom_broadcast)}}
+
+  {#
+  can_submit_for_approval determines whether or not the 'Submit for approval' button is displayed for user.
+  can_submit_for_approval is True if:
+  - the user has create_broadcasts permission
+  - the alert has all required fields (area, content, reference and duration)
+  - the alert is in draft state
+  - the alert is in returned state
+  - the current service isn't live or if it is, the current user is not the user that returned
+    the alert to draft state (so they aren't able to make the requested changes themselves)
+  #}
+
+  {% set can_submit_for_approval = (
+    current_user.has_permissions('create_broadcasts', restrict_admin_usage=True)
+    and broadcast_message.areas
+    and broadcast_message.content
+    and broadcast_message.reference
+    and broadcast_message.status in ["draft", "returned"]
+    and (not current_service.live or current_user.id != returned_for_edit_by)
+  ) %}
   {% call form_wrapper() %}
-    {% if current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) and broadcast_message.areas and broadcast_message.content and broadcast_message.reference and broadcast_message.status == "draft" %}
+    {% if can_submit_for_approval %}
       {{ page_footer('Submit for approval') }}
     {% endif %}
   {% endcall %}
 
-  {% if broadcast_message.status == "draft" and broadcast_message_version_count > 1 %}
+  {% if broadcast_message.status in ["draft", "returned"] and broadcast_message_version_count > 1 %}
   <div class="bottom-gutter-1-2">
     {% if last_updated_time %}
       <h2 class="heading-small bottom-gutter-2-3 heading-inline">

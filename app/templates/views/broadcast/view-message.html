@@ -8,6 +8,7 @@
 {% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
 {% from "components/alert-summary-list.html" import alertSummaryList %}
 {% from "views/broadcast/partials/broadcast-details.html" import broadcast_details %}
+{% from "views/broadcast/partials/status-history.html" import broadcast_message_status_history %}
 
 
 {% extends "withnav_template.html" %}
@@ -46,6 +47,51 @@
   {{ govukBackLink({ "href": back_link }) }}
 {% endblock %}
 
+{% set return_for_edit_details %}
+  <div class="govuk-!-margin-top-3 govuk-!-margin-bottom-3">
+    <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for returning the alert to draft</h1>
+    {% call form_wrapper(id='return_for_edit',action=url_for('main.return_broadcast_for_edit', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
+      {{ return_for_edit_form.return_for_edit_reason }}
+      {{ page_footer(
+        'Return alert for edit',
+        destructive=True,
+        button_name="return-alert-for-edit"
+      ) }}
+    {% endcall %}
+  </div>
+{% endset %}
+
+{% set rejection_reason_details %}
+  <div class="govuk-!-margin-top-3">
+    <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for rejecting the alert</h1>
+    {% call form_wrapper(id='reject',action=url_for('main.reject_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
+      {{ rejection_form.rejection_reason }}
+      {{ page_footer(
+        'Reject alert',
+        destructive=True,
+        button_name="reject-alert"
+      ) }}
+    {% endcall %}
+  </div>
+{% endset %}
+
+{% set approve_details %}
+  <div class="govuk-!-margin-bottom-5">
+    {% call form_wrapper(id='approve') %}
+    <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-3">
+      Because you’re in training mode you can approve
+      your own alerts, to see how it works.
+    </p>
+    <p class="govuk-body govuk-!-margin-top-0 govuk-!-margin-bottom-3">
+      No real alerts will be broadcast to anyone’s phone.
+    </p>
+    {{ page_footer(
+      "Start broadcasting now"
+    ) }}
+    {% endcall %}
+  </div>
+{% endset %}
+
 {% block maincolumn_content %}
 
   {% if broadcast_message.status == 'pending-approval' %}
@@ -73,18 +119,15 @@
               "Start broadcasting now"
             ) }}
           {% endcall %}
-          {% set rejection_reason_details %}
-            <div class="govuk-!-margin-top-3">
-              <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for rejecting the alert</h1>
-              {% call form_wrapper(id='reject',action=url_for('main.reject_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
-                {{ rejection_form.rejection_reason }}
-                {{ page_footer(
-                  'Reject alert',
-                  destructive=True,
-                ) }}
-              {% endcall %}
-            </div>
-          {% endset %}
+          <div class="govuk-!-margin-top-1">
+            {{ govukDetails({
+              "classes": "govuk-!-margin-bottom-0",
+              "summaryText": "Return this alert for edit",
+              "html": return_for_edit_details,
+              "open": return_for_edit_form.return_for_edit_reason.errors | convert_to_boolean,
+              "id": "return_for_edit_reason"
+            }) }}
+          </div>
           <div class="govuk-!-margin-top-1">
             {{ govukDetails({
               "classes": "govuk-!-margin-bottom-0",
@@ -113,41 +156,21 @@
               When you use a live account you’ll need another member of
               your team to approve your alert.
             </p>
-            {% set approve_details %}
-              <div class="govuk-!-margin-bottom-5">
-                {% call form_wrapper(id='approve') %}
-                <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-3">
-                  Because you’re in training mode you can approve
-                  your own alerts, to see how it works.
-                </p>
-                <p class="govuk-body govuk-!-margin-top-0 govuk-!-margin-bottom-3">
-                  No real alerts will be broadcast to anyone’s phone.
-                </p>
-                {{ page_footer(
-                  "Start broadcasting now"
-                ) }}
-                {% endcall %}
-              </div>
-            {% endset %}
-
-            {% set rejection_reason_details %}
-              <div class="govuk-!-margin-top-3">
-                <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for rejecting the alert</h1>
-                {% call form_wrapper(id='reject', action=url_for('main.reject_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
-                  {{ rejection_form.rejection_reason }}
-                  {{ page_footer(
-                    'Reject alert',
-                    destructive=True,
-                  ) }}
-                {% endcall %}
-              </div>
-            {% endset %}
 
             {{ govukDetails({
               "classes": "govuk-!-margin-bottom-0",
               "summaryText": "Approve your own alert",
               "html": approve_details
             }) }}
+            <div class="govuk-!-margin-top-1">
+              {{ govukDetails({
+                "classes": "govuk-!-margin-bottom-0",
+                "summaryText": "Return this alert for edit",
+                "html": return_for_edit_details,
+                "open": return_for_edit_form.return_for_edit_reason.errors | convert_to_boolean,
+                "id": "return_for_edit_reason"
+              }) }}
+            </div>
             <div class="govuk-!-margin-top-1">
               {{ govukDetails({
                 "classes": "govuk-!-margin-bottom-0",
@@ -213,18 +236,15 @@
             "Start broadcasting now"
           ) }}
         {% endcall %}
-        {% set rejection_reason_details %}
-          <div class="govuk-!-margin-top-3">
-            <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Give a reason for rejecting the alert</h1>
-            {% call form_wrapper(id='reject',action=url_for('main.reject_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id)) %}
-              {{ rejection_form.rejection_reason }}
-              {{ page_footer(
-                'Reject alert',
-                destructive=True,
-              ) }}
-            {% endcall %}
-          </div>
-        {% endset %}
+        <div class="govuk-!-margin-top-1">
+          {{ govukDetails({
+            "classes": "govuk-!-margin-bottom-0",
+            "summaryText": "Return this alert for edit",
+            "html": return_for_edit_details,
+            "open": return_for_edit_form.return_for_edit_reason.errors | convert_to_boolean,
+            "id": "return_for_edit_reason"
+          }) }}
+        </div>
         <div class="govuk-!-margin-top-1">
           {{ govukDetails({
             "classes": "govuk-!-margin-bottom-0",
@@ -259,6 +279,14 @@
         </p>
       </div>
     {% endif %}
+  {% elif broadcast_message.status == 'returned' %}
+    <div class="banner-dangerous govuk-!-margin-bottom-6 " id="returned-reason-banner" data-notify-module="autofocus" aria-live="polite" tabindex="-1">
+      <p class="govuk-!-margin-right-1 dashboard-table govuk-!-font-weight-bold">Reason why alert has been returned to edit: </p>
+      <p class="dashboard-table">
+        {{broadcast_message.edit_reason}}
+      </p>
+    </div>
+    {{ page_header(broadcast_message.template.name) }}
   {% elif broadcast_message.status == 'draft' %}
     {{ page_header(broadcast_message.template.name) }}
   {% else %}
@@ -267,59 +295,42 @@
     {{broadcast_details(broadcast_message, current_service)}}
   {% endif %}
 
-  {{alertSummaryList(current_user, current_service.id, broadcast_message, areas, broadcast_message.simple_polygons_with_bleed.estimated_area, broadcast_message.count_of_phones, broadcast_message.count_of_phones_likely, is_custom_broadcast)}}
+   {#
+    is_editable is passed into alertSummaryList component and determines whether or not user can edit the fields for an alert.
+    is_editable is True if the service is not live and has create_broadcasts permission OR if the service is live but the user has create_broadcasts
+    permission AND is not the user that returned the alert to draft state (so they aren't able to make the requested changes themselves)
+  #}
+  {% if current_service.live %}
+    {% set is_editable = current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) and current_user.id != returned_for_edit_by %}
+  {% else %}
+    {% set is_editable = current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) %}
+  {% endif %}
 
-{% if broadcast_message.status != 'pending-approval' %}
-  <p class="govuk-body govuk-!-margin-bottom-3">
-    {% if broadcast_message.created_by %}
-      Created by {{ broadcast_message.created_by }}
-    {%- else %}
-      Created from an API call
-    {%- endif %}
-    {%- if broadcast_message.submitted_by -%}
-    , submitted by {{ broadcast_message.submitted_by }}
-    {%- endif %}
-    {%- if broadcast_message.approved_by %}
-      and approved by {{ broadcast_message.approved_by }}
-    {%- endif %}
-    {{- '.' }}
-  </p>
-{% endif %}
+  {{alertSummaryList(is_editable, current_service.id, broadcast_message, areas, broadcast_message.simple_polygons_with_bleed.estimated_area, broadcast_message.count_of_phones, broadcast_message.count_of_phones_likely, is_custom_broadcast)}}
 
-{% if broadcast_message.status == 'pending-approval' %}
-  <p class="govuk-body govuk-!-margin-bottom-3">
-    {% if broadcast_message.created_by %}
-      Created by {{ broadcast_message.created_by }}
-    {%- else %}
-      Created from an API call
-    {%- endif %}
-    {%- if broadcast_message.submitted_by %}
-    and submitted by {{ broadcast_message.submitted_by }}
-    {%- endif %}
-    {{- '.' }}
-  </p>
-{% endif %}
+  {{broadcast_message_status_history(broadcast_message, edit_reasons)}}
 
-{% if broadcast_message.status == 'broadcasting' %}
-  <p class="govuk-body">
-    Broadcasting stops {{ broadcast_message.finishes_at|format_datetime_human }}.
-  </p>
-{% elif broadcast_message.status == 'cancelled' %}
-  <p class="govuk-body">
-    {% if broadcast_message.cancelled_by_id %}
-      Stopped by {{ broadcast_message.cancelled_by }}
-    {%- else %}
-      Stopped by an API call
-    {%- endif %}
-    {{ broadcast_message.cancelled_at|format_datetime_human }}.
-  </p>
-{% elif broadcast_message.status == 'completed' %}
-  <p class="govuk-body">
-    Finished broadcasting {{ broadcast_message.finishes_at|format_datetime_human }}.
-  </p>
-{% endif %}
+  {#
+  can_submit_for_approval determines whether or not the 'Submit for approval' button is displayed for user.
+  can_submit_for_approval is True if:
+  - the user has create_broadcasts permission
+  - the alert has all required fields (area, content, reference and duration)
+  - the alert is in draft state
+  - the alert is in returned state
+  - the current service isn't live or if it is, the current user is not the user that returned
+    the alert to draft state (so they aren't able to make the requested changes themselves)
+  #}
 
-{% if current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) and broadcast_message.areas and broadcast_message.content and broadcast_message.reference and broadcast_message.duration and broadcast_message.status == "draft" %}
+{% set can_submit_for_approval = (
+  current_user.has_permissions('create_broadcasts', restrict_admin_usage=True)
+  and broadcast_message.areas
+  and broadcast_message.content
+  and broadcast_message.reference
+  and broadcast_message.status in ["draft", "returned"]
+  and (not current_service.live or current_user.id != returned_for_edit_by)
+) %}
+
+{% if can_submit_for_approval %}
   {{ govukButton({
     "element": "a",
     "text": "Submit for approval",
@@ -332,7 +343,7 @@
   }) }}
 {% endif %}
 
-{% if broadcast_message.status == "draft" and broadcast_message_version_count > 1 %}
+{% if broadcast_message.status in ["draft", "returned"] and broadcast_message_version_count > 1 %}
   <div class="bottom-gutter-1-2">
     {% if last_updated_time %}
     <h2 class="heading-small bottom-gutter-2-3 heading-inline">

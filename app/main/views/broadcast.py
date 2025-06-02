@@ -31,6 +31,7 @@ from app.main.forms import (
     NewBroadcastForm,
     PostcodeForm,
     RejectionReasonForm,
+    ReturnForEditForm,
     SearchByNameForm,
 )
 from app.models.broadcast_message import BroadcastMessage, BroadcastMessages
@@ -82,6 +83,7 @@ def _get_back_link_from_view_broadcast_endpoint():
         "main.view_rejected_broadcast": ".broadcast_dashboard_rejected",
         "main.approve_broadcast_message": ".broadcast_dashboard",
         "main.reject_broadcast_message": ".broadcast_dashboard",
+        "main.return_broadcast_for_edit": ".broadcast_dashboard",
         "main.discard_broadcast_message": ".broadcast_dashboard",
     }[request.endpoint]
 
@@ -159,7 +161,7 @@ def get_broadcast_dashboard_partials(service_id):
     return dict(
         current_broadcasts=render_template(
             "views/broadcast/partials/dashboard-table.html",
-            broadcasts=broadcast_messages.with_status("pending-approval", "broadcasting", "draft"),
+            broadcasts=broadcast_messages.with_status("pending-approval", "broadcasting", "draft", "returned"),
             empty_message="You do not have any current alerts",
             view_broadcast_endpoint=".view_current_broadcast",
             reverse_chronological_sort=False,  # Keep order that API returns - by status then alphabetically
@@ -232,7 +234,7 @@ def write_new_broadcast(service_id):
             broadcast_message_id,
             service_id=current_service.id,
         )
-        if broadcast_message.status == "draft":
+        if broadcast_message.status in ["draft", "returned"]:
             form.template_content.data = broadcast_message.content
             form.name.data = broadcast_message.reference
         else:
@@ -252,13 +254,14 @@ def edit_broadcast(service_id, broadcast_message_id):
     broadcast_message = BroadcastMessage.from_id(broadcast_message_id, service_id=current_service.id)
 
     # If alert cannot move into draft status from its original status, an error is rendered on page
-    try:
-        broadcast_message.check_can_update_status("draft")
-    except HTTPError as e:
-        flash(e.message)
-        return render_current_alert_page(
-            broadcast_message,
-        )
+    if broadcast_message.status != "returned":
+        try:
+            broadcast_message.check_can_update_status("draft")
+        except HTTPError as e:
+            flash(e.message)
+            return render_current_alert_page(
+                broadcast_message,
+            )
 
     if request.method == "GET":
         # When the page loads initially, the fields are populated with alerts current data
@@ -361,21 +364,22 @@ def preview_broadcast_areas(service_id, broadcast_message_id):
         service_id=current_service.id,
     )
 
-    try:
-        broadcast_message.check_can_update_status("draft")
-    except HTTPError as e:
-        flash(e.message)
-        return render_current_alert_page(
-            broadcast_message,
-        )
+    if broadcast_message.status != "returned":
+        try:
+            broadcast_message.check_can_update_status("draft")
+        except HTTPError as e:
+            flash(e.message)
+            return render_current_alert_page(
+                broadcast_message,
+            )
 
-    if broadcast_message.template_id and broadcast_message.status != "draft":
+    if broadcast_message.template_id and broadcast_message.status not in ["draft", "returned"]:
         back_link = url_for(
             ".view_template",
             service_id=current_service.id,
             template_id=broadcast_message.template_id,
         )
-    elif broadcast_message.status == "draft":
+    elif broadcast_message.status in ["draft", "returned"]:
         back_link = url_for(
             ".view_current_broadcast", service_id=current_service.id, broadcast_message_id=broadcast_message_id
         )
@@ -897,6 +901,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
                     if broadcast_message.get_latest_version()
                     else None
                 ),
+                returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
             )
         broadcast_message.request_approval()
         return redirect(
@@ -917,6 +922,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
         last_updated_time=(
             broadcast_message.get_latest_version().get("created_at") if broadcast_message.get_latest_version() else None
         ),
+        returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
     )
 
 
@@ -966,7 +972,7 @@ def view_broadcast(service_id, broadcast_message_id):
 
     for statuses, endpoint in (
         ({"completed", "cancelled"}, "main.view_previous_broadcast"),
-        ({"broadcasting", "pending-approval", "draft"}, "main.view_current_broadcast"),
+        ({"broadcasting", "pending-approval", "draft", "returned"}, "main.view_current_broadcast"),
         ({"rejected"}, "main.view_rejected_broadcast"),
     ):
         if broadcast_message.status in statuses and request.endpoint != endpoint:
@@ -1020,6 +1026,7 @@ def approve_broadcast_message(service_id, broadcast_message_id):
                 if broadcast_message.get_latest_version()
                 else None
             ),
+            returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
         )
 
     if broadcast_message.status != "pending-approval":
@@ -1098,6 +1105,56 @@ def reject_broadcast_message(service_id, broadcast_message_id):
 
     return render_current_alert_page(
         broadcast_message, form, back_link_url=_get_back_link_from_view_broadcast_endpoint()
+    )
+
+
+@main.route(
+    "/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/return-for-edit", methods=["GET", "POST"]
+)
+@user_has_permissions("create_broadcasts", "approve_broadcasts", restrict_admin_usage=True)
+@service_has_permission("broadcast")
+def return_broadcast_for_edit(service_id, broadcast_message_id):
+    """
+    This route first checks that the form submitted is valid (i.e. that the return_for_edit_reason
+    field passes its validation) and then checks that the alert can be moved into returned state.
+    If both are successful, the alert is moved into draft state and the return_for_edit_reason is submitted.
+    If there are any errors at any point, the page is re-rendered with those errors displayed.
+    """
+    broadcast_message = BroadcastMessage.from_id(
+        broadcast_message_id,
+        service_id=current_service.id,
+    )
+
+    form = ReturnForEditForm()
+    if form.validate_on_submit():
+        try:
+            broadcast_message.check_can_update_status("returned")
+        except HTTPError as e:
+            flash(e.message)
+            return render_current_alert_page(
+                broadcast_message, back_link_url=_get_back_link_from_view_broadcast_endpoint()
+            )
+
+        if broadcast_message.status != "pending-approval":
+            return redirect(
+                url_for(
+                    ".view_current_broadcast",
+                    service_id=current_service.id,
+                    broadcast_message_id=broadcast_message.id,
+                )
+            )
+
+        try:
+            broadcast_message.return_broadcast_message_for_edit(return_for_edit_reason=form.return_for_edit_reason.data)
+        except Exception as e:
+            form.return_for_edit_reason.errors.append(e.message)
+
+        broadcast_message = BroadcastMessage.from_id(
+            broadcast_message_id,
+            service_id=current_service.id,
+        )
+    return render_current_alert_page(
+        broadcast_message, back_link_url=_get_back_link_from_view_broadcast_endpoint(), return_for_edit_form=form
     )
 
 
