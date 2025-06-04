@@ -9,6 +9,7 @@ from app.notify_client.api_key_api_client import api_key_api_client
 from app.notify_client.invite_api_client import invite_api_client
 from app.notify_client.organisations_api_client import organisations_client
 from app.notify_client.service_api_client import service_api_client
+from app.notify_client.template_api_client import template_api_client
 from app.notify_client.template_folder_api_client import template_folder_api_client
 
 
@@ -118,16 +119,13 @@ class Service(JSONModel):
 
     @cached_property
     def all_templates(self):
-        templates = service_api_client.get_service_templates(self.id)["data"]
+        templates = template_api_client.get_service_templates(self.id)["data"]
 
         return [template for template in templates if template["template_type"] in self.available_template_types]
 
     @cached_property
     def all_template_ids(self):
         return {template["id"] for template in self.all_templates}
-
-    def get_template(self, template_id, version=None):
-        return service_api_client.get_service_template(self.id, template_id, version)["data"]
 
     def get_template_folder_with_user_permission_or_403(self, folder_id, user):
         template_folder = self.get_template_folder(folder_id)
@@ -136,13 +134,6 @@ class Service(JSONModel):
             abort(403)
 
         return template_folder
-
-    def get_template_with_user_permission_or_403(self, template_id, user):
-        template = self.get_template(template_id)
-
-        self.get_template_folder_with_user_permission_or_403(template["folder"], user)
-
-        return template
 
     @property
     def available_template_types(self):
@@ -156,7 +147,7 @@ class Service(JSONModel):
         return bool(self.all_template_folders)
 
     def has_templates_of_type(self, template_type):
-        return any(template for template in self.all_templates if template["template_type"] == template_type)
+        return any(template for template in self.all_templates if template.template_type == template_type)
 
     @cached_property
     def organisation(self):
