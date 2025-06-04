@@ -57,7 +57,19 @@ a {
   &-item {
 
     &-with-checkbox {
-      padding-left: $govuk-checkboxes-size + $govuk-checkboxes-label-padding-left-right;
+      padding-left: $govuk-touch-target-size + $govuk-checkboxes-label-padding-left-right;
+      min-height: $govuk-touch-target-size;
+
+      .template-list-item-hint {
+        width: 100%;
+        margin-top: 0;
+      }
+
+      input {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
     }
 
     &-hidden-by-default {
