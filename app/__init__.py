@@ -86,6 +86,7 @@ from app.notify_client.organisations_api_client import organisations_client
 from app.notify_client.reports_api_client import reports_api_client
 from app.notify_client.service_api_client import service_api_client
 from app.notify_client.status_api_client import status_api_client
+from app.notify_client.template_api_client import template_api_client
 from app.notify_client.template_folder_api_client import template_folder_api_client
 from app.notify_client.user_api_client import user_api_client
 from app.url_converters import (
@@ -151,6 +152,7 @@ def create_app(application):
         reports_api_client,
         service_api_client,
         status_api_client,
+        template_api_client,
         template_folder_api_client,
         user_api_client,
         # External API clients
