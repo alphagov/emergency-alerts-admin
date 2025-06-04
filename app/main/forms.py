@@ -1559,6 +1559,33 @@ class TemplateAndFoldersSelectionForm(Form):
     )
 
 
+class ChooseTemplateFieldsForm(StripWhitespaceForm):
+    content = GovukRadiosField(
+        "Choose how to populate template",
+        choices=[
+            ("content_and_area", "Content and area"),
+            ("content_only", "Only content"),
+            ("area_only", "Only area"),
+        ],
+        param_extensions={
+            "fieldset": {
+                "legend": {
+                    "text": "Choose how to populate template",
+                    "isPageHeading": True,
+                    "classes": "govuk-fieldset__legend--l",
+                }
+            },
+            "hint": {"text": "Select one option"},
+            "items": [
+                # {"hint": {"text": "For example, 51.503630, -0.126770"}},
+                # {"hint": {"text": "For example, 530111, 179963"}},
+                # {"hint": {"text": ""}},
+            ],
+        },
+        validators=[DataRequired(message="Select which type of coordinates you'd like to use")],
+    )
+
+
 class ServiceBroadcastChannelForm(StripWhitespaceForm):
     channel = GovukRadiosField(
         "Emergency alerts settings",
