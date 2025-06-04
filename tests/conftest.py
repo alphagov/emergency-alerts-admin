@@ -2535,4 +2535,4 @@ def webauthn_credential_2():
 
 @pytest.fixture
 def mock_admin_action_notification(mocker):
-    return mocker.patch("app.utils.admin_action.send_slack_notification", return_value=None)
+    return mocker.patch("app.utils.admin_action.send_notifications", return_value=None)
