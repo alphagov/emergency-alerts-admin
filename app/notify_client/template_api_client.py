@@ -20,18 +20,10 @@ class TemplateAPIClient(AdminAPIClient):
         endpoint = "/service/{0}/template".format(service_id)
         return self.post(endpoint, data)
 
-    def update_service_template(self, id_, name, type_, content, service_id, areas=None):
+    def update_service_template(self, id_, data, service_id):
         """
         Update a service template.
         """
-        data = {
-            "id": id_,
-            "name": name,
-            "template_type": type_,
-            "content": content,
-            "service": service_id,
-            "areas": areas or [],
-        }
         data = _attach_current_user(data)
         endpoint = "/service/{0}/template/{1}".format(service_id, id_)
         return self.post(endpoint, data)
