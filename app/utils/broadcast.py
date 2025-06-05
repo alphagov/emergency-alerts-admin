@@ -116,7 +116,7 @@ def create_postcode_db_id(form):
         return postcode
 
 
-def create_custom_area_polygon(BroadcastMessage, form: PostcodeForm, postcode):
+def create_custom_area_polygon(form: PostcodeForm, postcode):
     centroid = None
     circle_polygon = None
     radius = float(form.data["radius"]) if form.data["radius"] else 0
