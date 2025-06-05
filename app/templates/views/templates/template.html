@@ -5,6 +5,15 @@
 {% from "components/page-footer.html" import page_footer %}
 {% from "components/copy-to-clipboard.html" import copy_to_clipboard %}
 {% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
+{% from "views/broadcast/macros/area-map.html" import map %}
+
+{% block extra_stylesheets %}
+  {% include "views/broadcast/partials/area-map-stylesheets.html" %}
+{% endblock %}
+
+{% block extra_javascripts %}
+  {% include "views/broadcast/partials/custom-area-map-javascripts.html" %}
+{% endblock %}
 
 {% block service_page_title %}
   {{ page_title_folder_path(current_service.get_template_path(template._template)) }}
@@ -67,6 +76,14 @@
   {% if template.template_type != 'broadcast' %}
     <div class="bottom-gutter-1-2">
       {{ copy_to_clipboard(template.id, name="Template ID", thing='template ID') }}
+    </div>
+  {% endif %}
+
+  {% if template.areas %}
+    <div>
+      <ul class="area-list"></ul>
+        {{ map(estimated_area, estimated_area_with_bleed, count_of_phones, count_of_phones_likely, True, "Map of the United
+        Kingdom, showing no areas") }}
     </div>
   {% endif %}
 
