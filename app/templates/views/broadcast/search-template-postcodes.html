@@ -1,0 +1,112 @@
+{% extends "without_sidenav_template.html" %}
+{% from "components/banner.html" import banner_wrapper %}
+{% from "components/form.html" import form_wrapper %}
+{% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
+{% from "components/page-header.html" import page_header %}
+{% from "components/page-footer.html" import page_footer %}
+{% from "views/broadcast/macros/area-map.html" import map %}
+{% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
+{% from "govuk_frontend_jinja/components/input/macro.html" import govukInput %}
+{% from "components/error-summary.html" import errorSummary %}
+{% from "components/input-custom-error.html" import inputWithCustomError %}
+
+{% block per_page_title %}
+  {% if bleed %}
+    Chosen alert area – {{ current_service.name }}
+  {% else %}
+    {{ page_title }} – {{ current_service.name }}
+  {% endif %}
+{% endblock %}
+
+{% block service_page_title %}
+  {{ page_title }}
+{% endblock %}
+
+{% block extra_stylesheets %}
+  {% include "views/broadcast/partials/area-map-stylesheets.html" %}
+{% endblock %}
+
+{% block extra_javascripts %}
+  {% include "views/broadcast/partials/custom-area-map-javascripts.html" %}
+{% endblock %}
+
+{% block backLink %}
+  {{ govukBackLink({ "href": back_link }) }}
+{% endblock %}
+
+{% set radius = form.radius.value %}
+{% set postcode = form.postcode.value %}
+
+{% set is_postcode = true %}
+
+{% if bleed %}
+  {% set method = 'radius' %}
+{% elif not bleed and centroid %}
+  {% set method = 'search' %}
+{% endif %}
+
+{% block maincolumn_content %}
+  {% if bleed %}
+    {{ page_header('Chosen alert area', classes="heading-no-margin-top") }}
+  {% else %}
+    {{ page_header(page_title, classes="heading-no-margin-top") }}
+  {% endif %}
+  {{ errorSummary(form) }}
+  {% call form_wrapper() %}
+  <div class="mapping-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="govuk-form-group">
+      {% if form.postcode.errors[0] == 'Enter a postcode within the UK' and form.postcode.data == "" %}
+        {{inputWithCustomError(form.postcode, "Postcode", "Enter a postcode")}}
+      {% else %}
+        {{inputWithCustomError(form.postcode, "Postcode", "Enter a valid postcode")}}
+      {% endif %}
+    </div>
+    <div class="mapping-margin-left govuk-form-group">
+      {{ govukButton({
+        "classes": "notify-simple-search-form__button search-postcode-button govuk-button--secondary",
+        "html": "Search <span class=\"govuk-visually-hidden\">for areas</span>",
+        "name": "search_btn",
+        "value": True
+      }) }}
+    </div>
+    <div class="mapping-margin-left govuk-form-group">
+      {% if form.radius.errors[0] == 'Enter a radius between 0.1km and 38.0km' and form.radius.data == None %}
+        {{inputWithCustomError(form.radius, "Radius", "Enter a radius")}}
+      {% else %}
+        {{inputWithCustomError(form.radius, "Radius", "Enter a valid radius")}}
+      {% endif %}
+    </div>
+    <div class="mapping-margin-left govuk-form-group">
+      {{ govukButton({
+        "classes": "notify-simple-search-form__button search-postcode-button govuk-button--secondary",
+        "html": "Add radius",
+        "name": "radius_btn",
+        "value": True
+      }) }}
+    </div>
+    <div class="continue-button govuk-form-group">
+      {% if bleed %}
+        {{ govukButton({
+          "text": "Save and continue",
+          "classes": "govuk-button mapping-margin-left notify-simple-search-form__button",
+          "name": "continue",
+          "value": True
+        }) }}
+      {% else %}
+        {{ govukButton({
+          "text": "Save and continue",
+          "classes": "govuk-button mapping-margin-left",
+          "disabled": true,
+          "name": "continue"
+        }) }}
+      {% endif %}
+    </div>
+  </div>
+  {% endcall %}
+
+  <ul class="area-list"></ul>
+
+  {{ map(estimated_area, estimated_area_with_bleed, count_of_phones, count_of_phones_likely, True, "Map of the United Kingdom, showing no areas") }}
+
+{% endblock %}
