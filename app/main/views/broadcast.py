@@ -587,7 +587,7 @@ def search_postcodes(service_id, broadcast_message_id, library_slug):
         """
         postcode = create_postcode_db_id(form)
         form.pre_validate(form)
-        centroid, circle_polygon = create_custom_area_polygon(broadcast_message, form, postcode)
+        centroid, circle_polygon = create_custom_area_polygon(form, postcode)
         if form.validate_on_submit():
             """
             If postcode is in database, i.e. creating the Polygon didn't return IndexError,
