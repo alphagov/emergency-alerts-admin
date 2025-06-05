@@ -1,0 +1,39 @@
+{% extends "withnav_template.html" %}
+{% from "components/page-header.html" import page_header %}
+{% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
+
+{% block service_page_title %}
+  Choose area to add to template
+{% endblock %}
+
+{% block maincolumn_content %}
+
+  {{ page_header("Choose area to add to template") }}
+
+  {% if template %}
+    {% for area in template.ancestor_areas %}
+      <a class="govuk-heading-m govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_template_sub_area', service_id=current_service.id, template_id=template.id, library_slug=area.library_id, area_slug=area.id) }}">{{ area.name }}</a>
+      {% if loop.last %}
+        <div class="keyline-block"></div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
+  {% for library in libraries|sort %}
+    {% if library.id not in ['coordinates', 'postcodes']  %}
+      <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_template_area', service_id=current_service.id, template_id=template.id, library_slug=library.id) }}">{{ library.name }}</a>
+      <p class="file-list-hint-large">{{ library.get_examples() }}</p>
+    {% else %}
+      {% if (template.areas|length == 0) or (custom_broadcast)  %}
+        {% if library.id == 'coordinates' %}
+          <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_template_area', service_id=current_service.id, template_id=template.id, library_slug=library.id) }}">{{ library.name }}</a>
+          <p class="file-list-hint-large">Use coordinates to create an alert area.</p>
+        {% elif library.id == 'postcodes' %}
+          <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_template_area', service_id=current_service.id, template_id=template.id, library_slug=library.id) }}">{{ library.name }}</a>
+          <p class="file-list-hint-large">Choose a postcode to create a broadcast area from.</p>
+        {% endif %}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+
+{% endblock %}
