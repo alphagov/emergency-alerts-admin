@@ -205,6 +205,14 @@ class CustomBroadcastAreas(SerialisedModelCollection):
             polygons=self._polygons if index == 0 else None,
         )
 
+    def to_areas_dict(self):
+        return {
+            "ids": self.items,
+            "names": self.items,
+            "aggregate_names": self.items,
+            "simple_polygons": self._polygons,
+        }
+
 
 class BroadcastAreaLibrary(SerialisedModelCollection, SortingAndEqualityMixin, GetItemByIdMixin):
     model = BroadcastArea

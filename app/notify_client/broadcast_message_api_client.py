@@ -4,14 +4,7 @@ from app.notify_client import AdminAPIClient, _attach_current_user
 
 
 class BroadcastMessageAPIClient(AdminAPIClient):
-    def create_broadcast_message(
-        self,
-        *,
-        service_id,
-        template_id,
-        content,
-        reference,
-    ):
+    def create_broadcast_message(self, *, service_id, template_id, content, reference, areas=None):
         data = {
             "service_id": service_id,
             "personalisation": {},
@@ -22,6 +15,8 @@ class BroadcastMessageAPIClient(AdminAPIClient):
             data.update(content=content)
         if reference:
             data.update(reference=reference)
+        if areas:
+            data.update(areas=areas)
 
         data = _attach_current_user(data)
 
