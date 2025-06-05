@@ -35,6 +35,7 @@ from app.main.forms import (
     SearchByNameForm,
 )
 from app.models.broadcast_message import BroadcastMessage, BroadcastMessages
+from app.models.template import Template
 from app.utils import service_has_permission
 from app.utils.broadcast import (
     adding_invalid_coords_errors_to_form,
@@ -343,15 +344,25 @@ def edit_broadcast(service_id, broadcast_message_id):
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
 def broadcast(service_id, template_id):
-    return redirect(
-        url_for(
-            ".choose_broadcast_library",
-            service_id=current_service.id,
-            broadcast_message_id=BroadcastMessage.create(
-                service_id=service_id,
-                template_id=template_id,
-            ).id,
+    template = Template.from_id(template_id, service_id)
+    if not template.areas:
+        return redirect(
+            url_for(
+                ".choose_broadcast_library",
+                service_id=current_service.id,
+                broadcast_message_id=BroadcastMessage.create(
+                    service_id=service_id,
+                    template_id=template_id,
+                ).id,
+            )
         )
+    broadcast_message = BroadcastMessage.create_with_area(
+        service_id,
+        template.areas.to_areas_dict(),
+        template_id,
+    )
+    return redirect(
+        url_for(".view_current_broadcast", service_id=current_service.id, broadcast_message_id=broadcast_message.id)
     )
 
 
