@@ -20,7 +20,6 @@ class Template(JSONModel):
         "id",
         "content",
         "name",
-        "areas",
         "folder",
         "service",
         "version",
@@ -170,10 +169,29 @@ class Template(JSONModel):
                 "aggregate_names": [id],
                 "simple_polygons": simple_polygons,
             }
-            data = {"areas": areas}
-
+            self.areas = areas
             self.area_ids = [id]
-            template_api_client.update_service_template(_id=self.id, service_id=self.service_id, data=data)
+            template_api_client.update_service_template(self.id, self.__dict__, self.service)
+
+    @classmethod
+    def create_with_custom_area(cls, circle_polygon, area_id, name, content, service_id, parent_folder_id=None):
+        """Creates a broadcast template with a custom area defined by polygons."""
+        simple_polygons = [circle_polygon]
+        area_to_get_params = CustomBroadcastArea(name="", polygons=simple_polygons)
+        id_with_local_authority = cls.add_local_authority_to_slug(cls, area_id, area_to_get_params)
+        areas = {
+            "ids": [id_with_local_authority],
+            "names": [id_with_local_authority],
+            "aggregate_names": [id_with_local_authority],
+            "simple_polygons": simple_polygons,
+        }
+        return cls.create(
+            name=name,
+            content=content,
+            service_id=service_id,
+            parent_folder_id=parent_folder_id,
+            areas=areas,
+        )
 
     def add_local_authority_to_slug(self, id, area_to_get_params):
         if not (local_authority := area_to_get_params.local_authority):
@@ -244,8 +262,8 @@ class Template(JSONModel):
 
         self._update(**data)
 
-    def _update(self, name, content, service_id, areas):
-        template_api_client.update_service_template(self.id, name, self.template_type, content, service_id, areas)
+    def _update(self):
+        template_api_client.update_service_template(self.id, self.__dict__, self.service)
 
     def clear_areas(self, force_override=False):
         self.area_ids.clear()
@@ -268,3 +286,6 @@ class Template(JSONModel):
             data["force_override"] = True
 
         self._update(**data)
+
+    def delete_template(self, service_id, template_id):
+        return template_api_client.delete_service_template(service_id, template_id)
