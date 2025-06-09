@@ -50,7 +50,6 @@ class Config(object):
     EMAIL_2FA_EXPIRY_SECONDS = 1800  # 30 Minutes
     HEADER_COLOUR = "#81878b"  # mix(govuk-colour("dark-grey"), govuk-colour("mid-grey"))
     HTTP_PROTOCOL = "http"
-    HTTP_PROXY = os.environ.get("HTTP_PROXY")
     EAS_APP_NAME = "admin"
     NOTIFY_LOG_LEVEL = "DEBUG"
     PERMANENT_SESSION_LIFETIME = 60 * 60 * 6  # 6 hours - maximum duration for a session
@@ -119,6 +118,9 @@ class Hosted(Config):
     HEADER_COLOUR = header_colors.get(os.environ.get("ENVIRONMENT"), "#81878b")
     ADMIN_EXTERNAL_URL = f"https://{TENANT}admin.{SUBDOMAIN}emergency-alerts.service.gov.uk"
     TEMPLATE_PREVIEW_API_HOST = f"http://api.{TENANT}ecs.local:6013"
+    HTTP_PROXY = os.environ.get("HTTP_PROXY")
+    # Don't attempt to proxy requests to localhost, the API/Admin services, or the AWS IMDS.
+    NO_PROXY = f"localhost,127.0.0.1,*.{TENANT}ecs.local,169.254.169.254"
 
     DEBUG = False
     SESSION_COOKIE_SECURE = True
