@@ -50,6 +50,7 @@ class Config(object):
     EMAIL_2FA_EXPIRY_SECONDS = 1800  # 30 Minutes
     HEADER_COLOUR = "#81878b"  # mix(govuk-colour("dark-grey"), govuk-colour("mid-grey"))
     HTTP_PROTOCOL = "http"
+    HTTP_PROXY = os.environ.get("HTTP_PROXY")
     EAS_APP_NAME = "admin"
     NOTIFY_LOG_LEVEL = "DEBUG"
     PERMANENT_SESSION_LIFETIME = 60 * 60 * 6  # 6 hours - maximum duration for a session
