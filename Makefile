@@ -153,7 +153,7 @@ fix-imports: ## Fix imports using isort
 .PHONY: freeze-requirements
 freeze-requirements: ## create static requirements.txt
 	${PYTHON_EXECUTABLE_PREFIX}pip3 install --upgrade setuptools pip-tools
-	${PYTHON_EXECUTABLE_PREFIX}pip-compile --strip-extras requirements.in
+	${PYTHON_EXECUTABLE_PREFIX}pip-compile requirements.in
 
 .PHONY: bump-utils
 bump-utils:  # Bump emergency-alerts-utils package to latest version
@@ -162,5 +162,4 @@ bump-utils:  # Bump emergency-alerts-utils package to latest version
 .PHONY: uninstall-packages
 uninstall-packages:
 	python -m pip uninstall emergency-alerts-utils -y
-	python -m pip uninstall gds-metrics -y
 	python -m pip freeze | xargs python -m pip uninstall -y
