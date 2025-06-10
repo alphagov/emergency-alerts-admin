@@ -120,7 +120,7 @@ class Hosted(Config):
     TEMPLATE_PREVIEW_API_HOST = f"http://api.{TENANT}ecs.local:6013"
     HTTP_PROXY = os.environ.get("HTTP_PROXY")
     # Don't attempt to proxy requests to localhost, the API/Admin services, or the AWS IMDS.
-    NO_PROXY = f"localhost,127.0.0.1,*.{TENANT}ecs.local,169.254.169.254"
+    NO_PROXY = f"localhost,127.0.0.1,{TENANT}ecs.local,169.254.169.254"
 
     DEBUG = False
     SESSION_COOKIE_SECURE = True
