@@ -204,7 +204,7 @@ class Service(JSONModel):
         return self.get_template_folder_path(folder["parent_id"]) + [self.get_template_folder(folder["id"])]
 
     def get_template_path(self, template):
-        return self.get_template_folder_path(template["folder"]) + [
+        return self.get_template_folder_path(template.folder) + [
             template,
         ]
 
