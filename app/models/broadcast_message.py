@@ -53,6 +53,7 @@ class BroadcastMessage(JSONModel):
         "submitted_by",
         "submitted_at",
         "updated_by",
+        "edit_reason",
     }
 
     libraries = broadcast_area_libraries
@@ -416,6 +417,13 @@ class BroadcastMessage(JSONModel):
             "rejected", broadcast_message_id=self.id, service_id=self.service_id, rejection_reason=rejection_reason
         )
 
+    def return_broadcast_message_for_edit(self, return_for_edit_reason):
+        broadcast_message_api_client.return_broadcast_message_for_edit_with_reason(
+            broadcast_message_id=self.id,
+            service_id=self.service_id,
+            edit_reason=return_for_edit_reason,
+        )
+
     def cancel_broadcast(self):
         self._set_status_to("cancelled")
 
@@ -450,6 +458,17 @@ class BroadcastMessage(JSONModel):
     def get_latest_version(self):
         versions = broadcast_message_api_client.get_broadcast_message_versions(self.service_id, self.id)
         return versions[0] if len(versions) > 0 else None
+
+    def get_returned_for_edit_reasons(self):
+        """Returns a list of 'edit_reason' records - these consist of the reason that alert has been returned,
+        who submitted the alert for approval and who returned (as well as other attributes that we don't currently use)
+        """
+        return broadcast_message_api_client.get_broadcast_returned_for_edit_reasons(self.service_id, self.id)
+
+    def get_latest_returned_for_edit_reason(self):
+        """Returns latest edit_reason record submitted to the broadcast_message_edit_reasons
+        table for the broadcast_message_id"""
+        return broadcast_message_api_client.get_latest_returned_for_edit_reason(self.service_id, self.id)
 
 
 class BroadcastMessages(ModelList):

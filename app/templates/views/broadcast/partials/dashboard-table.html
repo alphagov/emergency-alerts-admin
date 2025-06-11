@@ -45,6 +45,13 @@
             'classes': 'govuk-!-margin-right-2 draft-tag'
           }) }}
         </p>
+      {% elif item.status == 'returned' %}
+        <p class="govuk-body live-broadcast file-list-status">
+          {{ govukTag ({
+            'text': 'returned',
+            'classes': 'govuk-!-margin-right-2 returned-tag'
+          }) }}
+        </p>
       {% else %}
         <p class="govuk-body govuk-hint file-list-status">
           {{ item.starts_at|format_date_human|title }} at {{ item.starts_at|format_time }}

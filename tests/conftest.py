@@ -19,6 +19,7 @@ from . import (
     TestClient,
     api_key_json,
     assert_url_expected,
+    broadcast_message_edit_reason_json,
     broadcast_message_json,
     broadcast_message_version_json,
     generate_uuid,
@@ -2201,6 +2202,7 @@ def mock_get_draft_broadcast_message(
             template_id=fake_uuid,
             status="draft",
             created_by_id=fake_uuid,
+            created_at=datetime.now(),
         )
 
     return mocker.patch(
@@ -2221,8 +2223,10 @@ def mock_get_live_broadcast_message(
             template_id=fake_uuid,
             status="broadcasting",
             created_by_id=fake_uuid,
-            starts_at=(datetime.utcnow()).isoformat(),
-            finishes_at=(datetime.utcnow() + timedelta(hours=24)).isoformat(),
+            starts_at=datetime.now().isoformat(),
+            finishes_at=(datetime.now() + timedelta(hours=24)).isoformat(),
+            created_at=datetime.now().isoformat(),
+            approved_at=datetime.now().isoformat(),
         )
 
     return mocker.patch(
@@ -2341,6 +2345,48 @@ def mock_get_broadcast_message_versions(mocker):
 
 
 @pytest.fixture(scope="function")
+def mock_get_broadcast_returned_for_edit_reasons(mocker):
+    broadcast_message_edit_reason_partial = partial(
+        broadcast_message_edit_reason_json,
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        id=fake_uuid,
+        created_by_id=fake_uuid,
+        created_by="Test User",
+        submitted_by="Test User 2",
+        submitted_by_id=fake_uuid,
+        submitted_at="2020-02-20T20:20:20.000000",
+    )
+    return mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_returned_for_edit_reasons",
+        return_value=[
+            broadcast_message_edit_reason_partial(edit_reason="Hello", created_at="2020-02-20T20:25:20.000000"),
+        ],
+    )
+
+
+@pytest.fixture(scope="function")
+def mock_get_latest_edit_reason(mocker):
+    broadcast_message_edit_reason_partial = partial(
+        broadcast_message_edit_reason_json,
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        id=fake_uuid,
+        created_by_id=fake_uuid,
+        created_by="Test User",
+        submitted_by="Test User 2",
+        submitted_by_id=fake_uuid,
+        submitted_at="2020-02-20T20:20:20.000000",
+    )
+    return mocker.patch(
+        "app.broadcast_message_api_client.get_latest_returned_for_edit_reason",
+        return_value=broadcast_message_edit_reason_partial(
+            edit_reason="TESTING", created_at="2020-02-20T20:20:20.000000"
+        ),
+    )
+
+
+@pytest.fixture(scope="function")
 def mock_update_broadcast_message(
     mocker,
     fake_uuid,
@@ -2350,6 +2396,20 @@ def mock_update_broadcast_message(
 
     return mocker.patch(
         "app.broadcast_message_api_client.update_broadcast_message",
+        side_effect=_update,
+    )
+
+
+@pytest.fixture(scope="function")
+def mock_return_broadcast_message_for_edit_with_reason(
+    mocker,
+    fake_uuid,
+):
+    def _update(*, service_id, broadcast_message_id, edit_reason):
+        pass
+
+    return mocker.patch(
+        "app.broadcast_message_api_client.return_broadcast_message_for_edit_with_reason",
         side_effect=_update,
     )
 
@@ -2475,4 +2535,4 @@ def webauthn_credential_2():
 
 @pytest.fixture
 def mock_admin_action_notification(mocker):
-    return mocker.patch("app.utils.admin_action.send_slack_notification", return_value=None)
+    return mocker.patch("app.utils.admin_action.send_notifications", return_value=None)
