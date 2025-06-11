@@ -401,7 +401,7 @@ def preview_broadcast_areas(service_id, broadcast_message_id):
 
     return render_template(
         "views/broadcast/preview-areas.html",
-        broadcast_message=broadcast_message,
+        message=broadcast_message,
         back_link=back_link,
         is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
     )
@@ -913,6 +913,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
                     else None
                 ),
                 returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
+                message=broadcast_message,
             )
         broadcast_message.request_approval()
         return redirect(
@@ -934,6 +935,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
             broadcast_message.get_latest_version().get("created_at") if broadcast_message.get_latest_version() else None
         ),
         returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
+        message=broadcast_message,
     )
 
 
@@ -1038,6 +1040,7 @@ def approve_broadcast_message(service_id, broadcast_message_id):
                 else None
             ),
             returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
+            message=broadcast_message,
         )
 
     if broadcast_message.status != "pending-approval":
