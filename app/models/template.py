@@ -66,7 +66,7 @@ class Template(JSONModel):
 
     @cached_property
     def areas(self):
-        if "ids" in self._dict["areas"]:
+        if self._dict["areas"] and "ids" in self._dict["areas"]:
             library_areas = self.get_areas(self.area_ids)
 
             if len(library_areas) == len(self.area_ids):
