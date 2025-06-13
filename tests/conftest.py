@@ -2,7 +2,7 @@ import copy
 import json
 import os
 from contextlib import contextmanager
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from functools import partial
 from unittest.mock import Mock, PropertyMock
 from uuid import UUID, uuid4
@@ -587,7 +587,7 @@ def api_user_changed_password(fake_uuid):
     return create_user(
         id=fake_uuid,
         failed_login_count=5,
-        password_changed_at=str(datetime.utcnow() + timedelta(minutes=1)),
+        password_changed_at=str(datetime.now(timezone.utc) + timedelta(minutes=1)),
     )
 
 
@@ -875,7 +875,7 @@ def sample_invite(mocker, service_one):
     email_address = "invited_user@test.gov.uk"
     service_id = service_one["id"]
     permissions = "view_activity,manage_settings,manage_users,manage_api_keys"
-    created_at = str(datetime.utcnow())
+    created_at = str(datetime.now(timezone.utc))
     auth_type = "sms_auth"
     folder_permissions = []
 
@@ -921,7 +921,7 @@ def mock_get_invites_without_manage_permission(mocker, service_one, sample_invit
                 email_address="invited_user@test.gov.uk",
                 service_id=service_one["id"],
                 permissions="view_activity,create_broadcasts,manage_api_keys",
-                created_at=str(datetime.utcnow()),
+                created_at=str(datetime.now(timezone.utc)),
                 auth_type="sms_auth",
                 folder_permissions=[],
                 status="pending",
@@ -990,7 +990,7 @@ def mock_get_monthly_notification_stats(mocker, service_one, fake_uuid):
     def _stats(service_id, year):
         return {
             "data": {
-                datetime.utcnow().strftime("%Y-%m"): {
+                datetime.now(timezone.utc).strftime("%Y-%m"): {
                     "email": {
                         "sending": 1,
                         "delivered": 1,
@@ -1572,7 +1572,7 @@ def sample_org_invite(mocker, organisation_one):
     invited_by = organisation_one["users"][0]
     email_address = "invited_user@test.gov.uk"
     organisation = organisation_one["id"]
-    created_at = str(datetime.utcnow())
+    created_at = str(datetime.now(timezone.utc))
     status = "pending"
 
     return org_invite_json(id_, invited_by, organisation, email_address, created_at, status)
@@ -1998,12 +1998,12 @@ def create_user(**overrides):
         # This is not a part of the database user object, but for tests can be used to elevate:
         "platform_admin_active": False,
         "auth_type": "sms_auth",
-        "password_changed_at": str(datetime.utcnow()),
+        "password_changed_at": str(datetime.now(timezone.utc)),
         "services": [],
         "organisations": [],
         "current_session_id": None,
         "logged_in_at": None,
-        "email_access_validated_at": str(datetime.utcnow()),
+        "email_access_validated_at": str(datetime.now(timezone.utc)),
         "can_use_webauthn": False,
     }
     user_data.update(overrides)
@@ -2030,7 +2030,7 @@ def create_multiple_email_reply_to_addresses(service_id="abcd"):
             "service_id": service_id,
             "email_address": "test@example.com",
             "is_default": True,
-            "created_at": datetime.utcnow(),
+            "created_at": datetime.now(timezone.utc),
             "updated_at": None,
         },
         {
@@ -2038,7 +2038,7 @@ def create_multiple_email_reply_to_addresses(service_id="abcd"):
             "service_id": service_id,
             "email_address": "test2@example.com",
             "is_default": False,
-            "created_at": datetime.utcnow(),
+            "created_at": datetime.now(timezone.utc),
             "updated_at": None,
         },
         {
@@ -2046,7 +2046,7 @@ def create_multiple_email_reply_to_addresses(service_id="abcd"):
             "service_id": service_id,
             "email_address": "test3@example.com",
             "is_default": False,
-            "created_at": datetime.utcnow(),
+            "created_at": datetime.now(timezone.utc),
             "updated_at": None,
         },
     ]
@@ -2077,7 +2077,7 @@ def create_multiple_sms_senders(service_id="abcd"):
             "service_id": service_id,
             "sms_sender": "Example",
             "is_default": True,
-            "created_at": datetime.utcnow(),
+            "created_at": datetime.now(timezone.utc),
             "updated_at": None,
         },
         {
@@ -2085,7 +2085,7 @@ def create_multiple_sms_senders(service_id="abcd"):
             "service_id": service_id,
             "sms_sender": "Example 2",
             "is_default": False,
-            "created_at": datetime.utcnow(),
+            "created_at": datetime.now(timezone.utc),
             "updated_at": None,
         },
         {
@@ -2093,7 +2093,7 @@ def create_multiple_sms_senders(service_id="abcd"):
             "service_id": service_id,
             "sms_sender": "Example 3",
             "is_default": False,
-            "created_at": datetime.utcnow(),
+            "created_at": datetime.now(timezone.utc),
             "updated_at": None,
         },
     ]
@@ -2124,7 +2124,7 @@ def create_multiple_letter_contact_blocks(service_id="abcd"):
             "service_id": service_id,
             "contact_block": "1 Example Street",
             "is_default": True,
-            "created_at": datetime.utcnow(),
+            "created_at": datetime.now(timezone.utc),
             "updated_at": None,
         },
         {
@@ -2132,7 +2132,7 @@ def create_multiple_letter_contact_blocks(service_id="abcd"):
             "service_id": service_id,
             "contact_block": "2 Example Street",
             "is_default": False,
-            "created_at": datetime.utcnow(),
+            "created_at": datetime.now(timezone.utc),
             "updated_at": None,
         },
         {
@@ -2140,7 +2140,7 @@ def create_multiple_letter_contact_blocks(service_id="abcd"):
             "service_id": service_id,
             "contact_block": "foo\n\n<bar>\n\nbaz",
             "is_default": False,
-            "created_at": datetime.utcnow(),
+            "created_at": datetime.now(timezone.utc),
             "updated_at": None,
         },
     ]
@@ -2268,53 +2268,55 @@ def mock_get_broadcast_messages(
         )
         return [
             partial_json(
-                id_=uuid4(), status="draft", updated_at=(datetime.utcnow() - timedelta(hours=1, minutes=30)).isoformat()
+                id_=uuid4(),
+                status="draft",
+                updated_at=(datetime.now(timezone.utc) - timedelta(hours=1, minutes=30)).isoformat(),
             ),
             partial_json(
                 id_=uuid4(),
                 status="pending-approval",
-                updated_at=(datetime.utcnow() - timedelta(minutes=30)).isoformat(),
+                updated_at=(datetime.now(timezone.utc) - timedelta(minutes=30)).isoformat(),
                 template_name="Half an hour ago",
                 finishes_at=None,
             ),
             partial_json(
                 id_=uuid4(),
                 status="pending-approval",
-                updated_at=(datetime.utcnow() - timedelta(hours=1, minutes=30)).isoformat(),
+                updated_at=(datetime.now(timezone.utc) - timedelta(hours=1, minutes=30)).isoformat(),
                 template_name="Hour and a half ago",
                 finishes_at=None,
             ),
             partial_json(
                 id_=uuid4(),
                 status="broadcasting",
-                updated_at=(datetime.utcnow()).isoformat(),
-                starts_at=(datetime.utcnow()).isoformat(),
-                finishes_at=(datetime.utcnow() + timedelta(hours=24)).isoformat(),
+                updated_at=(datetime.now(timezone.utc)).isoformat(),
+                starts_at=(datetime.now(timezone.utc)).isoformat(),
+                finishes_at=(datetime.now(timezone.utc) + timedelta(hours=24)).isoformat(),
             ),
             partial_json(
                 id_=uuid4(),
                 status="broadcasting",
-                updated_at=(datetime.utcnow() - timedelta(hours=1)).isoformat(),
-                starts_at=(datetime.utcnow() - timedelta(hours=1)).isoformat(),
-                finishes_at=(datetime.utcnow() + timedelta(hours=24)).isoformat(),
+                updated_at=(datetime.now(timezone.utc) - timedelta(hours=1)).isoformat(),
+                starts_at=(datetime.now(timezone.utc) - timedelta(hours=1)).isoformat(),
+                finishes_at=(datetime.now(timezone.utc) + timedelta(hours=24)).isoformat(),
             ),
             partial_json(
                 id_=uuid4(),
                 status="completed",
-                starts_at=(datetime.utcnow() - timedelta(hours=12)).isoformat(),
-                finishes_at=(datetime.utcnow() - timedelta(hours=6)).isoformat(),
+                starts_at=(datetime.now(timezone.utc) - timedelta(hours=12)).isoformat(),
+                finishes_at=(datetime.now(timezone.utc) - timedelta(hours=6)).isoformat(),
             ),
             partial_json(
                 id_=uuid4(),
                 status="cancelled",
-                starts_at=(datetime.utcnow() - timedelta(days=1)).isoformat(),
-                finishes_at=(datetime.utcnow() - timedelta(days=100)).isoformat(),
-                cancelled_at=(datetime.utcnow() - timedelta(days=10)).isoformat(),
+                starts_at=(datetime.now(timezone.utc) - timedelta(days=1)).isoformat(),
+                finishes_at=(datetime.now(timezone.utc) - timedelta(days=100)).isoformat(),
+                cancelled_at=(datetime.now(timezone.utc) - timedelta(days=10)).isoformat(),
             ),
             partial_json(
                 id_=uuid4(),
                 status="rejected",
-                updated_at=(datetime.utcnow() - timedelta(hours=1)).isoformat(),
+                updated_at=(datetime.now(timezone.utc) - timedelta(hours=1)).isoformat(),
             ),
         ]
 

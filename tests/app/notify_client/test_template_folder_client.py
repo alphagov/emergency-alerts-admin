@@ -1,7 +1,7 @@
 import uuid
 
 import pytest
-from orderedset import OrderedSet
+from ordered_set import OrderedSet
 
 from app.notify_client.template_folder_api_client import TemplateFolderAPIClient
 

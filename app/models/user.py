@@ -125,7 +125,7 @@ class User(BaseUser, UserMixin):
         self.__init__(response)
 
     def update_email_access_validated_at(self):
-        self.update(email_access_validated_at=datetime.utcnow().isoformat())
+        self.update(email_access_validated_at=datetime.now(timezone.utc).isoformat())
 
     def password_changed_more_recently_than(self, datetime_string):
         if not self.password_changed_at:

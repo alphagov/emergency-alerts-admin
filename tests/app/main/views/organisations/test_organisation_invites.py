@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import ANY
 
 import pytest
@@ -152,7 +152,7 @@ def test_existing_user_invite_already_is_member_of_organisation(
     mock_get_users_for_organisation.assert_called_once_with(ORGANISATION_ID)
     mock_update_user_attribute.assert_called_once_with(
         api_user_active["id"],
-        email_access_validated_at="2021-12-12T12:12:12",
+        email_access_validated_at="2021-12-12T12:12:12+00:00",
     )
 
 
@@ -188,7 +188,7 @@ def test_existing_user_invite_not_a_member_of_organisation(
     )
     mock_update_user_attribute.assert_called_once_with(
         mock_get_user_by_email.side_effect(None)["id"],
-        email_access_validated_at="2021-12-12T12:12:12",
+        email_access_validated_at="2021-12-12T12:12:12+00:00",
     )
 
 
@@ -364,7 +364,7 @@ def test_verified_org_user_redirects_to_dashboard(
     client_request.logout()
     invited_org_user = InvitedOrgUser(sample_org_invite).serialize()
     with client_request.session_transaction() as session:
-        session["expiry_date"] = str(datetime.utcnow() + timedelta(hours=1))
+        session["expiry_date"] = str(datetime.now(timezone.utc) + timedelta(hours=1))
         session["user_details"] = {"email": invited_org_user["email_address"], "id": invited_org_user["id"]}
         session["organisation_id"] = invited_org_user["organisation"]
 

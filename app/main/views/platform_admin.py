@@ -1,6 +1,6 @@
 import dataclasses
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from emergency_alerts_utils.admin_action import (
@@ -84,7 +84,7 @@ def platform_admin():
 
     if form.start_date.data:
         api_args["start_date"] = form.start_date.data
-        api_args["end_date"] = form.end_date.data or datetime.utcnow().date()
+        api_args["end_date"] = form.end_date.data or datetime.now(timezone.utc).date()
 
     return render_template("views/platform-admin/index.html", form=form)
 
@@ -114,7 +114,7 @@ def platform_admin_services():
 
     if form.start_date.data:
         api_args["start_date"] = form.start_date.data
-        api_args["end_date"] = form.end_date.data or datetime.utcnow().date()
+        api_args["end_date"] = form.end_date.data or datetime.now(timezone.utc).date()
 
     services = filter_and_sort_services(
         service_api_client.get_services(api_args)["data"],
