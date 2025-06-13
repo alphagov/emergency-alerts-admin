@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.notify_client import AdminAPIClient, _attach_current_user
 
@@ -82,7 +82,7 @@ class ServiceAPIClient(AdminAPIClient):
         return self.update_service(
             service_id,
             restricted=(not live),
-            go_live_at=str(datetime.utcnow()) if live else None,
+            go_live_at=str(datetime.now(timezone.utc)) if live else None,
         )
 
     # This method is not cached because it calls through to one which is

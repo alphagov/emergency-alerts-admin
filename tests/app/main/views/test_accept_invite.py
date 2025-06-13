@@ -749,7 +749,7 @@ def test_existing_user_accepts_and_sets_email_auth(
 
     mock_get_existing_user_by_email.assert_called_once_with("test@user.gov.uk")
     assert mock_update_user_attribute.call_args_list == [
-        call(api_user_active["id"], email_access_validated_at="2021-12-12T12:12:12"),
+        call(api_user_active["id"], email_access_validated_at="2021-12-12T12:12:12+00:00"),
         call(api_user_active["id"], auth_type="email_auth"),
     ]
     mock_add_user_to_service.assert_called_once_with(ANY, api_user_active["id"], ANY, ANY)
@@ -792,7 +792,7 @@ def test_platform_admin_user_accepts_and_preserves_auth(
 
     mock_update_user_attribute.assert_called_once_with(
         platform_admin_user["id"],
-        email_access_validated_at="2021-12-12T12:12:12",
+        email_access_validated_at="2021-12-12T12:12:12+00:00",
     )
     assert mock_add_user_to_service.called
 
@@ -830,7 +830,7 @@ def test_existing_user_doesnt_get_auth_changed_by_service_without_permission(
 
     mock_update_user_attribute.assert_called_once_with(
         api_user_active["id"],
-        email_access_validated_at="2021-12-12T12:12:12",
+        email_access_validated_at="2021-12-12T12:12:12+00:00",
     )
 
 
@@ -870,7 +870,7 @@ def test_existing_email_auth_user_without_phone_cannot_set_sms_auth(
 
     mock_update_user_attribute.assert_called_once_with(
         api_user_active["id"],
-        email_access_validated_at="2021-12-12T12:12:12",
+        email_access_validated_at="2021-12-12T12:12:12+00:00",
     )
 
 
@@ -905,6 +905,6 @@ def test_existing_email_auth_user_with_phone_can_set_sms_auth(
 
     mock_get_existing_user_by_email.assert_called_once_with(sample_invite["email_address"])
     assert mock_update_user_attribute.call_args_list == [
-        call(api_user_active["id"], email_access_validated_at="2021-12-12T12:12:12"),
+        call(api_user_active["id"], email_access_validated_at="2021-12-12T12:12:12+00:00"),
         call(api_user_active["id"], auth_type="sms_auth"),
     ]

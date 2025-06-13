@@ -1,5 +1,5 @@
 import itertools
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from emergency_alerts_utils.polygons import Polygons
 from emergency_alerts_utils.template import BroadcastPreviewTemplate
@@ -204,7 +204,7 @@ class BroadcastMessage(JSONModel):
         if (
             self._dict["status"]
             and self._dict["status"] == "broadcasting"
-            and self.finishes_at < datetime.utcnow().isoformat()
+            and self.finishes_at < datetime.now(timezone.utc).isoformat()
         ):
             return "completed"
         return self._dict["status"]
@@ -404,8 +404,8 @@ class BroadcastMessage(JSONModel):
             ttl = timedelta(seconds=self.duration)
 
         self._update(
-            starts_at=datetime.utcnow().isoformat(),
-            finishes_at=(datetime.utcnow() + ttl).isoformat(),
+            starts_at=datetime.now(timezone.utc).isoformat(),
+            finishes_at=(datetime.now(timezone.utc) + ttl).isoformat(),
         )
         self._set_status_to("broadcasting")
 
