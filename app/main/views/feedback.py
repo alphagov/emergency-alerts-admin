@@ -165,7 +165,7 @@ def thanks():
 
 
 def in_business_hours():
-    now = datetime.now(timezone.utc).replace(tzinfo=pytz.utc)
+    now = datetime.now(timezone.utc)
 
     if is_weekend(now) or is_bank_holiday(now):
         return False

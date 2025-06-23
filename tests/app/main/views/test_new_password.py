@@ -31,7 +31,9 @@ def test_should_render_new_password_template(
     page = client_request.get_url(url_for_endpoint_with_token(".new_password", token=token))
     assert "You can now create a new password for your account." in page.text
 
-    mock_update_user_attribute.assert_called_once_with(user["id"], email_access_validated_at="2021-01-01T11:11:11+00:00")
+    mock_update_user_attribute.assert_called_once_with(
+        user["id"], email_access_validated_at="2021-01-01T11:11:11+00:00"
+    )
 
 
 def test_should_return_404_when_email_address_does_not_exist(
