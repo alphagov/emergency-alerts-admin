@@ -152,9 +152,14 @@ fix-imports: ## Fix imports using isort
 
 .PHONY: freeze-requirements
 freeze-requirements: ## create static requirements.txt
-	${PYTHON_EXECUTABLE_PREFIX}pip3 install --upgrade pip-tools
+	${PYTHON_EXECUTABLE_PREFIX}pip3 install --upgrade setuptools pip-tools
 	${PYTHON_EXECUTABLE_PREFIX}pip-compile requirements.in
 
 .PHONY: bump-utils
 bump-utils:  # Bump emergency-alerts-utils package to latest version
 	${PYTHON_EXECUTABLE_PREFIX}python -c "from emergency-alerts-utils.version_tools import upgrade_version; upgrade_version()"
+
+.PHONY: uninstall-packages
+uninstall-packages:
+	python -m pip uninstall emergency-alerts-utils -y
+	python -m pip freeze | xargs python -m pip uninstall -y

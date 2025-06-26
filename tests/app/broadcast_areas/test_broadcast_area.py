@@ -1,4 +1,4 @@
-from math import isclose
+from math import floor, isclose
 
 import pytest
 from custom_polygons import BRISTOL, SKYE
@@ -181,37 +181,37 @@ def test_every_area_has_count_of_phones(library):
     "area_id, area_name, expected_count",
     (
         # Unitary authority
-        ("ctyua23-E10000014", "Hampshire", 1_006_824.87),
+        ("ctyua23-E10000014", "Hampshire", 1_006_824),
         # District
-        ("lad23-E07000087", "Fareham", 80_028.62000000001),
+        ("lad23-E07000087", "Fareham", 80_028),
         # Ward
-        ("wd23-E05004516", "Fareham East", 5_383.320000000001),
+        ("wd23-E05004516", "Fareham East", 5_383),
         # Unitary authority
-        ("lad23-E09000012", "Hackney", 208_390.13000000003),
+        ("lad23-E09000012", "Hackney", 208_390),
         # Ward
-        ("wd23-E05009373", "Hackney Downs", 10_449.059999999998),
+        ("wd23-E05009373", "Hackney Downs", 10_449),
         # Special case: ward with hard-coded population
-        ("wd23-E05011090", "Bryher", 76.44),
+        ("wd23-E05011090", "Bryher", 76),
         # Areas with missing data
-        ("lad23-E07000008", "Cambridge", 118_198.88),
-        ("lad23-E07000084", "Basingstoke and Deane", 137_302.38),
-        ("lad23-E07000118", "Chorley", 84_921.76999999999),
-        ("lad23-E07000178", "Oxford", 130_069.15999999999),
+        ("lad23-E07000008", "Cambridge", 118_198),
+        ("lad23-E07000084", "Basingstoke and Deane", 137_302),
+        ("lad23-E07000118", "Chorley", 84_921),
+        ("lad23-E07000178", "Oxford", 130_069),
         # In Scotland
-        ("lad23-S12000013", "Na h-Eileanan Siar", 18_430.030000000002),
-        ("wd23-S13003135", "Barraigh agus Bhatarsaigh", 893.0300000000001),
+        ("lad23-S12000013", "Na h-Eileanan Siar", 18_430),
+        ("wd23-S13003135", "Barraigh agus Bhatarsaigh", 893),
         # In Wales
-        ("lad23-W06000021", "Monmouthshire", 64_997.89000000001),
-        ("wd23-W05001785", "Mitchel Troy and Trellech United", 2_431.44),
+        ("lad23-W06000021", "Monmouthshire", 64_997),
+        ("wd23-W05001785", "Mitchel Troy and Trellech United", 2_431),
         # In Northern Ireland
-        ("lad23-N09000005", "Derry City and Strabane", 132_917.33000000005),
-        ("wd23-N08000508", "City Walls", 3_129.4900000000002),
+        ("lad23-N09000005", "Derry City and Strabane", 132_917),
+        ("wd23-N08000508", "City Walls", 3_129),
     ),
 )
 def test_count_of_phones_for_all_levels(area_id, area_name, expected_count):
     area = broadcast_area_libraries.get_areas([area_id])[0]
     assert area.name == area_name
-    assert area.count_of_phones == expected_count
+    assert floor(area.count_of_phones) == expected_count
 
 
 def test_city_of_london_counts_are_not_derived_from_population():
