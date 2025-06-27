@@ -79,10 +79,7 @@ class BroadcastMessage(JSONModel):
     def create(cls, *, service_id, template_id):
         return cls(
             broadcast_message_api_client.create_broadcast_message(
-                service_id=service_id,
-                template_id=template_id,
-                content=None,
-                reference=None,
+                service_id=service_id, template_id=template_id, content=None, reference=None, area=None
             )
         )
 
@@ -94,6 +91,14 @@ class BroadcastMessage(JSONModel):
                 template_id=None,
                 content=content,
                 reference=reference,
+            )
+        )
+
+    @classmethod
+    def create_with_area(cls, service_id, areas, template_id=None, content=None, reference=None):
+        return cls(
+            broadcast_message_api_client.create_broadcast_message(
+                service_id=service_id, template_id=template_id, content=content, reference=reference, areas=areas
             )
         )
 

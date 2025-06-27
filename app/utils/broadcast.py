@@ -52,7 +52,8 @@ def create_coordinate_area(lat, lng, radius, type):
 
 def check_coordinates_valid_for_enclosed_polygons(message, lat, lng, type):
     in_polygon = []
-    uk_countries = message.libraries.get_areas(
+    libraries = message.libraries if message else BroadcastMessage.libraries
+    uk_countries = libraries.get_areas(
         [
             "ctry19-E92000001",
             "ctry19-N92000002",
@@ -60,7 +61,7 @@ def check_coordinates_valid_for_enclosed_polygons(message, lat, lng, type):
             "ctry19-W92000004",
         ]
     )
-    test_areas = message.libraries.get_areas(
+    test_areas = libraries.get_areas(
         [
             "test-santa-claus-village-rovaniemi-a",
             "test-santa-claus-village-rovaniemi-b",
@@ -116,7 +117,7 @@ def create_postcode_db_id(form):
         return postcode
 
 
-def create_custom_area_polygon(BroadcastMessage, form: PostcodeForm, postcode):
+def create_custom_area_polygon(form: PostcodeForm, postcode):
     centroid = None
     circle_polygon = None
     radius = float(form.data["radius"]) if form.data["radius"] else 0
@@ -376,6 +377,7 @@ def render_current_alert_page(
         else None,
         edit_reasons=broadcast_message.get_returned_for_edit_reasons(),
         returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
+        message=broadcast_message,
     )
 
 
