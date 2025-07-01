@@ -812,9 +812,7 @@ def test_write_new_broadcast_page(
     assert page.select_one("textarea")["data-highlight-placeholders"] == "false"
 
     assert (page.select_one("[data-notify-module=update-status]")["data-updates-url"]) == url_for(
-        ".count_content_length",
-        service_id=SERVICE_ONE_ID,
-        template_type="broadcast",
+        ".count_content_length", service_id=SERVICE_ONE_ID, template_type="broadcast", field="template_content"
     )
 
     assert (
@@ -843,7 +841,7 @@ def test_write_new_broadcast_posts(
             "template_content": "This is a test",
         },
         _expected_redirect=url_for(
-            ".choose_broadcast_library",
+            ".choose_extra_content",
             service_id=SERVICE_ONE_ID,
             broadcast_message_id=fake_uuid,
         ),
@@ -3320,6 +3318,7 @@ def test_preview_broadcast_message_page(
     assert [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__key")] == [
         "Reference",
         "Alert message",
+        "Extra content",
         "Area",
         "Alert duration",
         "Phone estimate",
@@ -3328,6 +3327,7 @@ def test_preview_broadcast_message_page(
     assert [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__value")] == [
         "Example template",
         "Emergency alert This is a test",
+        "",
         "England Scotland Use the arrow keys to move the map. "
         + "Use the buttons to zoom the map in or out View larger map",
         "",
@@ -5358,9 +5358,7 @@ def test_edit_broadcast_page(
     assert page.select_one("textarea")["data-highlight-placeholders"] == "false"
 
     assert (page.select_one("[data-notify-module=update-status]")["data-updates-url"]) == url_for(
-        ".count_content_length",
-        service_id=SERVICE_ONE_ID,
-        template_type="broadcast",
+        ".count_content_length", service_id=SERVICE_ONE_ID, template_type="broadcast", field="template_content"
     )
 
     assert (
@@ -5726,6 +5724,7 @@ def test_view_draft_broadcast_message_page(
             starts_at="2020-02-20T20:20:20.000000",
             created_at="2020-02-20T20:20:20.000000",
             content="Hello",
+            extra_content="Test Extra Content",
             duration=10_800,
         ),
     )
@@ -5743,6 +5742,7 @@ def test_view_draft_broadcast_message_page(
     assert [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__key")] == [
         "Reference",
         "Alert message",
+        "Extra content",
         "Area",
         "Alert duration",
         "Phone estimate",
@@ -5751,6 +5751,7 @@ def test_view_draft_broadcast_message_page(
     assert [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__value")] == [
         "Example template",
         "Emergency alert Hello",
+        "Test Extra Content",
         "England Scotland Use the arrow keys to move the map. "
         + "Use the buttons to zoom the map in or out View larger map",
         "3 hours",
