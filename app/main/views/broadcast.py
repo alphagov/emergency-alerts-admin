@@ -403,7 +403,7 @@ def edit_broadcast(service_id, broadcast_message_id):
 def broadcast(service_id, template_id):
     return redirect(
         url_for(
-            ".choose_broadcast_library",
+            ".choose_extra_content",
             service_id=current_service.id,
             broadcast_message_id=BroadcastMessage.create(
                 service_id=service_id,
