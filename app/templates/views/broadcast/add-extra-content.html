@@ -1,0 +1,63 @@
+{% extends "withnav_template.html" %}
+{% from "components/form.html" import form_wrapper %}
+{% from "components/page-header.html" import page_header %}
+{% from "components/page-footer.html" import page_footer %}
+{% from "components/textbox.html" import textbox %}
+{% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
+{% from "components/error-summary.html" import errorSummary %}
+{% from "components/banner.html" import banner %}
+{% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
+
+{% block service_page_title %}
+  {% if broadcast_message %}
+    Edit alert
+  {% else %}
+    Write new alert
+  {% endif %}
+{% endblock %}
+
+
+{% block backLink %}
+  {% if broadcast_message.id %}
+    {{ govukBackLink({ "href": url_for('.view_current_broadcast', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }) }}
+  {% else %}
+    {{ govukBackLink({ "href": url_for('.new_broadcast', service_id=current_service.id) }) }}
+  {% endif %}
+{% endblock %}
+
+{% block maincolumn_content %}
+  {{ errorSummary(form) }}
+
+  {% if broadcast_message %}
+    {{ page_header('Edit extra content')}}
+  {% else %}
+    {{ page_header('Add extra content')}}
+  {% endif %}
+  {% call form_wrapper() %}
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+      {{ textbox(
+        form.extra_content,
+        highlight_placeholders=False,
+        autosize=True,
+        width='1-1',
+        rows=5,
+        extra_form_group_classes='govuk-!-margin-bottom-2'
+      ) }}
+      </div>
+      <div class="govuk-grid-column-full">
+        <div class="template-content-count">
+          <div data-notify-module="update-status" data-target="extra_content" data-updates-url="{{ url_for('.count_content_length', service_id=current_service.id, template_type='broadcast', field='extra_content') }}" aria-live="polite">
+            &nbsp;
+          </div>
+        </div>
+        {% if not changes %}
+          {{ page_footer('Save and continue', button_name='continue') }}
+        {% endif %}
+      </div>
+    </div>
+  {% endcall %}
+
+{% endblock %}
