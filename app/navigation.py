@@ -115,6 +115,8 @@ class MainNavigation(Navigation):
             "remove_postcode_area",
             "preview_broadcast_areas",
             "view_broadcast_versions",
+            "choose_extra_content",
+            "add_extra_content",
         },
         "previous-broadcasts": {
             "broadcast_dashboard_previous",
