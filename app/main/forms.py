@@ -1032,7 +1032,7 @@ class ChooseExtraContentForm(StripWhitespaceForm):
                      <p>Select one option.</p>"""
             },
         },
-        validators=[DataRequired(message="Select whether or not to add additional text to alert")],
+        validators=[DataRequired(message="Select whether or not to add extra content to the alert")],
     )
 
 
