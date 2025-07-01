@@ -1019,14 +1019,18 @@ class NewBroadcastForm(StripWhitespaceForm):
 
 class ChooseExtraContentForm(StripWhitespaceForm):
     content = GovukRadiosField(
-        "Choose whether or not to add additional text to alert",
+        "Would you like to add extra content to the alert?",
         choices=[
             ("yes", "Yes"),
             ("no", "No"),
         ],
         param_extensions={
             "fieldset": {"legend": {"classes": "govuk-visually-hidden"}},
-            "hint": {"text": "Select one option"},
+            "hint": {
+                "html": """<p>This won't be sent to those receiving the alert, but will be displayed as part
+                     of the alert on <a href='https://www.gov.uk/alerts'>gov.uk/alerts</a>. </p>
+                     <p>Select one option.</p>"""
+            },
         },
         validators=[DataRequired(message="Select whether or not to add additional text to alert")],
     )
@@ -1166,9 +1170,6 @@ class BroadcastTemplateForm(SMSTemplateForm):
 
 
 class AddExtraContentForm(StripWhitespaceForm):
-    hint = """Provide details of why you're returning the alert to draft, including how it can be improved.
-    For example, "The alert message has spelling mistakes"."""
-
     extra_content = TextAreaField(
         "Extra content",
         validators=[DataRequired(message="Enter extra content"), NoCommasInPlaceHolders()],

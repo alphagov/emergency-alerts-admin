@@ -9,10 +9,10 @@
 {% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
 
 {% block service_page_title %}
-  {% if broadcast_message %}
-    Edit alert
+  {% if broadcast_message.extra_content != None %}
+    Edit extra content
   {% else %}
-    Write new alert
+    Add extra content
   {% endif %}
 {% endblock %}
 
@@ -28,7 +28,7 @@
 {% block maincolumn_content %}
   {{ errorSummary(form) }}
 
-  {% if broadcast_message %}
+  {% if broadcast_message.extra_content != None %}
     {{ page_header('Edit extra content')}}
   {% else %}
     {{ page_header('Add extra content')}}
