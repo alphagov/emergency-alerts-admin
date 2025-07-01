@@ -22,11 +22,13 @@ from app import current_service
 from app.broadcast_areas.models import BaseBroadcastArea, CustomBroadcastAreas
 from app.main import main
 from app.main.forms import (
+    AddExtraContentForm,
     BroadcastAreaForm,
     BroadcastAreaFormWithSelectAll,
     BroadcastTemplateForm,
     ChooseCoordinateTypeForm,
     ChooseDurationForm,
+    ChooseExtraContentForm,
     ConfirmBroadcastForm,
     NewBroadcastForm,
     PostcodeForm,
@@ -196,6 +198,62 @@ def new_broadcast(service_id):
     )
 
 
+@main.route(
+    "/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/choose-extra-content", methods=["GET", "POST"]
+)
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+@service_has_permission("broadcast")
+def choose_extra_content(service_id, broadcast_message_id):
+    form = ChooseExtraContentForm()
+
+    if form.validate_on_submit():
+        if str(form.data["content"]) == "yes":
+            return redirect(
+                url_for(".add_extra_content", service_id=current_service.id, broadcast_message_id=broadcast_message_id)
+            )
+        else:
+            url_for(
+                ".choose_broadcast_library",
+                service_id=current_service.id,
+                broadcast_message_id=broadcast_message_id,
+            )
+
+    return render_template(
+        "views/broadcast/choose-extra-content.html",
+        form=form,
+    )
+
+
+@main.route(
+    "/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/add-extra-content", methods=["GET", "POST"]
+)
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+@service_has_permission("broadcast")
+def add_extra_content(service_id, broadcast_message_id):
+    form = AddExtraContentForm()
+
+    broadcast_message = (
+        BroadcastMessage.from_id(broadcast_message_id, service_id=current_service.id) if broadcast_message_id else None
+    )
+
+    if form.validate_on_submit():
+        broadcast_message.add_extra_content(
+            service_id=current_service.id,
+            broadcast_message_id=broadcast_message_id,
+            extra_content=form.extra_content.data,
+        )
+        return redirect_dependent_on_alert_area(broadcast_message)
+
+    if broadcast_message.status in ["draft", "returned"] and broadcast_message.extra_content:
+        form.extra_content.data = broadcast_message.extra_content
+
+    return render_template(
+        "views/broadcast/add-extra-content.html",
+        broadcast_message=broadcast_message,
+        form=form,
+    )
+
+
 @main.route("/services/<uuid:service_id>/write-new-broadcast", methods=["GET", "POST"])
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
@@ -223,7 +281,7 @@ def write_new_broadcast(service_id):
         broadcast_message_id = broadcast_message.id
         return redirect(
             url_for(
-                ".choose_broadcast_library",
+                ".choose_extra_content",
                 service_id=current_service.id,
                 broadcast_message_id=broadcast_message_id,
             )
