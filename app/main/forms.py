@@ -1017,6 +1017,21 @@ class NewBroadcastForm(StripWhitespaceForm):
         return self.content.data == "template"
 
 
+class ChooseExtraContentForm(StripWhitespaceForm):
+    content = GovukRadiosField(
+        "Choose whether or not to add additional text to alert",
+        choices=[
+            ("yes", "Yes"),
+            ("no", "No"),
+        ],
+        param_extensions={
+            "fieldset": {"legend": {"classes": "govuk-visually-hidden"}},
+            "hint": {"text": "Select one option"},
+        },
+        validators=[DataRequired(message="Select whether or not to add additional text to alert")],
+    )
+
+
 class ConfirmBroadcastForm(StripWhitespaceForm):
     def __init__(self, *args, service_is_live, channel, max_phones, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1148,6 +1163,16 @@ class BroadcastTemplateForm(SMSTemplateForm):
         OnlySMSCharacters(template_type="broadcast")(None, field)
         NoPlaceholders()(None, field)
         BroadcastLength()(None, field)
+
+
+class AddExtraContentForm(StripWhitespaceForm):
+    hint = """Provide details of why you're returning the alert to draft, including how it can be improved.
+    For example, "The alert message has spelling mistakes"."""
+
+    extra_content = TextAreaField(
+        "Extra content",
+        validators=[DataRequired(message="Enter extra content"), NoCommasInPlaceHolders()],
+    )
 
 
 class ForgotPasswordForm(StripWhitespaceForm):
