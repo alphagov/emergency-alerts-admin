@@ -333,7 +333,7 @@ def useful_headers_after_request(response):
         response.headers[key] = SanitiseASCII.encode(value)
 
     # Remove the 'server' header to reduce the amount of identifiable information
-    response["headers"].pop("server", None)
+    response.headers.pop("server", None)
 
     return response
 
