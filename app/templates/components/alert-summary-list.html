@@ -79,6 +79,12 @@
             {% set conditional_area_action_text = "Add area" %}
         {% endif %}
 
+        {% if broadcast_message.extra_content %}
+            {% set conditional_extra_content_action_text = "Change" %}
+        {% else %}
+            {% set conditional_extra_content_action_text = "Add" %}
+        {% endif %}
+
     {% endif %}
 
 
@@ -136,6 +142,23 @@
             {
                 'href': url_for('.edit_broadcast', service_id=service_id, broadcast_message_id=broadcast_message.id),
                 'text': conditional_action_text,
+                'visuallyHiddenText': "message",
+            }
+            ] if display_action else []
+        }
+        },
+        {
+        'key': {
+            'text': "Extra content"
+        },
+        'value': {
+            'text': broadcast_message.extra_content or ""
+        },
+        'actions': {
+            'items': [
+            {
+                'href': url_for('.add_extra_content', service_id=service_id, broadcast_message_id=broadcast_message.id),
+                'text': conditional_extra_content_action_text,
                 'visuallyHiddenText': "message",
             }
             ] if display_action else []

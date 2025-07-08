@@ -375,6 +375,7 @@ def test_should_show_page_for_one_template(
         ".count_content_length",
         service_id=SERVICE_ONE_ID,
         template_type="broadcast",
+        field="template_content",
     )
 
     assert (page.select_one("[data-notify-module=update-status]")["aria-live"]) == "polite"
@@ -407,6 +408,7 @@ def test_broadcast_template_doesnt_highlight_placeholders_but_does_count_charact
         ".count_content_length",
         service_id=SERVICE_ONE_ID,
         template_type="broadcast",
+        field="template_content",
     )
 
     assert (page.select_one("[data-notify-module=update-status]")["aria-live"]) == "polite"
@@ -1045,6 +1047,7 @@ def test_content_count_json_endpoint(
         "main.count_content_length",
         service_id=SERVICE_ONE_ID,
         template_type=template_type,
+        field="template_content",
         _data={
             "template_content": content,
         },
@@ -1078,6 +1081,7 @@ def test_content_count_json_endpoint_for_unsupported_template_types(
         "main.count_content_length",
         service_id=SERVICE_ONE_ID,
         template_type=template_type,
+        field="template_content",
         content="foo",
         _expected_status=404,
     )
