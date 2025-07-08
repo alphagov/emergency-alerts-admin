@@ -212,10 +212,12 @@ def choose_extra_content(service_id, broadcast_message_id):
                 url_for(".add_extra_content", service_id=current_service.id, broadcast_message_id=broadcast_message_id)
             )
         else:
-            url_for(
-                ".choose_broadcast_library",
-                service_id=current_service.id,
-                broadcast_message_id=broadcast_message_id,
+            return redirect(
+                url_for(
+                    ".choose_broadcast_library",
+                    service_id=current_service.id,
+                    broadcast_message_id=broadcast_message_id,
+                )
             )
 
     return render_template(
