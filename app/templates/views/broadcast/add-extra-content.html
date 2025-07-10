@@ -34,7 +34,26 @@
     {{ page_header('Add extra content')}}
   {% endif %}
   {% call form_wrapper() %}
+    {% if changes %}
+      <div class="banner-dangerous file-list" aria-live="polite" tabindex="-1">
+        <div>{{data['updated_by']}} has made changes to the alert's extra content.</div>
+        <div>Would you like to overwrite their change?</div>
+        <div class="banner-footer-group">
+          {{ govukButton({
+            "text": "Yes, overwrite",
+            "name": "overwrite-extra-content",
+            "classes": "govuk-button govuk-!-margin-top-2",
+          }) }}
+          {{ govukButton({
+            "text": "No, keep this change",
+            "name": "keep-extra-content",
+            "classes": "govuk-button--secondary govuk-!-margin-top-2",
+          }) }}
+        </div>
+      </div>
+    {% endif %}
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    {{form.overwrite_content()}}
 
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-two-thirds">
