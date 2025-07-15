@@ -1019,7 +1019,7 @@ class NewBroadcastForm(StripWhitespaceForm):
 
 class ChooseExtraContentForm(StripWhitespaceForm):
     content = GovukRadiosField(
-        "Would you like to add extra content to the alert?",
+        "Would you like to add website content about the alert?",
         choices=[
             ("yes", "Yes"),
             ("no", "No"),
@@ -1170,6 +1170,8 @@ class BroadcastTemplateForm(SMSTemplateForm):
 
 
 class AddExtraContentForm(StripWhitespaceForm):
+    initial_extra_content = HiddenField("initial_extra_content", filters=[lambda x: x or None])
+    overwrite_extra_content = BooleanField("overwrite_extra_content", render_kw={"hidden": True})
     extra_content = TextAreaField(
         "Extra content",
         validators=[DataRequired(message="Enter extra content"), NoCommasInPlaceHolders()],
