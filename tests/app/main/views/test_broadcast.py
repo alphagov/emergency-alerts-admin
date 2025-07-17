@@ -3383,12 +3383,12 @@ def test_start_broadcasting(
             [
                 "live since 20 February at 8:20pm Stop sending",
                 "40,000,000 phones estimated",
+                "Broadcasting stops tomorrow at 11:23pm.",
                 "Created by Alice on 20 February at 10:20am.",
                 "Submitted by Test User 2 on 20 February at 8:20pm.",
                 "Returned by Test User on 20 February at 8:25pm.",
                 "Submitted by Test User 2 on 20 February at 9:00pm.",
                 "Approved by Bob on 20 February at 9:00pm.",
-                "Broadcasting stops tomorrow at 11:23pm.",
             ],
         ),
         (
@@ -3398,12 +3398,12 @@ def test_start_broadcasting(
             [
                 "live since 20 February at 8:20pm Stop sending",
                 "40,000,000 phones estimated",
+                "Broadcasting stops tomorrow at 11:23pm.",
                 "Created from an API call on 20 February at 10:20am.",
                 "Submitted by Test User 2 on 20 February at 8:20pm.",
                 "Returned by Test User on 20 February at 8:25pm.",
                 "Submitted by Test User 2 on 20 February at 9:00pm.",
                 "Approved by Alice on 20 February at 9:00pm.",
-                "Broadcasting stops tomorrow at 11:23pm.",
             ],
         ),
         (
