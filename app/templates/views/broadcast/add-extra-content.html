@@ -8,12 +8,16 @@
 {% from "components/banner.html" import banner %}
 {% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
 
-{% block service_page_title %}
+{% set page_title %}
   {% if broadcast_message.extra_content != None %}
-    Edit extra content
+    Edit additional information
   {% else %}
-    Add extra content
+    Add additional information
   {% endif %}
+{% endset %}
+
+{% block service_page_title %}
+  {{page_title}}
 {% endblock %}
 
 
@@ -29,14 +33,14 @@
   {{ errorSummary(form) }}
 
   {% if broadcast_message.extra_content != None %}
-    {{ page_header('Edit extra content')}}
+    {{ page_header(page_title)}}
   {% else %}
-    {{ page_header('Add extra content')}}
+    {{ page_header(page_title)}}
   {% endif %}
   {% call form_wrapper() %}
     {% if changes %}
       <div class="banner-dangerous file-list" aria-live="polite" tabindex="-1">
-        <div>{{changes['updated_by']}} has made changes to the alert's extra content.</div>
+        <div>{{changes['updated_by']}} has made changes to the alert's additional information.</div>
         <div>Would you like to overwrite their change?</div>
         <div class="banner-footer-group">
           {{ govukButton({
@@ -88,7 +92,10 @@
           </div>
         </div>
         {% if not changes %}
-          {{ page_footer('Save and continue', button_name='continue') }}
+          <div class="govuk-button-group">
+            {{ page_footer('Save and continue', button_name='continue', secondary_link=url_for('.remove_extra_content', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
+            secondary_link_text='No longer required, return to alert') }}
+          </div>
         {% endif %}
       </div>
     </div>
