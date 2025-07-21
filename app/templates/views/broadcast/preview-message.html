@@ -7,6 +7,7 @@
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
 {% from "govuk_frontend_jinja/components/details/macro.html" import govukDetails %}
 {% from "components/alert-summary-list.html" import alertSummaryList %}
+{% from "govuk_frontend_jinja/components/error-summary/macro.html" import govukErrorSummary %}
 
 {% block extra_stylesheets %}
   {% include "views/broadcast/partials/area-map-stylesheets.html" %}
@@ -31,6 +32,13 @@
 
 {% block maincolumn_content %}
 
+  {% if errors %}
+    {{ govukErrorSummary({
+        "titleText": "There is a problem",
+        "errorList": errors,
+    }) }}
+  {% endif %}
+
   {{ page_header("Preview alert") }}
   {% if broadcast_message.status == 'returned' %}
     <div class="banner-dangerous govuk-!-margin-bottom-6" id="returned-reason-banner" data-notify-module="autofocus" aria-live="polite" tabindex="-1">
@@ -52,7 +60,7 @@
     {% set is_editable = current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) %}
   {% endif %}
 
-  {{alertSummaryList(is_editable, current_service.id, broadcast_message, areas, broadcast_message.simple_polygons_with_bleed.estimated_area, broadcast_message.count_of_phones, broadcast_message.count_of_phones_likely, is_custom_broadcast)}}
+  {{alertSummaryList(is_editable, current_service, broadcast_message, areas, broadcast_message.simple_polygons_with_bleed.estimated_area, broadcast_message.count_of_phones, broadcast_message.count_of_phones_likely, is_custom_broadcast)}}
 
   {#
   can_submit_for_approval determines whether or not the 'Submit for approval' button is displayed for user.
@@ -67,9 +75,6 @@
 
   {% set can_submit_for_approval = (
     current_user.has_permissions('create_broadcasts', restrict_admin_usage=True)
-    and broadcast_message.areas
-    and broadcast_message.content
-    and broadcast_message.reference
     and broadcast_message.status in ["draft", "returned"]
     and (not current_service.live or current_user.id != returned_for_edit_by)
   ) %}
