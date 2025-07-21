@@ -1019,7 +1019,7 @@ class NewBroadcastForm(StripWhitespaceForm):
 
 class ChooseExtraContentForm(StripWhitespaceForm):
     content = GovukRadiosField(
-        "Would you like to add website content about the alert?",
+        "Would you like to add additional information about the alert, that will appear on gov.uk/alerts?",
         choices=[
             ("yes", "Yes"),
             ("no", "No"),
@@ -1032,7 +1032,7 @@ class ChooseExtraContentForm(StripWhitespaceForm):
                      <p>Select one option.</p>"""
             },
         },
-        validators=[DataRequired(message="Select whether or not to add extra content to the alert")],
+        validators=[DataRequired(message="Select whether or not to add additional information to the alert")],
     )
 
 
@@ -1173,8 +1173,8 @@ class AddExtraContentForm(StripWhitespaceForm):
     initial_extra_content = HiddenField("initial_extra_content", filters=[lambda x: x or None])
     overwrite_extra_content = BooleanField("overwrite_extra_content", render_kw={"hidden": True})
     extra_content = TextAreaField(
-        "Extra content",
-        validators=[DataRequired(message="Enter extra content"), NoCommasInPlaceHolders()],
+        "Additional Information",
+        validators=[DataRequired(message="Enter additional information"), NoCommasInPlaceHolders()],
     )
 
 
