@@ -10,7 +10,11 @@
 {% endblock %}
 
 {% block backLink %}
-  {{ govukBackLink({ "href": url_for('.broadcast_dashboard', service_id=current_service.id) }) }}
+  {% if back_link %}
+    {{ govukBackLink({ "href": back_link }) }}
+  {% else %}
+    {{ govukBackLink({ "href": url_for('.broadcast_dashboard', service_id=current_service.id) }) }}
+  {% endif %}
 {% endblock %}
 
 {% block maincolumn_content %}
