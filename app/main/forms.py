@@ -1019,7 +1019,7 @@ class NewBroadcastForm(StripWhitespaceForm):
 
 class ChooseExtraContentForm(StripWhitespaceForm):
     content = GovukRadiosField(
-        "Would you like to add additional information about the alert, that will appear on gov.uk/alerts?",
+        "Would you like to add additional information that will appear on gov.uk/alerts?",
         choices=[
             ("yes", "Yes"),
             ("no", "No"),
