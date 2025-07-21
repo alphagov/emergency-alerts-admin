@@ -390,6 +390,24 @@ def render_edit_alert_page(broadcast_message, form):
     )
 
 
+def render_preview_alert_page(broadcast_message, is_custom_broadcast, areas, errors=None):
+    return render_template(
+        "views/broadcast/preview-message.html",
+        broadcast_message=broadcast_message,
+        custom_broadcast=is_custom_broadcast,
+        areas=areas,
+        back_link=request.referrer,
+        label=create_map_label(areas),
+        areas_string=stringify_areas(areas),
+        broadcast_message_version_count=broadcast_message.get_count_of_versions(),
+        last_updated_time=(
+            broadcast_message.get_latest_version().get("created_at") if broadcast_message.get_latest_version() else None
+        ),
+        returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
+        errors=errors,
+    )
+
+
 def keep_alert_content_button_clicked():
     return request.method == "POST" and request.form.get("keep-message") is not None
 
@@ -462,3 +480,12 @@ def redirect_dependent_on_alert_area(broadcast_message):
         )
 
     return redirect(redirect_url)
+
+
+def check_for_missing_fields(broadcast_message):
+    required_fields = ["reference", "content", "areas"]
+    return [
+        field
+        for field in required_fields
+        if not hasattr(broadcast_message, field) or getattr(broadcast_message, field) in [None, {}, "", []]
+    ]
