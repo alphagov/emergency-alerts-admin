@@ -350,6 +350,7 @@ def render_current_alert_page(
     confirm_broadcast_form=None,
     back_link_url=".broadcast_dashboard",
     hide_stop_link=False,
+    errors=None,
 ):
     return render_template(
         "views/broadcast/view-message.html",
@@ -376,6 +377,7 @@ def render_current_alert_page(
         else None,
         edit_reasons=broadcast_message.get_returned_for_edit_reasons(),
         returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
+        errors=errors,
     )
 
 
@@ -415,6 +417,18 @@ def get_changed_alert_form_data(broadcast_message, form):
         changes["reference"] = {"updated_by": broadcast_message.updated_by or "A user"}
     if broadcast_message.content != form.initial_content.data and not form.overwrite_content.data:
         changes["message"] = {"updated_by": broadcast_message.updated_by or "A user"}
+    return changes
+
+
+def get_changed_extra_content_form_data(form, broadcast_message):
+    """
+    Compares stored extra_content with the initial form extra_content data, stored when page rendered.
+    If the overwrite_extra_content field is True, i.e. overwrite button has been clicked for that field
+    then changes to that field are not stored and considered as we're overwriting the data for that field.
+    """
+    changes = {}
+    if broadcast_message.extra_content != form.initial_extra_content.data and not form.overwrite_extra_content.data:
+        changes["updated_by"] = broadcast_message.updated_by or "A user"
     return changes
 
 
