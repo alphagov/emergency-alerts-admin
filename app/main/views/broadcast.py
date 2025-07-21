@@ -43,19 +43,20 @@ from app.utils.broadcast import (
     all_coordinate_form_fields_empty,
     all_fields_empty,
     check_coordinates_valid_for_enclosed_polygons,
+    check_for_missing_fields,
     continue_button_clicked,
     coordinates_and_radius_entered,
     coordinates_entered_but_no_radius,
     create_coordinate_area,
     create_coordinate_area_slug,
     create_custom_area_polygon,
-    create_map_label,
     create_postcode_area_slug,
     create_postcode_db_id,
     extract_attributes_from_custom_area,
     format_areas_list,
     get_centroid_if_postcode_in_db,
     get_changed_alert_form_data,
+    get_changed_extra_content_form_data,
     keep_alert_content_button_clicked,
     keep_alert_reference_button_clicked,
     normalising_point,
@@ -69,8 +70,8 @@ from app.utils.broadcast import (
     render_current_alert_page,
     render_edit_alert_page,
     render_postcode_page,
+    render_preview_alert_page,
     select_coordinate_form,
-    stringify_areas,
     update_broadcast_message_using_changed_data,
     validate_form_based_on_fields_entered,
 )
@@ -204,6 +205,17 @@ def new_broadcast(service_id):
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
 def choose_extra_content(service_id, broadcast_message_id):
+    if current_service.broadcast_channel == "operator":
+        """If the current service is an operator service, user is redirected
+        as extra_content attribute shouldn't be set for alerts created in operator services"""
+        return redirect(
+            url_for(
+                ".view_current_broadcast",
+                service_id=current_service.id,
+                broadcast_message_id=broadcast_message_id,
+            )
+        )
+
     form = ChooseExtraContentForm()
 
     if form.validate_on_submit():
@@ -222,6 +234,7 @@ def choose_extra_content(service_id, broadcast_message_id):
 
     return render_template(
         "views/broadcast/choose-extra-content.html",
+        back_link=request.referrer,
         form=form,
     )
 
@@ -232,13 +245,80 @@ def choose_extra_content(service_id, broadcast_message_id):
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
 def add_extra_content(service_id, broadcast_message_id):
-    form = AddExtraContentForm()
+    if current_service.broadcast_channel == "operator":
+        """If the current service is an operator service, user is redirected
+        as extra_content attribute shouldn't be set for alerts created in operator services"""
+        return redirect(
+            url_for(
+                ".view_current_broadcast",
+                service_id=current_service.id,
+                broadcast_message_id=broadcast_message_id,
+            )
+        )
 
     broadcast_message = (
         BroadcastMessage.from_id(broadcast_message_id, service_id=current_service.id) if broadcast_message_id else None
     )
 
+    if request.method == "GET":
+        # When the page loads initially, the fields are populated with alerts current data
+        form = AddExtraContentForm(extra_content=broadcast_message.extra_content)
+        form.initial_extra_content.data = broadcast_message.extra_content
+    elif request.method == "POST" and request.form.get("overwrite-extra-content") is not None:
+        """
+        When the button to overwrite the current additional information data is clicked, the overwrite field is set
+        to True, so the banner won't be displayed again as user has confirmed that they know the data is
+        different and should be overwritten.
+        The additional information field is populated with `extra_content` data posted from the request, and the page is
+        re-rendered to reflect this.
+        """
+        form = AddExtraContentForm()
+        form.overwrite_extra_content.data = True
+        form.extra_content.data = request.form.get("extra_content")
+        return render_template(
+            "views/broadcast/add-extra-content.html",
+            broadcast_message=broadcast_message,
+            form=form,
+            changes=get_changed_extra_content_form_data(form, broadcast_message),
+        )
+    elif request.method == "POST" and request.form.get("keep-extra-content") is not None:
+        """
+        When the button to keep the alert's current additional information is clicked, the
+        initial extra_content field and the new extra_content field are set to alert's current
+        extra_content value and the page is re-rendered.
+        """
+        form = AddExtraContentForm()
+        form.extra_content.data = broadcast_message.extra_content
+        form.initial_extra_content.data = broadcast_message.extra_content
+        return render_template(
+            "views/broadcast/add-extra-content.html",
+            broadcast_message=broadcast_message,
+            form=form,
+            changes=get_changed_extra_content_form_data(form, broadcast_message),
+        )
+    else:
+        form = AddExtraContentForm(extra_content=request.form.get("extra_content"))
+
     if form.validate_on_submit():
+        if form.extra_content.data == broadcast_message.extra_content:
+            return render_template(
+                "views/broadcast/add-extra-content.html",
+                broadcast_message=broadcast_message,
+                form=form,
+                content_matches=True,
+            )
+
+        if changes := get_changed_extra_content_form_data(form, broadcast_message):
+            return render_template(
+                "views/broadcast/add-extra-content.html",
+                broadcast_message=broadcast_message,
+                form=form,
+                changes=changes,
+            )
+
+        # Updates the initial data fields to ensure only changed data posted to API
+        form.initial_extra_content.data = broadcast_message.extra_content
+
         broadcast_message.add_extra_content(
             service_id=current_service.id,
             broadcast_message_id=broadcast_message_id,
@@ -249,10 +329,26 @@ def add_extra_content(service_id, broadcast_message_id):
     if broadcast_message.status in ["draft", "returned"] and broadcast_message.extra_content:
         form.extra_content.data = broadcast_message.extra_content
 
-    return render_template(
-        "views/broadcast/add-extra-content.html",
-        broadcast_message=broadcast_message,
-        form=form,
+    return render_template("views/broadcast/add-extra-content.html", broadcast_message=broadcast_message, form=form)
+
+
+@main.route(
+    "/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/remove-extra-content", methods=["GET", "POST"]
+)
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+@service_has_permission("broadcast")
+def remove_extra_content(service_id, broadcast_message_id):
+    broadcast_message = BroadcastMessage.from_id(
+        broadcast_message_id,
+        service_id=current_service.id,
+    )
+    broadcast_message.remove_extra_content(service_id=current_service.id, broadcast_message_id=broadcast_message.id)
+    return redirect(
+        url_for(
+            ".view_current_broadcast",
+            service_id=current_service.id,
+            broadcast_message_id=broadcast_message.id,
+        )
     )
 
 
@@ -283,7 +379,9 @@ def write_new_broadcast(service_id):
         broadcast_message_id = broadcast_message.id
         return redirect(
             url_for(
-                ".choose_extra_content",
+                ".choose_extra_content"
+                if current_service.broadcast_channel != "operator"
+                else ".choose_broadcast_library",
                 service_id=current_service.id,
                 broadcast_message_id=broadcast_message_id,
             )
@@ -383,6 +481,15 @@ def edit_broadcast(service_id, broadcast_message_id):
         and pass any changed data to template to display banners to indicate that alert has been updated
         while page open.
         """
+
+        if broadcast_message.content == form.template_content.data and broadcast_message.reference == form.name.data:
+            return render_template(
+                "views/broadcast/write-new-broadcast.html",
+                broadcast_message=broadcast_message,
+                form=form,
+                content_matches=True,
+            )
+
         if changes := get_changed_alert_form_data(broadcast_message, form):
             return render_template(
                 "views/broadcast/write-new-broadcast.html",
@@ -403,16 +510,31 @@ def edit_broadcast(service_id, broadcast_message_id):
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
 def broadcast(service_id, template_id):
-    return redirect(
-        url_for(
-            ".choose_extra_content",
-            service_id=current_service.id,
-            broadcast_message_id=BroadcastMessage.create(
-                service_id=service_id,
-                template_id=template_id,
-            ).id,
+    """If the current service is an operator service, user is redirected
+    straight to choose area as extra_content attribute shouldn't be set for
+    alerts created in operator services"""
+    if current_service.broadcast_channel == "operator":
+        return redirect(
+            url_for(
+                ".choose_broadcast_library",
+                service_id=current_service.id,
+                broadcast_message_id=BroadcastMessage.create(
+                    service_id=service_id,
+                    template_id=template_id,
+                ).id,
+            )
         )
-    )
+    else:
+        return redirect(
+            url_for(
+                ".choose_extra_content",
+                service_id=current_service.id,
+                broadcast_message_id=BroadcastMessage.create(
+                    service_id=service_id,
+                    template_id=template_id,
+                ).id,
+            )
+        )
 
 
 @main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/areas")
@@ -944,25 +1066,14 @@ def preview_broadcast_message(service_id, broadcast_message_id):
             broadcast_message.check_can_update_status("pending-approval")
         except HTTPError as e:
             flash(e.message)
-            return render_template(
-                "views/broadcast/preview-message.html",
-                back_link=url_for(
-                    ".broadcast_dashboard",
-                    service_id=current_service.id,
-                ),
-                broadcast_message=broadcast_message,
-                custom_broadcast=is_custom_broadcast,
-                areas=areas,
-                label=create_map_label(areas),
-                areas_string=stringify_areas(areas),
-                broadcast_message_version_count=broadcast_message.get_count_of_versions(),
-                last_updated_time=(
-                    broadcast_message.get_latest_version().get("created_at")
-                    if broadcast_message.get_latest_version()
-                    else None
-                ),
-                returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
-            )
+            return render_preview_alert_page(broadcast_message, is_custom_broadcast, areas)
+        missing_fields = check_for_missing_fields(broadcast_message)
+        if any(missing_fields):
+            errors = [
+                {"text": f"You must specify alert {error}", "attributes": {"class": "strong"}}
+                for error in missing_fields
+            ]
+            return render_preview_alert_page(broadcast_message, is_custom_broadcast, areas, errors)
         broadcast_message.request_approval()
         return redirect(
             url_for(
@@ -971,19 +1082,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
                 broadcast_message_id=broadcast_message.id,
             )
         )
-    return render_template(
-        "views/broadcast/preview-message.html",
-        broadcast_message=broadcast_message,
-        custom_broadcast=is_custom_broadcast,
-        areas=areas,
-        label=create_map_label(areas),
-        areas_string=stringify_areas(areas),
-        broadcast_message_version_count=broadcast_message.get_count_of_versions(),
-        last_updated_time=(
-            broadcast_message.get_latest_version().get("created_at") if broadcast_message.get_latest_version() else None
-        ),
-        returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
-    )
+    return render_preview_alert_page(broadcast_message, is_custom_broadcast, areas)
 
 
 @main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/submit", methods=["GET", "POST"])
@@ -999,6 +1098,13 @@ def submit_broadcast_message(service_id, broadcast_message_id):
     except HTTPError as e:
         flash(e.message)
         return render_current_alert_page(broadcast_message, hide_stop_link=True)
+
+    missing_fields = check_for_missing_fields(broadcast_message)
+    if any(missing_fields):
+        errors = [
+            {"text": f"You must specify alert {error}", "attributes": {"class": "strong"}} for error in missing_fields
+        ]
+        return render_current_alert_page(broadcast_message, hide_stop_link=True, errors=errors)
 
     broadcast_message.request_approval()
     return redirect(
@@ -1069,25 +1175,7 @@ def approve_broadcast_message(service_id, broadcast_message_id):
         broadcast_message.check_can_update_status("broadcasting")
     except HTTPError as e:
         flash(e.message)
-        return render_template(
-            "views/broadcast/preview-message.html",
-            back_link=url_for(
-                ".broadcast_dashboard",
-                service_id=current_service.id,
-            ),
-            broadcast_message=broadcast_message,
-            custom_broadcast=is_custom_broadcast,
-            areas=areas,
-            label=create_map_label(areas),
-            areas_string=stringify_areas(areas),
-            broadcast_message_version_count=broadcast_message.get_count_of_versions(),
-            last_updated_time=(
-                broadcast_message.get_latest_version().get("created_at")
-                if broadcast_message.get_latest_version()
-                else None
-            ),
-            returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
-        )
+        return render_preview_alert_page(broadcast_message, is_custom_broadcast, areas)
 
     if broadcast_message.status != "pending-approval":
         return redirect(
