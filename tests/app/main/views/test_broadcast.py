@@ -3309,7 +3309,7 @@ def test_preview_broadcast_message_page(
         "Scotland",
     ]
 
-    assert not page.select_one("p.duration-preview")  # Isn't present because there's no duration set
+    assert normalize_spaces(page.select_one("p.duration-preview").text) == "22 hours, 30 minutes"
 
     assert normalize_spaces(page.select_one("h2.broadcast-message-heading").text) == "Emergency alert"
 
@@ -3318,7 +3318,7 @@ def test_preview_broadcast_message_page(
     assert [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__key")] == [
         "Reference",
         "Alert message",
-        "Extra content",
+        "Additional Information",
         "Area",
         "Alert duration",
         "Phone estimate",
@@ -3330,7 +3330,7 @@ def test_preview_broadcast_message_page(
         "",
         "England Scotland Use the arrow keys to move the map. "
         + "Use the buttons to zoom the map in or out View larger map",
-        "",
+        "22 hours, 30 minutes",
         "40,000,000 phones estimated",
         "Download geoJSON Download CAP XML Download IBAG XML",
     ]
@@ -5742,7 +5742,7 @@ def test_view_draft_broadcast_message_page(
     assert [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__key")] == [
         "Reference",
         "Alert message",
-        "Extra content",
+        "Additional Information",
         "Area",
         "Alert duration",
         "Phone estimate",
