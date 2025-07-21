@@ -1027,9 +1027,10 @@ class ChooseExtraContentForm(StripWhitespaceForm):
         param_extensions={
             "fieldset": {"legend": {"classes": "govuk-visually-hidden"}},
             "hint": {
-                "html": """<p>This won't be sent to those receiving the alert, but will be displayed as part
-                     of the alert on <a href='https://www.gov.uk/alerts'>gov.uk/alerts</a>. </p>
-                     <p>Select one option.</p>"""
+                "html": """<p class="govuk-body">This won't be sent to those receiving the alert,
+                but will be displayed as part of the alert on <a class="govuk-link govuk-link--no-visited-state"
+                href='https://www.gov.uk/alerts'>gov.uk/alerts</a>. </p>
+                <p class="govuk-body">Select one option.</p>"""
             },
         },
         validators=[DataRequired(message="Select whether or not to add additional information to the alert")],
