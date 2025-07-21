@@ -113,6 +113,12 @@ class BroadcastMessage(JSONModel):
         )
 
     @classmethod
+    def remove_extra_content(cls, *, service_id, broadcast_message_id):
+        broadcast_message_api_client.update_broadcast_message(
+            service_id=service_id, broadcast_message_id=broadcast_message_id, data=({"extra_content": ""})
+        )
+
+    @classmethod
     def update_duration(cls, *, service_id, broadcast_message_id, duration):
         broadcast_message_api_client.update_broadcast_message(
             service_id=service_id,
