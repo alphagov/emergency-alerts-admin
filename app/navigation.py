@@ -117,6 +117,7 @@ class MainNavigation(Navigation):
             "view_broadcast_versions",
             "choose_extra_content",
             "add_extra_content",
+            "remove_extra_content",
         },
         "previous-broadcasts": {
             "broadcast_dashboard_previous",

@@ -114,6 +114,7 @@ EXCLUDED_ENDPOINTS = tuple(
             "register_from_org_invite",
             "reject_broadcast_message",
             "remove_broadcast_area",
+            "remove_extra_content",
             "remove_user_from_organisation",
             "remove_user_from_service",
             "remove_postcode_area",
