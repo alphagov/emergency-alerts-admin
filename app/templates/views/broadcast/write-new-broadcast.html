@@ -16,6 +16,15 @@
   {% endif %}
 {% endblock %}
 
+{% set html %}
+  <p class="govuk-body">The content you are trying to change is identical to the existing content.
+    No change will be made.
+    <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('.view_current_broadcast', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }}">
+      Return to alert
+    </a>
+  </p>
+{% endset %}
+
 
 {% block backLink %}
   {% if broadcast_message.id %}
@@ -51,15 +60,10 @@
     {% endif %}
 
     {% if content_matches %}
-      <div class="banner-blue file-list" aria-live="polite" tabindex="-1">
-        <div>The content you are trying to change is identical to the existing content.</div>
-        <div>
-          No change will be made.
-          <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('.view_current_broadcast', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }}">
-            Return to alert
-          </a>
-        </div>
-      </div>
+      {{govukNotificationBanner({
+        "html": html,
+        "role": "alert"
+      })}}
     {% endif %}
 
 
