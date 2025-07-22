@@ -594,6 +594,7 @@ def choose_broadcast_library(service_id, broadcast_message_id):
         libraries=BroadcastMessage.libraries,
         broadcast_message=broadcast_message,
         custom_broadcast=is_custom_broadcast,
+        back_link=request.referrer,
     )
 
 
@@ -1067,12 +1068,8 @@ def preview_broadcast_message(service_id, broadcast_message_id):
         except HTTPError as e:
             flash(e.message)
             return render_preview_alert_page(broadcast_message, is_custom_broadcast, areas)
-        missing_fields = check_for_missing_fields(broadcast_message)
-        if any(missing_fields):
-            errors = [
-                {"text": f"You must specify alert {error}", "attributes": {"class": "strong"}}
-                for error in missing_fields
-            ]
+
+        if errors := check_for_missing_fields(broadcast_message):
             return render_preview_alert_page(broadcast_message, is_custom_broadcast, areas, errors)
         broadcast_message.request_approval()
         return redirect(
@@ -1099,11 +1096,7 @@ def submit_broadcast_message(service_id, broadcast_message_id):
         flash(e.message)
         return render_current_alert_page(broadcast_message, hide_stop_link=True)
 
-    missing_fields = check_for_missing_fields(broadcast_message)
-    if any(missing_fields):
-        errors = [
-            {"text": f"You must specify alert {error}", "attributes": {"class": "strong"}} for error in missing_fields
-        ]
+    if errors := check_for_missing_fields(broadcast_message):
         return render_current_alert_page(broadcast_message, hide_stop_link=True, errors=errors)
 
     broadcast_message.request_approval()

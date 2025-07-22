@@ -483,9 +483,26 @@ def redirect_dependent_on_alert_area(broadcast_message):
 
 
 def check_for_missing_fields(broadcast_message):
-    required_fields = ["reference", "content", "areas"]
-    return [
-        field
-        for field in required_fields
-        if not hasattr(broadcast_message, field) or getattr(broadcast_message, field) in [None, {}, "", []]
-    ]
+    errors = []
+    if not broadcast_message.areas:
+        url = url_for(
+            ".choose_broadcast_library",
+            service_id=current_service.id,
+            broadcast_message_id=broadcast_message.id,
+        )
+        errors.append({"html": f"""<a href={url}>You must specify alert areas</a>"""})
+    if not broadcast_message.reference:
+        url = url_for(
+            ".write_new_broadcast",
+            service_id=current_service.id,
+            broadcast_message_id=broadcast_message.id,
+        )
+        errors.append({"html": f"""<a href={url}>You must specify alert reference</a>"""})
+    if not broadcast_message.content:
+        url = url_for(
+            ".write_new_broadcast",
+            service_id=current_service.id,
+            broadcast_message_id=broadcast_message.id,
+        )
+        errors.append({"html": f"""<a href={url}>You must specify alert message</a>"""})
+    return errors
