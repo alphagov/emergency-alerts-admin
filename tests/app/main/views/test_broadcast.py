@@ -5830,7 +5830,7 @@ def test_add_extra_content_updates_message(
     )
 
 
-def test_add_extra_content_keep_message_keeps_extra_content(
+def test_add_extra_content_keep_message_keeps_original_extra_content(
     client_request,
     service_one,
     active_user_create_broadcasts_permission,
@@ -5894,10 +5894,68 @@ def test_add_extra_content_keep_message_keeps_extra_content(
     # Asserts that the banner is closed and the reference field data has been reverted back to stored reference
     assert not page3.select(".banner-dangerous")
     assert normalize_spaces(page.select_one("textarea").text) == "Test Extra Content"
+    assert mock_update_broadcast_message.called is False
 
 
-def test_add_extra_content_keep_change_overwrites_extra_content():
-    pass
+def test_add_extra_content_overwrite_change_overwrites_extra_content(
+    client_request,
+    service_one,
+    active_user_create_broadcasts_permission,
+    mocker,
+    fake_uuid,
+    mock_check_can_update_status,
+    mock_update_broadcast_message,
+    mock_get_broadcast_message_versions,
+):
+    """
+    Checks that when "overwrite_extra_content" is set to "y" in data posted to add_extra_content, the data is updated.
+    "overwrite_extra_content" is a boolean, hidden field in AddExtraContent form and is 'checked' when user clicks
+    "Yes, overwrite" button and then submits the form.
+    """
+    service_one["permissions"] += ["broadcast"]
+    client_request.login(active_user_create_broadcasts_permission)
+
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            extra_content="Test Extra Content",
+        ),
+    )
+    # Initial render of add_extra_content page
+    page = client_request.get(".add_extra_content", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
+
+    assert normalize_spaces(page.select_one("h1").text) == "Edit additional information"
+    assert normalize_spaces(page.select_one("textarea").text) == "Test Extra Content"
+
+    """
+    Data posted to add_extra_content includes overwrite_extra_content which is present when "Yes, overwrite" button
+    has been clicked and user has submitted the form.
+    """
+    client_request.post(
+        ".add_extra_content",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        _data={
+            "extra_content": "Test Extra Content NEW",
+            "initial_extra_content": "Test Extra Content",
+            "overwrite_extra_content": "y",
+        },
+        _follow_redirects=True,
+    )
+
+    # Asserts that update_broadcast_message called with extra_content data
+    mock_update_broadcast_message.assert_called_once_with(
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        data={
+            "extra_content": "Test Extra Content NEW",
+        },
+    )
 
 
 def test_view_draft_broadcast_message_page(
