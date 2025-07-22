@@ -933,6 +933,80 @@ def test_edit_broadcast_bad_content(
     assert mock_update_broadcast_message.called is False
 
 
+def test_choose_extra_content_page(client_request, service_one, active_user_create_broadcasts_permission, fake_uuid):
+    service_one["permissions"] += ["broadcast"]
+    client_request.login(active_user_create_broadcasts_permission)
+    page = client_request.get(
+        ".choose_extra_content", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid, _test_page_title=False
+    )
+
+    assert (
+        normalize_spaces(page.select_one("h1").text)
+        == "Would you like to add additional information that will appear on gov.uk/alerts?"
+    )
+
+    form = page.select_one("form")
+    assert form["method"] == "post"
+    assert "action" not in form
+
+    assert [
+        (
+            choice.select_one("input")["name"],
+            choice.select_one("input")["value"],
+            normalize_spaces(choice.select_one("label").text),
+        )
+        for choice in form.select(".govuk-radios__item")
+    ] == [
+        ("content", "yes", "Yes"),
+        ("content", "no", "No"),
+    ]
+
+
+def test_add_extra_content_page(
+    client_request, service_one, active_user_create_broadcasts_permission, fake_uuid, mocker
+):
+    service_one["permissions"] += ["broadcast"]
+    client_request.login(active_user_create_broadcasts_permission)
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+        ),
+    )
+    page = client_request.get(".add_extra_content", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
+
+    assert normalize_spaces(page.select_one("h1").text) == "Add additional information"
+    assert normalize_spaces(page.select_one("h1").text) == "Add additional information"
+
+    form = page.select_one("form")
+    assert form["method"] == "post"
+    assert "action" not in form
+
+    assert (
+        normalize_spaces(page.select_one("label[for=extra_content]").text)
+        == "Additional Information This might include evacuation procedures, Welsh translations "
+        "or detailed information that's too long to include in the alert."
+    )
+    assert page.select_one("textarea")["data-notify-module"] == "enhanced-textbox"
+    assert page.select_one("textarea")["data-highlight-placeholders"] == "false"
+
+    assert (page.select_one("[data-notify-module=update-status]")["data-updates-url"]) == url_for(
+        ".count_content_length", service_id=SERVICE_ONE_ID, template_type="broadcast", field="extra_content"
+    )
+
+    assert (
+        (page.select_one("[data-notify-module=update-status]")["data-target"])
+        == (page.select_one("textarea")["id"])
+        == "extra_content"
+    )
+
+    assert (page.select_one("[data-notify-module=update-status]")["aria-live"]) == "polite"
+
+
 def test_broadcast_page(
     client_request,
     service_one,
@@ -5701,6 +5775,129 @@ def test_edit_broadcast_updates_message(
             "reference": "Test Edit Alert NEW",
         },
     )
+
+
+def test_add_extra_content_updates_message(
+    client_request,
+    service_one,
+    active_user_create_broadcasts_permission,
+    mocker,
+    fake_uuid,
+    mock_check_can_update_status,
+    mock_update_broadcast_message,
+    mock_get_broadcast_message_versions,
+):
+    """
+    Checks that when data is posted to add_extra_content and no changes have been made to broadcast_message
+    i.e. initial form data matches the stored broadcast_message, then any data submitted updates the
+    broadcast_message.
+    """
+    service_one["permissions"] += ["broadcast"]
+    client_request.login(active_user_create_broadcasts_permission)
+
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            extra_content="Test Extra Content",
+        ),
+    )
+    # Initial render of the page
+    client_request.get(".add_extra_content", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
+
+    # Updated data posted but initial content matches current broadcast_message
+    client_request.post(
+        ".add_extra_content",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        _data={
+            "extra_content": "Test Edit Alert NEW",
+            "initial_extra_content": "Test Extra Content",
+        },
+        _follow_redirects=True,
+    )
+
+    mock_update_broadcast_message.assert_called_once_with(
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        data={
+            "extra_content": "Test Edit Alert NEW",
+        },
+    )
+
+
+def test_add_extra_content_keep_message_keeps_extra_content(
+    client_request,
+    service_one,
+    active_user_create_broadcasts_permission,
+    mocker,
+    fake_uuid,
+    mock_check_can_update_status,
+    mock_update_broadcast_message,
+    mock_get_broadcast_message_versions,
+):
+    """
+    Checks that when the "User has made changes..." banner is displayed, clicking the "No, keep this change" button
+    in the banner closes it and the form fields are populated with changed broadcast_message data.
+    """
+    service_one["permissions"] += ["broadcast"]
+    client_request.login(active_user_create_broadcasts_permission)
+
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            extra_content="Test Extra Content",
+        ),
+    )
+    # Initial render of add_extra_content page
+    page = client_request.get(".add_extra_content", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
+    assert normalize_spaces(page.select_one("textarea").text) == "Test Extra Content"
+    # Posting new reference
+    page2 = client_request.post(
+        ".add_extra_content",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        _data={
+            "extra_content": "Test Extra Content NEW",
+            "initial_extra_content": "Something different",  # Simulates alert changed in the background
+        },
+        _expected_status=200,
+    )
+
+    assert [normalize_spaces(item.text) for item in page2.select(".banner-dangerous")] == [
+        "A user has made changes to the alert's additional information. Would you like to "
+        + "overwrite their change? Yes, overwrite No, keep this change"
+    ]
+
+    # Posting new reference with keep-extra-content button clicked to close banner
+    page3 = client_request.post(
+        ".add_extra_content",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        _data={
+            "extra_content": "Test Extra Content NEW",
+            "initial_extra_content": "Test Extra Content NEW",  # Simulates alert changed in the background
+            "keep-extra-content": "",
+        },
+        _follow_redirects=True,
+    )
+
+    # Asserts that the banner is closed and the reference field data has been reverted back to stored reference
+    assert not page3.select(".banner-dangerous")
+    assert normalize_spaces(page.select_one("textarea").text) == "Test Extra Content"
+
+
+def test_add_extra_content_keep_change_overwrites_extra_content():
+    pass
 
 
 def test_view_draft_broadcast_message_page(
