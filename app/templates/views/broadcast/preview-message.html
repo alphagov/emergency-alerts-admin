@@ -32,22 +32,27 @@
 
 {% block maincolumn_content %}
 
-  {% if errors %}
+  {% if broadcast_message.status == 'returned' %}
+    {% set reason_html %}
+      <p class="govuk-body govuk-!-padding-bottom-2">This alert has been returned to edit, because {{broadcast_message.edit_reason}}</p>
+    {% endset %}
+    {% if errors %}
+      {% set error_list = [{"html": reason_html}] + errors %}
+    {% else %}
+      {% set error_list = [{"html": reason_html}] %}
+    {% endif %}
     {{ govukErrorSummary({
-        "titleText": "There is a problem",
-        "errorList": errors,
+      "titleText": "There is a problem",
+      "errorList": error_list,
+    }) }}
+  {% elif errors %}
+     {{ govukErrorSummary({
+      "titleText": "There is a problem",
+      "errorList": errors,
     }) }}
   {% endif %}
 
   {{ page_header("Preview alert") }}
-  {% if broadcast_message.status == 'returned' %}
-    <div class="banner-dangerous govuk-!-margin-bottom-6" id="returned-reason-banner" data-notify-module="autofocus" aria-live="polite" tabindex="-1">
-      <p class="govuk-!-margin-right-1 dashboard-table govuk-!-font-weight-bold">Reason why alert has been returned to edit: </p>
-      <p class="dashboard-table">
-        {{broadcast_message.edit_reason}}
-      </p>
-    </div>
-  {% endif %}
 
   {#
     is_editable is passed into alertSummaryList component and determines whether or not user can edit the fields for an alert.
