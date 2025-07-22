@@ -220,9 +220,3 @@
     border-top: none;
   }
 }
-
-.banner-blue {
-  @extend %banner;
-  border: 5px solid  $govuk-brand-colour;
-  color:  $govuk-text-colour;
-}
