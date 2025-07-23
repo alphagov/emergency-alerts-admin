@@ -34,7 +34,7 @@
 
   {% if broadcast_message.status == 'returned' %}
     {% set reason_html %}
-      <p class="govuk-body govuk-!-padding-bottom-2">This alert has been returned to edit, because {{broadcast_message.edit_reason}}</p>
+      <p class="govuk-body govuk-!-padding-bottom-2">This alert has been returned to edit, because: <span class="govuk-body govuk-!-font-weight-bold">{{broadcast_message.edit_reason}}</span></p>
     {% endset %}
     {% if errors %}
       {% set error_list = [{"html": reason_html}] + errors %}
