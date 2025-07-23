@@ -58,11 +58,11 @@ from app.formatters import (
     message_count_label,
     message_count_noun,
     nl2br,
-    paragraphize,
     parse_seconds_as_hours_and_minutes,
     redact_mobile_number,
     round_to_significant_figures,
     square_metres_to_square_miles,
+    text_area_formatting,
     valid_phone_number,
 )
 from app.models.organisation import Organisation
@@ -493,7 +493,7 @@ def add_template_filters(application):
         round_to_significant_figures,
         square_metres_to_square_miles,
         valid_phone_number,
-        paragraphize,
+        text_area_formatting,
     ]:
         application.add_template_filter(fn)
 

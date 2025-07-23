@@ -160,7 +160,7 @@
                     'text': "Additional Information"
                 },
                 'value': {
-                    'text': broadcast_message.extra_content | autolink_urls(classes='govuk-link') | paragraphize if broadcast_message.extra_content else ""
+                    'text': broadcast_message.extra_content | text_area_formatting if broadcast_message.extra_content else ""
                 },
                 'actions': {
                     'items': [
