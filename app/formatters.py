@@ -13,7 +13,7 @@ from emergency_alerts_utils.formatters import nl2br as utils_nl2br
 from emergency_alerts_utils.take import Take
 from emergency_alerts_utils.timezones import utc_string_to_aware_gmt_datetime
 from emergency_alerts_utils.validation import InvalidPhoneError, validate_phone_number
-from markupsafe import Markup
+from markupsafe import Markup, escape
 
 
 def convert_to_boolean(value):
@@ -369,3 +369,9 @@ def format_number_no_scientific(num):
     normalised = dec.quantize(Decimal(1)) if dec == dec.to_integral() else dec.normalize()
 
     return str(normalised)
+
+
+def paragraphize(value):
+    print(value)
+    paragraphs = [f'<p class="govuk-body">{line}</p>' for line in escape(value).split("\n") if line]
+    return Markup("\n\n".join(paragraphs))
