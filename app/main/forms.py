@@ -1017,6 +1017,26 @@ class NewBroadcastForm(StripWhitespaceForm):
         return self.content.data == "template"
 
 
+class ChooseExtraContentForm(StripWhitespaceForm):
+    content = GovukRadiosField(
+        "Would you like to add additional information that will appear on gov.uk/alerts?",
+        choices=[
+            ("yes", "Yes"),
+            ("no", "No"),
+        ],
+        param_extensions={
+            "fieldset": {"legend": {"classes": "govuk-visually-hidden"}},
+            "hint": {
+                "html": """<p class="govuk-body">This won't be sent to those receiving the alert,
+                but will be displayed as part of the alert on <a class="govuk-link govuk-link--no-visited-state"
+                href='https://www.gov.uk/alerts'>gov.uk/alerts</a>. </p>
+                <p class="govuk-body">Select one option.</p>"""
+            },
+        },
+        validators=[DataRequired(message="Select whether or not to add additional information to the alert")],
+    )
+
+
 class ConfirmBroadcastForm(StripWhitespaceForm):
     def __init__(self, *args, service_is_live, channel, max_phones, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1148,6 +1168,15 @@ class BroadcastTemplateForm(SMSTemplateForm):
         OnlySMSCharacters(template_type="broadcast")(None, field)
         NoPlaceholders()(None, field)
         BroadcastLength()(None, field)
+
+
+class AddExtraContentForm(StripWhitespaceForm):
+    initial_extra_content = HiddenField("initial_extra_content", filters=[lambda x: x or None])
+    overwrite_extra_content = BooleanField("overwrite_extra_content", render_kw={"hidden": True})
+    extra_content = TextAreaField(
+        "Additional Information",
+        validators=[DataRequired(message="Enter additional information"), NoCommasInPlaceHolders()],
+    )
 
 
 class ForgotPasswordForm(StripWhitespaceForm):
