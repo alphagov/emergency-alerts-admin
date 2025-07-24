@@ -1,8 +1,9 @@
 .DEFAULT_GOAL := help
 SHELL := /bin/bash
-DATE = $(shell date +%Y-%m-%dT%H:%M:%S)
+TIME = $(shell date +%Y-%m-%dT%H:%M:%S%z)
 
-APP_VERSION_FILE = app/version.py
+# Passed through by Dockerfile/buildspec
+APP_VERSION ?= unknown
 
 GIT_BRANCH ?= $(shell git symbolic-ref --short HEAD 2> /dev/null || echo "detached")
 GIT_COMMIT ?= $(shell git rev-parse HEAD 2> /dev/null || echo "")
@@ -135,8 +136,8 @@ upgrade-pip: virtualenv
 	${PYTHON_EXECUTABLE_PREFIX}pip3 install --upgrade pip
 
 .PHONY: generate-version-file
-generate-version-file: ## Generates the app version file
-	@echo -e "__git_commit__ = \"${GIT_COMMIT}\"\n__time__ = \"${DATE}\"" > ${APP_VERSION_FILE}
+generate-version-file: ## Generate the app/version.py file
+	@ GIT_COMMIT=${GIT_COMMIT} TIME=${TIME} APP_VERSION=${APP_VERSION} envsubst < app/version.dist.py > app/version.py
 
 .PHONY: test
 test: ## Run tests
