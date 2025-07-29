@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytz
 from emergency_alerts_utils.clients.zendesk.zendesk_client import EASSupportTicket
@@ -165,7 +165,7 @@ def thanks():
 
 
 def in_business_hours():
-    now = datetime.utcnow().replace(tzinfo=pytz.utc)
+    now = datetime.now(timezone.utc)
 
     if is_weekend(now) or is_bank_holiday(now):
         return False

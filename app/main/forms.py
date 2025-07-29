@@ -1,6 +1,6 @@
 import math
 import weakref
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from itertools import chain
 from numbers import Number
 
@@ -100,19 +100,19 @@ def get_human_time(time):
 def get_human_day(time, prefix_today_with="T"):
     #  Add 1 hour to get ‘midnight today’ instead of ‘midnight tomorrow’
     time = (time - timedelta(hours=1)).strftime("%A")
-    if time == datetime.utcnow().strftime("%A"):
+    if time == datetime.now(timezone.utc).strftime("%A"):
         return "{}oday".format(prefix_today_with)
-    if time == (datetime.utcnow() + timedelta(days=1)).strftime("%A"):
+    if time == (datetime.now(timezone.utc) + timedelta(days=1)).strftime("%A"):
         return "Tomorrow"
     return time
 
 
 def get_furthest_possible_scheduled_time():
-    return (datetime.utcnow() + timedelta(days=4)).replace(hour=0)
+    return (datetime.now(timezone.utc) + timedelta(days=4)).replace(hour=0)
 
 
 def get_next_hours_until(until):
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     hours = int((until - now).total_seconds() / (60 * 60))
     return [
         (now + timedelta(hours=i)).replace(minute=0, second=0, microsecond=0).replace(tzinfo=pytz.utc)
@@ -121,7 +121,7 @@ def get_next_hours_until(until):
 
 
 def get_next_days_until(until):
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     days = int((until - now).total_seconds() / (60 * 60 * 24))
     return [
         get_human_day((now + timedelta(days=i)).replace(tzinfo=pytz.utc), prefix_today_with="Later t")
