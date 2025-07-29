@@ -490,14 +490,14 @@ def check_for_missing_fields(broadcast_message):
         broadcast_message_id=broadcast_message.id,
     )
     if not broadcast_message.reference:
-        errors.append({"html": f"""<a href={edit_url}>Add alert reference</a>"""})
+        errors.append({"html": f"""<a href="{edit_url}">Add alert reference</a>"""})
     if not broadcast_message.content:
-        errors.append({"html": f"""<a href={edit_url}>Add alert message</a>"""})
+        errors.append({"html": f"""<a href="{edit_url}">Add alert message</a>"""})
     if not broadcast_message.areas:
         area_url = url_for(
             ".choose_broadcast_library",
             service_id=current_service.id,
             broadcast_message_id=broadcast_message.id,
         )
-        errors.append({"html": f"""<a href={area_url}>Add alert area</a>"""})
+        errors.append({"html": f"""<a href="{area_url}">Add alert area</a>"""})
     return errors
