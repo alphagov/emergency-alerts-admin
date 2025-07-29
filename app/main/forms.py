@@ -1029,7 +1029,7 @@ class ChooseExtraContentForm(StripWhitespaceForm):
             "hint": {
                 "html": """<p class="govuk-body">This won't be sent to those receiving the alert,
                 but will be displayed as part of the alert on <a class="govuk-link govuk-link--no-visited-state"
-                href='https://www.gov.uk/alerts'>gov.uk/alerts</a>. </p>
+                href="https://www.gov.uk/alerts">gov.uk/alerts</a>. </p>
                 <p class="govuk-body">Select one option.</p>"""
             },
         },
