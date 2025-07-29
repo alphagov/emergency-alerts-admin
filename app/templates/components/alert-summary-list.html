@@ -59,11 +59,11 @@
         {% else %}
             {% if  current_service.broadcast_channel in ["test", "operator"] %}
                 <p class="govuk-!-margin-right-2 duration-preview">
-                    {{ 14400|format_seconds_duration_as_time }}
+                    {{ config.get('DEFAULT_DURATION_PERIODS')["training"]|format_seconds_duration_as_time }}
                 </p>
             {% else %}
                 <p class="govuk-!-margin-right-2 duration-preview">
-                    {{ 81000|format_seconds_duration_as_time }}
+                    {{ config.get('DEFAULT_DURATION_PERIODS')["live"] |format_seconds_duration_as_time }}
                 </p>
             {% endif %}
         {% endif %}

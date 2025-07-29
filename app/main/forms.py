@@ -45,7 +45,7 @@ from wtforms.validators import (
     Regexp,
 )
 
-from app.config import BroadcastProvider
+from app.config import BroadcastProvider, Config
 from app.formatters import (
     format_auth_type,
     guess_name_from_email_address,
@@ -1089,11 +1089,13 @@ class ChooseDurationForm(StripWhitespaceForm):
         if duration is None:
             if self.hours.data is None and self.minutes.data is None:
                 if channel in ["test", "operator"]:
-                    self.hours.data = 4
-                    self.minutes.data = 0
+                    (hours, minutes) = parse_seconds_as_hours_and_minutes(
+                        Config.DEFAULT_DURATION_PERIODS.get("training")
+                    )
                 else:
-                    self.hours.data = 22
-                    self.minutes.data = 30
+                    (hours, minutes) = parse_seconds_as_hours_and_minutes(Config.DEFAULT_DURATION_PERIODS.get("live"))
+                self.hours.data = hours
+                self.minutes.data = minutes
         elif self.hours.data is None and self.minutes.data is None:
             (hours, minutes) = parse_seconds_as_hours_and_minutes(duration)
             self.hours.data = hours
