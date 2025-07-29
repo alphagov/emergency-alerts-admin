@@ -66,6 +66,7 @@ from app.utils.broadcast import (
     postcode_and_radius_entered,
     postcode_entered,
     redirect_dependent_on_alert_area,
+    redirect_if_operator_service,
     render_coordinates_page,
     render_current_alert_page,
     render_edit_alert_page,
@@ -205,16 +206,8 @@ def new_broadcast(service_id):
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
 def choose_extra_content(service_id, broadcast_message_id):
-    if current_service.broadcast_channel == "operator":
-        # If the current service is an operator service, user is redirected
-        # as extra_content attribute shouldn't be set for alerts created in operator services
-        return redirect(
-            url_for(
-                ".view_current_broadcast",
-                service_id=current_service.id,
-                broadcast_message_id=broadcast_message_id,
-            )
-        )
+    if redirect_response := redirect_if_operator_service(broadcast_message_id):
+        return redirect_response
 
     form = ChooseExtraContentForm()
 
@@ -245,16 +238,8 @@ def choose_extra_content(service_id, broadcast_message_id):
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
 def add_extra_content(service_id, broadcast_message_id):
-    if current_service.broadcast_channel == "operator":
-        """If the current service is an operator service, user is redirected
-        as extra_content attribute shouldn't be set for alerts created in operator services"""
-        return redirect(
-            url_for(
-                ".view_current_broadcast",
-                service_id=current_service.id,
-                broadcast_message_id=broadcast_message_id,
-            )
-        )
+    if redirect_response := redirect_if_operator_service(broadcast_message_id):
+        return redirect_response
 
     broadcast_message = (
         BroadcastMessage.from_id(broadcast_message_id, service_id=current_service.id) if broadcast_message_id else None

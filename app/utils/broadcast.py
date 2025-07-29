@@ -482,6 +482,20 @@ def redirect_dependent_on_alert_area(broadcast_message):
     return redirect(redirect_url)
 
 
+def redirect_if_operator_service(broadcast_message_id):
+    # Redirects to the current broadcast view if the current service is an operator service.
+    # Returns a redirect response if the service is an operator service, otherwise None.
+    if current_service.broadcast_channel == "operator":
+        return redirect(
+            url_for(
+                ".view_current_broadcast",
+                service_id=current_service.id,
+                broadcast_message_id=broadcast_message_id,
+            )
+        )
+    return None
+
+
 def check_for_missing_fields(broadcast_message):
     errors = []
     edit_url = url_for(
