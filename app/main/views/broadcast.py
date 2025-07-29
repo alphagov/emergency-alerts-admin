@@ -206,8 +206,8 @@ def new_broadcast(service_id):
 @service_has_permission("broadcast")
 def choose_extra_content(service_id, broadcast_message_id):
     if current_service.broadcast_channel == "operator":
-        """If the current service is an operator service, user is redirected
-        as extra_content attribute shouldn't be set for alerts created in operator services"""
+        # If the current service is an operator service, user is redirected
+        # as extra_content attribute shouldn't be set for alerts created in operator services
         return redirect(
             url_for(
                 ".view_current_broadcast",
