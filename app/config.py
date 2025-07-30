@@ -102,6 +102,11 @@ class Config(object):
 
     ADMIN_ACTIVITY_ZENDESK_ENABLED = os.environ.get("ADMIN_ACTIVITY_ZENDESK_ENABLED", "false").lower() == "true"
 
+    DEFAULT_DURATION_PERIODS = {
+        "live": 81000,
+        "training": 14400,
+    }  # Default alert duration for live services or training (i.e. test or operator services)
+
 
 class Hosted(Config):
     HOST = "hosted"
