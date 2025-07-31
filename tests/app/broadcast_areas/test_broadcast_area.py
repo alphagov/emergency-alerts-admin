@@ -365,6 +365,11 @@ def test_phone_density(
             "test-santa-claus-village-rovaniemi-a",
             1_500,
         ),
+        (
+            # No population data available
+            "REPPIR_DEPZ_sites-awe_aldermaston",
+            1_500,
+        ),
     ),
 )
 def test_estimated_bleed(area, expected_bleed_in_m):
