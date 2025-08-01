@@ -356,7 +356,8 @@ class BroadcastMessage(JSONModel):
         )
 
     def _update_areas(self, force_override=False):
-        aggregate_names = generate_aggregate_names(self.areas)
+        aggregated_areas = aggregate_areas(self.areas)
+        aggregate_names = generate_aggregate_names(aggregated_areas)
         areas = {
             "ids": self.area_ids,
             "names": [area.name for area in self.areas],
