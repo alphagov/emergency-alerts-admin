@@ -501,11 +501,11 @@ def edit_service_template(service_id, template_id):
 
 
 @main.route(
-    "/services/<uuid:service_id>/templates/count-<template_type:template_type>-length",
+    "/services/<uuid:service_id>/templates/count-<template_type:template_type>-<field>-length",
     methods=["POST"],
 )
 @user_has_permissions()
-def count_content_length(service_id, template_type):
+def count_content_length(service_id, template_type, field):
     if template_type != "broadcast":
         abort(404)
 
@@ -513,7 +513,7 @@ def count_content_length(service_id, template_type):
         get_template(
             {
                 "template_type": template_type,
-                "content": request.form.get("template_content", ""),
+                "content": request.form.get(str(field), ""),
             }
         )
     )

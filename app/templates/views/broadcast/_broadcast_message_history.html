@@ -11,6 +11,14 @@
       by {{ broadcast_message.created_by }}
     </p>
     {{ broadcast_message.template|string }}
+    {% if broadcast_message.extra_content %}
+      <div class="govuk-!-margin-top-1 govuk-!-margin-bottom-3">
+        <p class="govuk-!-margin-right-1 dashboard-table">Additional Information: </p>
+        <p class="dashboard-table">
+          {{ broadcast_message.extra_content | text_area_formatting }}
+        </p>
+      </div>
+    {% endif %}
     {% if broadcast_message.formatted_areas %}
       <div>
         <p class="govuk-!-margin-right-2 area-list">Area: </p>

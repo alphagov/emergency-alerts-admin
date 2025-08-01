@@ -8,8 +8,14 @@ from numbers import Number
 
 import humanize
 from emergency_alerts_utils.field import Field
-from emergency_alerts_utils.formatters import make_quotes_smart
+from emergency_alerts_utils.formatters import autolink_urls, make_quotes_smart
 from emergency_alerts_utils.formatters import nl2br as utils_nl2br
+from emergency_alerts_utils.formatters import (
+    normalise_multiple_newlines,
+    normalise_whitespace_and_newlines,
+    remove_whitespace_before_punctuation,
+    sms_encode,
+)
 from emergency_alerts_utils.take import Take
 from emergency_alerts_utils.timezones import utc_string_to_aware_gmt_datetime
 from emergency_alerts_utils.validation import InvalidPhoneError, validate_phone_number
@@ -369,3 +375,23 @@ def format_number_no_scientific(num):
     normalised = dec.quantize(Decimal(1)) if dec == dec.to_integral() else dec.normalize()
 
     return str(normalised)
+
+
+def text_area_formatting(value):
+    return Markup(
+        Take(
+            Field(
+                value,
+                html="escape",
+            )
+        )
+        .then(sms_encode)
+        .then(remove_whitespace_before_punctuation)
+        .then(normalise_whitespace_and_newlines)
+        .then(normalise_multiple_newlines)
+        .then(nl2br)
+        .then(
+            autolink_urls,
+            classes="govuk-link govuk-link--no-visited-state",
+        )
+    )

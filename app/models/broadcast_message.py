@@ -54,6 +54,7 @@ class BroadcastMessage(JSONModel):
         "submitted_at",
         "updated_by",
         "edit_reason",
+        "extra_content",
     }
 
     libraries = broadcast_area_libraries
@@ -103,6 +104,18 @@ class BroadcastMessage(JSONModel):
             service_id=service_id,
             broadcast_message_id=broadcast_message_id,
             data=({"reference": reference} if reference else {}) | ({"content": content} if content else {}),
+        )
+
+    @classmethod
+    def add_extra_content(cls, *, service_id, broadcast_message_id, extra_content):
+        broadcast_message_api_client.update_broadcast_message(
+            service_id=service_id, broadcast_message_id=broadcast_message_id, data=({"extra_content": extra_content})
+        )
+
+    @classmethod
+    def remove_extra_content(cls, *, service_id, broadcast_message_id):
+        broadcast_message_api_client.update_broadcast_message(
+            service_id=service_id, broadcast_message_id=broadcast_message_id, data=({"extra_content": ""})
         )
 
     @classmethod

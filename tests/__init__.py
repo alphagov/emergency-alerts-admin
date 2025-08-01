@@ -432,6 +432,7 @@ def broadcast_message_json(
     created_at=None,
     approved_at=None,
     rejected_at=None,
+    extra_content=None,
 ):
     return {
         "id": id_,
@@ -468,6 +469,7 @@ def broadcast_message_json(
         "submitted_by_id": submitted_by_id,
         "submitted_at": submitted_at,
         "updated_by": updated_by,
+        "extra_content": extra_content,
     }
 
 

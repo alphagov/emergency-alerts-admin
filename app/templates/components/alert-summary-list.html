@@ -5,7 +5,7 @@
 
 
 
-{% macro alertSummaryList(is_editable, service_id, broadcast_message, areas, bleed_estimated_area, count_of_phones, count_of_phones_likely, is_custom_broadcast) %}
+{% macro alertSummaryList(is_editable, current_service, broadcast_message, areas, bleed_estimated_area, count_of_phones, count_of_phones_likely, is_custom_broadcast) %}
 
     <dialog id="enlarged-map-dialog" tabindex="-1" aria-modal="true" class="enlarged-map-dialog"
         role="dialog" aria-labelledby="enlarged-map-dialog-message">
@@ -56,6 +56,16 @@
             <p class="govuk-!-margin-right-2 duration-preview">
                 {{ broadcast_message.duration|format_seconds_duration_as_time }}
             </p>
+        {% else %}
+            {% if  current_service.broadcast_channel in ["test", "operator"] %}
+                <p class="govuk-!-margin-right-2 duration-preview">
+                    {{ config.get('DEFAULT_DURATION_PERIODS')["training"]|format_seconds_duration_as_time }}
+                </p>
+            {% else %}
+                <p class="govuk-!-margin-right-2 duration-preview">
+                    {{ config.get('DEFAULT_DURATION_PERIODS')["live"] |format_seconds_duration_as_time }}
+                </p>
+            {% endif %}
         {% endif %}
     {% endset %}
 
@@ -65,13 +75,6 @@
             Change
         {% endset %}
 
-        {% if broadcast_message.duration %}
-            {% set conditional_duration_action_text = "Change" %}
-            {% set visually_hidden_duration_text = " duration" %}
-        {% else %}
-            {% set conditional_duration_action_text = "Add duration" %}
-        {% endif %}
-
         {% if broadcast_message.areas %}
             {% set conditional_area_action_text = "Change" %}
             {% set visually_hidden_area_text = " areas" %}
@@ -79,6 +82,11 @@
             {% set conditional_area_action_text = "Add area" %}
         {% endif %}
 
+        {% if broadcast_message.extra_content %}
+            {% set conditional_extra_content_action_text = "Change" %}
+        {% else %}
+            {% set conditional_extra_content_action_text = "Add (optional)" %}
+        {% endif %}
     {% endif %}
 
 
@@ -96,11 +104,11 @@
 
     {% set conditional_area_action_link %}
         {% if broadcast_message.areas %}
-            {{url_for('.preview_broadcast_areas', service_id=service_id, broadcast_message_id=broadcast_message.id)}}
+            {{url_for('.preview_broadcast_areas', service_id=current_service.id, broadcast_message_id=broadcast_message.id)}}
         {% else %}
             {{url_for(
                 ".choose_broadcast_library",
-                service_id=service_id,
+                service_id=current_service.id,
                 broadcast_message_id=broadcast_message.id,
             )}}
         {% endif%}
@@ -117,7 +125,7 @@
         'actions': {
             'items': [
             {
-                'href': url_for('.edit_broadcast', service_id=service_id, broadcast_message_id=broadcast_message.id),
+                'href': url_for('.edit_broadcast', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
                 'text': conditional_action_text,
                 'visuallyHiddenText': "reference"
             }
@@ -134,13 +142,40 @@
         'actions': {
             'items': [
             {
-                'href': url_for('.edit_broadcast', service_id=service_id, broadcast_message_id=broadcast_message.id),
+                'href': url_for('.edit_broadcast', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
                 'text': conditional_action_text,
                 'visuallyHiddenText': "message",
             }
             ] if display_action else []
         }
-        },
+        }
+    ]
+    %}
+    {# The additional information row in the table will only be displayed if service isn't
+    an operator service, as the field isn't relevant to operator service alerts. #}
+    {% if current_service.broadcast_channel != "operator" %}
+        {% set summaryListItems = summaryListItems + [
+            {
+                'key': {
+                    'text': "Additional Information"
+                },
+                'value': {
+                    'text': broadcast_message.extra_content | text_area_formatting if broadcast_message.extra_content else ""
+                },
+                'actions': {
+                    'items': [
+                    {
+                        'href': url_for('.add_extra_content', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
+                        'text': conditional_extra_content_action_text,
+                        'visuallyHiddenText': "extra content",
+                    }
+                    ] if display_action else []
+                }
+            }
+        ] %}
+    {% endif %}
+
+    {% set summaryListItems = summaryListItems + [
         {
         'key': {
             'text': "Area"
@@ -168,9 +203,9 @@
             'actions': {
                 'items': [
                 {
-                    'href': url_for(".choose_broadcast_duration", service_id=service_id, broadcast_message_id=broadcast_message.id,),
-                    'text': conditional_duration_action_text,
-                    'visuallyHiddenText': visually_hidden_duration_text
+                    'href': url_for(".choose_broadcast_duration", service_id=current_service.id, broadcast_message_id=broadcast_message.id,),
+                    'text': "Change",
+                    'visuallyHiddenText': "duration"
                 }
                 ] if display_action else []
             }
@@ -192,17 +227,17 @@
 
     {% set download_section_html %}
         <a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline" href="{{ url_for(
-            ".get_broadcast_geojson",
-            service_id=service_id,
+            '.get_broadcast_geojson',
+            service_id=current_service.id,
             broadcast_message_id=broadcast_message.id,
-        ) }}">
+            ) }}">
             <span class="govuk-visually-hidden">Download </span>geoJSON
         </a>
         {% for xml_type in ["cap", "ibag"] %}
             <br/>
             <a class="govuk-link govuk-link--no-visited-state govuk-link--no-underline" href="{{ url_for(
-                ".get_broadcast_unsigned_xml",
-                service_id=service_id,
+                '.get_broadcast_unsigned_xml',
+                service_id=current_service.id,
                 broadcast_message_id=broadcast_message.id,
                 xml_type=xml_type,
             ) }}">
@@ -210,6 +245,7 @@
             </a>
         {% endfor %}
     {% endset %}
+
     {% set summaryListItems = summaryListItems + [
         {
         'key': {
