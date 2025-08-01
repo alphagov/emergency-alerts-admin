@@ -77,6 +77,10 @@ class BroadcastArea(BaseBroadcastArea, SortingAndEqualityMixin):
     def is_electoral_ward(self):
         return self.id.startswith("wd23-")
 
+    @cached_property
+    def is_REPPIR_site(self):
+        return self.id.startswith("REPPIR_DEPZ_sites-")
+
     @classmethod
     def from_row_with_simple_polygons(cls, row):
         instance = cls(row[:4])
@@ -133,6 +137,22 @@ class BroadcastArea(BaseBroadcastArea, SortingAndEqualityMixin):
             parent_broadcast_area = BroadcastArea(parent)
             yield parent_broadcast_area
             id = parent_broadcast_area.id
+
+    @cached_property
+    def overlapping_electoral_wards(self):
+        return [area for area in self.nearby_electoral_wards if area.simple_polygons.intersects(self.polygons)]
+
+    @cached_property
+    def nearby_electoral_wards(self):
+        if not self.polygons:
+            return []
+        return broadcast_area_libraries.get_areas_with_simple_polygons(
+            [
+                # We only index electoral wards in the RTree
+                overlap.data
+                for overlap in rtree_index.query(Rect(*self.simple_polygons.bounds))
+            ]
+        )
 
 
 class CustomBroadcastArea(BaseBroadcastArea):

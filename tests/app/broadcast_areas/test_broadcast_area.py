@@ -46,6 +46,11 @@ def test_loads_libraries():
             False,
         ),
         (
+            "REPPIR_DEPZ_sites",
+            "REPPIR DEPZ sites",
+            False,
+        ),
+        (
             "test",
             "Test areas",
             False,
@@ -154,8 +159,9 @@ def test_repository_has_all_libraries():
     repo = BroadcastAreasRepository()
     libraries = repo.get_libraries()
 
-    assert len(libraries) == 5
+    assert len(libraries) == 6
     assert [
+        ("REPPIR DEPZ sites", "REPPIR DEPZ site"),
         ("Countries", "country"),
         ("Police forces in England and Wales", "police force"),
         ("Postcode areas", "postcode area"),
@@ -172,6 +178,8 @@ def test_every_area_has_count_of_phones(library):
         elif library.id == "postcodes":
             assert area.count_of_phones == 0
         elif library.id == "coordinates":
+            assert area.count_of_phones == 0
+        elif library.id == "REPPIR_DEPZ_sites":
             assert area.count_of_phones == 0
         else:
             assert area.count_of_phones > 0
@@ -355,6 +363,11 @@ def test_phone_density(
         (
             # No population data available
             "test-santa-claus-village-rovaniemi-a",
+            1_500,
+        ),
+        (
+            # No population data available
+            "REPPIR_DEPZ_sites-awe_aldermaston",
             1_500,
         ),
     ),
