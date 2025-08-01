@@ -12,7 +12,7 @@ from app.broadcast_areas.models import (
     CustomBroadcastAreas,
     broadcast_area_libraries,
 )
-from app.broadcast_areas.utils import aggregate_areas
+from app.broadcast_areas.utils import aggregate_areas, generate_aggregate_names
 from app.formatters import round_to_significant_figures
 from app.models import JSONModel, ModelList
 from app.notify_client.broadcast_message_api_client import broadcast_message_api_client
@@ -356,10 +356,11 @@ class BroadcastMessage(JSONModel):
         )
 
     def _update_areas(self, force_override=False):
+        aggregate_names = generate_aggregate_names(self.areas)
         areas = {
             "ids": self.area_ids,
             "names": [area.name for area in self.areas],
-            "aggregate_names": [area.name for area in aggregate_areas(self.areas)],
+            "aggregate_names": aggregate_names,
             "simple_polygons": self.simple_polygons.as_coordinate_pairs_lat_long,
         }
 
