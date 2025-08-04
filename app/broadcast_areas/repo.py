@@ -177,8 +177,9 @@ class BroadcastAreasRepository(object):
             library_id,
         )[0][0]
 
-        if is_multi_tier_library:
+        if is_multi_tier_library and library_id != "REPPIR_DEPZ_sites":
             # only interested in areas with children - eg local authorities, counties, unitary authorities. not wards.
+            # Not including REPPIR sites as both parent LA & child sites not in same library
             q = """
             SELECT id, name, count_of_phones, broadcast_area_library_id
             FROM broadcast_areas
