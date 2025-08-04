@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import json
 import sys
 from math import isclose
 from pathlib import Path
@@ -143,6 +144,10 @@ def polygons_and_simplified_polygons(feature):
 
 
 reppir_filepath = source_files_path / "REPPIR_sites.geojson"
+reppir_lad_json_file = source_files_path / "REPPIR_site_lad.json"
+
+with open(reppir_lad_json_file, "r") as f:
+    reppir_lads = json.load(f)
 
 
 def add_test_areas():
@@ -166,7 +171,7 @@ def add_test_areas():
                 f"{dataset_id}-{f_id}",
                 f_name,
                 dataset_id,
-                None,
+                reppir_lads[f_id],
                 feature,
                 feature,
                 utm_crs,
