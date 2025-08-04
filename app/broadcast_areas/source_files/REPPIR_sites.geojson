@@ -8377,8 +8377,8 @@
         {
             "type": "Feature",
             "properties": {
-                "name": "Lochgoil",
-                "id": "lochgoil"
+                "name": "Loch_Goil",
+                "id": "loch_goil"
             },
             "geometry": {
                 "type": "Polygon",
