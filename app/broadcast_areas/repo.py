@@ -206,8 +206,9 @@ class BroadcastAreasRepository(object):
         q = """
         SELECT id, name, count_of_phones, broadcast_area_library_id
         FROM broadcast_areas
-        WHERE broadcast_area_library_group_id = ?
+        WHERE broadcast_area_library_group_id = ? AND id NOT LIKE 'REPPIR_DEPZ_sites%'
         """
+        # NOT LIKE removes any REPPIR sites from being displayed as children for local Authority
 
         results = self.query(q, group_id)
 
