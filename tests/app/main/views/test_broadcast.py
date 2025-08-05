@@ -1125,6 +1125,32 @@ def test_broadcast_page(
                 "6,000,000 phones estimated",
             ],
         ),
+        (
+            [
+                "REPPIR_DEPZ_sites-loch_ewe",
+            ],
+            [
+                "Loch Ewe Remove Loch Ewe",
+            ],
+            [
+                "An area of 3 square miles Will get the alert",
+                "An extra area of 10 square miles is Likely to get the alert",
+                "Unknown number of phones",
+            ],
+        ),
+        (
+            [
+                "REPPIR_DEPZ_sites-awe_aldermaston",
+            ],
+            [
+                "AWE Aldermaston Remove AWE Aldermaston",
+            ],
+            [
+                "An area of 8 square miles Will get the alert",
+                "An extra area of 10 square miles is Likely to get the alert",
+                "Unknown number of phones",
+            ],
+        ),
     ),
 )
 def test_preview_broadcast_areas_page(
