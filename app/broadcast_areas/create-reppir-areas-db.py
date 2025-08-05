@@ -19,7 +19,7 @@ invalid_polygons = []
 rtree_index = RTree()
 
 # The hard limit in the CBCs is 6,000 points per polygon. But we also
-# care about optimising how quickjly we can process and display polygons
+# care about optimising how quickly we can process and display polygons
 # so we aim for something lower, i.e. enough to give us a good amount of
 # precision relative to the accuracy of a cell broadcast
 MAX_NUMBER_OF_POINTS_PER_POLYGON = 250
