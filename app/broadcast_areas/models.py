@@ -138,22 +138,6 @@ class BroadcastArea(BaseBroadcastArea, SortingAndEqualityMixin):
             yield parent_broadcast_area
             id = parent_broadcast_area.id
 
-    @cached_property
-    def overlapping_electoral_wards(self):
-        return [area for area in self.nearby_electoral_wards if area.simple_polygons.intersects(self.polygons)]
-
-    @cached_property
-    def nearby_electoral_wards(self):
-        if not self.polygons:
-            return []
-        return broadcast_area_libraries.get_areas_with_simple_polygons(
-            [
-                # We only index electoral wards in the RTree
-                overlap.data
-                for overlap in rtree_index.query(Rect(*self.simple_polygons.bounds))
-            ]
-        )
-
 
 class CustomBroadcastArea(BaseBroadcastArea):
     def __init__(self, *, name, polygons=None):
