@@ -77,6 +77,10 @@ class BroadcastArea(BaseBroadcastArea, SortingAndEqualityMixin):
     def is_electoral_ward(self):
         return self.id.startswith("wd23-")
 
+    @cached_property
+    def is_REPPIR_site(self):
+        return self.id.startswith("REPPIR_DEPZ_sites-")
+
     @classmethod
     def from_row_with_simple_polygons(cls, row):
         instance = cls(row[:4])
