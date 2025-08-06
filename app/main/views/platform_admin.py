@@ -1,6 +1,6 @@
 import dataclasses
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from emergency_alerts_utils.admin_action import (
@@ -31,8 +31,8 @@ from app.notify_client.platform_admin_api_client import admin_api_client
 from app.utils.admin_action import (
     create_or_replace_admin_action,
     process_admin_action,
-    send_elevation_slack_notification,
-    send_slack_notification,
+    send_elevated_notifications,
+    send_notifications,
 )
 from app.utils.user import user_is_platform_admin, user_is_platform_admin_capable
 from app.utils.user_permissions import broadcast_permission_options, permission_options
@@ -84,7 +84,7 @@ def platform_admin():
 
     if form.start_date.data:
         api_args["start_date"] = form.start_date.data
-        api_args["end_date"] = form.end_date.data or datetime.utcnow().date()
+        api_args["end_date"] = form.end_date.data or datetime.now(timezone.utc).date()
 
     return render_template("views/platform-admin/index.html", form=form)
 
@@ -114,7 +114,7 @@ def platform_admin_services():
 
     if form.start_date.data:
         api_args["start_date"] = form.start_date.data
-        api_args["end_date"] = form.end_date.data or datetime.utcnow().date()
+        api_args["end_date"] = form.end_date.data or datetime.now(timezone.utc).date()
 
     services = filter_and_sort_services(
         service_api_client.get_services(api_args)["data"],
@@ -163,7 +163,7 @@ def platform_review_admin_action(action_id, new_status):
         flash("You cannot approve your own admin approvals")
     else:
         service = Service.from_id(action["service_id"]) if bool(action.get("service_id")) else None
-        send_slack_notification(new_status, action, service)
+        send_notifications(new_status, action, service)
 
         admin_actions_api_client.review_admin_action(action_id, new_status)
 
@@ -216,7 +216,7 @@ def platform_admin_elevation():
         user_api_client.redeem_admin_elevation(current_user.id)
         current_user.platform_admin_active = True
         session["platform_admin_active"] = True
-        send_elevation_slack_notification()
+        send_elevated_notifications()
         return redirect(url_for("main.platform_admin_search"))
 
     return render_template(

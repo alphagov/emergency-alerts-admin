@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import patch
 from urllib.parse import parse_qs, urlparse
 
@@ -112,7 +112,7 @@ def user_json(
         "permissions": permissions,
         "auth_type": auth_type,
         "failed_login_count": failed_login_count,
-        "logged_in_at": logged_in_at or datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S.%f"),
+        "logged_in_at": logged_in_at or datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f"),
         "state": state,
         "platform_admin_capable": platform_admin_active,
         "platform_admin_active": platform_admin_active,
@@ -138,7 +138,7 @@ def invited_user(
         "from_user": from_user,
         "email_address": email_address,
         "status": status,
-        "created_at": created_at or datetime.utcnow(),
+        "created_at": created_at or datetime.now(timezone.utc),
         "auth_type": auth_type,
     }
     if service:
@@ -183,7 +183,7 @@ def service_json(
         "active": active,
         "restricted": restricted,
         "organisation_type": organisation_type,
-        "created_at": created_at or str(datetime.utcnow()),
+        "created_at": created_at or str(datetime.now(timezone.utc)),
         "permissions": permissions,
         "inbound_api": inbound_api,
         "service_callback_api": service_callback_api,
@@ -221,7 +221,7 @@ def organisation_json(
         "name": "Test Organisation" if name is False else name,
         "active": active,
         "users": users,
-        "created_at": created_at or str(datetime.utcnow()),
+        "created_at": created_at or str(datetime.now(timezone.utc)),
         "organisation_type": organisation_type,
         "crown": crown,
         "agreement_signed": agreement_signed,
@@ -253,7 +253,7 @@ def template_json(
         "content": content,
         "service": service_id,
         "version": version,
-        "updated_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S.%f"),
+        "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f"),
         "archived": archived,
         "folder": folder,
     }
@@ -270,7 +270,7 @@ def template_version_json(service_id, id_, created_by, version=1, created_at=Non
         created_by["email_address"],
     )
     if created_at is None:
-        created_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S.%f")
+        created_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f")
     template["created_at"] = created_at
     template["version"] = version
     return template
@@ -432,6 +432,7 @@ def broadcast_message_json(
     created_at=None,
     approved_at=None,
     rejected_at=None,
+    extra_content=None,
 ):
     return {
         "id": id_,
@@ -468,6 +469,7 @@ def broadcast_message_json(
         "submitted_by_id": submitted_by_id,
         "submitted_at": submitted_at,
         "updated_by": updated_by,
+        "extra_content": extra_content,
     }
 
 

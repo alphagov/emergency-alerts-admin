@@ -1,7 +1,7 @@
 name: on-pr-into-main
 
 env:
-  PYTHON_VERSION: 3.9
+  PYTHON_VERSION: 3.12
 
 on:
   pull_request:

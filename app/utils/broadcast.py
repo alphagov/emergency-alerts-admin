@@ -351,6 +351,7 @@ def render_current_alert_page(
     confirm_broadcast_form=None,
     back_link_url=".broadcast_dashboard",
     hide_stop_link=False,
+    errors=None,
 ):
     return render_template(
         "views/broadcast/view-message.html",
@@ -378,6 +379,7 @@ def render_current_alert_page(
         edit_reasons=broadcast_message.get_returned_for_edit_reasons(),
         returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
         message=broadcast_message,
+        errors=errors,
     )
 
 
@@ -387,6 +389,24 @@ def render_edit_alert_page(broadcast_message, form):
         broadcast_message=broadcast_message,
         form=form,
         changes=get_changed_alert_form_data(broadcast_message, form),
+    )
+
+
+def render_preview_alert_page(broadcast_message, is_custom_broadcast, areas, errors=None):
+    return render_template(
+        "views/broadcast/preview-message.html",
+        broadcast_message=broadcast_message,
+        custom_broadcast=is_custom_broadcast,
+        areas=areas,
+        back_link=request.referrer,
+        label=create_map_label(areas),
+        areas_string=stringify_areas(areas),
+        broadcast_message_version_count=broadcast_message.get_count_of_versions(),
+        last_updated_time=(
+            broadcast_message.get_latest_version().get("created_at") if broadcast_message.get_latest_version() else None
+        ),
+        returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
+        errors=errors,
     )
 
 
@@ -420,6 +440,18 @@ def get_changed_alert_form_data(broadcast_message, form):
     return changes
 
 
+def get_changed_extra_content_form_data(form, broadcast_message):
+    """
+    Compares stored extra_content with the initial form extra_content data, stored when page rendered.
+    If the overwrite_extra_content field is True, i.e. overwrite button has been clicked for that field
+    then changes to that field are not stored and considered as we're overwriting the data for that field.
+    """
+    changes = {}
+    if broadcast_message.extra_content != form.initial_extra_content.data and not form.overwrite_extra_content.data:
+        changes["updated_by"] = broadcast_message.updated_by or "A user"
+    return changes
+
+
 def update_broadcast_message_using_changed_data(broadcast_message_id, form):
     BroadcastMessage.update_from_content(
         service_id=current_service.id,
@@ -450,3 +482,38 @@ def redirect_dependent_on_alert_area(broadcast_message):
         )
 
     return redirect(redirect_url)
+
+
+def redirect_if_operator_service(broadcast_message_id):
+    # Redirects to the current broadcast view if the current service is an operator service.
+    # Returns a redirect response if the service is an operator service, otherwise None.
+    if current_service.broadcast_channel == "operator":
+        return redirect(
+            url_for(
+                ".view_current_broadcast",
+                service_id=current_service.id,
+                broadcast_message_id=broadcast_message_id,
+            )
+        )
+    return None
+
+
+def check_for_missing_fields(broadcast_message):
+    errors = []
+    edit_url = url_for(
+        ".write_new_broadcast",
+        service_id=current_service.id,
+        broadcast_message_id=broadcast_message.id,
+    )
+    if not broadcast_message.reference:
+        errors.append({"html": f"""<a href="{edit_url}">Add alert reference</a>"""})
+    if not broadcast_message.content:
+        errors.append({"html": f"""<a href="{edit_url}">Add alert message</a>"""})
+    if not broadcast_message.areas:
+        area_url = url_for(
+            ".choose_broadcast_library",
+            service_id=current_service.id,
+            broadcast_message_id=broadcast_message.id,
+        )
+        errors.append({"html": f"""<a href="{area_url}">Add alert area</a>"""})
+    return errors

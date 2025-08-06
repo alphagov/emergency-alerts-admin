@@ -260,7 +260,7 @@ class TestPlatformAdminActions:
     @pytest.fixture
     def mock_admin_action_notification(self, mocker):
         # The one in conftest.py doesn't work due to some Python namespace import oddity
-        return mocker.patch("app.main.views.platform_admin.send_slack_notification", return_value=None)
+        return mocker.patch("app.main.views.platform_admin.send_notifications", return_value=None)
 
     def test_admin_actions_is_platform_admin_only(self, client_request):
         client_request.get("main.admin_actions", _expected_status=403)

@@ -1,0 +1,108 @@
+{% extends "withnav_template.html" %}
+{% from "components/form.html" import form_wrapper %}
+{% from "components/page-header.html" import page_header %}
+{% from "components/page-footer.html" import page_footer %}
+{% from "components/textbox.html" import textbox %}
+{% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
+{% from "components/error-summary.html" import errorSummary %}
+{% from "components/banner.html" import banner %}
+{% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
+
+{% set page_title %}
+  {% if broadcast_message.extra_content != None %}
+    Edit additional information
+  {% else %}
+    Add additional information
+  {% endif %}
+{% endset %}
+
+{% block service_page_title %}
+  {{page_title}}
+{% endblock %}
+
+{% set html %}
+  <p class="govuk-body">The content you are trying to change is identical to the existing content.
+    No change will be made.
+    <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('.view_current_broadcast', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }}">
+      Return to alert
+    </a>
+  </p>
+{% endset %}
+
+
+{% block backLink %}
+  {% if broadcast_message.id %}
+    {{ govukBackLink({ "href": url_for('.view_current_broadcast', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }) }}
+  {% else %}
+    {{ govukBackLink({ "href": url_for('.new_broadcast', service_id=current_service.id) }) }}
+  {% endif %}
+{% endblock %}
+
+{% block maincolumn_content %}
+  {{ errorSummary(form) }}
+
+  {% if content_matches %}
+    {{govukNotificationBanner({
+      "html": html,
+      "role": "alert"
+    })}}
+  {% endif %}
+
+  {% if broadcast_message.extra_content != None %}
+    {{ page_header(page_title)}}
+  {% else %}
+    {{ page_header(page_title)}}
+  {% endif %}
+  {% call form_wrapper() %}
+    {% if changes %}
+      <div class="banner-dangerous file-list" aria-live="polite" tabindex="-1">
+        <div>{{changes['updated_by']}} has made changes to the alert's additional information.</div>
+        <div>Would you like to overwrite their change?</div>
+        <div class="banner-footer-group">
+          {{ govukButton({
+            "text": "Yes, overwrite",
+            "name": "overwrite-extra-content",
+            "classes": "govuk-button govuk-!-margin-top-2",
+          }) }}
+          {{ govukButton({
+            "text": "No, keep this change",
+            "name": "keep-extra-content",
+            "classes": "govuk-button--secondary govuk-!-margin-top-2",
+          }) }}
+        </div>
+      </div>
+    {% endif %}
+
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    {{form.overwrite_extra_content()}}
+    {{form.initial_extra_content()}}
+
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+      {{ textbox(
+        form.extra_content,
+        highlight_placeholders=False,
+        autosize=True,
+        width='1-1',
+        rows=5,
+        extra_form_group_classes='govuk-!-margin-bottom-2',
+        hint="This might include evacuation procedures, Welsh translations or detailed information that's too long to include in the alert."
+      ) }}
+      </div>
+      <div class="govuk-grid-column-full">
+        <div class="template-content-count">
+          <div data-notify-module="update-status" data-target="extra_content" data-updates-url="{{ url_for('.count_content_length', service_id=current_service.id, template_type='broadcast', field='extra_content') }}" aria-live="polite">
+            &nbsp;
+          </div>
+        </div>
+        {% if not changes %}
+          <div class="govuk-button-group">
+            {{ page_footer('Save and continue', button_name='continue', secondary_link=url_for('.remove_extra_content', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
+            secondary_link_text='No longer required, return to alert') }}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  {% endcall %}
+
+{% endblock %}

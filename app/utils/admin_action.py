@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Iterable
 
 from emergency_alerts_utils.admin_action import (
@@ -10,13 +11,22 @@ from emergency_alerts_utils.admin_action import (
     ADMIN_STATUS_INVALIDATED,
     ADMIN_STATUS_PENDING,
     ADMIN_STATUS_REJECTED,
+    ADMIN_ZENDESK_OFFICE_HOURS_END,
+    ADMIN_ZENDESK_OFFICE_HOURS_START,
+    ADMIN_ZENDESK_OFFICE_HOURS_TIMEZONE,
+    ADMIN_ZENDESK_PRIORITY_APPROVE,
+    ADMIN_ZENDESK_PRIORITY_ELEVATED,
+    ADMIN_ZENDESK_PRIORITY_REQUEST,
+    ADMIN_ZENDESK_TICKET_TITLE_PREFIX,
 )
 from emergency_alerts_utils.api_key import KEY_TYPE_NORMAL
 from emergency_alerts_utils.clients.slack.slack_client import SlackClient, SlackMessage
+from emergency_alerts_utils.clients.zendesk.zendesk_client import EASSupportTicket
 from flask import abort, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 
 from app import current_service
+from app.extensions import zendesk_client
 from app.formatters import email_safe
 from app.models.service import Service
 from app.models.user import InvitedUser, User
@@ -104,7 +114,7 @@ def create_or_replace_admin_action(proposed_action_obj):
             )
 
     admin_actions_api_client.create_admin_action(proposed_action_obj)
-    send_slack_notification(ADMIN_STATUS_PENDING, proposed_action_obj, current_service)
+    send_notifications(ADMIN_STATUS_PENDING, proposed_action_obj, current_service)
 
 
 def _admin_action_is_similar(action_obj1, action_obj2):
@@ -130,13 +140,21 @@ def _admin_action_is_similar(action_obj1, action_obj2):
         return False  # Unknown action_type
 
 
-def send_slack_notification(new_status, action_obj, action_service: Service):
+def send_notifications(new_status, action_obj, action_service: Service):
     if _should_supress_notifications():
-        current_app.logger.info("Skipping sending SlackMessage because it was supressed", action_obj)
+        current_app.logger.info("Skipping sending notification because it was supressed", action_obj)
         return
 
     creator_user = User.from_id(action_obj["created_by"])
+    _send_slack_notification(new_status, action_obj, action_service, creator_user)
 
+    # If we're out of hours and this concerns an admin elevation (request or approval)
+    # then we'll create a Zendesk ticket too. Elevating itself is handled elsewhere.
+    if action_obj["action_type"] == ADMIN_ELEVATE_USER and _should_send_zendesk_ticket():
+        _send_admin_elevation_zendesk_notification(new_status, creator_user)
+
+
+def _send_slack_notification(new_status, action_obj, action_service: Service, creator_user: User):
     message_title = None
     message_type = None
     message_markdown_parts = [
@@ -165,15 +183,37 @@ def send_slack_notification(new_status, action_obj, action_service: Service):
     return _send_slack_message(message)
 
 
-def send_elevation_slack_notification():
-    """Send a notification that the current user has elevated to full platform admin status."""
+def _send_admin_elevation_zendesk_notification(new_status, creator_user: User):
+    comment = f"{creator_user.email_address} requested to become a platform admin"
+    priority = ADMIN_ZENDESK_PRIORITY_REQUEST
 
+    # We add the approval onto initial the comment.
+    # We don't know here if the original request was out of hours and thus went to Zendesk
+    # or just the approval was out of hours.
+    if new_status == ADMIN_STATUS_APPROVED:
+        comment = comment + f"\nApproved by {current_user.email_address}"
+        priority = ADMIN_ZENDESK_PRIORITY_APPROVE
+
+    # Don't fire off a rejected/invalidated event if done out of hours, could be harmless tidy up
+    if new_status == ADMIN_STATUS_PENDING or new_status == ADMIN_STATUS_APPROVED:
+        _create_or_upgrade_zendesk_ticket(priority, comment, creator_user.email_address)
+
+
+def send_elevated_notifications():
+    """Send a notification that the current user has elevated to full platform admin status."""
     if _should_supress_notifications():
         current_app.logger.info(
-            "Skipping sending elevated SlackMessage because it was supressed", current_user.email_address
+            "Skipping sending elevated notification because it was supressed", current_user.email_address
         )
         return
 
+    _send_elevated_slack_notification()
+
+    if _should_send_zendesk_ticket():
+        _send_elevation_zendesk_notification()
+
+
+def _send_elevated_slack_notification():
     message = SlackMessage(
         None,  # Filled in later
         "Platform Admin Elevated",
@@ -181,6 +221,15 @@ def send_elevation_slack_notification():
         [f"`{current_user.email_address}` has elevated to become a full platform admin for their session"],
     )
     return _send_slack_message(message)
+
+
+def _send_elevation_zendesk_notification():
+    # Only expected to be called out of hours
+    _create_or_upgrade_zendesk_ticket(
+        ADMIN_ZENDESK_PRIORITY_ELEVATED,
+        f"{current_user.email_address} has elevated to full platform admin",
+        current_user.email_address,
+    )
 
 
 def _send_slack_message(message: SlackMessage):
@@ -197,6 +246,31 @@ def _send_slack_message(message: SlackMessage):
         slack_client.send_message_to_slack(message)
     except Exception as e:
         current_app.logger.error("Could not post to Slack", e)
+
+
+def _create_or_upgrade_zendesk_ticket(priority: str, comment: str, relevant_admin_email: str):
+    """Create a new Zendesk ticket, or if there's one open for the email, update the priority and add a comment."""
+    existing_ticket_id = zendesk_client.get_open_admin_zendesk_ticket_id_for_email(relevant_admin_email)
+    if existing_ticket_id is not None:
+        zendesk_client.update_ticket_priority_with_comment(existing_ticket_id, priority, comment)
+    else:
+        ticket = EASSupportTicket(
+            subject=ADMIN_ZENDESK_TICKET_TITLE_PREFIX,
+            message=comment,
+            ticket_type=EASSupportTicket.TYPE_INCIDENT,
+            p1=True,
+            custom_priority=priority,
+            user_email=relevant_admin_email,
+        )
+        zendesk_client.send_ticket_to_zendesk(ticket)
+
+
+def _should_send_zendesk_ticket():
+    if current_app.config["ADMIN_ACTIVITY_ZENDESK_ENABLED"]:
+        if _is_out_of_office_hours():
+            return True
+
+    return False
 
 
 def _get_action_description_markdown(action_obj, action_service: Service):
@@ -246,4 +320,14 @@ def _should_supress_notifications():
             current_app.logger.info("Supressing notification because this request was from a functional test")
             return True
 
+    return False
+
+
+def _is_out_of_office_hours():
+    now = datetime.now(ADMIN_ZENDESK_OFFICE_HOURS_TIMEZONE)
+    # datetime hour is zero-indexed but our constants are 1-indexed to make sense to humans
+    if now.hour >= ADMIN_ZENDESK_OFFICE_HOURS_END:
+        return True
+    if now.hour < ADMIN_ZENDESK_OFFICE_HOURS_START:
+        return True
     return False

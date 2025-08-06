@@ -1,10 +1,10 @@
 import itertools
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from emergency_alerts_utils.polygons import Polygons
 from emergency_alerts_utils.template import BroadcastPreviewTemplate
 from flask import current_app
-from orderedset import OrderedSet
+from ordered_set import OrderedSet
 from werkzeug.utils import cached_property
 
 from app.broadcast_areas.models import (
@@ -12,7 +12,7 @@ from app.broadcast_areas.models import (
     CustomBroadcastAreas,
     broadcast_area_libraries,
 )
-from app.broadcast_areas.utils import aggregate_areas
+from app.broadcast_areas.utils import aggregate_areas, generate_aggregate_names
 from app.formatters import round_to_significant_figures
 from app.models import JSONModel, ModelList
 from app.notify_client.broadcast_message_api_client import broadcast_message_api_client
@@ -54,6 +54,7 @@ class BroadcastMessage(JSONModel):
         "submitted_at",
         "updated_by",
         "edit_reason",
+        "extra_content",
     }
 
     libraries = broadcast_area_libraries
@@ -108,6 +109,18 @@ class BroadcastMessage(JSONModel):
             service_id=service_id,
             broadcast_message_id=broadcast_message_id,
             data=({"reference": reference} if reference else {}) | ({"content": content} if content else {}),
+        )
+
+    @classmethod
+    def add_extra_content(cls, *, service_id, broadcast_message_id, extra_content):
+        broadcast_message_api_client.update_broadcast_message(
+            service_id=service_id, broadcast_message_id=broadcast_message_id, data=({"extra_content": extra_content})
+        )
+
+    @classmethod
+    def remove_extra_content(cls, *, service_id, broadcast_message_id):
+        broadcast_message_api_client.update_broadcast_message(
+            service_id=service_id, broadcast_message_id=broadcast_message_id, data=({"extra_content": ""})
         )
 
     @classmethod
@@ -209,7 +222,7 @@ class BroadcastMessage(JSONModel):
         if (
             self._dict["status"]
             and self._dict["status"] == "broadcasting"
-            and self.finishes_at < datetime.utcnow().isoformat()
+            and self.finishes_at < datetime.now(timezone.utc).isoformat()
         ):
             return "completed"
         return self._dict["status"]
@@ -348,10 +361,12 @@ class BroadcastMessage(JSONModel):
         )
 
     def _update_areas(self, force_override=False):
+        aggregated_areas = aggregate_areas(self.areas)
+        aggregate_names = generate_aggregate_names(aggregated_areas)
         areas = {
             "ids": self.area_ids,
             "names": [area.name for area in self.areas],
-            "aggregate_names": [area.name for area in aggregate_areas(self.areas)],
+            "aggregate_names": aggregate_names,
             "simple_polygons": self.simple_polygons.as_coordinate_pairs_lat_long,
         }
 
@@ -409,8 +424,8 @@ class BroadcastMessage(JSONModel):
             ttl = timedelta(seconds=self.duration)
 
         self._update(
-            starts_at=datetime.utcnow().isoformat(),
-            finishes_at=(datetime.utcnow() + ttl).isoformat(),
+            starts_at=datetime.now(timezone.utc).isoformat(),
+            finishes_at=(datetime.now(timezone.utc) + ttl).isoformat(),
         )
         self._set_status_to("broadcasting")
 

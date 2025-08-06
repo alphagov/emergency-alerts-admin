@@ -16,6 +16,15 @@
   {% endif %}
 {% endblock %}
 
+{% set html %}
+  <p class="govuk-body">The content you are trying to change is identical to the alert content.
+    No change will be made.
+    <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('.view_current_broadcast', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }}">
+      Return to alert
+    </a>
+  </p>
+{% endset %}
+
 
 {% block backLink %}
   {% if broadcast_message.id %}
@@ -50,6 +59,13 @@
       {% endfor %}
     {% endif %}
 
+    {% if content_matches %}
+      {{govukNotificationBanner({
+        "html": html,
+        "role": "alert"
+      })}}
+    {% endif %}
+
 
     {{ errorSummary(form) }}
 
@@ -80,7 +96,7 @@
       </div>
       <div class="govuk-grid-column-full">
         <div class="template-content-count">
-          <div data-notify-module="update-status" data-target="template_content" data-updates-url="{{ url_for('.count_content_length', service_id=current_service.id, template_type='broadcast') }}" aria-live="polite">
+          <div data-notify-module="update-status" data-target="template_content" data-updates-url="{{ url_for('.count_content_length', service_id=current_service.id, template_type='broadcast', field='template_content') }}" aria-live="polite">
             &nbsp;
           </div>
         </div>
