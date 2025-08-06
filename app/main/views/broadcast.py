@@ -37,6 +37,7 @@ from app.main.forms import (
     SearchByNameForm,
 )
 from app.models.broadcast_message import BroadcastMessage, BroadcastMessages
+from app.models.template import Template
 from app.utils import service_has_permission
 from app.utils.broadcast import (
     adding_invalid_coords_errors_to_form,
@@ -495,31 +496,41 @@ def edit_broadcast(service_id, broadcast_message_id):
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
 def broadcast(service_id, template_id):
-    """If the current service is an operator service, user is redirected
-    straight to choose area as extra_content attribute shouldn't be set for
-    alerts created in operator services"""
-    if current_service.broadcast_channel == "operator":
-        return redirect(
-            url_for(
-                ".choose_broadcast_library",
-                service_id=current_service.id,
-                broadcast_message_id=BroadcastMessage.create(
-                    service_id=service_id,
-                    template_id=template_id,
-                ).id,
+    template = Template.from_id(template_id, service_id)
+    if not template.areas:
+        """If the current service is an operator service, user is redirected
+        straight to choose area as extra_content attribute shouldn't be set for
+        alerts created in operator services"""
+        if current_service.broadcast_channel == "operator":
+            return redirect(
+                url_for(
+                    ".choose_broadcast_library",
+                    service_id=current_service.id,
+                    broadcast_message_id=BroadcastMessage.create(
+                        service_id=service_id,
+                        template_id=template_id,
+                    ).id,
+                )
             )
-        )
-    else:
-        return redirect(
-            url_for(
-                ".choose_extra_content",
-                service_id=current_service.id,
-                broadcast_message_id=BroadcastMessage.create(
-                    service_id=service_id,
-                    template_id=template_id,
-                ).id,
+        else:
+            return redirect(
+                url_for(
+                    ".choose_extra_content",
+                    service_id=current_service.id,
+                    broadcast_message_id=BroadcastMessage.create(
+                        service_id=service_id,
+                        template_id=template_id,
+                    ).id,
+                )
             )
-        )
+    broadcast_message = BroadcastMessage.create_with_area(
+        service_id,
+        template.areas.to_areas_dict(),
+        template_id,
+    )
+    return redirect(
+        url_for(".view_current_broadcast", service_id=current_service.id, broadcast_message_id=broadcast_message.id)
+    )
 
 
 @main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/areas")
@@ -557,7 +568,7 @@ def preview_broadcast_areas(service_id, broadcast_message_id):
 
     return render_template(
         "views/broadcast/preview-areas.html",
-        broadcast_message=broadcast_message,
+        message=broadcast_message,
         back_link=back_link,
         is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
     )
@@ -757,7 +768,7 @@ def search_postcodes(service_id, broadcast_message_id, library_slug):
         """
         postcode = create_postcode_db_id(form)
         form.pre_validate(form)
-        centroid, circle_polygon = create_custom_area_polygon(broadcast_message, form, postcode)
+        centroid, circle_polygon = create_custom_area_polygon(form, postcode)
         if form.validate_on_submit():
             """
             If postcode is in database, i.e. creating the Polygon didn't return IndexError,
@@ -1066,7 +1077,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
                 broadcast_message_id=broadcast_message.id,
             )
         )
-    return render_preview_alert_page(broadcast_message, is_custom_broadcast, areas)
+    return render_preview_alert_page(broadcast_message, is_custom_broadcast, areas, message=broadcast_message)
 
 
 @main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/submit", methods=["GET", "POST"])
@@ -1155,7 +1166,7 @@ def approve_broadcast_message(service_id, broadcast_message_id):
         broadcast_message.check_can_update_status("broadcasting")
     except HTTPError as e:
         flash(e.message)
-        return render_preview_alert_page(broadcast_message, is_custom_broadcast, areas)
+        return render_preview_alert_page(broadcast_message, is_custom_broadcast, areas, message=broadcast_message)
 
     if broadcast_message.status != "pending-approval":
         return redirect(
