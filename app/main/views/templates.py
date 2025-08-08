@@ -14,6 +14,7 @@ from app.main.forms import (
     TemplateFolderForm,
 )
 from app.models.service import Service
+from app.models.template import Template
 from app.models.template_list import TemplateList, UserTemplateList, UserTemplateLists
 from app.utils import BROADCAST_TYPE
 from app.utils.templates import get_template
@@ -27,8 +28,8 @@ form_objects = {
 @main.route("/services/<uuid:service_id>/templates/<uuid:template_id>")
 @user_has_permissions(allow_org_user=True)
 def view_template(service_id, template_id):
-    template = current_service.get_template(template_id)
-    template_folder = current_service.get_template_folder(template["folder"])
+    template = Template.from_id(template_id=template_id, service_id=service_id)
+    template_folder = current_service.get_template_folder(template.folder)
 
     user_has_template_permission = current_user.has_template_folder_permission(template_folder)
 
@@ -160,7 +161,7 @@ def get_template_nav_items(template_folder_id):
 def _view_template_version(service_id, template_id, version):
     return dict(
         template=get_template(
-            current_service.get_template(template_id, version=version),
+            Template.get_template_version(service_id, version=version),
         )
     )
 
@@ -234,7 +235,7 @@ def copy_template(service_id, template_id):
 
     current_user.belongs_to_service_or_403(from_service)
 
-    template = service_api_client.get_service_template(from_service, template_id)["data"]
+    template = Template.get_template(from_service, template_id)["data"]
 
     template_folder = template_folder_api_client.get_template_folder(from_service, template["folder"])
     if not current_user.has_template_folder_permission(template_folder):
@@ -403,12 +404,11 @@ def add_service_template(service_id, template_type, template_folder_id=None):
     form = form_objects[template_type]()
     if form.validate_on_submit():
         try:
-            new_template = service_api_client.create_service_template(
-                form.reference.data,
-                template_type,
-                form.content.data,
-                service_id,
-                template_folder_id,
+            new_template = Template.create(
+                service_id=service_id,
+                reference=form.reference.data,
+                content=form.content.data,
+                parent_folder_id=template_folder_id,
             )
         except HTTPError as e:
             if (
@@ -420,7 +420,7 @@ def add_service_template(service_id, template_type, template_folder_id=None):
             else:
                 raise e
         else:
-            return redirect(url_for(".view_template", service_id=service_id, template_id=new_template["data"]["id"]))
+            return redirect(url_for(".view_template", service_id=service_id, template_id=new_template.id))
 
     return render_template(
         "views/edit-{}-template.html".format(template_type),
@@ -617,6 +617,6 @@ def view_template_versions(service_id, template_id):
             get_template(
                 template,
             )
-            for template in service_api_client.get_service_template_versions(service_id, template_id)["data"]
+            for template in Template.get_template_versions(service_id, template_id)["data"]
         ],
     )
