@@ -81,12 +81,12 @@
         {{form.initial_content()}}
         {{form.overwrite_name()}}
         {{form.overwrite_content()}}
-        {{ form.name(param_extensions={
+        {{ form.reference(param_extensions={
           "classes": "govuk-!-width-full",
           "hint": {"text": "Your recipients will not see this"}
         }) }}
         {{ textbox(
-          form.template_content,
+          form.content,
           highlight_placeholders=False,
           autosize=True,
           width='1-1',

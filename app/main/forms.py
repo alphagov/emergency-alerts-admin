@@ -1075,9 +1075,9 @@ class ConfirmBroadcastForm(StripWhitespaceForm):
 
 
 class BaseTemplateForm(StripWhitespaceForm):
-    name = GovukTextInputField("Template name", validators=[DataRequired(message="Template name cannot be empty")])
+    reference = GovukTextInputField("Template name", validators=[DataRequired(message="Template name cannot be empty")])
 
-    template_content = TextAreaField(
+    content = TextAreaField(
         "Alert message", validators=[DataRequired(message="Alert message cannot be empty"), NoCommasInPlaceHolders()]
     )
 
@@ -1156,8 +1156,8 @@ class SMSTemplateForm(BaseTemplateForm):
 
 
 class BroadcastTemplateForm(SMSTemplateForm):
-    name = GovukTextInputField("Reference", validators=[DataRequired(message="Enter a reference")])
-    template_content = TextAreaField(
+    reference = GovukTextInputField("Reference", validators=[DataRequired(message="Enter a reference")])
+    content = TextAreaField(
         "Alert message", validators=[DataRequired(message="Enter an alert message"), NoCommasInPlaceHolders()]
     )
     # Hidden fields to store initial data and data on page when specific actions taken by user

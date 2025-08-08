@@ -352,14 +352,14 @@ def write_new_broadcast(service_id):
             BroadcastMessage.update_from_content(
                 service_id=current_service.id,
                 broadcast_message_id=broadcast_message_id,
-                content=form.template_content.data,
-                reference=form.name.data,
+                content=form.content.data,
+                reference=form.reference.data,
             )
         else:
             broadcast_message = BroadcastMessage.create_from_content(
                 service_id=current_service.id,
-                content=form.template_content.data,
-                reference=form.name.data,
+                content=form.content.data,
+                reference=form.reference.data,
             )
         broadcast_message_id = broadcast_message.id
         return redirect(
@@ -378,8 +378,8 @@ def write_new_broadcast(service_id):
             service_id=current_service.id,
         )
         if broadcast_message.status in ["draft", "returned"]:
-            form.template_content.data = broadcast_message.content
-            form.name.data = broadcast_message.reference
+            form.content.data = broadcast_message.content
+            form.reference.data = broadcast_message.reference
         else:
             broadcast_message = None
 
@@ -408,7 +408,7 @@ def edit_broadcast(service_id, broadcast_message_id):
 
     if request.method == "GET":
         # When the page loads initially, the fields are populated with alerts current data
-        form = BroadcastTemplateForm(template_content=broadcast_message.content, name=broadcast_message.reference)
+        form = BroadcastTemplateForm(content=broadcast_message.content, reference=broadcast_message.reference)
         form.initial_name.data = broadcast_message.reference
         form.initial_content.data = broadcast_message.content
     elif overwrite_reference_button_clicked():
@@ -421,7 +421,7 @@ def edit_broadcast(service_id, broadcast_message_id):
         """
         form = BroadcastTemplateForm()
         form.overwrite_name.data = True
-        form.name.data = request.form.get("name")
+        form.reference.data = request.form.get("reference")
         return render_edit_alert_page(broadcast_message, form)
     elif overwrite_content_button_clicked():
         """
@@ -433,7 +433,7 @@ def edit_broadcast(service_id, broadcast_message_id):
         """
         form = BroadcastTemplateForm()
         form.overwrite_content.data = True
-        form.template_content.data = request.form.get("template_content")
+        form.content.data = request.form.get("content")
         return render_edit_alert_page(broadcast_message, form)
     elif keep_alert_reference_button_clicked():
         """
@@ -441,7 +441,7 @@ def edit_broadcast(service_id, broadcast_message_id):
         and the new name field are set to alert's current reference value and the page is re-rendered.
         """
         form = BroadcastTemplateForm()
-        form.name.data = broadcast_message.reference
+        form.reference.data = broadcast_message.reference
         form.initial_name.data = broadcast_message.reference
         return render_edit_alert_page(broadcast_message, form)
 
@@ -451,14 +451,12 @@ def edit_broadcast(service_id, broadcast_message_id):
         and the new template-content field are set to alert's current value and the page is re-rendered.
         """
         form = BroadcastTemplateForm()
-        form.template_content.data = broadcast_message.content
+        form.content.data = broadcast_message.content
         form.initial_content.data = broadcast_message.content
         return render_edit_alert_page(broadcast_message, form)
 
     else:
-        form = BroadcastTemplateForm(
-            name=request.form.get("name"), template_content=request.form.get("template_content")
-        )
+        form = BroadcastTemplateForm(reference=request.form.get("reference"), content=request.form.get("content"))
 
     if form.validate_on_submit():
         """
@@ -467,7 +465,7 @@ def edit_broadcast(service_id, broadcast_message_id):
         while page open.
         """
 
-        if broadcast_message.content == form.template_content.data and broadcast_message.reference == form.name.data:
+        if broadcast_message.content == form.content.data and broadcast_message.reference == form.reference.data:
             return render_template(
                 "views/broadcast/write-new-broadcast.html",
                 broadcast_message=broadcast_message,
@@ -1377,7 +1375,7 @@ def view_broadcast_versions(service_id, broadcast_message_id):
         message["template"] = BroadcastPreviewTemplate(
             {
                 "template_type": BroadcastPreviewTemplate.template_type,
-                "name": message.get("reference"),
+                "reference": message.get("reference"),
                 "content": message.get("content"),
             }
         )

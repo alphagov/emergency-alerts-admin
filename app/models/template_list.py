@@ -274,7 +274,7 @@ class TemplateListItem:
         ancestors,
     ):
         self.id = template_or_folder["id"]
-        self.name = template_or_folder["name"]
+        self.name = template_or_folder.get("reference") or template_or_folder.get("name")
         self.ancestors = ancestors
 
 

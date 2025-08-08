@@ -454,8 +454,8 @@ def update_broadcast_message_using_changed_data(broadcast_message_id, form):
     BroadcastMessage.update_from_content(
         service_id=current_service.id,
         broadcast_message_id=broadcast_message_id,
-        content=form.template_content.data if form.initial_content.data != form.template_content.data else None,
-        reference=form.name.data if form.initial_name.data != form.name.data else None,
+        content=form.content.data if form.initial_content.data != form.content.data else None,
+        reference=form.reference.data if form.initial_name.data != form.reference.data else None,
     )
 
 

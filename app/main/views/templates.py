@@ -244,7 +244,7 @@ def copy_template(service_id, template_id):
         return add_service_template(service_id, template["template_type"])
 
     template["template_content"] = template["content"]
-    template["name"] = _get_template_copy_name(template, current_service.all_templates)
+    template["reference"] = _get_template_copy_name(template, current_service.all_templates)
     form = form_objects[template["template_type"]](**template)
 
     if template["folder"]:
@@ -272,16 +272,16 @@ def copy_template(service_id, template_id):
 
 
 def _get_template_copy_name(template, existing_templates):
-    template_names = [existing["name"] for existing in existing_templates]
+    template_names = [existing["reference"] for existing in existing_templates]
 
     for index in reversed(range(1, 10)):
-        if "{} (copy {})".format(template["name"], index) in template_names:
-            return "{} (copy {})".format(template["name"], index + 1)
+        if "{} (copy {})".format(template["reference"], index) in template_names:
+            return "{} (copy {})".format(template["reference"], index + 1)
 
-    if "{} (copy)".format(template["name"]) in template_names:
-        return "{} (copy 2)".format(template["name"])
+    if "{} (copy)".format(template["reference"]) in template_names:
+        return "{} (copy 2)".format(template["reference"])
 
-    return "{} (copy)".format(template["name"])
+    return "{} (copy)".format(template["reference"])
 
 
 @main.route(("/services/<uuid:service_id>/templates/action-blocked/" "<template_type:notification_type>/<return_to>"))
@@ -404,9 +404,9 @@ def add_service_template(service_id, template_type, template_folder_id=None):
     if form.validate_on_submit():
         try:
             new_template = service_api_client.create_service_template(
-                form.name.data,
+                form.reference.data,
                 template_type,
-                form.template_content.data,
+                form.content.data,
                 service_id,
                 template_folder_id,
             )
@@ -416,7 +416,7 @@ def add_service_template(service_id, template_type, template_folder_id=None):
                 and "content" in e.message
                 and any(["character count greater than" in x for x in e.message["content"]])
             ):
-                form.template_content.errors.extend(e.message["content"])
+                form.content.errors.extend(e.message["content"])
             else:
                 raise e
         else:
@@ -445,8 +445,8 @@ def edit_service_template(service_id, template_id):
     form = form_objects[template["template_type"]](**template)
     if form.validate_on_submit():
         new_template_data = {
-            "name": form.name.data,
-            "content": form.template_content.data,
+            "reference": form.reference.data,
+            "content": form.content.data,
             "template_type": template["template_type"],
             "id": template["id"],
         }
@@ -464,15 +464,15 @@ def edit_service_template(service_id, template_id):
         try:
             service_api_client.update_service_template(
                 template_id,
-                form.name.data,
+                form.reference.data,
                 template["template_type"],
-                form.template_content.data,
+                form.content.data,
                 service_id,
             )
         except HTTPError as e:
             if e.status_code == 400:
                 if "content" in e.message and any(["character count greater than" in x for x in e.message["content"]]):
-                    form.template_content.errors.extend(e.message["content"])
+                    form.content.errors.extend(e.message["content"])
                 else:
                     raise e
             else:
@@ -561,7 +561,11 @@ def delete_service_template(service_id, template_id):
         )
 
     flash(
-        ["Are you sure you want to delete ‘{}’?".format(template["name"]), "delete_template", template["name"]],
+        [
+            "Are you sure you want to delete ‘{}’?".format(template["reference"]),
+            "delete_template",
+            template["reference"],
+        ],
         "delete",
     )
     return render_template(
