@@ -101,7 +101,7 @@ class MainNavigation(Navigation):
             "view_current_broadcast",
             "new_broadcast",
             "write_new_broadcast",
-            "choose_broadcast_library",
+            "choose_library",
             "choose_broadcast_duration",
             "preview_broadcast_areas",
             "choose_broadcast_library",
