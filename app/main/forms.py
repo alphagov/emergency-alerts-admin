@@ -1886,3 +1886,25 @@ class ReturnForEditForm(StripWhitespaceForm):
         validators=[DataRequired(message="Enter the reason for returning the alert for edit")],
         param_extensions={"hint": {"text": hint}, "rows": 3},
     )
+
+
+class ChooseTemplateFieldsForm(StripWhitespaceForm):
+    content = GovukRadiosField(
+        "Choose how to populate template",
+        choices=[
+            ("content_and_area", "Content and area"),
+            ("content_only", "Only content"),
+            ("area_only", "Only area"),
+        ],
+        param_extensions={
+            "fieldset": {
+                "legend": {
+                    "text": "Choose how to populate template",
+                    "isPageHeading": True,
+                    "classes": "govuk-fieldset__legend--l",
+                }
+            },
+            "hint": {"text": "Select one option"},
+        },
+        validators=[DataRequired(message="Select which type of coordinates you'd like to use")],
+    )
