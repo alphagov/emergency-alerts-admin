@@ -13,8 +13,8 @@ BUCKET_NAME = ${BROADCAST_AREAS_BUCKET_NAME}
 VIRTUALENV_ROOT := $(shell [ -z $$VIRTUAL_ENV ] && echo $$(pwd)/venv || echo $$VIRTUAL_ENV)
 PYTHON_EXECUTABLE_PREFIX := $(shell test -d "$${VIRTUALENV_ROOT}" && echo "$${VIRTUALENV_ROOT}/bin/" || echo "")
 
-NVM_VERSION := 0.39.7
-NODE_VERSION := 16.14.0
+NVM_VERSION := 0.40.3
+NODE_VERSION := 22.18.0
 
 write-source-file:
 	@if [ -f ~/.zshrc ]; then \
