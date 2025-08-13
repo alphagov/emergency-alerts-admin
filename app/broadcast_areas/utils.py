@@ -64,7 +64,7 @@ def _cluster_lower_tier_authorities(areas):
 
 def _aggregate_REPPIR_sites_by_local_authority(area):
     # Returns the area name, concatenated with the local authority
-    return f"{area.name}, {area.parent.name}"
+    return f"{area.name}, {area.parent.name}" if area.parent else f"{area.name}"
 
 
 def generate_aggregate_names(areas):
