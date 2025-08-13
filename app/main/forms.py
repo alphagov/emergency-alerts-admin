@@ -1156,7 +1156,13 @@ class SMSTemplateForm(BaseTemplateForm):
 
 
 class BroadcastTemplateForm(SMSTemplateForm):
-    reference = GovukTextInputField("Reference", validators=[DataRequired(message="Enter a reference")])
+    reference = GovukTextInputField(
+        "Reference",
+        validators=[
+            DataRequired(message="Enter a reference"),
+            Length(max=255, message="Reference must be 255 characters or less"),
+        ],
+    )
     content = TextAreaField(
         "Alert message", validators=[DataRequired(message="Enter an alert message"), NoCommasInPlaceHolders()]
     )
