@@ -57,7 +57,7 @@ a {
   &-item {
 
     &-with-checkbox {
-      padding-left: $govuk-touch-target-size + $govuk-checkboxes-label-padding-left-right;
+      padding-left: 44px + $govuk-checkboxes-label-padding-left-right;
       min-height: $govuk-touch-target-size;
 
       .template-list-item-hint {
@@ -104,6 +104,9 @@ a {
 
         position: relative; /* contain absolutely positioned ::before pseudo element*/
         display: block; /* fill horizontal space to allow hint/meta below to float */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
 
         &::before {
           content: '';
@@ -321,4 +324,9 @@ a {
     top: -6px;
   }
 
+}
+
+.message-name {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
