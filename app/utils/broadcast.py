@@ -50,9 +50,9 @@ def create_coordinate_area(lat, lng, radius, type):
     return [[lat, lon] for lat, lon in zip(xx_wgs84, yy_wgs84)]
 
 
-def check_coordinates_valid_for_enclosed_polygons(message, lat, lng, type):
+def check_coordinates_valid_for_enclosed_polygons(lat, lng, type):
     in_polygon = []
-    uk_countries = message.libraries.get_areas(
+    uk_countries = BroadcastMessage.libraries.get_areas(
         [
             "ctry19-E92000001",
             "ctry19-N92000002",
@@ -60,7 +60,7 @@ def check_coordinates_valid_for_enclosed_polygons(message, lat, lng, type):
             "ctry19-W92000004",
         ]
     )
-    test_areas = message.libraries.get_areas(
+    test_areas = BroadcastMessage.libraries.get_areas(
         [
             "test-santa-claus-village-rovaniemi-a",
             "test-santa-claus-village-rovaniemi-b",
@@ -116,7 +116,7 @@ def create_postcode_db_id(form):
         return postcode
 
 
-def create_custom_area_polygon(BroadcastMessage, form: PostcodeForm, postcode):
+def create_custom_area_polygon(form: PostcodeForm, postcode):
     centroid = None
     circle_polygon = None
     radius = float(form.data["radius"]) if form.data["radius"] else 0
@@ -186,7 +186,7 @@ def continue_button_clicked(request):
 
 def render_postcode_page(
     service_id,
-    broadcast_message_id,
+    message_id,
     broadcast_message,
     form,
     centroid,
@@ -195,6 +195,7 @@ def render_postcode_page(
     estimated_area_with_bleed,
     count_of_phones,
     count_of_phones_likely,
+    message_type,
 ):
     return render_template(
         "views/broadcast/search-postcodes.html",
@@ -203,7 +204,7 @@ def render_postcode_page(
         form=form,
         bleed=bleed or None,
         back_link=url_for(
-            ".choose_broadcast_library", service_id=service_id, broadcast_message_id=broadcast_message_id
+            ".choose_broadcast_library", service_id=service_id, message_id=message_id, message_type=message_type
         ),
         estimated_area=estimated_area,
         estimated_area_with_bleed=estimated_area_with_bleed,
@@ -249,7 +250,7 @@ def coordinates_and_radius_entered(request, form):
 
 def render_coordinates_page(
     service_id,
-    broadcast_message_id,
+    message_id,
     coordinate_type,
     bleed,
     estimated_area,
@@ -259,16 +260,18 @@ def render_coordinates_page(
     marker,
     broadcast_message,
     form,
+    message_type,
 ):
     return render_template(
         "views/broadcast/search-coordinates.html",
         page_title="Choose alert area",
-        broadcast_message=broadcast_message,
+        message=broadcast_message,
         back_link=url_for(
             ".choose_broadcast_area",
             service_id=service_id,
-            broadcast_message_id=broadcast_message_id,
             library_slug="coordinates",
+            message_id=message_id,
+            message_type=message_type,
         ),
         form=form,
         coordinate_type=coordinate_type,
@@ -352,6 +355,7 @@ def render_current_alert_page(
     hide_stop_link=False,
     errors=None,
 ):
+    print(current_service.id, broadcast_message.id)
     return render_template(
         "views/broadcast/view-message.html",
         broadcast_message=broadcast_message,
@@ -378,13 +382,14 @@ def render_current_alert_page(
         edit_reasons=broadcast_message.get_returned_for_edit_reasons(),
         returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
         errors=errors,
+        message=broadcast_message,  # Required parameter for map javascripts
     )
 
 
 def render_edit_alert_page(broadcast_message, form):
     return render_template(
         "views/broadcast/write-new-broadcast.html",
-        broadcast_message=broadcast_message,
+        message=broadcast_message,
         form=form,
         changes=get_changed_alert_form_data(broadcast_message, form),
     )
@@ -394,6 +399,7 @@ def render_preview_alert_page(broadcast_message, is_custom_broadcast, areas, err
     return render_template(
         "views/broadcast/preview-message.html",
         broadcast_message=broadcast_message,
+        message=broadcast_message,
         custom_broadcast=is_custom_broadcast,
         areas=areas,
         back_link=request.referrer,
@@ -453,7 +459,7 @@ def get_changed_extra_content_form_data(form, broadcast_message):
 def update_broadcast_message_using_changed_data(broadcast_message_id, form):
     BroadcastMessage.update_from_content(
         service_id=current_service.id,
-        broadcast_message_id=broadcast_message_id,
+        message_id=broadcast_message_id,
         content=form.content.data if form.initial_content.data != form.content.data else None,
         reference=form.reference.data if form.initial_name.data != form.reference.data else None,
     )
@@ -476,7 +482,10 @@ def redirect_dependent_on_alert_area(broadcast_message):
             )
     else:
         redirect_url = url_for(
-            ".choose_broadcast_library", service_id=current_service.id, broadcast_message_id=broadcast_message.id
+            ".choose_broadcast_library",
+            service_id=current_service.id,
+            message_id=broadcast_message.id,
+            message_type="broadcast",
         )
 
     return redirect(redirect_url)
@@ -511,7 +520,8 @@ def check_for_missing_fields(broadcast_message):
         area_url = url_for(
             ".choose_broadcast_library",
             service_id=current_service.id,
-            broadcast_message_id=broadcast_message.id,
+            message_id=broadcast_message.id,
+            message_type="broadcast",
         )
         errors.append({"html": f"""<a href="{area_url}">Add alert area</a>"""})
     return errors
