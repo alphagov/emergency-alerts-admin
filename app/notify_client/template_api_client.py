@@ -2,7 +2,7 @@ from app.notify_client import AdminAPIClient, _attach_current_user
 
 
 class TemplateAPIClient(AdminAPIClient):
-    def create_template(self, service_id, reference=None, content=None, parent_folder_id=None, areas=None):
+    def create_template(self, service_id, reference="", content="", parent_folder_id=None, areas=None):
         data = {
             "reference": reference,
             "template_type": "broadcast",
