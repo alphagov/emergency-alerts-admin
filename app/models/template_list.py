@@ -291,6 +291,7 @@ class TemplateListTemplate(TemplateListItem):
         self.service_id = service_id
         self.template_type = template["template_type"]
         self.content = template.get("content")
+        self.aggregate_names = template.get("areas")["aggregate_names"] if template.get("areas") else []
 
     @property
     def hint(self):
@@ -299,6 +300,16 @@ class TemplateListTemplate(TemplateListItem):
             if len(self.content) > (max_length_in_chars + 2):
                 return self.content[:max_length_in_chars].strip() + "…"
             return self.content
+
+    @property
+    def aggregated_areas_name(self):
+        if self.aggregate_names:
+            if len(self.aggregate_names) > 1:
+                return (", ").join(self.aggregate_names[:-1]) + " and " + self.aggregate_names[-1]
+            else:
+                return self.aggregate_names[0]
+        else:
+            return None
 
 
 class TemplateListFolder(TemplateListItem):
