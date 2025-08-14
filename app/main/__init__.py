@@ -31,6 +31,7 @@ from app.main.views import (  # noqa isort:skip
     broadcast,
     choose_account,
     code_not_received,
+    common,
     dashboard,
     feedback,
     find_services,
