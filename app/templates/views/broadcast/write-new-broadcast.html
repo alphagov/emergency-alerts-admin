@@ -9,7 +9,7 @@
 {% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
 
 {% block service_page_title %}
-  {% if broadcast_message %}
+  {% if message %}
     Edit alert
   {% else %}
     Write new alert
@@ -19,7 +19,7 @@
 {% set html %}
   <p class="govuk-body">The content you are trying to change is identical to the alert content.
     No change will be made.
-    <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('.view_current_broadcast', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }}">
+    <a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('.view_current_broadcast', service_id=current_service.id, broadcast_message_id=message.id) }}">
       Return to alert
     </a>
   </p>
@@ -27,8 +27,8 @@
 
 
 {% block backLink %}
-  {% if broadcast_message.id %}
-    {{ govukBackLink({ "href": url_for('.view_current_broadcast', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }) }}
+  {% if message.id %}
+    {{ govukBackLink({ "href": url_for('.view_current_broadcast', service_id=current_service.id, broadcast_message_id=message.id) }) }}
   {% else %}
     {{ govukBackLink({ "href": url_for('.new_broadcast', service_id=current_service.id) }) }}
   {% endif %}
@@ -69,7 +69,7 @@
 
     {{ errorSummary(form) }}
 
-    {% if broadcast_message %}
+    {% if message %}
       {{ page_header('Edit alert')}}
     {% else %}
       {{ page_header('Write new alert')}}
