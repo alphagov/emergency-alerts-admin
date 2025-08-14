@@ -202,16 +202,17 @@ def preview_broadcast_areas(service_id, message_id, message_type):
         back_link = url_for(".write_new_broadcast", service_id=current_service.id, message_id=message_id)
 
     if message_type == "templates":
-        next_url = url_for(".view_template", service_id=current_service.id, template_id=message.id)
+        back_link = request.referrer
+        redirect_url = url_for(".view_template", service_id=current_service.id, template_id=message.id)
     elif message.duration:
-        next_url = url_for(
+        redirect_url = url_for(
             ".preview_broadcast_message",
             service_id=current_service.id,
             broadcast_message_id=message.id,
             message_type=message_type,
         )
     else:
-        next_url = url_for(
+        redirect_url = url_for(
             ".choose_broadcast_duration",
             service_id=current_service.id,
             broadcast_message_id=message.id,
@@ -223,7 +224,7 @@ def preview_broadcast_areas(service_id, message_id, message_type):
         message=message,
         back_link=back_link,
         is_custom_broadcast=type(message.areas) is CustomBroadcastAreas,
-        next_url=next_url,
+        redirect_url=redirect_url,
         message_type=message_type,
     )
 
