@@ -248,8 +248,16 @@ def get_message_from_id(message_id, message_type):
     "/services/<uuid:service_id>/<message_type>/<uuid:message_id>/libraries",
     methods=["GET", "POST"],
 )
+@main.route(
+    "/services/<uuid:service_id>/<message_type>/folders/<uuid:template_folder_id>/<uuid:message_id>/libraries",
+    methods=["GET", "POST"],
+)
+@main.route(
+    "/services/<uuid:service_id>/<message_type>/folders/<uuid:template_folder_id>/libraries",
+    methods=["GET", "POST"],
+)
 @main.route("/services/<uuid:service_id>/<message_type>/libraries", methods=["GET", "POST"])
-def choose_broadcast_library(service_id, message_type, message_id=None):
+def choose_broadcast_library(service_id, message_type, message_id=None, template_folder_id=None):
     message = None
     is_custom_broadcast = False
     if message_id:
@@ -257,14 +265,16 @@ def choose_broadcast_library(service_id, message_type, message_id=None):
         is_custom_broadcast = type(message.areas) is CustomBroadcastAreas
         if is_custom_broadcast:
             message.clear_areas()
+    print(template_folder_id)
     return render_template(
         "views/broadcast/libraries.html",
         libraries=BroadcastMessage.libraries,
         message=message,
         custom_broadcast=is_custom_broadcast,
-        back_link=request.referrer,
+        back_link=_get_choose_library_back_link(service_id, message_type, message_id, template_folder_id),
         message_type=message_type,
         message_id=message.id if message else None,
+        template_folder_id=template_folder_id,
     )
 
 
@@ -276,9 +286,13 @@ def choose_broadcast_library(service_id, message_type, message_id=None):
     "/services/<uuid:service_id>/<message_type>/libraries/<library_slug>",
     methods=["GET", "POST"],
 )
+@main.route(
+    "/services/<uuid:service_id>/<message_type>/folders/<uuid:template_folder_id>/libraries/<library_slug>",
+    methods=["GET", "POST"],
+)
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
-def choose_broadcast_area(service_id, library_slug, message_type, message_id=None):
+def choose_broadcast_area(service_id, library_slug, message_type, message_id=None, template_folder_id=None):
     message = get_message_from_id(message_id, message_type) if message_id else None
     library = BroadcastMessage.libraries.get(library_slug)
     if library_slug == "coordinates":
@@ -291,6 +305,7 @@ def choose_broadcast_area(service_id, library_slug, message_type, message_id=Non
                     message_id=message.id,
                     message_type=message_type,
                     coordinate_type=form.content.data,
+                    template_folder_id=template_folder_id,
                 )
             else:
                 url = url_for(
@@ -298,6 +313,7 @@ def choose_broadcast_area(service_id, library_slug, message_type, message_id=Non
                     service_id=current_service.id,
                     message_type=message_type,
                     coordinate_type=form.content.data,
+                    template_folder_id=template_folder_id,
                 )
             return redirect(url)
 
@@ -306,7 +322,11 @@ def choose_broadcast_area(service_id, library_slug, message_type, message_id=Non
             page_title="Choose coordinate type",
             form=form,
             back_link=url_for(
-                ".choose_broadcast_library", service_id=service_id, message_id=message_id, message_type=message_type
+                ".choose_broadcast_library",
+                service_id=service_id,
+                message_id=message_id,
+                message_type=message_type,
+                template_folder_id=template_folder_id,
             ),
         )
     elif library_slug == "postcodes":
@@ -316,9 +336,15 @@ def choose_broadcast_area(service_id, library_slug, message_type, message_id=Non
                 service_id=current_service.id,
                 message_id=message.id,
                 message_type=message_type,
+                template_folder_id=template_folder_id,
             )
         else:
-            url = url_for(".search_postcodes", service_id=current_service.id, message_type=message_type)
+            url = url_for(
+                ".search_postcodes",
+                service_id=current_service.id,
+                message_type=message_type,
+                template_folder_id=template_folder_id,
+            )
         return redirect(url)
 
     if library.is_group:
@@ -330,6 +356,7 @@ def choose_broadcast_area(service_id, library_slug, message_type, message_id=Non
             page_title=f"Choose a {library.name_singular.lower()}",
             message=message,
             message_type=message_type,
+            template_folder_id=template_folder_id,
         )
 
     form = BroadcastAreaForm.from_library(library)
@@ -342,10 +369,13 @@ def choose_broadcast_area(service_id, library_slug, message_type, message_id=Non
                     service_id=current_service.id,
                     message_id=message.id,
                     message_type=message_type,
+                    template_folder_id=template_folder_id,
                 )
             )
         elif message_type == "templates":
-            message = Template.create_from_area(service_id=service_id, area_ids=[*form.areas.data])
+            message = Template.create_from_area(
+                service_id=service_id, area_ids=[*form.areas.data], template_folder_id=template_folder_id
+            )
             return redirect(
                 url_for(
                     ".view_template",
@@ -362,8 +392,15 @@ def choose_broadcast_area(service_id, library_slug, message_type, message_id=Non
         if library.name != "REPPIR DEPZ sites"
         else "Choose REPPIR DEPZ sites",
         message=message,
-        back_link=request.referrer,
+        back_link=url_for(
+            ".choose_broadcast_library",
+            service_id=service_id,
+            message_id=message_id,
+            message_type=message_type,
+            template_folder_id=template_folder_id,
+        ),
         message_type=message_type,
+        template_folder_id=template_folder_id,
     )
 
 
@@ -385,6 +422,24 @@ def _get_broadcast_sub_area_back_link(service_id, message_id, library_slug, mess
             library_slug=library_slug,
             message_type=message_type,
         )
+
+
+def _get_choose_library_back_link(service_id, message_type, message_id=None, template_folder_id=None):
+    if message_type == "broadcast":
+        return url_for(
+            ".choose_extra_content" if current_service.broadcast_channel != "operator" else ".write_new_broadcast",
+            service_id=current_service.id,
+            broadcast_message_id=message_id,
+        )
+    else:
+        if not message_id:
+            return url_for(
+                ".choose_template_fields",
+                service_id=current_service.id,
+                template_folder_id=template_folder_id,
+            )
+        else:
+            return request.referrer
 
 
 @main.route("/services/<uuid:service_id>/<message_type>/<uuid:message_id>/remove_custom/<postcode_slug>")
@@ -425,9 +480,13 @@ def remove_coordinate_area(service_id, message_id, message_type):
     "/services/<uuid:service_id>/<message_type>/<uuid:message_id>/libraries/postcodes",  # noqa: E501
     methods=["GET", "POST"],
 )
+@main.route(
+    "/services/<uuid:service_id>/<message_type>/folders/<uuid:template_folder_id>/libraries/postcodes",  # noqa: E501
+    methods=["GET", "POST"],
+)
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
-def search_postcodes(service_id, message_type, message_id=None):
+def search_postcodes(service_id, message_type, message_id=None, template_folder_id=None):
     message = get_message_from_id(message_id, message_type) if message_id else None
     form = PostcodeForm()
     # Initialising variables here that may be assigned values, to be then passed into jinja template.
@@ -501,7 +560,9 @@ def search_postcodes(service_id, message_type, message_id=None):
                         )
                     )
                 else:
-                    message = Template.create_with_custom_area(circle_polygon, id, service_id)
+                    message = Template.create_with_custom_area(
+                        circle_polygon, id, service_id, template_folder_id=template_folder_id
+                    )
                     return redirect(
                         url_for(
                             ".view_template",
@@ -521,6 +582,7 @@ def search_postcodes(service_id, message_type, message_id=None):
         count_of_phones,
         count_of_phones_likely,
         message_type,
+        template_folder_id,
     )
 
 
@@ -532,9 +594,13 @@ def search_postcodes(service_id, message_type, message_id=None):
     "/services/<uuid:service_id>/<message_type>/libraries/coordinates/<coordinate_type>/",  # noqa: E501
     methods=["GET", "POST"],
 )
+@main.route(
+    "/services/<uuid:service_id>/<message_type>/folders/<uuid:template_folder_id>/libraries/coordinates/<coordinate_type>/",  # noqa: E501
+    methods=["GET", "POST"],
+)
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
-def search_coordinates(service_id, coordinate_type, message_type, message_id=None):
+def search_coordinates(service_id, coordinate_type, message_type, message_id=None, template_folder_id=None):
     (
         polygon,
         bleed,
@@ -637,7 +703,9 @@ def search_coordinates(service_id, coordinate_type, message_type, message_id=Non
                     )
                 )
             else:
-                message = Template.create_with_custom_area(polygon, id, service_id)
+                message = Template.create_with_custom_area(
+                    polygon, id, service_id, template_folder_id=template_folder_id
+                )
                 return redirect(
                     url_for(
                         ".view_template",
@@ -658,6 +726,7 @@ def search_coordinates(service_id, coordinate_type, message_type, message_id=Non
         message,
         form,
         message_type,
+        template_folder_id,
     )
 
 
@@ -669,9 +738,15 @@ def search_coordinates(service_id, coordinate_type, message_type, message_id=Non
     "/services/<uuid:service_id>/<message_type>/libraries/<library_slug>/<area_slug>",
     methods=["GET", "POST"],
 )
+@main.route(
+    "/services/<uuid:service_id>/<message_type>/folders/<uuid:template_folder_id>/libraries/<library_slug>/<area_slug>",
+    methods=["GET", "POST"],
+)
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
-def choose_broadcast_sub_area(service_id, message_type, library_slug, area_slug, message_id=None):
+def choose_broadcast_sub_area(
+    service_id, message_type, library_slug, area_slug, message_id=None, template_folder_id=None
+):
     message = get_message_from_id(message_id, message_type) if message_id else None
     if not BroadcastMessage.libraries.get_areas([area_slug]):
         return redirect(
@@ -681,6 +756,7 @@ def choose_broadcast_sub_area(service_id, message_type, library_slug, area_slug,
                 message_id=message.id,
                 message_type=message_type,
                 library_slug=library_slug,
+                template_folder_id=template_folder_id,
             )
         )
     area = BroadcastMessage.libraries.get_areas([area_slug])[0]
@@ -697,7 +773,9 @@ def choose_broadcast_sub_area(service_id, message_type, library_slug, area_slug,
         if message:
             message.replace_areas([*form.selected_areas])
         elif message_type == "templates":
-            message = Template.create_from_area(service_id=service_id, area_ids=[*form.selected_areas])
+            message = Template.create_from_area(
+                service_id=service_id, area_ids=[*form.selected_areas], template_folder_id=template_folder_id
+            )
         return redirect(
             url_for(
                 ".preview_broadcast_areas",

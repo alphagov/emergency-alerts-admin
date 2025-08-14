@@ -2,15 +2,15 @@ from app.notify_client import AdminAPIClient, _attach_current_user
 
 
 class TemplateAPIClient(AdminAPIClient):
-    def create_template(self, service_id, reference="", content="", parent_folder_id=None, areas=None):
+    def create_template(self, service_id, reference="", content="", template_folder_id=None, areas=None):
         data = {
             "reference": reference,
             "template_type": "broadcast",
             "content": content,
             "service": service_id,
         }
-        if parent_folder_id:
-            data["parent_folder_id"] = parent_folder_id
+        if template_folder_id:
+            data["parent_folder_id"] = template_folder_id
         if areas:
             data["areas"] = areas
         data = _attach_current_user(data)

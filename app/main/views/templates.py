@@ -422,7 +422,7 @@ def add_service_template(service_id, template_type, template_folder_id=None, add
                 service_id=service_id,
                 reference=form.reference.data,
                 content=form.content.data,
-                parent_folder_id=template_folder_id,
+                template_folder_id=template_folder_id,
             )
         except HTTPError as e:
             if (
@@ -441,6 +441,7 @@ def add_service_template(service_id, template_type, template_folder_id=None, add
                         service_id=service_id,
                         message_type="templates",
                         message_id=new_template.id,
+                        template_folder_id=template_folder_id,
                     )
                 )
                 if adding_area == "True"
@@ -696,6 +697,7 @@ def choose_template_fields(service_id, template_folder_id=None):
                     ".choose_broadcast_library",
                     service_id=current_service.id,
                     message_type="templates",
+                    template_folder_id=template_folder_id,
                 )
             )
     return render_template(

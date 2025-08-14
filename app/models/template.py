@@ -31,11 +31,11 @@ class Template(BaseBroadcast):
         super().__init__(_dict)
 
     @classmethod
-    def create(cls, *, service_id, reference=None, content=None, parent_folder_id=None, areas=None):
-        return cls(template_api_client.create_template(service_id, reference, content, parent_folder_id, areas))
+    def create(cls, *, service_id, reference=None, content=None, template_folder_id=None, areas=None):
+        return cls(template_api_client.create_template(service_id, reference, content, template_folder_id, areas))
 
     @classmethod
-    def create_with_custom_area(cls, circle_polygon, area_id, service_id, parent_folder_id=None):
+    def create_with_custom_area(cls, circle_polygon, area_id, service_id, template_folder_id=None):
         """Creates a broadcast template with a custom area defined by polygons."""
         simple_polygons = [circle_polygon]
         area_to_get_params = CustomBroadcastArea(name="", polygons=simple_polygons)
@@ -49,13 +49,13 @@ class Template(BaseBroadcast):
         return cls(
             template_api_client.create_template(
                 service_id=service_id,
-                parent_folder_id=parent_folder_id,
+                template_folder_id=template_folder_id,
                 areas=areas,
             )
         )
 
     @classmethod
-    def create_from_area(cls, service_id, parent_folder_id=None, area_ids=None):
+    def create_from_area(cls, service_id, template_folder_id=None, area_ids=None):
         areas = BroadcastAreaLibraries().get_areas(area_ids)
         aggregated_areas = aggregate_areas(areas)
         aggregate_names = generate_aggregate_names(aggregated_areas)
@@ -68,7 +68,7 @@ class Template(BaseBroadcast):
         return cls(
             template_api_client.create_template(
                 service_id=service_id,
-                parent_folder_id=parent_folder_id,
+                template_folder_id=template_folder_id,
                 areas=areas,
             )
         )

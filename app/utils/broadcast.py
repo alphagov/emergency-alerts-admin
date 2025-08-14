@@ -196,11 +196,12 @@ def render_postcode_page(
     count_of_phones,
     count_of_phones_likely,
     message_type,
+    template_folder_id,
 ):
     return render_template(
         "views/broadcast/search-postcodes.html",
         broadcast_message=broadcast_message,
-        page_title="Choose alert area",
+        page_title="Choose alert area" if message_type == "broadcast" else "Choose template area",
         form=form,
         bleed=bleed or None,
         back_link=url_for(
@@ -211,6 +212,7 @@ def render_postcode_page(
         count_of_phones=count_of_phones,
         count_of_phones_likely=count_of_phones_likely,
         centroid=[centroid.y, centroid.x] if centroid else None,
+        template_folder_id=template_folder_id,
     )
 
 
@@ -261,10 +263,11 @@ def render_coordinates_page(
     broadcast_message,
     form,
     message_type,
+    template_folder_id,
 ):
     return render_template(
         "views/broadcast/search-coordinates.html",
-        page_title="Choose alert area",
+        page_title="Choose alert area" if message_type == "broadcast" else "Choose template area",
         message=broadcast_message,
         back_link=url_for(
             ".choose_broadcast_area",
@@ -272,6 +275,7 @@ def render_coordinates_page(
             library_slug="coordinates",
             message_id=message_id,
             message_type=message_type,
+            template_folder_id=template_folder_id,
         ),
         form=form,
         coordinate_type=coordinate_type,
