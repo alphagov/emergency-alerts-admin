@@ -104,12 +104,13 @@
 
     {% set conditional_area_action_link %}
         {% if broadcast_message.areas %}
-            {{url_for('.preview_broadcast_areas', service_id=current_service.id, broadcast_message_id=broadcast_message.id)}}
+            {{url_for('.preview_broadcast_areas', service_id=current_service.id, message_id=broadcast_message.id, message_type="broadcast")}}
         {% else %}
             {{url_for(
-                ".choose_broadcast_library",
+                ".choose_library",
                 service_id=current_service.id,
-                broadcast_message_id=broadcast_message.id,
+                message_id=broadcast_message.id,
+                message_type="broadcast"
             )}}
         {% endif%}
     {% endset %}
