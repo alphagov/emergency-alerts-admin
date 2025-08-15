@@ -20,7 +20,6 @@ plugins.jshint = require('gulp-jshint');
 plugins.prettyerror = require('gulp-prettyerror');
 plugins.rollup = require('gulp-better-rollup')
 plugins.sass = require('gulp-sass')(require('sass'));
-plugins.sassLint = require('gulp-sass-lint');
 plugins.uglify = require('gulp-uglify');
 
 // 2. CONFIGURATION

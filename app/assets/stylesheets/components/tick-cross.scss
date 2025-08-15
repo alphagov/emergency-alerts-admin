@@ -8,7 +8,6 @@
 }
 
 .tick-cross {
-
   &-tick {
     @extend %tick-cross;
     background-image: file-url('tick.svg');

@@ -18,10 +18,9 @@ $zoom-button-hover-colour: govuk-shade($zoom-button-colour, 10%);
 // This approach, taken from MDN, allows it to fall back to :focus for browsers without support:
 // https://developer.mozilla.org/en-US/docs/Web/CSS/:focus-visible#selectively_showing_the_focus_indicator
 .leaflet-container {
-
   &:focus {
-    box-shadow: 0px 0px 0 3px $govuk-focus-text-colour, 0 0 0 6px $govuk-focus-colour;
-    outline: solid 3px transparent !important; // sass-lint:disable-line no-important
+    box-shadow: 0 0 0 3px $govuk-focus-text-colour, 0 0 0 6px $govuk-focus-colour;
+    outline: solid 3px transparent !important; // stylelint-disable-line declaration-no-important
     outline-offset: 3px;
   }
 
@@ -29,7 +28,7 @@ $zoom-button-hover-colour: govuk-shade($zoom-button-colour, 10%);
   // from other sources (like clicks on child elements).
   &:focus:not(:focus-visible) {
     box-shadow: none;
-    outline: none !important; // sass-lint:disable-line no-important
+    outline: none !important; // stylelint-disable-line declaration-no-important
   }
 }
 
@@ -95,8 +94,8 @@ $zoom-button-hover-colour: govuk-shade($zoom-button-colour, 10%);
     }
 
     // Shared styles for the divider between buttons that appears when either are focused
-    &:last-child:focus:not(:active):not(:hover):before,
-    &:first-child:focus:not(:active):not(:hover) + a:before {
+    &:last-child:focus:not(:active):not(:hover)::before,
+    &:first-child:focus:not(:active):not(:hover) + a::before {
       content: "";
       position: absolute;
       height: 2px;
@@ -109,15 +108,15 @@ $zoom-button-hover-colour: govuk-shade($zoom-button-colour, 10%);
     }
 
     // Styles for the divider, specifc to the second button being focused
-    &:last-child:focus:not(:active):not(:hover):before {
+    &:last-child:focus:not(:active):not(:hover)::before {
       left: -2px; // Subtract 2px left border
       top: -3px; // Shift divider up 1px so it overlaps buttons equally, and another 2px to compensate for the reduced height of the last button (due to the border)
       width: calc(100% + 4px); // Compensate for borders
     }
 
     // Styles for the divider, specifc to the first button being focused
-    &:first-child:focus:not(:active):not(:hover) + a:before {
-      left: 0px; // No borders on parent of :before when not focused
+    &:first-child:focus:not(:active):not(:hover) + a::before {
+      left: 0; // No borders on parent of :before when not focused
       top: -1px; // Shift divider up 1px so it overlaps buttons equally
       width: 100%;
     }
@@ -128,7 +127,6 @@ $zoom-button-hover-colour: govuk-shade($zoom-button-colour, 10%);
 // Extra block to override specific LeafletJS rounded-corners when buttons are focused
 .leaflet-bar a,
 .leaflet-touch .leaflet-bar a {
-
   &:first-child {
     // Remove rounded corners
     border-top-left-radius: 0;
@@ -158,7 +156,7 @@ $zoom-button-hover-colour: govuk-shade($zoom-button-colour, 10%);
       // When colours are overridden, for example when users have Windows high
       // contrast mode on, backgrounds disappear, so we need to ensure there's a
       // visible outline so it can be set to a colour by the OS.
-      outline: $govuk-focus-width solid transparent !important; // sass-lint:disable-line no-important
+      outline: $govuk-focus-width solid transparent !important; // stylelint-disable-line declaration-no-important
       color: $govuk-focus-text-colour;
       background: $govuk-focus-colour;
       box-shadow: 0 -2px $govuk-focus-colour, 0 4px $govuk-focus-text-colour;
@@ -169,7 +167,7 @@ $zoom-button-hover-colour: govuk-shade($zoom-button-colour, 10%);
 
 
 .enlarged-map-dialog {
-  background-color: #FFF;
+  background-color: #FFFFFF;
   border: 1px solid #0B0C0C;
   left: 50vw;
   overflow-x: hidden;

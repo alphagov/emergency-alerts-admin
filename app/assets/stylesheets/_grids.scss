@@ -75,7 +75,7 @@
 
 .bottom-gutter-3-2 {
   @extend %bottom-gutter;
-  margin-bottom: govuk-spacing(6) * 3/2;
+  margin-bottom: govuk-spacing(6) * 3 / 2;
 }
 
 .bottom-gutter-2 {
@@ -106,7 +106,7 @@
 
 .align-with-heading-copy-right {
   display: block;
-  margin: 21px 0 19px 0;
+  margin: 21px 0 19px;
   text-align: right;
 }
 
