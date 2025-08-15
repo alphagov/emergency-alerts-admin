@@ -196,33 +196,34 @@ def test_broadcast_pages_403_without_permission(
         ),
         (
             ".preview_broadcast_areas",
-            {"broadcast_message_id": sample_uuid},
+            {"message_id": sample_uuid, "message_type": "broadcast"},
             403,
             405,
         ),
         (
             ".choose_broadcast_library",
-            {"broadcast_message_id": sample_uuid},
+            {"message_id": sample_uuid, "message_type": "broadcast"},
             403,
             405,
         ),
         (
             ".choose_broadcast_area",
-            {"broadcast_message_id": sample_uuid, "library_slug": "countries"},
+            {"message_id": sample_uuid, "library_slug": "countries", "message_type": "broadcast"},
             403,
             403,
         ),
         (
             ".remove_broadcast_area",
-            {"broadcast_message_id": sample_uuid, "area_slug": "england"},
+            {"message_id": sample_uuid, "area_slug": "england", "message_type": "broadcast"},
             403,
             405,
         ),
         (
             ".remove_postcode_area",
             {
-                "broadcast_message_id": sample_uuid,
+                "message_id": sample_uuid,
                 "postcode_slug": "1km around the postcode BD1 1EE in Bradford",
+                "message_type": "broadcast",
             },
             403,
             405,
@@ -1181,7 +1182,8 @@ def test_preview_broadcast_areas_page(
     page = client_request.get(
         ".preview_broadcast_areas",
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
+        message_type="broadcast",
     )
 
     assert [normalize_spaces(item.text) for item in page.select("ul.area-list li.area-list-item")] == areas_listed
@@ -2231,10 +2233,10 @@ def test_create_latitude_longitude_coordinate_area(
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.post(
         ".search_coordinates",
+        message_id=fake_uuid,
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
-        library_slug="coordinates",
         coordinate_type="latitude_longitude",
+        message_type="broadcast",
         _data=post_data,
         _follow_redirects=True,
     )
@@ -2308,10 +2310,10 @@ def test_add_latitude_longitude_coordinate_area_to_broadcast(
     client_request.login(active_user_create_broadcasts_permission)
     client_request.post(
         ".search_coordinates",
+        message_id=fake_uuid,
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
-        library_slug="coordinates",
         coordinate_type="latitude_longitude",
+        message_type="broadcast",
         _data=post_data,
         _follow_redirects=True,
     )
@@ -2405,10 +2407,10 @@ def test_create_easting_northing_coordinate_area(
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.post(
         ".search_coordinates",
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
         service_id=SERVICE_ONE_ID,
-        library_slug="coordinates",
         coordinate_type="easting_northing",
+        message_type="broadcast",
         _data=post_data,
         _follow_redirects=True,
     )
@@ -2484,10 +2486,10 @@ def test_add_easting_northing_coordinate_area_to_broadcast(
     client_request.login(active_user_create_broadcasts_permission)
     client_request.post(
         ".search_coordinates",
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
         service_id=SERVICE_ONE_ID,
-        library_slug="coordinates",
         coordinate_type="easting_northing",
+        message_type="broadcast",
         _data=post_data,
         _follow_redirects=True,
     )
@@ -2575,10 +2577,10 @@ def test_easting_northing_coordinate_area_form_errors(
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.post(
         ".search_coordinates",
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
         service_id=SERVICE_ONE_ID,
-        library_slug="coordinates",
         coordinate_type="easting_northing",
+        message_type="broadcast",
         _data=post_data,
         _follow_redirects=True,
     )
@@ -2652,10 +2654,10 @@ def test_latitude_longitude_coordinate_area_form_errors(
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.post(
         ".search_coordinates",
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
         service_id=SERVICE_ONE_ID,
-        library_slug="coordinates",
         coordinate_type="latitude_longitude",
+        message_type="broadcast",
         _data=post_data,
         _follow_redirects=True,
     )
@@ -2728,10 +2730,10 @@ def test_latitude_longitude_coordinate_area_form_error_with_invalid_coords(
 
     page = client_request.post(
         ".search_coordinates",
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
         service_id=SERVICE_ONE_ID,
-        library_slug="coordinates",
-        coordinate_type=coordinate_type,
+        coordinate_type="latitude_longitude",
+        message_type="broadcast",
         _data=post_data,
         _follow_redirects=True,
     )
@@ -2819,10 +2821,10 @@ def test_non_uk_coordinate_area_form_errors(
 
     page = client_request.post(
         ".search_coordinates",
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
         service_id=SERVICE_ONE_ID,
-        library_slug="coordinates",
-        coordinate_type=coordinate_type,
+        coordinate_type="latitude_longitude",
+        message_type="broadcast",
         _data=post_data,
         _follow_redirects=True,
     )

@@ -90,9 +90,7 @@ def test_create_coordinate_area(coordinate_type, first_coordinate, second_coordi
 )
 def test_check_coordinates_valid_for_enclosed_polygons(first_coordinate, second_coordinate, expected, coordinate_type):
     assert (
-        check_coordinates_valid_for_enclosed_polygons(
-            BroadcastMessage, first_coordinate, second_coordinate, coordinate_type
-        )
+        check_coordinates_valid_for_enclosed_polygons(first_coordinate, second_coordinate, coordinate_type)
     ) == expected
 
 

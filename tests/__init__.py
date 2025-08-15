@@ -239,16 +239,17 @@ def organisation_json(
 def template_json(
     service_id,
     id_,
-    name="sample template",
+    reference="sample template",
     type_=None,
     content=None,
     version=1,
     archived=False,
     folder=None,
+    areas=None,
 ):
     template = {
         "id": id_,
-        "name": name,
+        "reference": reference,
         "template_type": type_ or "broadcast",
         "content": content,
         "service": service_id,
@@ -256,6 +257,8 @@ def template_json(
         "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f"),
         "archived": archived,
         "folder": folder,
+        "areas": areas
+        or {"ids": ["ctry19-E92000001", "ctry19-S92000003"], "simple_polygons": [], "aggregate_names": []},
     }
     if content is None:
         template["content"] = "template content"
