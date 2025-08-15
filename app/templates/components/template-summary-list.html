@@ -83,10 +83,10 @@
 
     {% set conditional_area_action_link %}
         {% if template.areas %}
-            {{url_for('.preview_broadcast_areas', service_id=template.service, message_id=template.id, message_type="templates")}}
+            {{url_for('.preview_areas', service_id=template.service, message_id=template.id, message_type="templates")}}
         {% else %}
             {{url_for(
-                ".choose_broadcast_library",
+                ".choose_library",
                 service_id=template.service,
                 message_id=template.id,
                 message_type="templates"

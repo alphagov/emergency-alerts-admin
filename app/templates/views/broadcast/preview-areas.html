@@ -43,9 +43,9 @@
           <li class="area-list-item">
             {{area.name}}
             {% if is_custom_broadcast %}
-              <a class="area-list-item-remove govuk-button" data-module="govuk-button" role="button" href="{{ url_for('.remove_coordinate_area', service_id=current_service.id, message_id=message.id, area_slug=area.id, message_type=message_type) }}">
+              <a class="area-list-item-remove govuk-button" data-module="govuk-button" role="button" href="{{ url_for('.remove_custom_area', service_id=current_service.id, message_id=message.id, area_slug=area.id, message_type=message_type) }}">
             {% else %}
-              <a class="area-list-item-remove govuk-button" data-module="govuk-button" role="button" href="{{ url_for('.remove_broadcast_area', service_id=current_service.id, message_id=message.id, area_slug=area.id, message_type=message_type) }}">
+              <a class="area-list-item-remove govuk-button" data-module="govuk-button" role="button" href="{{ url_for('.remove_area', service_id=current_service.id, message_id=message.id, area_slug=area.id, message_type=message_type) }}">
             {% endif %}
               <svg id="area-list-item-remove__icon" width="11" height="11" viewbox="0 0 10 10" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
                 <g transform="rotate(45),translate(1, -6)">
@@ -62,7 +62,7 @@
         {{ govukButton({
           "element": "a",
           "text": "Add another area",
-          "href": url_for('.choose_broadcast_library', service_id=current_service.id, message_id=message.id, message_type=message_type),
+          "href": url_for('.choose_library', service_id=current_service.id, message_id=message.id, message_type=message_type),
           "classes": "govuk-button--secondary govuk-!-margin-bottom-5"
         }) }}
       {% endif %}
@@ -82,7 +82,7 @@
       {{ govukButton({
         "element": "a",
         "text": "Add broadcast areas",
-        "href": url_for('.choose_broadcast_library', service_id=current_service.id, message_id=message.id, message_type=message_type),
+        "href": url_for('.choose_library', service_id=current_service.id, message_id=message.id, message_type=message_type),
         "classes": "govuk-button--secondary"
       }) }}
     </p>

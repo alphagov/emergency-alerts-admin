@@ -23,7 +23,7 @@
       {{ govukBackLink({ "href": url_for('.search_coordinates', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug='coordinates', coordinate_type='easting_northing') }) }}
     {% endif %}
   {% else %}
-    {{ govukBackLink({ "href": url_for('.preview_broadcast_areas', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }) }}
+    {{ govukBackLink({ "href": url_for('.preview_areas', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }) }}
   {% endif %}
 {% endblock %}
 
