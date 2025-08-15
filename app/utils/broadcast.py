@@ -17,7 +17,6 @@ from app.main.forms import (
     ReturnForEditForm,
 )
 from app.models.broadcast_message import BroadcastMessage
-from app.models.template import Template
 
 
 def create_coordinate_area_slug(coordinate_type, first_coordinate, second_coordinate, radius):
@@ -205,9 +204,7 @@ def render_postcode_page(
         page_title="Choose alert area" if message_type == "broadcast" else "Choose template area",
         form=form,
         bleed=bleed or None,
-        back_link=url_for(
-            ".choose_broadcast_library", service_id=service_id, message_id=message_id, message_type=message_type
-        ),
+        back_link=url_for(".choose_library", service_id=service_id, message_id=message_id, message_type=message_type),
         estimated_area=estimated_area,
         estimated_area_with_bleed=estimated_area_with_bleed,
         count_of_phones=count_of_phones,
@@ -271,7 +268,7 @@ def render_coordinates_page(
         page_title="Choose alert area" if message_type == "broadcast" else "Choose template area",
         message=broadcast_message,
         back_link=url_for(
-            ".choose_broadcast_area",
+            ".choose_area",
             service_id=service_id,
             library_slug="coordinates",
             message_id=message_id,
@@ -486,7 +483,7 @@ def redirect_dependent_on_alert_area(broadcast_message):
             )
     else:
         redirect_url = url_for(
-            ".choose_broadcast_library",
+            ".choose_library",
             service_id=current_service.id,
             message_id=broadcast_message.id,
             message_type="broadcast",
@@ -522,7 +519,7 @@ def check_for_missing_fields(broadcast_message):
         errors.append({"html": f"""<a href="{edit_url}">Add alert message</a>"""})
     if not broadcast_message.areas:
         area_url = url_for(
-            ".choose_broadcast_library",
+            ".choose_library",
             service_id=current_service.id,
             message_id=broadcast_message.id,
             message_type="broadcast",
@@ -543,44 +540,10 @@ def _get_back_link_from_view_broadcast_endpoint():
     }[request.endpoint]
 
 
-def get_message_from_id(message_id, message_type):
-    message = None
-    if message_type == "broadcast":
-        message = BroadcastMessage.from_id(
-            message_id,
-            service_id=current_service.id,
-        )
-    elif message_type == "templates":
-        message = Template.from_id(
-            message_id,
-            service_id=current_service.id,
-        )
-    return message
-
-
-def get_url_for_custom_area_route_if_message_exists(message_type, template_folder_id, message, route):
-    return (
-        url_for(
-            route,
-            service_id=current_service.id,
-            message_id=message.id,
-            message_type=message_type,
-            template_folder_id=template_folder_id,
-        )
-        if message
-        else url_for(
-            route,
-            service_id=current_service.id,
-            message_type=message_type,
-            template_folder_id=template_folder_id,
-        )
-    )
-
-
 def _get_broadcast_sub_area_back_link(service_id, message_id, library_slug, message_type):
     if prev_area_slug := request.args.get("prev_area_slug"):
         return url_for(
-            ".choose_broadcast_sub_area",
+            ".choose_sub_area",
             service_id=service_id,
             message_id=message_id,
             library_slug=library_slug,
@@ -589,9 +552,27 @@ def _get_broadcast_sub_area_back_link(service_id, message_id, library_slug, mess
         )
     else:
         return url_for(
-            ".choose_broadcast_area",
+            ".choose_area",
             service_id=service_id,
             message_id=message_id,
             library_slug=library_slug,
             message_type=message_type,
         )
+
+
+def _get_choose_library_back_link(service_id, message_type, message_id=None, template_folder_id=None):
+    if message_type == "broadcast":
+        return url_for(
+            ".choose_extra_content" if current_service.broadcast_channel != "operator" else ".write_new_broadcast",
+            service_id=current_service.id,
+            broadcast_message_id=message_id,
+        )
+    else:
+        if not message_id:
+            return url_for(
+                ".choose_template_fields",
+                service_id=current_service.id,
+                template_folder_id=template_folder_id,
+            )
+        else:
+            return request.referrer
