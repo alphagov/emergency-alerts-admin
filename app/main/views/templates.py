@@ -5,19 +5,52 @@ from flask_login import current_user
 from notifications_python_client.errors import HTTPError
 
 from app import current_service, service_api_client, template_folder_api_client
+from app.broadcast_areas.models import CustomBroadcastAreas
 from app.formatters import character_count
 from app.main import main
 from app.main.forms import (
+    BroadcastAreaForm,
+    BroadcastAreaFormWithSelectAll,
     BroadcastTemplateForm,
+    ChooseCoordinateTypeForm,
     ChooseTemplateFieldsForm,
+    PostcodeForm,
+    SearchByNameForm,
     SearchTemplatesForm,
     TemplateAndFoldersSelectionForm,
     TemplateFolderForm,
 )
+from app.models.broadcast_message import BroadcastMessage
 from app.models.service import Service
 from app.models.template import Template
 from app.models.template_list import TemplateList, UserTemplateList, UserTemplateLists
 from app.utils import BROADCAST_TYPE
+from app.utils.broadcast import (
+    _get_broadcast_sub_area_back_link,
+    _get_choose_library_back_link,
+    adding_invalid_coords_errors_to_form,
+    all_coordinate_form_fields_empty,
+    all_fields_empty,
+    check_coordinates_valid_for_enclosed_polygons,
+    continue_button_clicked,
+    coordinates_and_radius_entered,
+    coordinates_entered_but_no_radius,
+    create_coordinate_area,
+    create_coordinate_area_slug,
+    create_custom_area_polygon,
+    create_postcode_area_slug,
+    create_postcode_db_id,
+    extract_attributes_from_custom_area,
+    get_centroid_if_postcode_in_db,
+    normalising_point,
+    parse_coordinate_form_data,
+    postcode_and_radius_entered,
+    postcode_entered,
+    render_coordinates_page,
+    render_postcode_page,
+    select_coordinate_form,
+    validate_form_based_on_fields_entered,
+)
 from app.utils.templates import get_template
 from app.utils.user import user_has_permissions
 
@@ -437,7 +470,7 @@ def add_service_template(service_id, template_type, template_folder_id=None, add
             return (
                 redirect(
                     url_for(
-                        ".choose_broadcast_library",
+                        ".choose_library",
                         service_id=service_id,
                         message_type="templates",
                         message_id=new_template.id,
@@ -694,7 +727,7 @@ def choose_template_fields(service_id, template_folder_id=None):
         elif template_fields == "area_only":
             return redirect(
                 url_for(
-                    ".choose_broadcast_library",
+                    ".choose_library",
                     service_id=current_service.id,
                     message_type="templates",
                     template_folder_id=template_folder_id,
@@ -705,4 +738,466 @@ def choose_template_fields(service_id, template_folder_id=None):
         form=form,
         back_link=url_for("main.choose_template", service_id=current_service.id, template_folder_id=template_folder_id),
         page_title="Choose how to populate template",
+    )
+
+
+@user_has_permissions("manage_templates")
+def write_new_broadcast_from_template(service_id, template_id):
+    template = Template.from_id(template_id, service_id=current_service.id) if template_id else None
+
+    form = BroadcastTemplateForm()
+
+    if form.validate_on_submit():
+        if template_id and template and template.areas:
+            # If Template has already been made and has areas, create broadcast_message
+            #  from anything existing in Template
+            if isinstance(template.areas, CustomBroadcastAreas):
+                message = BroadcastMessage.create_from_custom_area(
+                    service_id=current_service.id,
+                    content=form.content.data,
+                    reference=form.reference.data,
+                    areas=template.areas,
+                )
+            else:
+                message = BroadcastMessage.create_from_area(
+                    service_id=current_service.id,
+                    content=form.content.data,
+                    reference=form.reference.data,
+                    area_ids=template.area_ids,
+                )
+
+        return redirect(
+            # Redirects to 'Choose library' page if created in operator service,
+            # as you cannot add extra_content in operator service, otherwise redirects
+            # to page to add extra_content
+            url_for(
+                ".choose_extra_content" if current_service.broadcast_channel != "operator" else ".choose_library",
+                service_id=current_service.id,
+                broadcast_message_id=message.id,
+            )
+        )
+
+    return render_template(
+        "views/broadcast/write-new-broadcast.html",
+        message=message,
+        form=form,
+    )
+
+
+@user_has_permissions("manage_templates")
+def preview_template_areas(service_id, template_id):
+    template = Template.from_id(template_id, service_id=service_id)
+    return render_template(
+        "views/broadcast/preview-areas.html",
+        message=template,
+        back_link=request.referrer,
+        is_custom_broadcast=type(template.areas) is CustomBroadcastAreas,
+        redirect_url=url_for(
+            ".view_template", service_id=current_service.id, template_id=template.id
+        ),  # The url for when 'Save and continue' button clicked
+        message_type="templates",
+    )
+
+
+@user_has_permissions("manage_templates")
+def choose_template_library(service_id, template_id=None, template_folder_id=None):
+    template = None
+    is_custom_broadcast = False
+    if template_id:
+        template = Template.from_id(template_id, service_id=service_id)
+        is_custom_broadcast = type(template.areas) is CustomBroadcastAreas
+        if is_custom_broadcast:
+            template.clear_areas()
+    return render_template(
+        "views/broadcast/libraries.html",
+        libraries=BroadcastMessage.libraries,
+        message=template,
+        custom_broadcast=is_custom_broadcast,
+        back_link=_get_choose_library_back_link(service_id, "templates", template_id, template_folder_id),
+        message_type="templates",
+        message_id=template_id,
+        template_folder_id=template_folder_id,
+    )
+
+
+@user_has_permissions("manage_templates")
+def choose_template_area(service_id, library_slug, template_id=None, template_folder_id=None):
+    template = Template.from_id(template_id, service_id=service_id) if template_id else None
+    library = BroadcastMessage.libraries.get(library_slug)
+    if library_slug == "coordinates":
+        form = ChooseCoordinateTypeForm()
+        if form.validate_on_submit():
+            return redirect(
+                url_for(
+                    ".search_coordinates",
+                    service_id=current_service.id,
+                    broadcast_message_id=template_id,
+                    library_slug="coordinates",
+                    coordinate_type=form.content.data,
+                    message_type="templates",
+                    template_folder_id=template_folder_id,
+                )
+            )
+
+        return render_template(
+            "views/broadcast/choose-coordinates-type.html",
+            page_title="Choose coordinate type",
+            form=form,
+            back_link=url_for(
+                ".choose_library",
+                service_id=service_id,
+                message_id=template_id,
+                message_type="templates",
+                template_folder_id=template_folder_id,
+            ),
+        )
+
+    elif library_slug == "postcodes":
+        return redirect(
+            url_for(
+                ".search_postcodes",
+                service_id=current_service.id,
+                broadcast_message_id=template.id,
+                library_slug="postcodes",
+                message_type="templates",
+                template_folder_id=template_folder_id,
+            )
+        )
+
+    if library.is_group:
+        return render_template(
+            "views/broadcast/areas-with-sub-areas.html",
+            search_form=SearchByNameForm(),
+            show_search_form=(len(library) > 7),
+            library=library,
+            page_title=f"Choose a {library.name_singular.lower()}",
+            message=template,
+            message_type="templates",
+            template_folder_id=template_folder_id,
+        )
+
+    form = BroadcastAreaForm.from_library(library)
+    if form.validate_on_submit():
+        if template:
+            template.replace_areas([*form.areas.data])
+            return redirect(
+                url_for(
+                    ".preview_areas",
+                    service_id=current_service.id,
+                    message_id=template.id,
+                    message_type="templates",
+                    template_folder_id=template_folder_id,
+                )
+            )
+        else:
+            template = Template.create_from_area(
+                service_id=service_id, area_ids=[*form.areas.data], template_folder_id=template_folder_id
+            )
+            return redirect(
+                url_for(
+                    ".view_template",
+                    service_id=current_service.id,
+                    template_id=template.id,
+                )
+            )
+    return render_template(
+        "views/broadcast/areas.html",
+        form=form,
+        search_form=SearchByNameForm(),
+        show_search_form=(len(form.areas.choices) > 7),
+        page_title=f"Choose {library.name[0].lower()}{library.name[1:]}"
+        if library.name != "REPPIR DEPZ sites"
+        else "Choose REPPIR DEPZ sites",
+        message=template,
+        back_link=url_for(
+            ".choose_library",
+            service_id=service_id,
+            message_id=template_id,
+            message_type="templates",
+            template_folder_id=template_folder_id,
+        ),
+        message_type="templates",
+        template_folder_id=template_folder_id,
+    )
+
+
+@user_has_permissions("manage_templates")
+def choose_template_sub_area(service_id, library_slug, area_slug, template_id=None, template_folder_id=None):
+    template = Template.from_id(template_id, service_id=service_id) if template_id else None
+    area = BroadcastMessage.libraries.get_areas([area_slug])[0]
+    back_link = _get_broadcast_sub_area_back_link(service_id, template_id, library_slug, "templates")
+    is_county = any(sub_area.sub_areas for sub_area in area.sub_areas)
+
+    form = BroadcastAreaFormWithSelectAll.from_library(
+        [] if is_county else area.sub_areas,
+        select_all_choice=(area.id, f"All of {area.name}"),
+    )
+    if form.validate_on_submit():
+        if template:
+            template.replace_areas([*form.selected_areas])
+        else:
+            template = Template.create_from_area(
+                service_id=service_id, area_ids=[*form.selected_areas], template_folder_id=template_folder_id
+            )
+        return redirect(
+            url_for(
+                ".preview_areas",
+                service_id=current_service.id,
+                message_id=template.id,
+                message_type="templates",
+            )
+        )
+
+    if is_county:
+        # area = county. sub_areas = districts. they have wards, so link to individual district pages
+        return render_template(
+            "views/broadcast/counties.html",
+            form=form,
+            search_form=SearchByNameForm(),
+            show_search_form=(len(area.sub_areas) > 7),
+            library_slug=library_slug,
+            page_title=f"Choose an area of {area.name}",
+            message=template,
+            county=area,
+            back_link=back_link,
+        )
+
+    return render_template(
+        "views/broadcast/sub-areas.html",
+        form=form,
+        search_form=SearchByNameForm(),
+        show_search_form=(len(form.areas.choices) > 7),
+        library_slug=library_slug,
+        page_title=f"Choose an area of {area.name}",
+        message=template,
+        back_link=back_link,
+    )
+
+
+@user_has_permissions("manage_templates")
+def search_postcodes_for_template(service_id, template_id=None, template_folder_id=None):
+    template = Template.from_id(template_id, service_id=service_id) if template_id else None
+    form = PostcodeForm()
+    # Initialising variables here that may be assigned values, to be then passed into jinja template.
+    centroid, bleed, estimated_area, estimated_area_with_bleed, count_of_phones, count_of_phones_likely = (
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+
+    if all_fields_empty(request, form):
+        """
+        If no input fields have values then the request will use the button clicked
+        to determine which fields to validate.
+        """
+        validate_form_based_on_fields_entered(request, form)
+    elif postcode_entered(request, form):
+        """
+        Clears any areas in broadcast message, then creates the ID to search for in SQLite database,
+        if query returns IndexError, the postcode isn't in the database and thus error is appended to
+        postcode field and displayed on the page.
+        """
+        postcode = create_postcode_db_id(form)
+        centroid = get_centroid_if_postcode_in_db(postcode, form)
+        form.pre_validate(form)  # Validating the postcode field
+    elif postcode_and_radius_entered(request, form):
+        """
+        If postcode and radius entered, that are validated successfully,
+        custom polygon is created using radius and centroid.
+        """
+        postcode = create_postcode_db_id(form)
+        form.pre_validate(form)
+        centroid, circle_polygon = create_custom_area_polygon(form, postcode)
+        if form.validate_on_submit():
+            """
+            If postcode is in database, i.e. creating the Polygon didn't return IndexError,
+            then a dummy CustomBroadcastArea is created and used for the attributes that
+            are required for the Leaflet map, key, number of phones to display etc.
+            """
+            (
+                bleed,
+                estimated_area,
+                estimated_area_with_bleed,
+                count_of_phones,
+                count_of_phones_likely,
+            ) = extract_attributes_from_custom_area(circle_polygon)
+            id = create_postcode_area_slug(form)
+            if continue_button_clicked(request):
+                """
+                If 'Continue' button is clicked, area is added to Broadcast Message
+                and message is updated.
+                """
+                if template:
+                    template.add_custom_areas(circle_polygon, id=id)
+                else:
+                    template = Template.create_with_custom_area(
+                        circle_polygon, id, service_id, template_folder_id=template_folder_id
+                    )
+                return redirect(
+                    url_for(
+                        ".view_template",
+                        service_id=current_service.id,
+                        template_id=template.id,
+                    )
+                )
+    return render_postcode_page(
+        service_id,
+        template_id,
+        template,
+        form,
+        centroid,
+        bleed,
+        estimated_area,
+        estimated_area_with_bleed,
+        count_of_phones,
+        count_of_phones_likely,
+        "templates",
+        template_folder_id,
+    )
+
+
+@user_has_permissions("manage_templates")
+def search_coordinates_for_template(service_id, coordinate_type, template_id=None, template_folder_id=None):
+    (
+        polygon,
+        bleed,
+        estimated_area,
+        estimated_area_with_bleed,
+        count_of_phones,
+        count_of_phones_likely,
+        marker,
+    ) = (
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+    template = Template.from_id(template_id, service_id=service_id) if template_id else None
+    form = select_coordinate_form(coordinate_type)
+
+    if all_coordinate_form_fields_empty(request, form):
+        """
+        If no input fields have values then the request will use the button clicked
+        to determine which fields to validate.
+        """
+        validate_form_based_on_fields_entered(request, form)
+    elif coordinates_entered_but_no_radius(request, form):
+        """
+        If only coordinates are entered then they're checked to determine if within
+        either UK or test area. If they are within test or UK, the coordinate point is created
+        and converted accordingly into latitude, longitude format to be passed into jinja
+        and displayed in Leaflet map.
+        Otherwise, an error is displayed on the page.
+        """
+        first_coordinate = float(form.data["first_coordinate"])
+        second_coordinate = float(form.data["second_coordinate"])
+        if check_coordinates_valid_for_enclosed_polygons(
+            first_coordinate,
+            second_coordinate,
+            coordinate_type,
+        ):
+            Point = normalising_point(first_coordinate, second_coordinate, coordinate_type)
+            marker = [Point.y, Point.x]
+        else:
+            adding_invalid_coords_errors_to_form(coordinate_type, form)
+        form.pre_validate(form)  # To validate the fields don't have any errors
+    elif coordinates_and_radius_entered(request, form):
+        """
+        If both radius and coordinates entered, then coordinates are checked to determine if within
+        either UK or test area. If they are within test or UK, polygon is created using coordinates and
+        radius. Then a CustomBroadcastArea is created and used for the attributes that
+        are required for the Leaflet map, key, number of phones to display etc.
+        """
+        first_coordinate, second_coordinate, radius = parse_coordinate_form_data(form)
+        if check_coordinates_valid_for_enclosed_polygons(
+            first_coordinate,
+            second_coordinate,
+            coordinate_type,
+        ):
+            marker = [first_coordinate, second_coordinate]
+            if form.validate_on_submit():
+                if polygon := create_coordinate_area(
+                    first_coordinate,
+                    second_coordinate,
+                    radius,
+                    coordinate_type,
+                ):
+                    id = create_coordinate_area_slug(coordinate_type, first_coordinate, second_coordinate, radius)
+                    (
+                        bleed,
+                        estimated_area,
+                        estimated_area_with_bleed,
+                        count_of_phones,
+                        count_of_phones_likely,
+                    ) = extract_attributes_from_custom_area(polygon)
+        else:
+            adding_invalid_coords_errors_to_form(coordinate_type, form)
+            form.validate_on_submit()
+        if continue_button_clicked(request):
+            """
+            If 'Preview alert' button is clicked, area is added to Broadcast Message
+            and message is updated.
+            """
+            if template:
+                template.add_custom_areas(polygon, id=id)
+            else:
+                template = Template.create_with_custom_area(
+                    polygon, id, service_id, template_folder_id=template_folder_id
+                )
+            return redirect(
+                url_for(
+                    ".view_template",
+                    service_id=current_service.id,
+                    template_id=template.id,
+                )
+            )
+    return render_coordinates_page(
+        service_id,
+        template_id,
+        coordinate_type,
+        bleed,
+        estimated_area,
+        estimated_area_with_bleed,
+        count_of_phones,
+        count_of_phones_likely,
+        marker,
+        template,
+        form,
+        "templates",
+        template_folder_id,
+    )
+
+
+@user_has_permissions("manage_templates")
+def remove_template_area(service_id, template_id, area_slug):
+    template = Template.from_id(template_id, service_id=service_id)
+    template.remove_area(area_slug)
+    url = ".choose_library" if len(template.areas) == 0 else ".preview_areas"
+    return redirect(
+        url_for(
+            url,
+            service_id=current_service.id,
+            message_id=template_id,
+            message_type="templates",
+        )
+    )
+
+
+@user_has_permissions("manage_templates")
+def remove_custom_area_from_template(service_id, template_id):
+    template = Template.from_id(template_id, service_id=service_id)
+    template.clear_areas()
+    return redirect(
+        url_for(
+            ".choose_library",
+            service_id=service_id,
+            message_id=template_id,
+            message_type="templates",
+        )
     )
