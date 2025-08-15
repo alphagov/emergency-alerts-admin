@@ -247,6 +247,41 @@ def preview_broadcast_areas(service_id, message_id, message_type):
 
 
 @main.route(
+    "/services/<uuid:service_id>/<message_type>/<uuid:message_id>/libraries",
+    methods=["GET", "POST"],
+)
+@main.route(
+    "/services/<uuid:service_id>/<message_type>/folders/<uuid:template_folder_id>/<uuid:message_id>/libraries",
+    methods=["GET", "POST"],
+)
+@main.route(
+    "/services/<uuid:service_id>/<message_type>/folders/<uuid:template_folder_id>/libraries",
+    methods=["GET", "POST"],
+)
+@main.route("/services/<uuid:service_id>/<message_type>/libraries", methods=["GET", "POST"])
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+@service_has_permission("broadcast")
+def choose_broadcast_library(service_id, message_type, message_id=None, template_folder_id=None):
+    message = None
+    is_custom_broadcast = False
+    if message_id:
+        message = get_message_from_id(message_id, message_type)
+        is_custom_broadcast = type(message.areas) is CustomBroadcastAreas
+        if is_custom_broadcast:
+            message.clear_areas()
+    return render_template(
+        "views/broadcast/libraries.html",
+        libraries=BroadcastMessage.libraries,
+        message=message,
+        custom_broadcast=is_custom_broadcast,
+        back_link=_get_choose_library_back_link(service_id, message_type, message_id, template_folder_id),
+        message_type=message_type,
+        message_id=message_id,
+        template_folder_id=template_folder_id,
+    )
+
+
+@main.route(
     "/services/<uuid:service_id>/<message_type>/<uuid:message_id>/libraries/<library_slug>",
     methods=["GET", "POST"],
 )
