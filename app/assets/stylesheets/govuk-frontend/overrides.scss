@@ -54,33 +54,15 @@ $notify-secondary-button-hover-colour: govuk-shade(govuk-colour("light-grey"), 1
   }
 }
 
-@mixin govuk-tag-uppercase {
-  @include govuk-font($size: 16);
-  color: govuk-colour("white");
-  font-weight: 700;
-  outline: 2px solid transparent;
-  outline-offset: -2px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  padding-top: 5px;
-  padding-right: 8px;
-  padding-bottom: 4px;
-  padding-left: 8px;
-  line-height: 1;
-}
-
 .govuk-tag.broadcast-tag {
-  @include govuk-tag-uppercase;
   background-color: govuk-colour("red");
 }
 
 .govuk-tag.draft-tag {
-  @include govuk-tag-uppercase;
   background-color: govuk-colour("blue");
 }
 
 .govuk-tag.elevated-tag {
-  @include govuk-tag-uppercase;
   background-color: govuk-colour("green");
 }
 
