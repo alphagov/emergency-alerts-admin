@@ -17,6 +17,7 @@ from app.main.forms import (
     ReturnForEditForm,
 )
 from app.models.broadcast_message import BroadcastMessage
+from app.models.template import Template
 
 
 def create_coordinate_area_slug(coordinate_type, first_coordinate, second_coordinate, radius):
@@ -359,7 +360,6 @@ def render_current_alert_page(
     hide_stop_link=False,
     errors=None,
 ):
-    print(current_service.id, broadcast_message.id)
     return render_template(
         "views/broadcast/view-message.html",
         broadcast_message=broadcast_message,
@@ -529,3 +529,69 @@ def check_for_missing_fields(broadcast_message):
         )
         errors.append({"html": f"""<a href="{area_url}">Add alert area</a>"""})
     return errors
+
+
+def _get_back_link_from_view_broadcast_endpoint():
+    return {
+        "main.view_current_broadcast": ".broadcast_dashboard",
+        "main.view_previous_broadcast": ".broadcast_dashboard_previous",
+        "main.view_rejected_broadcast": ".broadcast_dashboard_rejected",
+        "main.approve_broadcast_message": ".broadcast_dashboard",
+        "main.reject_broadcast_message": ".broadcast_dashboard",
+        "main.return_broadcast_for_edit": ".broadcast_dashboard",
+        "main.discard_broadcast_message": ".broadcast_dashboard",
+    }[request.endpoint]
+
+
+def get_message_from_id(message_id, message_type):
+    message = None
+    if message_type == "broadcast":
+        message = BroadcastMessage.from_id(
+            message_id,
+            service_id=current_service.id,
+        )
+    elif message_type == "templates":
+        message = Template.from_id(
+            message_id,
+            service_id=current_service.id,
+        )
+    return message
+
+
+def get_url_for_custom_area_route_if_message_exists(message_type, template_folder_id, message, route):
+    return (
+        url_for(
+            route,
+            service_id=current_service.id,
+            message_id=message.id,
+            message_type=message_type,
+            template_folder_id=template_folder_id,
+        )
+        if message
+        else url_for(
+            route,
+            service_id=current_service.id,
+            message_type=message_type,
+            template_folder_id=template_folder_id,
+        )
+    )
+
+
+def _get_broadcast_sub_area_back_link(service_id, message_id, library_slug, message_type):
+    if prev_area_slug := request.args.get("prev_area_slug"):
+        return url_for(
+            ".choose_broadcast_sub_area",
+            service_id=service_id,
+            message_id=message_id,
+            library_slug=library_slug,
+            area_slug=prev_area_slug,
+            message_type=message_type,
+        )
+    else:
+        return url_for(
+            ".choose_broadcast_area",
+            service_id=service_id,
+            message_id=message_id,
+            library_slug=library_slug,
+            message_type=message_type,
+        )

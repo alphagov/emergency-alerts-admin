@@ -16,6 +16,7 @@ from app.models.broadcast_message import BroadcastMessage
 from app.models.template import Template
 from app.utils import service_has_permission
 from app.utils.broadcast import (
+    _get_broadcast_sub_area_back_link,
     adding_invalid_coords_errors_to_form,
     all_coordinate_form_fields_empty,
     all_fields_empty,
@@ -30,6 +31,8 @@ from app.utils.broadcast import (
     create_postcode_db_id,
     extract_attributes_from_custom_area,
     get_centroid_if_postcode_in_db,
+    get_message_from_id,
+    get_url_for_custom_area_route_if_message_exists,
     normalising_point,
     parse_coordinate_form_data,
     postcode_and_radius_entered,
@@ -48,30 +51,38 @@ from app.utils.user import user_has_permissions
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
 def write_new_broadcast(service_id):
+    # If message_id in request then pre-populate with any existing data
     message_id = request.args.get("message_id")
     message = BroadcastMessage.from_id(message_id, service_id=current_service.id) if message_id else None
+
+    # Likewise, if template_id in request then Template has already been created & can add
+    # reference and content here
     template_id = request.args.get("template_id")
     template = Template.from_id(template_id, service_id=current_service.id) if template_id else None
+
     form = BroadcastTemplateForm()
 
     if form.validate_on_submit():
-        if template_id:
-            if template.areas:
-                if type(template.areas) is CustomBroadcastAreas:
-                    message = BroadcastMessage.create_from_custom_area(
-                        service_id=current_service.id,
-                        content=form.content.data,
-                        reference=form.reference.data,
-                        areas=template.areas,
-                    )
-                else:
-                    message = BroadcastMessage.create_from_area(
-                        service_id=current_service.id,
-                        content=form.content.data,
-                        reference=form.reference.data,
-                        area_ids=template.area_ids,
-                    )
+        if template_id and template and template.areas:
+            # If Template has already been made and has areas, create broadcast_message
+            #  from anything existing in Template
+            if isinstance(template.areas, CustomBroadcastAreas):
+                message = BroadcastMessage.create_from_custom_area(
+                    service_id=current_service.id,
+                    content=form.content.data,
+                    reference=form.reference.data,
+                    areas=template.areas,
+                )
+            else:
+                message = BroadcastMessage.create_from_area(
+                    service_id=current_service.id,
+                    content=form.content.data,
+                    reference=form.reference.data,
+                    area_ids=template.area_ids,
+                )
+            message_id = message.id
         elif message_id:
+            # broadcast_message already made so just update with form data
             BroadcastMessage.update_from_content(
                 service_id=current_service.id,
                 message_id=message_id,
@@ -79,13 +90,18 @@ def write_new_broadcast(service_id):
                 reference=form.reference.data,
             )
         else:
+            # Create broadcast_message from the form data submitted on this page only
             message = BroadcastMessage.create_from_content(
                 service_id=current_service.id,
                 content=form.content.data,
                 reference=form.reference.data,
             )
-        message_id = message.id
+            message_id = message.id
+
         return redirect(
+            # Redirects to 'Choose library' page if created in operator service,
+            # as you cannot add extra_content in operator service, otherwise redirects
+            # to page to add extra_content
             url_for(
                 ".choose_extra_content"
                 if current_service.broadcast_channel != "operator"
@@ -120,8 +136,8 @@ def broadcast(service_id, template_id):
     template = Template.from_id(template_id=template_id, service_id=service_id)
     if template.reference and template.content:
         if template.areas:
-            # Make from area, reference and content
-            # Redirect to extra content
+            # As Template area already exists, created broadcast_message using this
+            # and reference and content if they have been set also
             broadcast_message = (
                 BroadcastMessage.create_from_custom_area(
                     service_id=service_id,
@@ -140,14 +156,15 @@ def broadcast(service_id, template_id):
                 )
             )
         else:
-            # Make from just template and content
-            # Redirect to extra content
+            # Only reference and content have been set for Template,
+            # so can only use these to create broadcast_message
             broadcast_message = BroadcastMessage.create_from_content(
                 service_id=service_id, content=template.content, reference=template.reference
             )
-            """If the current service is an operator service, user is redirected
-            straight to choose area as extra_content attribute shouldn't be set for
-            alerts created in operator services"""
+
+        # If the current service is an operator service, user is redirected
+        # straight to choose area as extra_content attribute shouldn't be set for
+        # alerts created in operator services
         if current_service.broadcast_channel == "operator":
             return redirect_dependent_on_alert_area(template)
         else:
@@ -159,8 +176,8 @@ def broadcast(service_id, template_id):
                 )
             )
     elif template.areas:
-        # Make from area only
-        # Redirect to write content
+        # ONLY Template area has been set, reference and content must be provided to
+        # create broadcast_message so redirected to relevant page
         return redirect(
             url_for(
                 ".write_new_broadcast",
@@ -224,57 +241,8 @@ def preview_broadcast_areas(service_id, message_id, message_type):
         message=message,
         back_link=back_link,
         is_custom_broadcast=type(message.areas) is CustomBroadcastAreas,
-        redirect_url=redirect_url,
+        redirect_url=redirect_url,  # The url for when 'Save and continue' button clicked
         message_type=message_type,
-    )
-
-
-def get_message_from_id(message_id, message_type):
-    message = None
-    if message_type == "broadcast":
-        message = BroadcastMessage.from_id(
-            message_id,
-            service_id=current_service.id,
-        )
-    elif message_type == "templates":
-        message = Template.from_id(
-            message_id,
-            service_id=current_service.id,
-        )
-    return message
-
-
-@main.route(
-    "/services/<uuid:service_id>/<message_type>/<uuid:message_id>/libraries",
-    methods=["GET", "POST"],
-)
-@main.route(
-    "/services/<uuid:service_id>/<message_type>/folders/<uuid:template_folder_id>/<uuid:message_id>/libraries",
-    methods=["GET", "POST"],
-)
-@main.route(
-    "/services/<uuid:service_id>/<message_type>/folders/<uuid:template_folder_id>/libraries",
-    methods=["GET", "POST"],
-)
-@main.route("/services/<uuid:service_id>/<message_type>/libraries", methods=["GET", "POST"])
-def choose_broadcast_library(service_id, message_type, message_id=None, template_folder_id=None):
-    message = None
-    is_custom_broadcast = False
-    if message_id:
-        message = get_message_from_id(message_id, message_type)
-        is_custom_broadcast = type(message.areas) is CustomBroadcastAreas
-        if is_custom_broadcast:
-            message.clear_areas()
-    print(template_folder_id)
-    return render_template(
-        "views/broadcast/libraries.html",
-        libraries=BroadcastMessage.libraries,
-        message=message,
-        custom_broadcast=is_custom_broadcast,
-        back_link=_get_choose_library_back_link(service_id, message_type, message_id, template_folder_id),
-        message_type=message_type,
-        message_id=message.id if message else None,
-        template_folder_id=template_folder_id,
     )
 
 
@@ -298,23 +266,9 @@ def choose_broadcast_area(service_id, library_slug, message_type, message_id=Non
     if library_slug == "coordinates":
         form = ChooseCoordinateTypeForm()
         if form.validate_on_submit():
-            if message:
-                url = url_for(
-                    ".search_coordinates",
-                    service_id=current_service.id,
-                    message_id=message.id,
-                    message_type=message_type,
-                    coordinate_type=form.content.data,
-                    template_folder_id=template_folder_id,
-                )
-            else:
-                url = url_for(
-                    ".search_coordinates",
-                    service_id=current_service.id,
-                    message_type=message_type,
-                    coordinate_type=form.content.data,
-                    template_folder_id=template_folder_id,
-                )
+            url = get_url_for_custom_area_route_if_message_exists(
+                message_type, template_folder_id, message, ".search_coordinates"
+            )
             return redirect(url)
 
         return render_template(
@@ -329,22 +283,11 @@ def choose_broadcast_area(service_id, library_slug, message_type, message_id=Non
                 template_folder_id=template_folder_id,
             ),
         )
+
     elif library_slug == "postcodes":
-        if message:
-            url = url_for(
-                ".search_postcodes",
-                service_id=current_service.id,
-                message_id=message.id,
-                message_type=message_type,
-                template_folder_id=template_folder_id,
-            )
-        else:
-            url = url_for(
-                ".search_postcodes",
-                service_id=current_service.id,
-                message_type=message_type,
-                template_folder_id=template_folder_id,
-            )
+        url = get_url_for_custom_area_route_if_message_exists(
+            message_type, template_folder_id, message, ".search_postcodes"
+        )
         return redirect(url)
 
     if library.is_group:
@@ -402,26 +345,6 @@ def choose_broadcast_area(service_id, library_slug, message_type, message_id=Non
         message_type=message_type,
         template_folder_id=template_folder_id,
     )
-
-
-def _get_broadcast_sub_area_back_link(service_id, message_id, library_slug, message_type):
-    if prev_area_slug := request.args.get("prev_area_slug"):
-        return url_for(
-            ".choose_broadcast_sub_area",
-            service_id=service_id,
-            message_id=message_id,
-            library_slug=library_slug,
-            area_slug=prev_area_slug,
-            message_type=message_type,
-        )
-    else:
-        return url_for(
-            ".choose_broadcast_area",
-            service_id=service_id,
-            message_id=message_id,
-            library_slug=library_slug,
-            message_type=message_type,
-        )
 
 
 def _get_choose_library_back_link(service_id, message_type, message_id=None, template_folder_id=None):
@@ -817,21 +740,12 @@ def choose_broadcast_sub_area(
 def remove_broadcast_area(service_id, message_id, area_slug, message_type):
     message = get_message_from_id(message_id, message_type)
     message.remove_area(area_slug)
-    if len(message.areas) == 0:
-        return redirect(
-            url_for(
-                ".choose_broadcast_library",
-                service_id=current_service.id,
-                message_id=message_id,
-                message_type=message_type,
-            )
+    url = ".choose_broadcast_library" if len(message.areas) == 0 else ".preview_broadcast_areas"
+    return redirect(
+        url_for(
+            url,
+            service_id=current_service.id,
+            message_id=message_id,
+            message_type=message_type,
         )
-    else:
-        return redirect(
-            url_for(
-                ".preview_broadcast_areas",
-                service_id=current_service.id,
-                message_id=message_id,
-                message_type=message_type,
-            )
-        )
+    )

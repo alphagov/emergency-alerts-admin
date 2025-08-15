@@ -34,6 +34,7 @@ from app.main.forms import (
 from app.models.broadcast_message import BroadcastMessage, BroadcastMessages
 from app.utils import service_has_permission
 from app.utils.broadcast import (
+    _get_back_link_from_view_broadcast_endpoint,
     check_for_missing_fields,
     format_areas_list,
     get_changed_alert_form_data,
@@ -51,18 +52,6 @@ from app.utils.broadcast import (
 )
 from app.utils.datetime import fromisoformat_allow_z_tz
 from app.utils.user import user_has_permissions
-
-
-def _get_back_link_from_view_broadcast_endpoint():
-    return {
-        "main.view_current_broadcast": ".broadcast_dashboard",
-        "main.view_previous_broadcast": ".broadcast_dashboard_previous",
-        "main.view_rejected_broadcast": ".broadcast_dashboard_rejected",
-        "main.approve_broadcast_message": ".broadcast_dashboard",
-        "main.reject_broadcast_message": ".broadcast_dashboard",
-        "main.return_broadcast_for_edit": ".broadcast_dashboard",
-        "main.discard_broadcast_message": ".broadcast_dashboard",
-    }[request.endpoint]
 
 
 @main.route("/services/<uuid:service_id>/broadcast-tour/<int:step_index>")
@@ -781,6 +770,7 @@ def view_broadcast_versions(service_id, broadcast_message_id):
     )
     versions = broadcast_message.get_versions()
     for message in versions:
+        # BroadcastPreviewTemplate required for the display of broadcast_message content
         message["template"] = BroadcastPreviewTemplate(
             {
                 "template_type": BroadcastPreviewTemplate.template_type,
