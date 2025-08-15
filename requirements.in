@@ -22,7 +22,7 @@ govuk-frontend-jinja==3.3.0
 govuk-bank-holidays==0.15
 
 # Packages for testing
-black==23.3.0
+black==25.1.0
 isort==5.12.0
 pytest==8.3.5
 pytest-env==1.1.5

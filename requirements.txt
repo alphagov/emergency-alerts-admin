@@ -8,7 +8,7 @@ attrs==25.3.0
     # via flake8-bugbear
 beautifulsoup4==4.11.1
     # via -r requirements.in
-black==23.3.0
+black==25.1.0
     # via -r requirements.in
 blinker==1.7.0
     # via
