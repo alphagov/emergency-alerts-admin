@@ -52,6 +52,7 @@ def test_services_pages_that_org_users_are_allowed_to_see(
     mock_get_template_versions,
     mock_get_template_version,
     mock_get_api_keys,
+    mock_get_template,
     user_services,
     user_organisations,
     expected_status,

@@ -239,6 +239,19 @@ def mock_get_service_template(mocker):
 
 
 @pytest.fixture(scope="function")
+def mock_get_template(mocker):
+    def _get(service_id, template_id, version=None):
+        template = template_json(
+            service_id, template_id, "Sample Template", "broadcast", "Template <em>content</em> with & entity"
+        )
+        if version:
+            template.update({"version": version})
+        return {"data": template}
+
+    return mocker.patch("app.template_api_client.get_template", side_effect=_get)
+
+
+@pytest.fixture(scope="function")
 def mock_get_deleted_template(mocker):
     def _get(service_id, template_id, version=None):
         template = template_json(
@@ -271,7 +284,7 @@ def mock_get_template_versions(mocker, api_user_active):
         template_version = template_version_json(service_id, template_id, api_user_active, version=1)
         return {"data": [template_version]}
 
-    return mocker.patch("app.service_api_client.get_service_template_versions", side_effect=_get)
+    return mocker.patch("app.template_api_client.get_template_versions", side_effect=_get)
 
 
 @pytest.fixture(scope="function")
@@ -389,7 +402,7 @@ def mock_get_service_templates(mocker):
     def _create(service_id):
         return create_service_templates(service_id)
 
-    return mocker.patch("app.service_api_client.get_service_templates", side_effect=_create)
+    return mocker.patch("app.template_api_client.get_templates", side_effect=_create)
 
 
 @pytest.fixture(scope="function")

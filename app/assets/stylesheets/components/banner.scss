@@ -57,6 +57,8 @@
   border: 5px solid $govuk-error-colour;
   margin: 15px 0;
   text-align: left;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 
   &:focus {
     outline: 3px solid $govuk-focus-colour;

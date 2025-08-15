@@ -1,6 +1,8 @@
 {% macro format_item_name(name, separators=True) -%}
   {%- if name is string -%}
     {{- name -}}
+  {% elif name == "" or name == None %}
+    Template
   {%- else -%}
     {%- for part in name -%}
       {{- format_item_name(part, separators) -}}
@@ -46,7 +48,7 @@
               {%- if current_service.api_keys -%}
                 <span class="govuk-!-display-none">{{ item.id }} </span>
               {%- endif -%}
-              {{- format_item_name(item.name) -}}
+              {{- format_item_name(item.name or item.aggregated_areas_name) -}}
             </span>
           </a>
         {% endif %}
@@ -96,7 +98,7 @@
     {% if current_user.has_permissions('manage_templates') %}
       {{ templates_and_folders_form.templates_and_folders(param_extensions={
         "items": checkboxes_data,
-        "formGroup": {"classes": "govuk-!-margin-bottom-0"}
+        "formGroup": {"classes": "govuk-!-margin-bottom-2"}
       }) }}
     {% endif %}
   </div>
