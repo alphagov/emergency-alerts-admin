@@ -2,7 +2,6 @@
   'use strict';
 
   var lists = [],
-      listEntry,
       ListEntry;
 
   ListEntry = function (elm) {
@@ -25,7 +24,7 @@
     this.bindEvents();
   };
   ListEntry.optionalAttributes = ['aria-describedby'];
-  ListEntry.prototype.entryTemplate = Hogan.compile(
+  ListEntry.prototype.entryTemplate = window.Hogan.compile(
     '<div class="list-entry">' +
       '<label for="{{{id}}}" class="govuk-input--numbered__label">' +
         '<span class="govuk-visually-hidden">{{listItemName}} number </span>{{number}}.' +
@@ -43,12 +42,12 @@
       '{{/button}}' +
     '</div>'
   );
-  ListEntry.prototype.addButtonTemplate = Hogan.compile(
+  ListEntry.prototype.addButtonTemplate = window.Hogan.compile(
     '<button type="button" class="govuk-button govuk-button--secondary input-list__button--add">Add another {{listItemName}} ({{entriesLeft}} remaining)</button>'
   );
   ListEntry.prototype.getSharedAttributes = function () {
     var $inputs = this.$wrapper.find('input'),
-        attributeTemplate = Hogan.compile(' {{name}}="{{value}}"'),
+        attributeTemplate = window.Hogan.compile(' {{name}}="{{value}}"'),
         generatedAttributes = ['id', 'name', 'value'],
         attributes = [],
         attrIdx,
@@ -129,7 +128,7 @@
     this.$wrapper.on('click', '.input-list__button--remove', function (e) {
       this.removeEntry($(e.target));
     }.bind(this));
-    this.$wrapper.on('click', '.input-list__button--add', function (e) {
+    this.$wrapper.on('click', '.input-list__button--add', function () {
       this.addEntry();
     }.bind(this));
   };
@@ -155,7 +154,7 @@
     }
     this.entries = newEntries;
   };
-  ListEntry.prototype.addEntry = function ($removeButton) {
+  ListEntry.prototype.addEntry = function () {
     var currentLastEntryNumber = this.entries.length;
 
     this.getValues();

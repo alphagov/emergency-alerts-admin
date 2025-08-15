@@ -1,3 +1,5 @@
+/* eslint no-undef: 0 */ // The vars aren't globally scoped and are therefore viewed as undefined
+
 /*
 Session Timeouts
 - - - - - - - - - - - - - - -
@@ -61,8 +63,8 @@ let inactivityLogoutTimeout;
 let lastActiveTimeout;
 let inactivityLogoutDialogDisplayedTimeout;
 let inactivityWarningDialogDisplayedTimeout;
-let expiryLogoutTimeout;
-let expiryDialogDisplayedTimeout;
+let expiryLogoutTimeout; // eslint-disable-line no-unused-vars
+let expiryDialogDisplayedTimeout; // eslint-disable-line no-unused-vars
 
 (function (window) {
   "use strict";
@@ -184,12 +186,12 @@ let expiryDialogDisplayedTimeout;
   // Inactivity logout functions - regarding the warning that lets user know they've been inactive for
   // inactivity_mins and in 2 mins they'll be logged out
 
-  const startInactivityTimeout = function(inactivityLogoutDialog, inactivityWarningDialog, sessionExpiryDialog) {
+  const startInactivityTimeout = function(inactivityLogoutDialog, inactivityWarningDialog) {
     // Inactivity logout timeout that is restarted by request activity
     if (isLoggedIn() && !sessionIsAboutToExpire()) {
       inactivityLogoutDialogDisplayedTimeout = setTimeout(function () {
         if (checkLocalStorage(inactivityMins)) { // if last activity was less than set time ago,
-          setLastActiveInactivityTimeout(inactivityLogoutDialog, inactivityWarningDialog, sessionExpiryDialog);
+          setLastActiveInactivityTimeout(inactivityLogoutDialog, inactivityWarningDialog);
         } else {
           closeDialogIfOpen(inactivityWarningDialog);
           inactivityLogoutDialog.showModal();
@@ -221,7 +223,7 @@ let expiryDialogDisplayedTimeout;
     }
   };
 
-  const setLastActiveInactivityTimeout = function(inactivityLogoutDialog, inactivityWarningDialog, sessionExpiryDialog) {
+  const setLastActiveInactivityTimeout = function(inactivityLogoutDialog, inactivityWarningDialog) {
     // If activity in another tab, inactivity timeout period adjusted
     let lastActive = new Date(localStorage.getItem("lastActivity"));
     lastActiveTimeout = setTimeout(() => {

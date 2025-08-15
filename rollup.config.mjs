@@ -14,10 +14,10 @@ const paths = {
 export default [
   // ESM compilation and copy static assets
   {
-    input: paths.src + 'javascripts/esm/all-esm.mjs',
+    input: paths.src + 'javascripts/esm/all.mjs',
     output: {
       dir: paths.dist + 'javascripts/',
-      entryFileNames: 'all-esm.mjs',
+      entryFileNames: 'all.mjs',
       format: 'es',
       sourcemap: true
     },
@@ -30,7 +30,8 @@ export default [
           { src: paths.src + 'error_pages/**/*', dest: paths.dist + 'error_pages/' },
           { src: [ paths.src + 'images/**/*', paths.govuk_frontend + 'govuk/assets/images/**/*' ], dest: paths.dist + 'images/' },
           { src: paths.govuk_frontend + 'govuk/assets/fonts/**/*', dest: paths.dist + 'fonts/' },
-          { src: paths.govuk_frontend + 'govuk/assets/manifest.json', dest: paths.dist }
+          { src: paths.govuk_frontend + 'govuk/assets/manifest.json', dest: paths.dist },
+          { src: paths.src + 'metadata/**/*', dest: paths.dist + 'metadata/' },
         ]
       }),
     ]
@@ -39,7 +40,8 @@ export default [
   {
     input: [
       paths.src + 'stylesheets/main.scss',
-      paths.src + 'stylesheets/print.scss'
+      paths.src + 'stylesheets/print.scss',
+      paths.src + 'stylesheets/map.scss'
     ],
     output: {
       dir: paths.dist + 'stylesheets/',
@@ -108,7 +110,6 @@ export default [
     ],
     output: {
       dir: paths.dist + 'javascripts/',
-      sourcemap: true
     },
     moduleContext: {
       './node_modules/jquery/dist/jquery.min.js': 'window',
@@ -118,6 +119,73 @@ export default [
       nodeResolve(),
       multi({
         entryFileName: 'all.js'
+      }),
+      terser({
+        ecma: '5',
+        mangle: {
+          reserved: ["Hogan"]
+        }
+      })
+    ]
+  },
+  // JavaScripts that do not go in the bundled all.js
+  {
+    input: [
+      paths.npm + 'leaflet/dist/leaflet.js',
+    ],
+    output: {
+      dir: paths.dist + 'javascripts/',
+    },
+    moduleContext: {
+      './node_modules/leaflet/dist/leaflet.js': 'window',
+    },
+    plugins: [
+      nodeResolve(),
+      multi({
+        entryFileName: 'leaflet.js'
+      }),
+      terser({
+        ecma: '5',
+        mangle: {
+          reserved: ["Hogan"]
+        }
+      }),
+    ]
+  },
+  {
+    input: [
+      paths.npm + 'proj4/dist/proj4.js',
+    ],
+    output: {
+      dir: paths.dist + 'javascripts/',
+    },
+    moduleContext: {
+      './node_modules/proj4/dist/proj4.js': 'window',
+    },
+    plugins: [
+      nodeResolve(),
+      multi({
+        entryFileName: 'proj4.js'
+      }),
+      terser({
+        ecma: '5',
+        mangle: {
+          reserved: ["Hogan"]
+        }
+      }),
+    ]
+  },
+  {
+    input: [
+      paths.src + 'javascripts/customMapping.js',
+    ],
+    output: {
+      dir: paths.dist + 'javascripts/',
+    },
+    plugins: [
+      nodeResolve(),
+      multi({
+        entryFileName: 'customMapping.js'
       }),
       terser({
         ecma: '5',

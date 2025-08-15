@@ -1,3 +1,5 @@
+/* eslint no-undef: 0 */ // The vars aren't globally scoped and are therefore viewed as undefined
+
 // Function to create a Leaflet Circle using latitude and longitude coordinates,
 // radius and estimated bleed that is then added to the map
 function createLatitudelongitudeArea(L, first_coordinate, second_coordinate, radius, bleed, mapElement) {
