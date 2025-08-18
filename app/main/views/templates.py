@@ -422,21 +422,22 @@ def delete_template_folder(service_id, template_folder_id):
 
 
 @main.route(
-    "/services/<uuid:service_id>/templates/add-<template_type:template_type>/<adding_area>",
+    "/services/<uuid:service_id>/templates/add-<template_type:template_type>",
     methods=["GET", "POST"],
 )
 @main.route(
     """/services/<uuid:service_id>/templates/folders/<uuid:template_folder_id>
-    /add-<template_type:template_type>/<adding_area>""",
+    /add-<template_type:template_type>""",
     methods=["GET", "POST"],
 )
 @main.route(
     """/services/<uuid:service_id>/templates/folders/<uuid:template_folder_id>
-    /add-<template_type:template_type>/<adding_area>""",
+    /add-<template_type:template_type>""",
     methods=["GET", "POST"],
 )
 @user_has_permissions("manage_templates")
-def add_service_template(service_id, template_type, template_folder_id=None, adding_area=False):
+def add_service_template(service_id, template_type, template_folder_id=None):
+    adding_area = request.args.get("adding_area", False)
     if template_type not in current_service.available_template_types:
         return redirect(
             url_for(
