@@ -56,6 +56,7 @@ def write_new_broadcast(service_id):
 @service_has_permission("broadcast")
 def broadcast(service_id, template_id):
     template = Template.from_id(template_id=template_id, service_id=service_id)
+    broadcast_message = None
     if template.reference and template.content:
         if template.areas:
             # As Template area already exists, created broadcast_message using this
@@ -88,7 +89,7 @@ def broadcast(service_id, template_id):
         # straight to choose area as extra_content attribute shouldn't be set for
         # alerts created in operator services
         if current_service.broadcast_channel == "operator":
-            return redirect_dependent_on_alert_area(template)
+            return redirect_dependent_on_alert_area(broadcast_message)
         else:
             return redirect(
                 url_for(
@@ -184,7 +185,7 @@ def preview_areas(service_id, message_id, message_type):
 def search_postcodes(service_id, message_type, message_id=None):
     template_folder_id = request.args.get("template_folder_id")
     if message_type == "broadcast":
-        return search_postcodes_for_broadcast()
+        return search_postcodes_for_broadcast(service_id, message_id)
     elif message_type == "templates":
         return search_postcodes_for_template(service_id, message_id, template_folder_id)
 

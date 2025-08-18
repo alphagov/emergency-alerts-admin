@@ -745,6 +745,7 @@ def choose_template_fields(service_id, template_folder_id=None):
 @user_has_permissions("manage_templates")
 def write_new_broadcast_from_template(service_id, template_id):
     template = Template.from_id(template_id, service_id=current_service.id) if template_id else None
+    message = None
 
     form = BroadcastTemplateForm()
 
@@ -834,7 +835,7 @@ def choose_template_area(service_id, library_slug, template_id=None, template_fo
                 url_for(
                     ".search_coordinates",
                     service_id=current_service.id,
-                    broadcast_message_id=template_id,
+                    message_id=template_id,
                     library_slug="coordinates",
                     coordinate_type=form.content.data,
                     message_type="templates",
@@ -898,9 +899,11 @@ def choose_template_area(service_id, library_slug, template_id=None, template_fo
             )
             return redirect(
                 url_for(
-                    ".view_template",
+                    ".preview_areas",
                     service_id=current_service.id,
-                    template_id=template.id,
+                    message_id=template.id,
+                    message_type="templates",
+                    template_folder_id=template_folder_id,
                 )
             )
     return render_template(

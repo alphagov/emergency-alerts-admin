@@ -196,7 +196,7 @@ def render_postcode_page(
     count_of_phones,
     count_of_phones_likely,
     message_type,
-    template_folder_id,
+    template_folder_id=None,
 ):
     return render_template(
         "views/broadcast/search-postcodes.html",
@@ -261,7 +261,7 @@ def render_coordinates_page(
     broadcast_message,
     form,
     message_type,
-    template_folder_id,
+    template_folder_id=None,
 ):
     return render_template(
         "views/broadcast/search-coordinates.html",

@@ -975,17 +975,21 @@ def create_new_broadcast(service_id):
             content=form.content.data,
             reference=form.reference.data,
         )
-
-        return redirect(
-            # Redirects to 'Choose library' page if created in operator service,
-            # as you cannot add extra_content in operator service, otherwise redirects
-            # to page to add extra_content
-            url_for(
-                ".choose_extra_content" if current_service.broadcast_channel != "operator" else ".choose_library",
-                service_id=service_id,
-                broadcast_message_id=message.id,
+        # Redirects to 'Choose library' page if created in operator service,
+        # as you cannot add extra_content in operator service, otherwise redirects
+        # to page to add extra_content
+        if current_service.broadcast_channel != "operator":
+            return redirect(
+                url_for(
+                    ".choose_extra_content",
+                    service_id=service_id,
+                    broadcast_message_id=message.id,
+                )
             )
-        )
+        else:
+            return redirect(
+                url_for(".choose_library", service_id=service_id, message_id=message.id, message_type="broadcast")
+            )
 
     return render_template(
         "views/broadcast/write-new-broadcast.html",
@@ -1063,7 +1067,7 @@ def choose_broadcast_area(service_id, library_slug, message_id=None):
                 url_for(
                     ".search_coordinates",
                     service_id=current_service.id,
-                    broadcast_message_id=message.id,
+                    message_id=message.id,
                     library_slug="coordinates",
                     coordinate_type=form.content.data,
                     message_type="broadcast",
