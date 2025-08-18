@@ -47,7 +47,8 @@ def write_new_broadcast(service_id):
         return update_broadcast(service_id=service_id, message_id=message_id)
     elif template_id:
         return write_new_broadcast_from_template(service_id=service_id, template_id=template_id)
-    return create_new_broadcast(service_id)
+    else:
+        return create_new_broadcast(service_id)
 
 
 @main.route("/services/<uuid:service_id>/new-broadcast/<uuid:template_id>")
@@ -113,20 +114,53 @@ def broadcast(service_id, template_id):
     methods=["GET", "POST"],
 )
 @main.route(
-    "/services/<uuid:service_id>/<message_type>/folders/<uuid:template_folder_id>/<uuid:message_id>/libraries",
+    "/services/<uuid:service_id>/<message_type>/libraries",
+    methods=["GET", "POST"],
+)
+@service_has_permission("broadcast")
+def choose_library(service_id, message_type, message_id=None):
+    template_folder_id = request.args.get("template_folder_id")
+    if message_type == "broadcast":
+        return choose_broadcast_library(service_id, message_id)
+    elif message_type == "templates":
+        return choose_template_library(service_id, message_id, template_folder_id=template_folder_id)
+
+
+@main.route(
+    "/services/<uuid:service_id>/<message_type>/<uuid:message_id>/libraries/<library_slug>",
     methods=["GET", "POST"],
 )
 @main.route(
-    "/services/<uuid:service_id>/<message_type>/folders/<uuid:template_folder_id>/libraries",
+    "/services/<uuid:service_id>/<message_type>/libraries/<library_slug>",
     methods=["GET", "POST"],
 )
-@main.route("/services/<uuid:service_id>/<message_type>/libraries", methods=["GET", "POST"])
 @service_has_permission("broadcast")
-def choose_library(service_id, message_type, message_id=None, template_folder_id=None):
+def choose_area(
+    service_id,
+    library_slug,
+    message_type,
+    message_id=None,
+):
+    template_folder_id = request.args.get("template_folder_id")
     if message_type == "broadcast":
-        return choose_broadcast_library()
+        return choose_broadcast_area(service_id, library_slug, message_id)
     elif message_type == "templates":
-        return choose_template_library(service_id, message_id, template_folder_id=template_folder_id)
+        return choose_template_area(
+            service_id, library_slug, template_id=message_id, template_folder_id=template_folder_id
+        )
+
+
+@main.route(
+    "/services/<uuid:service_id>/<message_type>/<uuid:message_id>/libraries/<library_slug>/<area_slug>",  # noqa: E501
+    methods=["GET", "POST"],
+)
+@service_has_permission("broadcast")
+def choose_sub_area(service_id, message_type, library_slug, area_slug, message_id=None):
+    template_folder_id = request.args.get("template_folder_id")
+    if message_type == "broadcast":
+        return choose_broadcast_sub_area(service_id, library_slug, area_slug, message_id)
+    elif message_type == "templates":
+        return choose_template_sub_area(service_id, library_slug, area_slug, message_id, template_folder_id)
 
 
 @main.route("/services/<uuid:service_id>/<message_type>/<uuid:message_id>/areas")
@@ -139,59 +173,16 @@ def preview_areas(service_id, message_id, message_type):
 
 
 @main.route(
-    "/services/<uuid:service_id>/<message_type>/<uuid:message_id>/libraries/<library_slug>",
+    "/services/<uuid:service_id>/<message_type>/libraries/postcodes",
     methods=["GET", "POST"],
 )
 @main.route(
-    "/services/<uuid:service_id>/<message_type>/libraries/<library_slug>",
-    methods=["GET", "POST"],
-)
-@main.route(
-    "/services/<uuid:service_id>/<message_type>/folders/<uuid:template_folder_id>/libraries/<library_slug>",
+    "/services/<uuid:service_id>/<message_type>/<uuid:message_id>/libraries/postcodes",
     methods=["GET", "POST"],
 )
 @service_has_permission("broadcast")
-def choose_area(service_id, library_slug, message_type, message_id=None, template_folder_id=None):
-    if message_type == "broadcast":
-        return choose_broadcast_area(service_id, library_slug, message_id=None)
-    elif message_type == "templates":
-        return choose_template_area(service_id, library_slug, message_id, template_folder_id)
-
-
-@main.route(
-    "/services/<uuid:service_id>/<message_type>/<uuid:message_id>/libraries/<library_slug>/<area_slug>",
-    methods=["GET", "POST"],
-)
-@main.route(
-    "/services/<uuid:service_id>/<message_type>/libraries/<library_slug>/<area_slug>",
-    methods=["GET", "POST"],
-)
-@main.route(
-    "/services/<uuid:service_id>/<message_type>/folders/<uuid:template_folder_id>/libraries/<library_slug>/<area_slug>",
-    methods=["GET", "POST"],
-)
-@service_has_permission("broadcast")
-def choose_sub_area(service_id, message_type, library_slug, area_slug, message_id=None, template_folder_id=None):
-    if message_type == "broadcast":
-        return choose_broadcast_sub_area(service_id, library_slug, area_slug, message_id)
-    elif message_type == "templates":
-        return choose_template_sub_area(service_id, library_slug, area_slug, message_id, template_folder_id)
-
-
-@main.route(
-    "/services/<uuid:service_id>/<message_type>/libraries/postcodes",  # noqa: E501
-    methods=["GET", "POST"],
-)
-@main.route(
-    "/services/<uuid:service_id>/<message_type>/<uuid:message_id>/libraries/postcodes",  # noqa: E501
-    methods=["GET", "POST"],
-)
-@main.route(
-    "/services/<uuid:service_id>/<message_type>/folders/<uuid:template_folder_id>/libraries/postcodes",  # noqa: E501
-    methods=["GET", "POST"],
-)
-@service_has_permission("broadcast")
-def search_postcodes(service_id, message_type, message_id=None, template_folder_id=None):
+def search_postcodes(service_id, message_type, message_id=None):
+    template_folder_id = request.args.get("template_folder_id")
     if message_type == "broadcast":
         return search_postcodes_for_broadcast()
     elif message_type == "templates":
@@ -206,12 +197,9 @@ def search_postcodes(service_id, message_type, message_id=None, template_folder_
     "/services/<uuid:service_id>/<message_type>/libraries/coordinates/<coordinate_type>/",  # noqa: E501
     methods=["GET", "POST"],
 )
-@main.route(
-    "/services/<uuid:service_id>/<message_type>/folders/<uuid:template_folder_id>/libraries/coordinates/<coordinate_type>/",  # noqa: E501
-    methods=["GET", "POST"],
-)
 @service_has_permission("broadcast")
-def search_coordinates(service_id, coordinate_type, message_type, message_id=None, template_folder_id=None):
+def search_coordinates(service_id, coordinate_type, message_type, message_id=None):
+    template_folder_id = request.args.get("template_folder_id")
     if message_type == "broadcast":
         return search_coordinates_for_broadcast(service_id, coordinate_type, message_id)
     elif message_type == "templates":
