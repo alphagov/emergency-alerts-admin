@@ -813,7 +813,9 @@ def choose_template_library(service_id, template_id=None, template_folder_id=Non
         libraries=BroadcastMessage.libraries,
         message=template,
         custom_broadcast=is_custom_broadcast,
-        back_link=_get_choose_library_back_link(service_id, "templates", template_id, template_folder_id),
+        back_link=_get_choose_library_back_link(
+            service_id, "templates", template_folder_id=template_folder_id, message_id=template_id
+        ),
         message_type="templates",
         message_id=template_id,
         template_folder_id=template_folder_id,
