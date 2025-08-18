@@ -560,18 +560,23 @@ def _get_broadcast_sub_area_back_link(service_id, message_id, library_slug, mess
         )
 
 
-def _get_choose_library_back_link(service_id, message_type, message_id=None, template_folder_id=None):
+def _get_choose_library_back_link(
+    service_id,
+    message_type,
+    message_id=None,
+    template_folder_id=None,
+):
     if message_type == "broadcast":
         return url_for(
             ".choose_extra_content" if current_service.broadcast_channel != "operator" else ".write_new_broadcast",
-            service_id=current_service.id,
+            service_id=service_id,
             broadcast_message_id=message_id,
         )
     else:
         if not message_id:
             return url_for(
                 ".choose_template_fields",
-                service_id=current_service.id,
+                service_id=service_id,
                 template_folder_id=template_folder_id,
             )
         else:
