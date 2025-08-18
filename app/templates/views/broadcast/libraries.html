@@ -24,7 +24,7 @@
 
   {% if message %}
     {% for area in message.ancestor_areas %}
-      <a class="govuk-heading-m govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_sub_area', service_id=current_service.id, message_id=message.id or None, library_slug=area.library_id, area_slug=area.id, message_type=message_type, template_folder_id=template_folder_id) }}">{{ area.name }}</a>
+      <a class="govuk-heading-m govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_sub_area', service_id=current_service.id, message_id=message.id, library_slug=area.library_id, area_slug=area.id, message_type=message_type, template_folder_id=template_folder_id) }}">{{ area.name }}</a>
       {% if loop.last %}
         <div class="keyline-block"></div>
       {% endif %}
@@ -33,12 +33,12 @@
 
   {% for library in libraries|sort %}
     {% if library.id not in ['coordinates', 'postcodes']  %}
-      <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_area', service_id=current_service.id, message_id=message_id or None, library_slug=library.id, message_type=message_type, template_folder_id=template_folder_id) }}">{{ library.name }}</a>
+      <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_area', service_id=current_service.id, message_id=message_id, library_slug=library.id, message_type=message_type, template_folder_id=template_folder_id) }}">{{ library.name }}</a>
       <p class="file-list-hint-large">{{ library.get_examples() }}</p>
     {% else %}
       {% if (message.areas|length == 0) or (custom_broadcast)  %}
         {% if library.id == 'coordinates' %}
-          <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_area', service_id=current_service.id, message_id=message_id or None, library_slug=library.id, message_type=message_type, template_folder_id=template_folder_id) }}">{{ library.name }}</a>
+          <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_area', service_id=current_service.id, message_id=message_id, library_slug=library.id, message_type=message_type, template_folder_id=template_folder_id) }}">{{ library.name }}</a>
           <p class="file-list-hint-large">Use coordinates to create an alert area.</p>
         {% elif library.id == 'postcodes' %}
           <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_area', service_id=current_service.id, message_id=message_id, library_slug=library.id, message_type=message_type, template_folder_id=template_folder_id) }}">{{ library.name }}</a>
