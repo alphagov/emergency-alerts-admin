@@ -81,31 +81,31 @@ sample_uuid = sample_uuid()
             405,
         ),
         (
-            ".preview_broadcast_areas",
+            ".preview_areas",
             {"broadcast_message_id": sample_uuid},
             403,
             405,
         ),
         (
-            ".choose_broadcast_library",
+            ".choose_library",
             {"broadcast_message_id": sample_uuid},
             403,
             405,
         ),
         (
-            ".choose_broadcast_area",
+            ".choose_area",
             {"broadcast_message_id": sample_uuid, "library_slug": "countries"},
             403,
             403,
         ),
         (
-            ".remove_broadcast_area",
+            ".remove_area",
             {"broadcast_message_id": sample_uuid, "area_slug": "countries-E92000001"},
             403,
             405,
         ),
         (
-            ".remove_postcode_area",
+            ".remove_custom_area",
             {
                 "broadcast_message_id": sample_uuid,
                 "postcode_slug": "1km around the postcode BD1 1EE in Bradford",
@@ -195,31 +195,31 @@ def test_broadcast_pages_403_without_permission(
             405,
         ),
         (
-            ".preview_broadcast_areas",
+            ".preview_areas",
             {"message_id": sample_uuid, "message_type": "broadcast"},
             403,
             405,
         ),
         (
-            ".choose_broadcast_library",
+            ".choose_library",
             {"message_id": sample_uuid, "message_type": "broadcast"},
             403,
             405,
         ),
         (
-            ".choose_broadcast_area",
+            ".choose_area",
             {"message_id": sample_uuid, "library_slug": "countries", "message_type": "broadcast"},
             403,
             403,
         ),
         (
-            ".remove_broadcast_area",
+            ".remove_area",
             {"message_id": sample_uuid, "area_slug": "england", "message_type": "broadcast"},
             403,
             405,
         ),
         (
-            ".remove_postcode_area",
+            ".remove_custom_area",
             {
                 "message_id": sample_uuid,
                 "postcode_slug": "1km around the postcode BD1 1EE in Bradford",
@@ -1154,7 +1154,7 @@ def test_broadcast_page(
         ),
     ),
 )
-def test_preview_broadcast_areas_page(
+def test_preview_areas_page(
     mocker,
     client_request,
     service_one,
@@ -1180,7 +1180,7 @@ def test_preview_broadcast_areas_page(
     )
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.get(
-        ".preview_broadcast_areas",
+        ".preview_areas",
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
         message_type="broadcast",
@@ -1265,7 +1265,7 @@ def test_preview_broadcast_areas_page(
         ),
     ),
 )
-def test_preview_broadcast_areas_page_with_custom_polygons(
+def test_preview_areas_page_with_custom_polygons(
     mocker,
     client_request,
     service_one,
@@ -1292,7 +1292,7 @@ def test_preview_broadcast_areas_page_with_custom_polygons(
     )
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.get(
-        ".preview_broadcast_areas",
+        ".preview_areas",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
     )
@@ -1364,7 +1364,7 @@ def test_preview_broadcast_areas_page_with_custom_polygons(
         ),
     ),
 )
-def test_choose_broadcast_library_page(
+def test_choose_library_page(
     mocker,
     client_request,
     service_one,
@@ -1387,7 +1387,7 @@ def test_choose_broadcast_library_page(
     )
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.get(
-        ".choose_broadcast_library",
+        ".choose_library",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
     )
@@ -1398,7 +1398,7 @@ def test_choose_broadcast_library_page(
     )
 
     assert page.select_one("a.file-list-filename-large.govuk-link")["href"] == url_for(
-        ".choose_broadcast_area",
+        ".choose_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug="ctry19",
@@ -1446,7 +1446,7 @@ def test_choose_broadcast_library_page(
         ),
     ),
 )
-def test_choose_broadcast_library_page_with_custom_broadcast(
+def test_choose_library_page_with_custom_broadcast(
     mocker,
     client_request,
     service_one,
@@ -1469,7 +1469,7 @@ def test_choose_broadcast_library_page_with_custom_broadcast(
     )
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.get(
-        ".choose_broadcast_library",
+        ".choose_library",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
     )
@@ -1480,7 +1480,7 @@ def test_choose_broadcast_library_page_with_custom_broadcast(
     )
 
     assert page.select_one("a.file-list-filename-large.govuk-link")["href"] == url_for(
-        ".choose_broadcast_area",
+        ".choose_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug="coordinates",
@@ -1510,13 +1510,13 @@ def test_suggested_area_has_correct_link(
     )
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.get(
-        ".choose_broadcast_library", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid, custom_broadcast=False
+        ".choose_library", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid, custom_broadcast=False
     )
     link = page.select_one("main a.govuk-link")
 
     assert link.text == "Cheltenham"
     assert link["href"] == url_for(
-        "main.choose_broadcast_sub_area",
+        "main.choose_sub_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug="wd23-lad23-ctyua23",
@@ -1541,7 +1541,7 @@ def test_suggested_area_has_correct_link(
         ("coordinates", "Choose coordinate type"),
     ),
 )
-def test_choose_broadcast_area_page_titles(
+def test_choose_area_page_titles(
     client_request,
     service_one,
     mock_get_draft_broadcast_message,
@@ -1553,7 +1553,7 @@ def test_choose_broadcast_area_page_titles(
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.get(
-        ".choose_broadcast_area",
+        ".choose_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug=library_slug,
@@ -1562,7 +1562,7 @@ def test_choose_broadcast_area_page_titles(
     assert normalize_spaces(page.select_one("h1").text) == expected_page_title
 
 
-def test_choose_broadcast_area_page(
+def test_choose_area_page(
     client_request,
     service_one,
     mock_get_draft_broadcast_message,
@@ -1572,7 +1572,7 @@ def test_choose_broadcast_area_page(
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.get(
-        ".choose_broadcast_area",
+        ".choose_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug="ctry19",
@@ -1591,7 +1591,7 @@ def test_choose_broadcast_area_page(
     ]
 
 
-def test_choose_broadcast_area_page_for_area_with_sub_areas(
+def test_choose_area_page_for_area_with_sub_areas(
     client_request,
     service_one,
     mock_get_draft_broadcast_message,
@@ -1601,7 +1601,7 @@ def test_choose_broadcast_area_page_for_area_with_sub_areas(
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.get(
-        ".choose_broadcast_area",
+        ".choose_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug="wd23-lad23-ctyua23",
@@ -1612,7 +1612,7 @@ def test_choose_broadcast_area_page_for_area_with_sub_areas(
     assert live_search.select_one("input")["type"] == "search"
     partial_url_for = partial(
         url_for,
-        "main.choose_broadcast_sub_area",
+        "main.choose_sub_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug="wd23-lad23-ctyua23",
@@ -1660,7 +1660,7 @@ def test_choose_broadcast_area_page_for_area_with_sub_areas(
     )
 
 
-def test_choose_broadcast_sub_area_page_for_district_shows_checkboxes_for_wards(
+def test_choose_sub_area_page_for_district_shows_checkboxes_for_wards(
     client_request,
     service_one,
     mock_get_draft_broadcast_message,
@@ -1670,7 +1670,7 @@ def test_choose_broadcast_sub_area_page_for_district_shows_checkboxes_for_wards(
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.get(
-        "main.choose_broadcast_sub_area",
+        "main.choose_sub_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug="wd23-lad23-ctyua23",
@@ -1716,11 +1716,11 @@ def test_choose_broadcast_sub_area_page_for_district_shows_checkboxes_for_wards(
 @pytest.mark.parametrize(
     "prev_area_slug, expected_back_link_url, expected_back_link_extra_kwargs",
     [
-        ("ctyua23-E10000016", "main.choose_broadcast_sub_area", {"area_slug": "ctyua23-E10000016"}),  # Kent
-        (None, ".choose_broadcast_area", {}),
+        ("ctyua23-E10000016", "main.choose_sub_area", {"area_slug": "ctyua23-E10000016"}),  # Kent
+        (None, ".choose_area", {}),
     ],
 )
-def test_choose_broadcast_sub_area_page_for_district_has_back_link(
+def test_choose_sub_area_page_for_district_has_back_link(
     client_request,
     service_one,
     mock_get_draft_broadcast_message,
@@ -1732,7 +1732,7 @@ def test_choose_broadcast_sub_area_page_for_district_has_back_link(
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.get(
-        "main.choose_broadcast_sub_area",
+        "main.choose_sub_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=str(uuid.UUID(int=0)),
         library_slug="wd23-lad23-ctyua23",
@@ -1795,7 +1795,7 @@ def test_write_new_broadcast_does_update_when_broadcast_exists(
         (".write_new_broadcast", {}),
     ],
 )
-def test_preview_broadcast_areas_has_back_link_with_uuid(
+def test_preview_areas_has_back_link_with_uuid(
     mocker,
     client_request,
     service_one,
@@ -1817,7 +1817,7 @@ def test_preview_broadcast_areas_has_back_link_with_uuid(
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.get(
-        "main.preview_broadcast_areas", service_id=SERVICE_ONE_ID, broadcast_message_id=str(uuid.UUID(int=0))
+        "main.preview_areas", service_id=SERVICE_ONE_ID, broadcast_message_id=str(uuid.UUID(int=0))
     )
     assert normalize_spaces(page.select_one("h1").text) == "Confirm the area for the alert"
     back_link = page.select_one(".govuk-back-link")
@@ -1891,7 +1891,7 @@ def test_write_new_broadcast_does_not_display_alerts_in_broadcast(
     assert normalize_spaces(page.select_one("input").text) == ""
 
 
-def test_choose_broadcast_sub_area_page_for_county_shows_links_for_districts(
+def test_choose_sub_area_page_for_county_shows_links_for_districts(
     client_request,
     service_one,
     mock_get_draft_broadcast_message,
@@ -1902,7 +1902,7 @@ def test_choose_broadcast_sub_area_page_for_county_shows_links_for_districts(
 
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.get(
-        "main.choose_broadcast_sub_area",
+        "main.choose_sub_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug="wd23-lad23-ctyua23",
@@ -1931,7 +1931,7 @@ def test_choose_broadcast_sub_area_page_for_county_shows_links_for_districts(
     ]
     assert len(districts) == 12
     assert districts[0][0] == url_for(
-        "main.choose_broadcast_sub_area",
+        "main.choose_sub_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug="wd23-lad23-ctyua23",
@@ -1940,7 +1940,7 @@ def test_choose_broadcast_sub_area_page_for_county_shows_links_for_districts(
     )
     assert districts[0][1] == "Ashford"
     assert districts[-1][0] == url_for(
-        "main.choose_broadcast_sub_area",
+        "main.choose_sub_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug="wd23-lad23-ctyua23",
@@ -1986,7 +1986,7 @@ def test_add_broadcast_area(
 
     client_request.login(active_user_create_broadcasts_permission)
     client_request.post(
-        ".choose_broadcast_area",
+        ".choose_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug="ctry19",
@@ -3017,7 +3017,7 @@ def test_add_broadcast_sub_area_district_view(
 
     client_request.login(active_user_create_broadcasts_permission)
     client_request.post(
-        ".choose_broadcast_sub_area",
+        ".choose_sub_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug="wd23-lad23-ctyua23",
@@ -3063,7 +3063,7 @@ def test_add_broadcast_sub_area_county_view(
 
     client_request.login(active_user_create_broadcasts_permission)
     client_request.post(
-        ".choose_broadcast_sub_area",
+        ".choose_sub_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug="wd23-lad23-ctyua23",
@@ -3094,7 +3094,7 @@ def test_add_broadcast_sub_area_county_view(
     assert actual_areas["simple_polygons"] == expected_areas["simple_polygons"]
 
 
-def test_remove_broadcast_area_page(
+def test_remove_area_page(
     client_request,
     service_one,
     mock_get_draft_broadcast_message,
@@ -3114,12 +3114,12 @@ def test_remove_broadcast_area_page(
 
     client_request.login(active_user_create_broadcasts_permission)
     client_request.get(
-        ".remove_broadcast_area",
+        ".remove_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         area_slug="ctry19-E92000001",
         _expected_redirect=url_for(
-            ".preview_broadcast_areas",
+            ".preview_areas",
             service_id=SERVICE_ONE_ID,
             broadcast_message_id=fake_uuid,
         ),
@@ -3167,12 +3167,12 @@ def test_remove_postcode_area(
 
     client_request.login(active_user_create_broadcasts_permission)
     client_request.get(
-        ".remove_postcode_area",
+        ".remove_custom_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         postcode_slug="1km around the postcode BD1 1EE in Bradford",
         _expected_redirect=url_for(
-            ".choose_broadcast_library",
+            ".choose_library",
             service_id=SERVICE_ONE_ID,
             broadcast_message_id=fake_uuid,
             library_slug="postcodes",
@@ -3222,11 +3222,11 @@ def test_remove_coordinate_area(
 
     client_request.login(active_user_create_broadcasts_permission)
     client_request.get(
-        ".remove_coordinate_area",
+        ".remove_custom_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         _expected_redirect=url_for(
-            ".choose_broadcast_library",
+            ".choose_library",
             service_id=SERVICE_ONE_ID,
             broadcast_message_id=fake_uuid,
         ),
@@ -3276,7 +3276,7 @@ def test_replace_custom_area(
 
     client_request.login(active_user_create_broadcasts_permission)
     client_request.post(
-        ".choose_broadcast_area",
+        ".choose_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug="ctry19",
@@ -3327,7 +3327,7 @@ def test_replace_custom_area_with_sub_area(
 
     client_request.login(active_user_create_broadcasts_permission)
     client_request.post(
-        ".choose_broadcast_sub_area",
+        ".choose_sub_area",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         library_slug="wd23-lad23-ctyua23",
