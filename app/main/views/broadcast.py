@@ -1025,7 +1025,7 @@ def preview_broadcast_areas(service_id, message_id):
         is_custom_broadcast=type(message.areas) is CustomBroadcastAreas,
         redirect_url=url_for(
             ".preview_broadcast_message" if message.duration else ".choose_broadcast_duration",
-            service_id=service_id.id,
+            service_id=service_id,
             broadcast_message_id=message.id,
         ),  # The url for when 'Save and continue' button clicked
         message_type="broadcast",
@@ -1046,7 +1046,7 @@ def choose_broadcast_library(service_id, message_id):
         libraries=BroadcastMessage.libraries,
         message=message,
         custom_broadcast=is_custom_broadcast,
-        back_link=_get_choose_library_back_link(service_id, "broadcast", message_id),
+        back_link=_get_choose_library_back_link(service_id=service_id, message_type="broadcast", message_id=message_id),
         message_type="broadcast",
         message_id=message_id,
     )
@@ -1105,12 +1105,7 @@ def choose_broadcast_area(service_id, library_slug, message_id=None):
     if form.validate_on_submit() and message:
         message.replace_areas([*form.areas.data])
         return redirect(
-            url_for(
-                ".preview_areas",
-                service_id=current_service.id,
-                message_id=message.id,
-                message_type="broadcast",
-            )
+            url_for(".preview_areas", service_id=current_service.id, message_id=message.id, message_type="broadcast")
         )
 
     return render_template(
@@ -1125,8 +1120,8 @@ def choose_broadcast_area(service_id, library_slug, message_id=None):
         back_link=url_for(
             ".choose_library",
             service_id=service_id,
-            message_id=message_id,
             message_type="broadcast",
+            message_id=message_id,
         ),
         message_type="broadcast",
     )
