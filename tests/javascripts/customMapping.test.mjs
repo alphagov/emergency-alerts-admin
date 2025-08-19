@@ -3,7 +3,7 @@ const {createLatitudelongitudeArea, createEastingNorthingArea, createPostcodeAre
     addingPostcodeCentroidMarkerToMap, eastingsNorthingsToLatLng,
     latLngToEastingsNorthings, createAreaCircle,
     createBleedCircle, createCoordinateAreaLabel, createPostcodeAreaLabel, appendAreaToAreaList
-} = require('../../app/assets/javascripts/customMapping.js')
+} = require('../../app/assets/javascripts/esm/customMapping.mjs')
 
 const L = require('leaflet');
 const proj4 = require('proj4');

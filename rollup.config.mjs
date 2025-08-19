@@ -18,8 +18,12 @@ export default [
     output: {
       dir: paths.dist + 'javascripts/',
       entryFileNames: 'all.mjs',
-      format: 'es',
-      sourcemap: true
+      // We're using an IIFE because currently, a lot of our JavaScript accesses dependencies from the
+      // window.GOVUK namespace. The modern approach would be to refactor to modules. But for now,
+      // to ensure there isn't a race condition between `all.mjs` (which does the exports the rest of
+      // the JavaScripts need), we use an IIFE and pull it into our base template.
+      format: 'iife',
+      name: 'GOVUK'
     },
     plugins: [
       nodeResolve(),
@@ -33,7 +37,7 @@ export default [
           { src: paths.govuk_frontend + 'govuk/assets/manifest.json', dest: paths.dist },
           { src: paths.src + 'metadata/**/*', dest: paths.dist + 'metadata/' },
         ]
-      }),
+      })
     ]
   },
   // SCSS compilation
@@ -59,7 +63,6 @@ export default [
         },
         minimize: true,
         url: false,
-        sourceMap: true,
       }),
     ]
   },
@@ -177,18 +180,16 @@ export default [
   },
   {
     input: [
-      paths.src + 'javascripts/customMapping.js',
+      paths.src + 'javascripts/esm/customMapping.mjs',
     ],
     output: {
       dir: paths.dist + 'javascripts/',
+      format: "es",
+      entryFileNames: "customMapping.mjs"
     },
     plugins: [
       nodeResolve(),
-      multi({
-        entryFileName: 'customMapping.js'
-      }),
       terser({
-        ecma: '5',
         mangle: {
           reserved: ["Hogan"]
         }
