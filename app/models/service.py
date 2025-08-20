@@ -155,7 +155,7 @@ class Service(JSONModel):
         return bool(self.all_template_folders)
 
     def has_templates_of_type(self, template_type):
-        return any(template for template in self.all_templates if template.template_type == template_type)
+        return any(template for template in self.all_templates if template["template_type"] == template_type)
 
     @cached_property
     def organisation(self):
@@ -212,8 +212,10 @@ class Service(JSONModel):
         return self.get_template_folder_path(folder["parent_id"]) + [self.get_template_folder(folder["id"])]
 
     def get_template_path(self, template):
+        template_dict = template.__dict__
+        template_dict["name"] = template.reference
         return self.get_template_folder_path(template.folder) + [
-            template,
+            template_dict,
         ]
 
     @property
