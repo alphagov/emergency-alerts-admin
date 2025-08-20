@@ -1172,7 +1172,7 @@ class BroadcastTemplateForm(SMSTemplateForm):
     overwrite_name = BooleanField("overwrite_name", render_kw={"hidden": True})
     overwrite_content = BooleanField("overwrite_content", render_kw={"hidden": True})
 
-    def validate_template_content(self, field):
+    def validate_content(self, field):
         OnlySMSCharacters(template_type="broadcast")(None, field)
         NoPlaceholders()(None, field)
         BroadcastLength()(None, field)
