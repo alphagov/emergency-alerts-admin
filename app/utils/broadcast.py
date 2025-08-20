@@ -390,7 +390,7 @@ def render_current_alert_page(
 def render_edit_alert_page(broadcast_message, form):
     return render_template(
         "views/broadcast/write-new-broadcast.html",
-        message=broadcast_message,
+        broadcast_message=broadcast_message,
         form=form,
         changes=get_changed_alert_form_data(broadcast_message, form),
     )
