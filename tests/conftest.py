@@ -302,7 +302,7 @@ def mock_get_template_from_id(mocker):
         template = template_json(
             service_id,
             template_id,
-            "Test alert",
+            "Example template",
             "broadcast",
             "This is a test",
         )
