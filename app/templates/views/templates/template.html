@@ -18,7 +18,7 @@
 {% endblock %}
 
 {% block service_page_title %}
-  {{ page_title_folder_path(template_folder_path) }}
+  {{ page_title_folder_path(current_service.get_template_path(template)) }}
 {% endblock %}
 
 {% set breadcrumbs = [] %}
@@ -91,7 +91,7 @@
     </div>
   {% endif %}
 
-  {{templateSummaryList(template, areas, template.simple_polygons_with_bleed.estimated_area, template.count_of_phones, template.count_of_phones_likely, is_custom_broadcast, formatted_template, current_user)}}
+  {{templateSummaryList(template, areas, template.simple_polygons_with_bleed.estimated_area, template.count_of_phones, template.count_of_phones_likely, is_custom_broadcast, formatted_template, current_user, not template.archived)}}
 
 
   <div class="bottom-gutter-1-2">
