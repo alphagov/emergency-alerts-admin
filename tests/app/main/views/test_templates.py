@@ -6,12 +6,9 @@ from emergency_alerts_utils import MAX_BROADCAST_CHAR_COUNT
 from flask import url_for
 from freezegun import freeze_time
 
+from app.models.template import Template
 from tests import NotifyBeautifulSoup, template_json, validate_route_permission
-from tests.app.main.views.test_template_folders import (
-    PARENT_FOLDER_ID,
-    _folder,
-    _template,
-)
+from tests.app.main.views.test_template_folders import PARENT_FOLDER_ID, _folder
 from tests.conftest import (
     SERVICE_ONE_ID,
     TEMPLATE_ONE_ID,
@@ -27,7 +24,12 @@ def test_should_show_empty_page_when_no_templates(
     mock_get_service_templates_when_no_templates_exist,
     mock_get_template_folders,
     mock_get_no_api_keys,
+    mocker,
 ):
+    mocker.patch(
+        "app.template_api_client.get_templates",
+        return_value={"data": []},
+    )
     page = client_request.get(
         "main.choose_template",
         service_id=service_one["id"],
@@ -45,7 +47,12 @@ def test_should_show_add_template_form_if_service_has_folder_permission(
     mock_get_service_templates_when_no_templates_exist,
     mock_get_template_folders,
     mock_get_no_api_keys,
+    mocker,
 ):
+    mocker.patch(
+        "app.template_api_client.get_templates",
+        return_value={"data": []},
+    )
     page = client_request.get(
         "main.choose_template",
         service_id=service_one["id"],
@@ -94,7 +101,7 @@ def test_should_show_add_template_form_if_service_has_folder_permission(
 )
 def test_should_show_page_for_choosing_a_template(
     client_request,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_template_folders,
     mock_get_no_api_keys,
     extra_args,
@@ -118,7 +125,7 @@ def test_should_show_page_for_choosing_a_template(
     for index, expected_template in enumerate(expected_templates):
         assert template_links[index].text.strip() == expected_template
 
-    mock_get_service_templates.assert_called_once_with(SERVICE_ONE_ID)
+    mock_get_templates.assert_called_once_with(SERVICE_ONE_ID)
     mock_get_template_folders.assert_called_once_with(SERVICE_ONE_ID)
 
 
@@ -132,35 +139,35 @@ def test_should_show_page_of_broadcast_templates(
 ):
     service_one["permissions"] += ["broadcast"]
     mocker.patch(
-        "app.service_api_client.get_service_templates",
+        "app.template_api_client.get_templates",
         return_value={
             "data": [
                 template_json(
                     SERVICE_ONE_ID,
                     fake_uuid,
                     type_="broadcast",
-                    name="A",
+                    reference="A",
                     content="a" * 40,
                 ),
                 template_json(
                     SERVICE_ONE_ID,
                     fake_uuid,
                     type_="broadcast",
-                    name="B",
+                    reference="B",
                     content="b" * 42,
                 ),
                 template_json(
                     SERVICE_ONE_ID,
                     fake_uuid,
                     type_="broadcast",
-                    name="C",
+                    reference="C",
                     content="c" * 43,
                 ),
                 template_json(
                     SERVICE_ONE_ID,
                     fake_uuid,
                     type_="broadcast",
-                    name="D",
+                    reference="D",
                     # This should be truncated at 40 chars, then have the
                     # trailing space stripped
                     content=("d" * 39) + " " + ("d" * 40),
@@ -201,7 +208,7 @@ def test_should_show_page_of_broadcast_templates(
 def test_choose_template_can_pass_through_an_initial_state_to_templates_and_folders_selection_form(
     client_request,
     mock_get_template_folders,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_no_api_keys,
 ):
     page = client_request.get("main.choose_template", service_id=SERVICE_ONE_ID, initial_state="add-new-template")
@@ -215,6 +222,7 @@ def test_should_not_show_template_nav_if_only_one_type_of_template(
     mock_get_template_folders,
     mock_get_service_templates_with_only_one_template,
     mock_get_no_api_keys,
+    mock_get_templates,
 ):
     page = client_request.get(
         "main.choose_template",
@@ -227,7 +235,7 @@ def test_should_not_show_template_nav_if_only_one_type_of_template(
 def test_should_not_show_live_search_if_list_of_templates_fits_onscreen(
     client_request,
     mock_get_template_folders,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_no_api_keys,
 ):
     page = client_request.get(
@@ -273,7 +281,7 @@ def test_should_label_search_by_id_for_services_with_api_keys(
 def test_should_show_live_search_if_service_has_lots_of_folders(
     client_request,
     mock_get_template_folders,
-    mock_get_service_templates,  # returns 4 templates
+    mock_get_templates,  # returns 4 templates
     mock_get_no_api_keys,
 ):
     mock_get_template_folders.return_value = [
@@ -300,7 +308,7 @@ def test_should_show_live_search_if_service_has_lots_of_folders(
 def test_should_show_new_template_choices_if_service_has_folder_permission(
     client_request,
     service_one,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_template_folders,
     mock_get_no_api_keys,
 ):
@@ -326,7 +334,7 @@ def test_should_show_new_template_choices_if_service_has_folder_permission(
 def test_should_add_data_attributes_for_broadcast_service(
     client_request,
     service_one,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_template_folders,
     mock_get_no_api_keys,
 ):
@@ -342,11 +350,7 @@ def test_should_add_data_attributes_for_broadcast_service(
     assert page.select_one("#add_new_template_form").attrs["data-service"] == SERVICE_ONE_ID
 
 
-def test_should_show_page_for_one_template(
-    client_request,
-    mock_get_service_template,
-    fake_uuid,
-):
+def test_should_show_page_for_one_template(client_request, fake_uuid, mock_get_template):
     template_id = fake_uuid
     page = client_request.get(
         ".edit_service_template",
@@ -368,25 +372,25 @@ def test_should_show_page_for_one_template(
     assert (
         (page.select_one("[data-notify-module=update-status]")["data-target"])
         == (page.select_one("textarea")["id"])
-        == "template_content"
+        == "content"
     )
 
     assert (page.select_one("[data-notify-module=update-status]")["data-updates-url"]) == url_for(
         ".count_content_length",
         service_id=SERVICE_ONE_ID,
         template_type="broadcast",
-        field="template_content",
+        field="content",
     )
 
     assert (page.select_one("[data-notify-module=update-status]")["aria-live"]) == "polite"
 
-    mock_get_service_template.assert_called_with(SERVICE_ONE_ID, template_id, None)
+    mock_get_template.assert_called_with(service_id=SERVICE_ONE_ID, template_id=template_id)
 
 
 def test_broadcast_template_doesnt_highlight_placeholders_but_does_count_characters(
     client_request,
     service_one,
-    mock_get_broadcast_template,
+    mock_get_template,
     fake_uuid,
 ):
     service_one["permissions"] += ["broadcast"]
@@ -401,14 +405,14 @@ def test_broadcast_template_doesnt_highlight_placeholders_but_does_count_charact
     assert (
         (page.select_one("[data-notify-module=update-status]")["data-target"])
         == (page.select_one("textarea")["id"])
-        == "template_content"
+        == "content"
     )
 
     assert (page.select_one("[data-notify-module=update-status]")["data-updates-url"]) == url_for(
         ".count_content_length",
         service_id=SERVICE_ONE_ID,
         template_type="broadcast",
-        field="template_content",
+        field="content",
     )
 
     assert (page.select_one("[data-notify-module=update-status]")["aria-live"]) == "polite"
@@ -423,18 +427,11 @@ def test_broadcast_template_doesnt_highlight_placeholders_but_does_count_charact
             [],
             None,
         ),
-        (
-            ["manage_templates"],
-            [
-                (".edit_service_template", "Edit this template"),
-            ],
-            None,
-        ),
     ],
 )
 def test_should_be_able_to_view_a_template_with_links(
     client_request,
-    mock_get_service_template,
+    mock_get_template,
     mock_get_template_folders,
     active_user_with_permissions,
     fake_uuid,
@@ -477,10 +474,10 @@ def test_should_be_able_to_view_a_template_with_links(
 def test_view_broadcast_template(
     client_request,
     service_one,
-    mock_get_broadcast_template,
     mock_get_template_folders,
     fake_uuid,
     active_user_create_broadcasts_permission,
+    mock_get_template_from_id,
 ):
     active_user_create_broadcasts_permission["permissions"][SERVICE_ONE_ID].append("manage_templates")
     client_request.login(active_user_create_broadcasts_permission)
@@ -500,14 +497,6 @@ def test_view_broadcast_template(
                 template_id=fake_uuid,
             ),
         ),
-        (
-            "Edit this template",
-            url_for(
-                ".edit_service_template",
-                service_id=SERVICE_ONE_ID,
-                template_id=fake_uuid,
-            ),
-        ),
     ]
 
     assert (
@@ -519,7 +508,7 @@ def test_view_broadcast_template(
 
 def test_should_hide_template_id_for_broadcast_templates(
     client_request,
-    mock_get_broadcast_template,
+    mock_get_template_from_id,
     mock_get_template_folders,
     fake_uuid,
 ):
@@ -548,7 +537,7 @@ def test_should_hide_template_id_for_broadcast_templates(
 def test_should_not_allow_creation_of_template_through_form_without_correct_permission(
     client_request,
     service_one,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_template_folders,
     service_permissions,
     data,
@@ -604,12 +593,13 @@ def test_should_not_allow_creation_of_a_template_without_correct_permission(
 
 
 def test_should_redirect_when_saving_a_template(
-    client_request,
-    mock_get_service_template,
-    mock_get_api_keys,
-    mock_update_service_template,
-    fake_uuid,
+    client_request, mock_get_template_from_id, mock_get_api_keys, fake_uuid, mock_get_template, mocker
 ):
+    template = template_json(SERVICE_ONE_ID, fake_uuid, reference="Deleted template", archived=True)
+
+    mock_update_template = mocker.patch(
+        "app.models.template.Template.update_from_content", return_value=Template(template)
+    )
     name = "new name"
     content = "template <em>content</em> with & entity"
     client_request.post(
@@ -618,8 +608,8 @@ def test_should_redirect_when_saving_a_template(
         template_id=fake_uuid,
         _data={
             "id": fake_uuid,
-            "name": name,
-            "template_content": content,
+            "reference": name,
+            "content": content,
             "template_type": "broadcast",
             "service": SERVICE_ONE_ID,
         },
@@ -630,18 +620,17 @@ def test_should_redirect_when_saving_a_template(
             template_id=fake_uuid,
         ),
     )
-    mock_update_service_template.assert_called_with(
-        fake_uuid,
-        name,
-        "broadcast",
-        content,
-        SERVICE_ONE_ID,
+    mock_update_template.assert_called_with(
+        content=content,
+        reference=name,
+        service_id=SERVICE_ONE_ID,
+        template_id=fake_uuid,
     )
 
 
 def test_should_not_allow_template_edits_without_correct_permission(
     client_request,
-    mock_get_service_template,
+    mock_get_template,
     service_one,
     fake_uuid,
 ):
@@ -683,8 +672,8 @@ def test_should_not_create_too_big_template_for_broadcasts(
         service_id=SERVICE_ONE_ID,
         template_type="broadcast",
         _data={
-            "name": "New name",
-            "template_content": content,
+            "reference": "New name",
+            "content": content,
             "template_type": "broadcast",
             "service": SERVICE_ONE_ID,
         },
@@ -694,9 +683,9 @@ def test_should_not_create_too_big_template_for_broadcasts(
 
 
 def test_should_show_delete_template_page_with_escaped_template_name(client_request, mocker, fake_uuid):
-    template = template_json(SERVICE_ONE_ID, fake_uuid, name="<script>evil</script>")
+    template = template_json(SERVICE_ONE_ID, fake_uuid, reference="<script>evil</script>")
 
-    mocker.patch("app.service_api_client.get_service_template", return_value={"data": template})
+    mocker.patch("app.template_api_client.get_template", return_value={"data": template})
 
     page = client_request.get(
         ".delete_service_template", service_id=SERVICE_ONE_ID, template_id=fake_uuid, _test_page_title=False
@@ -707,25 +696,11 @@ def test_should_show_delete_template_page_with_escaped_template_name(client_requ
 
 @pytest.mark.parametrize("parent", (PARENT_FOLDER_ID, None))
 def test_should_redirect_when_deleting_a_template(
-    mocker,
-    client_request,
-    mock_delete_service_template,
-    mock_get_template_folders,
-    parent,
+    mocker, client_request, mock_delete_template, mock_get_template_folders, parent, mock_get_template
 ):
     mock_get_template_folders.return_value = [
         {"id": PARENT_FOLDER_ID, "name": "Folder", "parent": None, "users_with_permission": [ANY]}
     ]
-    mock_get_service_template = mocker.patch(
-        "app.service_api_client.get_service_template",
-        return_value={
-            "data": _template(
-                "sms",
-                "Hello",
-                parent=parent,
-            )
-        },
-    )
 
     client_request.post(
         ".delete_service_template",
@@ -735,24 +710,27 @@ def test_should_redirect_when_deleting_a_template(
         _expected_redirect=url_for(
             ".choose_template",
             service_id=SERVICE_ONE_ID,
-            template_folder_id=parent,
         ),
     )
 
-    mock_get_service_template.assert_called_with(SERVICE_ONE_ID, TEMPLATE_ONE_ID, None)
-    mock_delete_service_template.assert_called_with(SERVICE_ONE_ID, TEMPLATE_ONE_ID)
+    mock_get_template.assert_called_with(service_id=SERVICE_ONE_ID, template_id=TEMPLATE_ONE_ID)
+    mock_delete_template.assert_called_with(SERVICE_ONE_ID, TEMPLATE_ONE_ID)
 
 
 @freeze_time("2016-01-01T15:00")
 def test_should_show_page_for_a_deleted_template(
     client_request,
     mock_get_template_folders,
-    mock_get_deleted_template,
     mock_get_user,
     mock_get_user_by_email,
     mock_has_permissions,
     fake_uuid,
+    mocker,
 ):
+    template = template_json(SERVICE_ONE_ID, fake_uuid, reference="Deleted template", archived=True)
+
+    mock_get_deleted_template = mocker.patch("app.models.template.Template.from_id", return_value=Template(template))
+
     template_id = fake_uuid
     page = client_request.get(
         ".view_template",
@@ -766,7 +744,7 @@ def test_should_show_page_for_a_deleted_template(
     assert page.select("p.hint")[0].text.strip() == "This template was deleted today at 3:00pm."
     assert "Delete this template" not in page.select_one("main").text
 
-    mock_get_deleted_template.assert_called_with(SERVICE_ONE_ID, template_id, None)
+    mock_get_deleted_template.assert_called_with(template_id=template_id, service_id=SERVICE_ONE_ID)
 
 
 @pytest.mark.parametrize(
@@ -779,7 +757,7 @@ def test_route_permissions(
     client_request,
     api_user_active,
     service_one,
-    mock_get_service_template,
+    mock_get_template,
     mock_get_template_folders,
     fake_uuid,
 ):
@@ -802,7 +780,7 @@ def test_route_permissions_for_choose_template(
     api_user_active,
     mock_get_template_folders,
     service_one,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_no_api_keys,
 ):
     validate_route_permission(
@@ -830,7 +808,7 @@ def test_route_invalid_permissions(
     client_request,
     api_user_active,
     service_one,
-    mock_get_service_template,
+    mock_get_template,
     fake_uuid,
 ):
     validate_route_permission(
@@ -861,28 +839,28 @@ def test_add_template_page_furniture(
 
 def test_should_not_create_sms_or_broadcast_template_with_emoji(
     client_request,
-    mock_create_service_template,
+    mock_create_template,
 ):
     page = client_request.post(
         ".add_service_template",
         service_id=SERVICE_ONE_ID,
         template_type="broadcast",
         _data={
-            "name": "new name",
-            "template_content": "here are some noodles 🍜",
+            "reference": "new name",
+            "content": "here are some noodles 🍜",
             "template_type": "broadcast",
             "service": SERVICE_ONE_ID,
         },
         _expected_status=200,
     )
     assert "You cannot use 🍜 in broadcasts." in page.text
-    assert mock_create_service_template.called is False
+    assert mock_create_template.called is False
 
 
 def test_should_not_update_broadcast_template_with_emoji(
     client_request,
-    mock_get_service_template,
-    mock_update_service_template,
+    mock_get_template,
+    mock_update_template,
     fake_uuid,
 ):
     page = client_request.post(
@@ -891,50 +869,44 @@ def test_should_not_update_broadcast_template_with_emoji(
         template_id=fake_uuid,
         _data={
             "id": fake_uuid,
-            "name": "new name",
-            "template_content": "here's a burger 🍔",
+            "reference": "new name",
+            "content": "here's a burger 🍔",
             "service": SERVICE_ONE_ID,
             "template_type": "broadcast",
         },
         _expected_status=200,
     )
     assert "You cannot use 🍔 in broadcasts." in page.text
-    assert mock_update_service_template.called is False
+    assert mock_update_template.called is False
 
 
 def test_should_create_broadcast_template_without_downgrading_unicode_characters(
-    client_request,
-    mock_create_service_template,
+    client_request, mock_get_template_from_id, mocker, fake_uuid
 ):
     msg = "here:\tare some “fancy quotes” and non\u200Bbreaking\u200Bspaces"
+    template = template_json(SERVICE_ONE_ID, fake_uuid, reference="Template")
+    mock_create_template = mocker.patch("app.models.template.Template.create", return_value=Template(template))
 
     client_request.post(
         ".add_service_template",
         service_id=SERVICE_ONE_ID,
         template_type="broadcast",
         _data={
-            "name": "new name",
-            "template_content": msg,
+            "reference": "new name",
+            "content": msg,
             "template_type": "broadcast",
             "service": SERVICE_ONE_ID,
         },
         expected_status=302,
     )
 
-    mock_create_service_template.assert_called_with(
-        ANY,  # name
-        ANY,  # type
-        msg,  # content
-        ANY,  # service_id
-        ANY,  # parent_folder_id
+    mock_create_template.assert_called_with(
+        content=msg, reference="new name", service_id=SERVICE_ONE_ID, template_folder_id=None
     )
 
 
 def test_should_not_show_redaction_stuff_for_broadcasts(
-    client_request,
-    fake_uuid,
-    mock_get_broadcast_template,
-    mock_get_template_folders,
+    client_request, fake_uuid, mock_get_template, mock_get_template_folders
 ):
     page = client_request.get(
         "main.view_template",
@@ -948,7 +920,7 @@ def test_should_not_show_redaction_stuff_for_broadcasts(
 
 
 @pytest.mark.parametrize(
-    "template_content",
+    "content",
     (
         "This is a ((test))",
         "This ((unsure??might)) be a test",
@@ -965,10 +937,12 @@ def test_should_not_show_redaction_stuff_for_broadcasts(
 def test_should_not_create_broadcast_template_with_placeholders(
     client_request,
     service_one,
-    mock_create_service_template,
-    mock_update_service_template,
-    template_content,
+    mock_create_template,
+    mock_update_template,
+    content,
     template_type,
+    mocker,
+    mock_get_template_from_id,
 ):
     service_one["permissions"] += [template_type]
     page = client_request.post(
@@ -976,8 +950,8 @@ def test_should_not_create_broadcast_template_with_placeholders(
         service_id=SERVICE_ONE_ID,
         template_type=template_type,
         _data={
-            "name": "new name",
-            "template_content": template_content,
+            "reference": "new name",
+            "content": content,
             "service": SERVICE_ONE_ID,
         },
         _expected_status=200,
@@ -985,7 +959,7 @@ def test_should_not_create_broadcast_template_with_placeholders(
     assert normalize_spaces(page.select_one(".error-message").text) == (
         "You can’t use ((double brackets)) to personalise this message"
     )
-    assert mock_create_service_template.called is False
+    assert mock_create_template.called is False
 
 
 @pytest.mark.parametrize(
@@ -1047,9 +1021,9 @@ def test_content_count_json_endpoint(
         "main.count_content_length",
         service_id=SERVICE_ONE_ID,
         template_type=template_type,
-        field="template_content",
+        field="content",
         _data={
-            "template_content": content,
+            "content": content,
         },
         _expected_status=200,
     )
@@ -1081,7 +1055,7 @@ def test_content_count_json_endpoint_for_unsupported_template_types(
         "main.count_content_length",
         service_id=SERVICE_ONE_ID,
         template_type=template_type,
-        field="template_content",
+        field="content",
         content="foo",
         _expected_status=404,
     )
