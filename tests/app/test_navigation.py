@@ -263,7 +263,7 @@ def test_raises_on_invalid_navigation_item(client_request, navigation_instance):
 )
 def test_a_page_should_nave_selected_navigation_item(
     client_request,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_users_by_service,
     mock_get_invites_for_service,
     mock_get_template_folders,
@@ -319,7 +319,7 @@ def test_a_page_should_nave_selected_org_navigation_item(
 
 def test_navigation_urls(
     client_request,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_template_folders,
     mock_get_api_keys,
 ):
@@ -338,7 +338,7 @@ def test_navigation_urls(
 def test_navigation_for_services_with_broadcast_permission(
     client_request,
     service_one,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_template_folders,
     mock_get_api_keys,
     active_user_create_broadcasts_permission,
@@ -359,7 +359,7 @@ def test_navigation_for_services_with_broadcast_permission(
 def test_navigation_for_services_with_broadcast_permission_platform_admin(
     client_request,
     service_one,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_template_folders,
     mock_get_api_keys,
     platform_admin_user,
