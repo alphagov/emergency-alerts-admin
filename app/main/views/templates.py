@@ -198,20 +198,23 @@ def get_template_nav_items(template_folder_id):
 
 
 def _view_template_version(service_id, template_id, version):
-    return dict(
-        template=get_template(
-            Template.get_template_version(service_id, version=version).reference,
-            Template.get_template_version(service_id, version=version).content,
-        )
+    version = Template.from_id(template_id, service_id=service_id).get_template_version(
+        service_id=service_id, version=version
     )
+    return version
 
 
 @main.route("/services/<uuid:service_id>/templates/<uuid:template_id>/version/<int:version>")
 @user_has_permissions(allow_org_user=True)
 def view_template_version(service_id, template_id, version):
+    template_version = _view_template_version(service_id=service_id, template_id=template_id, version=version)
     return render_template(
         "views/templates/template_history.html",
-        **_view_template_version(service_id=service_id, template_id=template_id, version=version),
+        formatted_template=get_template(
+            template_version.get("reference"),
+            template_version.get("content"),
+        ),
+        template=template_version,
     )
 
 
@@ -284,7 +287,7 @@ def copy_template(service_id, template_id):
     if request.method == "POST":
         return add_service_template(service_id, template["template_type"])
 
-    template["template_content"] = template["content"]
+    template["content"] = template["content"]
     template["reference"] = _get_template_copy_name(template, current_service.all_templates)
     form = form_objects[template["template_type"]](**template)
 
@@ -506,7 +509,6 @@ def abort_403_if_not_admin_user():
 def edit_service_template(service_id, template_id):
     template = current_service.get_template_with_user_permission_or_403(template_id, current_user)
     template_data = {"content": template.content, "reference": template.reference}
-    template.template_content = template.content
     form = form_objects[template.template_type](**template_data)
     if form.validate_on_submit():
         new_template_data = {
@@ -781,7 +783,7 @@ def write_new_broadcast_from_template(service_id, template_id):
 
     return render_template(
         "views/broadcast/write-new-broadcast.html",
-        message=message,
+        broadcast_message=message,
         form=form,
     )
 
