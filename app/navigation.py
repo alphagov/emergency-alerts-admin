@@ -98,11 +98,9 @@ class MainNavigation(Navigation):
         "current-broadcasts": {
             "broadcast_dashboard",
             "broadcast_dashboard_updates",
-            "create_new_broadcast",
             "view_current_broadcast",
             "new_broadcast",
             "write_new_broadcast",
-            "write_new_broadcast_from_template",
             "choose_library",
             "choose_broadcast_duration",
             "preview_areas",
@@ -120,7 +118,6 @@ class MainNavigation(Navigation):
             "choose_extra_content",
             "add_extra_content",
             "remove_extra_content",
-            "update_broadcast",
         },
         "previous-broadcasts": {
             "broadcast_dashboard_previous",
