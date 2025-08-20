@@ -52,12 +52,12 @@ class TemplateAPIClient(AdminAPIClient):
 
         # This doesn’t need caching because it calls through to a method which is cached
 
-    def count_templates(self, service_id, template_type=None):
+    def count_templates(self, service_id, template_type="broadcast"):
         return len(
             [
                 template
                 for template in self.get_templates(service_id)["data"]
-                if (not template_type or template.template_type == template_type)
+                if (not template_type or template["template_type"] == template_type)
             ]
         )
 

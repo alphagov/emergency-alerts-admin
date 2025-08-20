@@ -4,7 +4,12 @@ from flask import abort, flash, jsonify, redirect, render_template, request, url
 from flask_login import current_user
 from notifications_python_client.errors import HTTPError
 
-from app import current_service, service_api_client, template_folder_api_client
+from app import (
+    current_service,
+    service_api_client,
+    template_api_client,
+    template_folder_api_client,
+)
 from app.broadcast_areas.models import CustomBroadcastAreas
 from app.formatters import character_count
 from app.main import main
@@ -615,7 +620,7 @@ def delete_service_template(service_id, template_id):
     template = current_service.get_template_with_user_permission_or_403(template_id, current_user)
 
     if request.method == "POST":
-        service_api_client.delete_service_template(service_id, template_id)
+        template_api_client.delete_template(service_id, template_id)
         return redirect(
             url_for(
                 ".choose_template",
