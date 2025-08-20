@@ -34,7 +34,6 @@ export function createPostcodeArea(L, centroid, radius, bleed, postcode, mapElem
 
 // Function that adds the Custom area features to the Leaflet map
 export function addingFeaturesToMap(L, mymap, bleed_circle, circle, pinpoint) {
-  console.log(bleed_circle);
   bleed_circle.addTo(mymap);
   circle.addTo(mymap);
   pinpoint.addTo(mymap);
