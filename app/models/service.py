@@ -212,11 +212,11 @@ class Service(JSONModel):
         return self.get_template_folder_path(folder["parent_id"]) + [self.get_template_folder(folder["id"])]
 
     def get_template_path(self, template):
-        template_dict = template.__dict__
+        template_dict = template.__dict__.copy()
         template_dict["name"] = template.reference
-        return self.get_template_folder_path(template.folder) + [
-            template_dict,
-        ]
+        if template_dict.get("name"):
+            return self.get_template_folder_path(template.folder) + [template_dict]
+        return self.get_template_folder_path(template.folder)
 
     @property
     def count_of_templates_and_folders(self):
