@@ -112,11 +112,9 @@ def broadcast(service_id, template_id):
 
 @main.route(
     "/services/<uuid:service_id>/<message_type>/<uuid:message_id>/libraries",
-    methods=["GET", "POST"],
 )
 @main.route(
     "/services/<uuid:service_id>/<message_type>/libraries",
-    methods=["GET", "POST"],
 )
 @service_has_permission("broadcast")
 def choose_library(service_id, message_type, message_id=None):
