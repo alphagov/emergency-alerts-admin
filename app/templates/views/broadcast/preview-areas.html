@@ -5,8 +5,16 @@
 {% from "views/broadcast/macros/area-map.html" import map %}
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
 
+{% set page_title %}
+  {% if message_type == "broadcast" %}
+    Confirm the area for the alert
+  {% elif message_type == "templates" %}
+    Confirm the area for the template
+  {% endif %}
+{% endset %}
+
 {% block service_page_title %}
-  Confirm the area for the alert
+  {{page_title}}
 {% endblock %}
 
 {% block extra_stylesheets %}
@@ -33,7 +41,7 @@
 
 {% block maincolumn_content %}
 
-  {{ page_header("Confirm the area for the alert") }}
+  {{ page_header(page_title) }}
 
   {% if message.areas %}
     <div>
