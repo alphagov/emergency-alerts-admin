@@ -82,33 +82,36 @@ sample_uuid = sample_uuid()
         ),
         (
             ".preview_areas",
-            {"broadcast_message_id": sample_uuid},
+            {
+                "message_id": sample_uuid,
+                "message_type": "broadcast",
+            },
             403,
             405,
         ),
         (
             ".choose_library",
-            {"broadcast_message_id": sample_uuid},
+            {"message_id": sample_uuid, "message_type": "broadcast"},
             403,
             405,
         ),
         (
             ".choose_area",
-            {"broadcast_message_id": sample_uuid, "library_slug": "countries"},
+            {"message_id": sample_uuid, "library_slug": "countries", "message_type": "broadcast"},
             403,
             403,
         ),
         (
             ".remove_area",
-            {"broadcast_message_id": sample_uuid, "area_slug": "countries-E92000001"},
+            {"message_id": sample_uuid, "area_slug": "countries-E92000001", "message_type": "broadcast"},
             403,
             405,
         ),
         (
             ".remove_custom_area",
             {
-                "broadcast_message_id": sample_uuid,
-                "postcode_slug": "1km around the postcode BD1 1EE in Bradford",
+                "message_id": sample_uuid,
+                "message_type": "broadcast",
             },
             403,
             405,
@@ -152,9 +155,10 @@ sample_uuid = sample_uuid()
         (
             ".search_coordinates",
             {
-                "broadcast_message_id": sample_uuid,
+                "message_id": sample_uuid,
                 "coordinate_type": "latitude_longitude",
                 "library_slug": "coordinates",
+                "message_type": "broadcast",
             },
             403,
             403,
@@ -162,11 +166,7 @@ sample_uuid = sample_uuid()
     ),
 )
 def test_broadcast_pages_403_without_permission(
-    client_request,
-    endpoint,
-    extra_args,
-    expected_get_status,
-    expected_post_status,
+    client_request, endpoint, extra_args, expected_get_status, expected_post_status, mock_get_broadcast_message_versions
 ):
     client_request.get(endpoint, service_id=SERVICE_NO_BROADCAST, _expected_status=expected_get_status, **extra_args)
     client_request.post(endpoint, service_id=SERVICE_NO_BROADCAST, _expected_status=expected_post_status, **extra_args)
@@ -222,7 +222,6 @@ def test_broadcast_pages_403_without_permission(
             ".remove_custom_area",
             {
                 "message_id": sample_uuid,
-                "postcode_slug": "1km around the postcode BD1 1EE in Bradford",
                 "message_type": "broadcast",
             },
             403,
@@ -246,6 +245,10 @@ def test_broadcast_pages_403_for_user_without_permission(
     expected_get_status,
     expected_post_status,
     user_is_platform_admin,
+    mock_get_broadcast_message,
+    mock_get_broadcast_message_versions,
+    mock_check_can_update_status,
+    mock_create_broadcast_message,
 ):
     """
     Checks that users without permissions, including admin users, cannot create or edit broadcasts.
@@ -804,22 +807,22 @@ def test_write_new_broadcast_page(
     assert form["method"] == "post"
     assert "action" not in form
 
-    assert normalize_spaces(page.select_one("label[for=name]").text) == "Reference"
-    assert page.select_one("input[type=text]")["name"] == "name"
+    assert normalize_spaces(page.select_one("label[for=reference]").text) == "Reference"
+    assert page.select_one("input[type=text]")["name"] == "reference"
 
-    assert normalize_spaces(page.select_one("label[for=template_content]").text) == "Alert message"
-    assert page.select_one("textarea")["name"] == "template_content"
+    assert normalize_spaces(page.select_one("label[for=content]").text) == "Alert message"
+    assert page.select_one("textarea")["name"] == "content"
     assert page.select_one("textarea")["data-notify-module"] == "enhanced-textbox"
     assert page.select_one("textarea")["data-highlight-placeholders"] == "false"
 
     assert (page.select_one("[data-notify-module=update-status]")["data-updates-url"]) == url_for(
-        ".count_content_length", service_id=SERVICE_ONE_ID, template_type="broadcast", field="template_content"
+        ".count_content_length", service_id=SERVICE_ONE_ID, template_type="broadcast", field="content"
     )
 
     assert (
         (page.select_one("[data-notify-module=update-status]")["data-target"])
         == (page.select_one("textarea")["id"])
-        == "template_content"
+        == "content"
     )
 
     assert (page.select_one("[data-notify-module=update-status]")["aria-live"]) == "polite"
@@ -838,8 +841,8 @@ def test_write_new_broadcast_posts(
         ".write_new_broadcast",
         service_id=SERVICE_ONE_ID,
         _data={
-            "name": "My new alert",
-            "template_content": "This is a test",
+            "reference": "My new alert",
+            "content": "This is a test",
         },
         _expected_redirect=url_for(
             ".choose_extra_content",
@@ -878,8 +881,8 @@ def test_write_new_broadcast_bad_content(
         ".write_new_broadcast",
         service_id=SERVICE_ONE_ID,
         _data={
-            "name": "My new alert",
-            "template_content": content,
+            "reference": "My new alert",
+            "content": content,
         },
         _expected_status=200,
     )
@@ -925,8 +928,8 @@ def test_edit_broadcast_bad_content(
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         _data={
-            "name": "My new alert",
-            "template_content": content,
+            "reference": "My new alert",
+            "content": content,
         },
         _expected_status=200,
     )
@@ -934,9 +937,21 @@ def test_edit_broadcast_bad_content(
     assert mock_update_broadcast_message.called is False
 
 
-def test_choose_extra_content_page(client_request, service_one, active_user_create_broadcasts_permission, fake_uuid):
+def test_choose_extra_content_page(
+    client_request, service_one, active_user_create_broadcasts_permission, fake_uuid, mocker
+):
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+        ),
+    )
     page = client_request.get(
         ".choose_extra_content", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid, _test_page_title=False
     )
@@ -1014,6 +1029,7 @@ def test_broadcast_page(
     fake_uuid,
     mock_create_broadcast_message,
     active_user_create_broadcasts_permission,
+    mock_get_template,
 ):
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
@@ -1292,9 +1308,7 @@ def test_preview_areas_page_with_custom_polygons(
     )
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.get(
-        ".preview_areas",
-        service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        ".preview_areas", service_id=SERVICE_ONE_ID, message_id=fake_uuid, message_type="broadcast"
     )
 
     assert [normalize_spaces(item.text) for item in page.select("ul.area-list li.area-list-item")] == [
@@ -1387,9 +1401,7 @@ def test_choose_library_page(
     )
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.get(
-        ".choose_library",
-        service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        ".choose_library", service_id=SERVICE_ONE_ID, message_id=fake_uuid, message_type="broadcast"
     )
     assert [normalize_spaces(title.text) for title in page.select("main a.govuk-link")] == expected_list
 
@@ -1400,7 +1412,8 @@ def test_choose_library_page(
     assert page.select_one("a.file-list-filename-large.govuk-link")["href"] == url_for(
         ".choose_area",
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
+        message_type="broadcast",
         library_slug="ctry19",
     )
 
@@ -1469,9 +1482,7 @@ def test_choose_library_page_with_custom_broadcast(
     )
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.get(
-        ".choose_library",
-        service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        ".choose_library", service_id=SERVICE_ONE_ID, message_id=fake_uuid, message_type="broadcast"
     )
     assert [normalize_spaces(title.text) for title in page.select("main a.govuk-link")] == expected_list
 
@@ -1482,8 +1493,9 @@ def test_choose_library_page_with_custom_broadcast(
     assert page.select_one("a.file-list-filename-large.govuk-link")["href"] == url_for(
         ".choose_area",
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
         library_slug="coordinates",
+        message_type="broadcast",
     )
 
 
@@ -1510,7 +1522,11 @@ def test_suggested_area_has_correct_link(
     )
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.get(
-        ".choose_library", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid, custom_broadcast=False
+        ".choose_library",
+        service_id=SERVICE_ONE_ID,
+        message_id=fake_uuid,
+        message_type="broadcast",
+        custom_broadcast=False,
     )
     link = page.select_one("main a.govuk-link")
 
@@ -1518,9 +1534,10 @@ def test_suggested_area_has_correct_link(
     assert link["href"] == url_for(
         "main.choose_sub_area",
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
         library_slug="wd23-lad23-ctyua23",
         area_slug="lad23-E07000078",
+        message_type="broadcast",
     )
 
 
@@ -1555,8 +1572,9 @@ def test_choose_area_page_titles(
     page = client_request.get(
         ".choose_area",
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
         library_slug=library_slug,
+        message_type="broadcast",
         _follow_redirects=True,
     )
     assert normalize_spaces(page.select_one("h1").text) == expected_page_title
@@ -1574,7 +1592,8 @@ def test_choose_area_page(
     page = client_request.get(
         ".choose_area",
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
+        message_type="broadcast",
         library_slug="ctry19",
     )
     assert [
@@ -1603,7 +1622,8 @@ def test_choose_area_page_for_area_with_sub_areas(
     page = client_request.get(
         ".choose_area",
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
+        message_type="broadcast",
         library_slug="wd23-lad23-ctyua23",
     )
     assert normalize_spaces(page.select_one("h1").text) == "Choose a local authority"
@@ -1614,8 +1634,9 @@ def test_choose_area_page_for_area_with_sub_areas(
         url_for,
         "main.choose_sub_area",
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
         library_slug="wd23-lad23-ctyua23",
+        message_type="broadcast",
     )
     choices = [
         (
@@ -1672,9 +1693,10 @@ def test_choose_sub_area_page_for_district_shows_checkboxes_for_wards(
     page = client_request.get(
         "main.choose_sub_area",
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
         library_slug="wd23-lad23-ctyua23",
         area_slug="lad23-S12000033",
+        message_type="broadcast",
     )
     assert normalize_spaces(page.select_one("h1").text) == "Choose an area of Aberdeen City"
     live_search = page.select_one("[data-notify-module=live-search]")
@@ -1734,9 +1756,10 @@ def test_choose_sub_area_page_for_district_has_back_link(
     page = client_request.get(
         "main.choose_sub_area",
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=str(uuid.UUID(int=0)),
+        message_id=str(uuid.UUID(int=0)),
         library_slug="wd23-lad23-ctyua23",
         area_slug="lad23-E07000105",  # Ashford
+        message_type="broadcast",
         prev_area_slug=prev_area_slug,
     )
     assert normalize_spaces(page.select_one("h1").text) == "Choose an area of Ashford"
@@ -1744,8 +1767,9 @@ def test_choose_sub_area_page_for_district_has_back_link(
     assert back_link["href"] == url_for(
         expected_back_link_url,
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=str(uuid.UUID(int=0)),
+        message_id=str(uuid.UUID(int=0)),
         library_slug="wd23-lad23-ctyua23",
+        message_type="broadcast",
         **expected_back_link_extra_kwargs,
     )
 
@@ -1771,17 +1795,15 @@ def test_write_new_broadcast_does_update_when_broadcast_exists(
     )
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
-    client_request.get(
-        "main.write_new_broadcast", service_id=SERVICE_ONE_ID, broadcast_message_id=str(uuid.UUID(int=0))
-    )
+    client_request.get("main.write_new_broadcast", service_id=SERVICE_ONE_ID, message_id=str(uuid.UUID(int=0)))
 
     client_request.post(
         ".write_new_broadcast",
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=str(uuid.UUID(int=0)),
+        message_id=str(uuid.UUID(int=0)),
         _data={
-            "name": "Emergency broadcast",
-            "template_content": "Broadcast content",
+            "reference": "Emergency broadcast",
+            "content": "Broadcast content",
         },
     )
 
@@ -1817,14 +1839,14 @@ def test_preview_areas_has_back_link_with_uuid(
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.get(
-        "main.preview_areas", service_id=SERVICE_ONE_ID, broadcast_message_id=str(uuid.UUID(int=0))
+        "main.preview_areas", service_id=SERVICE_ONE_ID, message_id=uuid.UUID(int=0), message_type="broadcast"
     )
     assert normalize_spaces(page.select_one("h1").text) == "Confirm the area for the alert"
     back_link = page.select_one(".govuk-back-link")
     assert back_link["href"] == url_for(
         expected_back_link_url,
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=str(uuid.UUID(int=0)),
+        message_id=str(uuid.UUID(int=0)),
         **expected_back_link_extra_kwargs,
     )
 
@@ -1852,7 +1874,7 @@ def test_write_new_broadcast_content_from_uuid_is_displayed_before_live(
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.get(
-        "main.write_new_broadcast", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid, follow_redirects=True
+        "main.write_new_broadcast", service_id=SERVICE_ONE_ID, message_id=fake_uuid, follow_redirects=True
     )
     assert normalize_spaces(page.select_one("h1").text) == "Edit alert"
     assert normalize_spaces(page.select_one("textarea").text) == "Emergency broadcast content"
@@ -1904,9 +1926,10 @@ def test_choose_sub_area_page_for_county_shows_links_for_districts(
     page = client_request.get(
         "main.choose_sub_area",
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
         library_slug="wd23-lad23-ctyua23",
         area_slug="ctyua23-E10000016",  # Kent
+        message_type="broadcast",
     )
     assert normalize_spaces(page.select_one("h1").text) == "Choose an area of Kent"
     live_search = page.select_one("[data-notify-module=live-search]")
@@ -1933,7 +1956,8 @@ def test_choose_sub_area_page_for_county_shows_links_for_districts(
     assert districts[0][0] == url_for(
         "main.choose_sub_area",
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
+        message_type="broadcast",
         library_slug="wd23-lad23-ctyua23",
         area_slug="lad23-E07000105",
         prev_area_slug="ctyua23-E10000016",  # Kent
@@ -1942,10 +1966,11 @@ def test_choose_sub_area_page_for_county_shows_links_for_districts(
     assert districts[-1][0] == url_for(
         "main.choose_sub_area",
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
         library_slug="wd23-lad23-ctyua23",
         area_slug="lad23-E07000116",
         prev_area_slug="ctyua23-E10000016",  # Kent
+        message_type="broadcast",
     )
     assert districts[-1][1] == "Tunbridge Wells"
 
@@ -1988,7 +2013,8 @@ def test_add_broadcast_area(
     client_request.post(
         ".choose_area",
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
+        message_type="broadcast",
         library_slug="ctry19",
         _data={"areas": ["ctry19-E92000001", "ctry19-W92000004"]},
     )
@@ -2072,8 +2098,9 @@ def test_create_postcode_area(
     page = client_request.post(
         ".search_postcodes",
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
         library_slug="postcodes",
+        message_type="broadcast",
         _data=post_data,
         _follow_redirects=True,
     )
@@ -2147,8 +2174,9 @@ def test_add_postcode_area_to_broadcast(
     client_request.post(
         ".search_postcodes",
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
         library_slug="postcodes",
+        message_type="broadcast",
         _data=post_data,
         _follow_redirects=True,
     )
@@ -2732,7 +2760,7 @@ def test_latitude_longitude_coordinate_area_form_error_with_invalid_coords(
         ".search_coordinates",
         message_id=fake_uuid,
         service_id=SERVICE_ONE_ID,
-        coordinate_type="latitude_longitude",
+        coordinate_type=coordinate_type,
         message_type="broadcast",
         _data=post_data,
         _follow_redirects=True,
@@ -2823,7 +2851,7 @@ def test_non_uk_coordinate_area_form_errors(
         ".search_coordinates",
         message_id=fake_uuid,
         service_id=SERVICE_ONE_ID,
-        coordinate_type="latitude_longitude",
+        coordinate_type=coordinate_type,
         message_type="broadcast",
         _data=post_data,
         _follow_redirects=True,
@@ -2896,7 +2924,8 @@ def test_incorrect_input_postcode_form_errors(
     page = client_request.post(
         ".search_postcodes",
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
+        message_type="broadcast",
         library_slug="postcodes",
         _data=post_data,
         _follow_redirects=True,
@@ -2957,8 +2986,9 @@ def test_valid_format_postcode_not_in_db_form_error(
     page = client_request.post(
         ".search_postcodes",
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
         library_slug="postcodes",
+        message_type="broadcast",
         _data=post_data,
         _follow_redirects=True,
     )
@@ -3019,9 +3049,10 @@ def test_add_broadcast_sub_area_district_view(
     client_request.post(
         ".choose_sub_area",
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
         library_slug="wd23-lad23-ctyua23",
         area_slug="lad23-S12000033",
+        message_type="broadcast",
         _data=post_data,
     )
 
@@ -3065,9 +3096,10 @@ def test_add_broadcast_sub_area_county_view(
     client_request.post(
         ".choose_sub_area",
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
         library_slug="wd23-lad23-ctyua23",
         area_slug="ctyua23-E10000016",  # Kent
+        message_type="broadcast",
         _data={"select_all": "y"},
     )
     mock_get_polygons_from_areas.assert_called_once_with(area_attribute="simple_polygons")
@@ -3116,12 +3148,11 @@ def test_remove_area_page(
     client_request.get(
         ".remove_area",
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
         area_slug="ctry19-E92000001",
+        message_type="broadcast",
         _expected_redirect=url_for(
-            ".preview_areas",
-            service_id=SERVICE_ONE_ID,
-            broadcast_message_id=fake_uuid,
+            ".preview_areas", service_id=SERVICE_ONE_ID, message_id=fake_uuid, message_type="broadcast"
         ),
     )
     mock_get_polygons_from_areas.assert_called_once_with(area_attribute="simple_polygons")
@@ -3169,13 +3200,10 @@ def test_remove_postcode_area(
     client_request.get(
         ".remove_custom_area",
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
-        postcode_slug="1km around the postcode BD1 1EE in Bradford",
+        message_id=fake_uuid,
+        message_type="broadcast",
         _expected_redirect=url_for(
-            ".choose_library",
-            service_id=SERVICE_ONE_ID,
-            broadcast_message_id=fake_uuid,
-            library_slug="postcodes",
+            ".choose_library", service_id=SERVICE_ONE_ID, message_id=fake_uuid, message_type="broadcast"
         ),
     )
     mock_get_broadcast_message.assert_called_once_with(service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
@@ -3224,11 +3252,10 @@ def test_remove_coordinate_area(
     client_request.get(
         ".remove_custom_area",
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
+        message_type="broadcast",
         _expected_redirect=url_for(
-            ".choose_library",
-            service_id=SERVICE_ONE_ID,
-            broadcast_message_id=fake_uuid,
+            ".choose_library", service_id=SERVICE_ONE_ID, message_id=fake_uuid, message_type="broadcast"
         ),
     )
     mock_get_broadcast_message.assert_called_once_with(service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
@@ -3278,7 +3305,8 @@ def test_replace_custom_area(
     client_request.post(
         ".choose_area",
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
+        message_type="broadcast",
         library_slug="ctry19",
         _data={"areas": ["ctry19-E92000001"]},
     )
@@ -3329,9 +3357,10 @@ def test_replace_custom_area_with_sub_area(
     client_request.post(
         ".choose_sub_area",
         service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
+        message_id=fake_uuid,
         library_slug="wd23-lad23-ctyua23",
         area_slug="lad23-S12000033",  # Aberdeen City
+        message_type="broadcast",
         _data={"select_all": "y"},
     )
     mock_get_broadcast_message.assert_called_once_with(service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
@@ -4217,6 +4246,7 @@ def test_can_approve_own_broadcast_if_service_is_live_and_user_didnt_submit_aler
             finishes_at="2020-02-23T23:23:23.000000",
             status="pending-approval",
             created_by="Test",
+            reference="Example template",
             created_at="2020-02-23T20:23:23.000000",
         ),
     )
@@ -5064,7 +5094,7 @@ def test_cant_reject_broadcast_in_wrong_state(
     mocker,
     client_request,
     service_one,
-    mock_get_broadcast_template,
+    mock_get_template,
     fake_uuid,
     mock_update_broadcast_message,
     mock_update_broadcast_message_status,
@@ -5072,6 +5102,7 @@ def test_cant_reject_broadcast_in_wrong_state(
     initial_status,
     mock_get_broadcast_message_versions,
     mock_check_can_update_status,
+    mock_get_broadcast_message,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5456,23 +5487,23 @@ def test_edit_broadcast_page(
     assert form["method"] == "post"
     assert "action" not in form
 
-    assert normalize_spaces(page.select_one("label[for=name]").text) == "Reference"
-    assert page.select_one("input[type=text]")["name"] == "name"
+    assert normalize_spaces(page.select_one("label[for=reference]").text) == "Reference"
+    assert page.select_one("input[type=text]")["name"] == "reference"
 
-    assert normalize_spaces(page.select_one("label[for=template_content]").text) == "Alert message"
+    assert normalize_spaces(page.select_one("label[for=content]").text) == "Alert message"
     assert normalize_spaces(page.select_one("textarea").text) == "This is a test for edit_broadcast"
-    assert page.select_one("textarea")["name"] == "template_content"
+    assert page.select_one("textarea")["name"] == "content"
     assert page.select_one("textarea")["data-notify-module"] == "enhanced-textbox"
     assert page.select_one("textarea")["data-highlight-placeholders"] == "false"
 
     assert (page.select_one("[data-notify-module=update-status]")["data-updates-url"]) == url_for(
-        ".count_content_length", service_id=SERVICE_ONE_ID, template_type="broadcast", field="template_content"
+        ".count_content_length", service_id=SERVICE_ONE_ID, template_type="broadcast", field="content"
     )
 
     assert (
         (page.select_one("[data-notify-module=update-status]")["data-target"])
         == (page.select_one("textarea")["id"])
-        == "template_content"
+        == "content"
     )
 
     assert (page.select_one("[data-notify-module=update-status]")["aria-live"]) == "polite"
@@ -5520,8 +5551,8 @@ def test_edit_broadcast_page_displays_overwrite_banner(
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         _data={
-            "name": "Emergency broadcast",
-            "template_content": "Broadcast content",
+            "reference": "Emergency broadcast",
+            "content": "Broadcast content",
             "initial_name": "Something different",
             "initial_content": "Something different",
         },
@@ -5580,8 +5611,8 @@ def test_edit_broadcast_clicking_overwrite_in_banner_closes_banner(
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         _data={
-            "name": "Emergency broadcast overwritten",
-            "template_content": "This is a test for edit_broadcast",
+            "reference": "Emergency broadcast overwritten",
+            "content": "This is a test for edit_broadcast",
             "initial_name": "Something different",
             "initial_content": "This is a test for edit_broadcast",
         },
@@ -5606,8 +5637,8 @@ def test_edit_broadcast_clicking_overwrite_in_banner_closes_banner(
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         _data={
-            "name": "Emergency broadcast overwritten",
-            "template_content": "This is a test for edit_broadcast",
+            "reference": "Emergency broadcast overwritten",
+            "content": "This is a test for edit_broadcast",
             "initial_name": "Something different",
             "initial_content": "This is a test for edit_broadcast",
             "overwrite-reference": "",
@@ -5663,8 +5694,8 @@ def test_edit_broadcast_overwrite_updates_message_content(
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         _data={
-            "name": "Test Edit Alert",
-            "template_content": "Broadcast content",
+            "reference": "Test Edit Alert",
+            "content": "Broadcast content",
             "initial_name": "Test Edit Alert",
             "overwrite_content": "y",
         },
@@ -5712,7 +5743,7 @@ def test_edit_broadcast_keep_message_keeps_message_reference(
     )
     # Initial render of edit_broadcast page
     page = client_request.get(".edit_broadcast", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
-    assert page.select_one("input[name='name']")["value"] == "Test Edit Alert"
+    assert page.select_one("input[name='reference']")["value"] == "Test Edit Alert"
 
     # Posting new reference
     page2 = client_request.post(
@@ -5720,15 +5751,15 @@ def test_edit_broadcast_keep_message_keeps_message_reference(
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         _data={
-            "name": "Test Edit Alert NEW",
-            "template_content": "This is a test for edit_broadcast",
+            "reference": "Test Edit Alert NEW",
+            "content": "This is a test for edit_broadcast",
             "initial_name": "Something different",  # Simulates alert changed in the background
             "initial_content": "This is a test for edit_broadcast",
         },
         _expected_status=200,
     )
     # Assert reference field data has changed
-    assert page2.select_one("input[name='name']")["value"] == "Test Edit Alert NEW"
+    assert page2.select_one("input[name='reference']")["value"] == "Test Edit Alert NEW"
 
     assert [normalize_spaces(item.text) for item in page2.select(".banner-dangerous")] == [
         "A user has made changes to the alert reference. Would you like to overwrite "
@@ -5741,8 +5772,8 @@ def test_edit_broadcast_keep_message_keeps_message_reference(
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         _data={
-            "name": "Test Edit Alert NEW",
-            "template_content": "This is a test for edit_broadcast",
+            "reference": "Test Edit Alert NEW",
+            "content": "This is a test for edit_broadcast",
             "initial_name": "Test Edit Alert",  # Simulates alert changed in the background
             "initial_content": "This is a test for edit_broadcast",
             "keep-reference": "",
@@ -5752,7 +5783,7 @@ def test_edit_broadcast_keep_message_keeps_message_reference(
 
     # Asserts that the banner is closed and the reference field data has been reverted back to stored reference
     assert not page3.select(".banner-dangerous")
-    assert page.select_one("input[name='name']")["value"] == "Test Edit Alert"
+    assert page.select_one("input[name='reference']")["value"] == "Test Edit Alert"
 
 
 def test_edit_broadcast_updates_message(
@@ -5794,8 +5825,8 @@ def test_edit_broadcast_updates_message(
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
         _data={
-            "name": "Test Edit Alert NEW",
-            "template_content": "This is a test for edit_broadcast",
+            "reference": "Test Edit Alert NEW",
+            "content": "This is a test for edit_broadcast",
             "initial_name": "Test Edit Alert",
             "initial_content": "This is a test for edit_broadcast",
         },
@@ -6014,6 +6045,7 @@ def test_view_draft_broadcast_message_page(
             created_at="2020-02-20T20:20:20.000000",
             content="Hello",
             extra_content="Test Extra Content",
+            reference="Test Template Reference",
             duration=10_800,
         ),
     )
@@ -6038,7 +6070,7 @@ def test_view_draft_broadcast_message_page(
         "Downloads",
     ]
     assert [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__value")] == [
-        "Example template",
+        "Test Template Reference",
         "Emergency alert Hello",
         "Test Extra Content",
         "England Scotland Use the arrow keys to move the map. "
