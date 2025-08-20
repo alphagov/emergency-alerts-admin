@@ -13,6 +13,8 @@ from flask import Flask, Response, url_for
 from notifications_python_client.errors import HTTPError
 
 from app import create_app, webauthn_server
+from app.models.broadcast_message import BroadcastMessage
+from app.models.template import Template
 
 from . import (
     NotifyBeautifulSoup,
@@ -226,19 +228,6 @@ def mock_get_services_with_one_service(mocker, api_user_active):
 
 
 @pytest.fixture(scope="function")
-def mock_get_service_template(mocker):
-    def _get(service_id, template_id, version=None):
-        template = template_json(
-            service_id, template_id, "Sample Template", "broadcast", "Template <em>content</em> with & entity"
-        )
-        if version:
-            template.update({"version": version})
-        return {"data": template}
-
-    return mocker.patch("app.service_api_client.get_service_template", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
 def mock_get_template(mocker):
     def _get(service_id, template_id, version=None):
         template = template_json(
@@ -266,16 +255,16 @@ def mock_get_deleted_template(mocker):
             template.update({"version": version})
         return {"data": template}
 
-    return mocker.patch("app.service_api_client.get_service_template", side_effect=_get)
+    return mocker.patch("app.template_api_client.get_template", side_effect=_get)
 
 
 @pytest.fixture(scope="function")
 def mock_get_template_version(mocker, api_user_active):
-    def _get(service_id, template_id, version):
-        template_version = template_version_json(service_id, template_id, api_user_active, version=version)
+    def _get(service_id, template_id, version=1):
+        template_version = template_version_json(service_id, template_id, api_user_active, version)
         return {"data": template_version}
 
-    return mocker.patch("app.service_api_client.get_service_template", side_effect=_get)
+    return mocker.patch("app.template_api_client.get_template", side_effect=_get)
 
 
 @pytest.fixture(scope="function")
@@ -295,12 +284,21 @@ def mock_get_empty_service_template_with_optional_placeholder(mocker):
         )
         return {"data": template}
 
-    return mocker.patch("app.service_api_client.get_service_template", side_effect=_get)
+    return mocker.patch("app.template_api_client.get_template", side_effect=_get)
 
 
 @pytest.fixture(scope="function")
-def mock_get_broadcast_template(mocker):
-    def _get(service_id, template_id, version=None):
+def mock_create_template(mocker, fake_uuid):
+    def _create(name, type_, content, service, parent_folder_id=None):
+        template = template_json(fake_uuid, name, type_, content, service, parent_folder_id)
+        return {"data": template}
+
+    return mocker.patch("app.template_api_client.create_template", side_effect=_create)
+
+
+@pytest.fixture(scope="function")
+def mock_get_template_from_id(mocker):
+    def _get(template_id, service_id):
         template = template_json(
             service_id,
             template_id,
@@ -308,29 +306,18 @@ def mock_get_broadcast_template(mocker):
             "broadcast",
             "This is a test",
         )
-        if version:
-            template.update({"version": version})
-        return {"data": template}
+        return Template(template)
 
-    return mocker.patch("app.service_api_client.get_service_template", side_effect=_get)
+    return mocker.patch("app.models.template.Template.from_id", side_effect=_get)
 
 
 @pytest.fixture(scope="function")
-def mock_create_service_template(mocker, fake_uuid):
-    def _create(name, type_, content, service, parent_folder_id=None):
-        template = template_json(fake_uuid, name, type_, content, service, parent_folder_id)
+def mock_update_template(mocker):
+    def _update(id_, data, service_id):
+        template = template_json(id_=TEMPLATE_ONE_ID, service_id=service_id)
         return {"data": template}
 
-    return mocker.patch("app.service_api_client.create_service_template", side_effect=_create)
-
-
-@pytest.fixture(scope="function")
-def mock_update_service_template(mocker):
-    def _update(id_, name, type_, content, service):
-        template = template_json(service, id_, name, type_, content)
-        return {"data": template}
-
-    return mocker.patch("app.service_api_client.update_service_template", side_effect=_update)
+    return mocker.patch("app.template_api_client.update_template", side_effect=_update)
 
 
 @pytest.fixture(scope="function")
@@ -348,7 +335,7 @@ def mock_create_service_template_content_too_big(mocker):
         )
         raise http_error
 
-    return mocker.patch("app.service_api_client.create_service_template", side_effect=_create)
+    return mocker.patch("app.template_api_client.create_template", side_effect=_create)
 
 
 @pytest.fixture(scope="function")
@@ -366,7 +353,7 @@ def mock_update_service_template_400_content_too_big(mocker):
         )
         raise http_error
 
-    return mocker.patch("app.service_api_client.update_service_template", side_effect=_update)
+    return mocker.patch("app.template_api_client.update_template", side_effect=_update)
 
 
 def create_service_templates(service_id, number_of_templates=6):
@@ -398,7 +385,7 @@ def _template(template_type, name, parent=None, template_id=None):
 
 
 @pytest.fixture(scope="function")
-def mock_get_service_templates(mocker):
+def mock_get_templates(mocker):
     def _create(service_id):
         return create_service_templates(service_id)
 
@@ -410,7 +397,7 @@ def mock_get_more_service_templates_than_can_fit_onscreen(mocker):
     def _create(service_id):
         return create_service_templates(service_id, number_of_templates=20)
 
-    return mocker.patch("app.service_api_client.get_service_templates", side_effect=_create)
+    return mocker.patch("app.template_api_client.get_templates", side_effect=_create)
 
 
 @pytest.fixture(scope="function")
@@ -418,7 +405,7 @@ def mock_get_service_templates_when_no_templates_exist(mocker):
     def _create(service_id):
         return {"data": []}
 
-    return mocker.patch("app.service_api_client.get_service_templates", side_effect=_create)
+    return mocker.patch("app.template_api_client.get_templates", side_effect=_create)
 
 
 @pytest.fixture(scope="function")
@@ -432,29 +419,21 @@ def mock_get_service_templates_with_only_one_template(mocker):
             ]
         }
 
-    return mocker.patch("app.service_api_client.get_service_templates", side_effect=_get)
+    return mocker.patch("app.template_api_client.get_templates", side_effect=_get)
 
 
 @pytest.fixture(scope="function")
-def mock_delete_service_template(mocker):
+def mock_delete_template(mocker):
     def _delete(service_id, template_id):
         template = template_json(service_id, template_id, "Template to delete", "sms", "content to be deleted")
         return {"data": template}
 
-    return mocker.patch("app.service_api_client.delete_service_template", side_effect=_delete)
+    return mocker.patch("app.template_api_client.delete_template", side_effect=_delete)
 
 
 @pytest.fixture(scope="function")
 def mock_redact_template(mocker):
     return mocker.patch("app.service_api_client.redact_service_template")
-
-
-@pytest.fixture(scope="function")
-def mock_update_service_template_sender(mocker):
-    def _update(service_id, template_id, reply_to):
-        return
-
-    return mocker.patch("app.service_api_client.update_service_template_sender", side_effect=_update)
 
 
 @pytest.fixture(scope="function")
@@ -2167,14 +2146,14 @@ def create_template(
     service_id=SERVICE_ONE_ID,
     template_id=None,
     template_type="broadcast",
-    name="sample template",
+    reference="sample template",
     content="Template content",
     folder=None,
 ):
     return template_json(
         service_id=service_id,
         id_=template_id or str(generate_uuid()),
-        name=name,
+        reference=reference,
         type_=template_type,
         content=content,
         folder=folder,
@@ -2186,13 +2165,7 @@ def mock_create_broadcast_message(
     mocker,
     fake_uuid,
 ):
-    def _create(
-        *,
-        service_id,
-        template_id,
-        content,
-        reference,
-    ):
+    def _create(*, service_id, template_id, content, reference, areas=None):
         return {
             "id": fake_uuid,
         }
@@ -2268,6 +2241,29 @@ def mock_get_no_broadcast_messages(
 
 
 @pytest.fixture(scope="function")
+def mock_get_broadcast_message(mocker):
+    def _get(broadcast_message_id, service_id):
+        partial_json = partial(
+            broadcast_message_json,
+            service_id=service_id,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+        )
+        return BroadcastMessage(
+            partial_json(
+                id_=broadcast_message_id,
+                status="draft",
+                updated_at=(datetime.now(timezone.utc) - timedelta(hours=1, minutes=30)).isoformat(),
+            )
+        )
+
+    return mocker.patch(
+        "app.models.broadcast_message.BroadcastMessage.from_id",
+        side_effect=_get,
+    )
+
+
+@pytest.fixture(scope="function")
 def mock_get_broadcast_messages(
     mocker,
     fake_uuid,
@@ -2289,14 +2285,14 @@ def mock_get_broadcast_messages(
                 id_=uuid4(),
                 status="pending-approval",
                 updated_at=(datetime.now(timezone.utc) - timedelta(minutes=30)).isoformat(),
-                template_name="Half an hour ago",
+                reference="Half an hour ago",
                 finishes_at=None,
             ),
             partial_json(
                 id_=uuid4(),
                 status="pending-approval",
                 updated_at=(datetime.now(timezone.utc) - timedelta(hours=1, minutes=30)).isoformat(),
-                template_name="Hour and a half ago",
+                reference="Hour and a half ago",
                 finishes_at=None,
             ),
             partial_json(
