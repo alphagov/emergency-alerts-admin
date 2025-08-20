@@ -64,7 +64,7 @@ def mock_get_hierarchy_of_folders(mock_get_template_folders, active_user_with_pe
 
 def test_template_list_yields_folders_visible_to_user(
     mock_get_hierarchy_of_folders,
-    mock_get_service_templates,
+    mock_get_templates,
     service_one,
     active_user_with_permissions,
 ):
@@ -86,7 +86,7 @@ def test_template_list_yields_folders_visible_to_user(
 
 def test_template_list_yields_all_folders_without_user(
     mock_get_hierarchy_of_folders,
-    mock_get_service_templates,
+    mock_get_templates,
     service_one,
 ):
     service = Service(service_one)
