@@ -921,7 +921,7 @@ def get_broadcast_unsigned_xml(service_id, broadcast_message_id, xml_type):
 
 
 @user_has_permissions("create_broadcasts")
-def update_broadcast(service_id, message_id, form):
+def update_broadcast(service_id, message_id):
     message = BroadcastMessage.from_id(message_id, service_id=service_id) if message_id else None
 
     form = BroadcastTemplateForm()
@@ -958,7 +958,7 @@ def update_broadcast(service_id, message_id, form):
 
     return render_template(
         "views/broadcast/write-new-broadcast.html",
-        message=message,
+        broadcast_message=message,
         form=form,
     )
 
@@ -993,7 +993,7 @@ def create_new_broadcast(service_id):
 
     return render_template(
         "views/broadcast/write-new-broadcast.html",
-        message=message,
+        broadcast_message=message,
         form=form,
     )
 
@@ -1152,7 +1152,6 @@ def choose_broadcast_sub_area(service_id, library_slug, area_slug, message_id):
                 message_type="broadcast",
             )
         )
-
     if is_county:
         # area = county. sub_areas = districts. they have wards, so link to individual district pages
         return render_template(
@@ -1165,6 +1164,7 @@ def choose_broadcast_sub_area(service_id, library_slug, area_slug, message_id):
             message=message,
             county=area,
             back_link=back_link,
+            message_type="broadcast",
         )
 
     return render_template(
@@ -1176,6 +1176,7 @@ def choose_broadcast_sub_area(service_id, library_slug, area_slug, message_id):
         page_title=f"Choose an area of {area.name}",
         message=message,
         back_link=back_link,
+        message_type="broadcast",
     )
 
 
