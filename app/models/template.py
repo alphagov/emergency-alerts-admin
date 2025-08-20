@@ -25,6 +25,7 @@ class Template(BaseBroadcast):
         "reference",
         "created_by",
         "created_at",
+        "archived",
     }
 
     def __init__(self, _dict):
@@ -114,7 +115,7 @@ class Template(BaseBroadcast):
             template_api_client.update_template(id_=self.id, service_id=self.service, data=data)
 
     def get_template_version(self, service_id, version):
-        return template_api_client.get_template(service_id, self.id, version)
+        return template_api_client.get_template(service_id, self.id, version)["data"]
 
     def get_template_versions(self, service_id):
         return template_api_client.get_template_versions(service_id, self.id)["data"]
