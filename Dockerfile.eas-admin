@@ -25,6 +25,10 @@ RUN python$PYTHON_VERSION -m venv $VENV_ADMIN && \
 RUN echo "" > $DIR_ADMIN/environment.sh
 
 COPY scripts/start.sh /
+
+# Getting rid of our `node_modules`, because we only need them at build-time.
+RUN rm -rf $DIR_GOVUK/node_modules
+
 CMD bash /start.sh
 
 EXPOSE 6012

@@ -13,7 +13,7 @@
   &__value {
     font-family: monospace;
     display: block;
-    padding: 0 0 10px 0;
+    padding: 0 0 10px;
     margin: auto 0;
   }
 
@@ -22,7 +22,7 @@
 
     position: absolute;
     bottom: 2px;
-    left: 0px;
+    left: 0;
 
     &:active {
       top: auto;

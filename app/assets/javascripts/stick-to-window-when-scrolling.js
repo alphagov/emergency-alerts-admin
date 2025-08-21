@@ -63,7 +63,7 @@
       return focused;
     }
   };
-  ScrollArea.prototype.focusHandler = function (e) {
+  ScrollArea.prototype.focusHandler = function () {
     this.scrollToRevealElement($(document.activeElement));
   };
   ScrollArea.prototype.scrollToRevealElement = function ($el) {
@@ -272,7 +272,7 @@
   StickyElement.prototype.appliedClass = function () {
     return this._appliedClass;
   };
-  StickyElement.prototype.removeStickyClasses = function (sticky) {
+  StickyElement.prototype.removeStickyClasses = function () {
     this.$fixedEl.removeClass([
       this._initialFixedClass,
       this._fixedClass
@@ -281,7 +281,7 @@
   StickyElement.prototype.isStuck = function () {
     return this._appliedClass !== null;
   };
-  StickyElement.prototype.stick = function (sticky) {
+  StickyElement.prototype.stick = function () {
     this._appliedClass = this.stickyClass();
     this.$fixedEl.addClass(this._appliedClass);
     this._hasBeenCalled = true;
@@ -550,8 +550,6 @@
   };
   // Store all the dimensions for a sticky element to limit DOM queries
   Sticky.prototype.setElementDimensions = function (el, callback) {
-    var self = this;
-    var $el = el.$fixedEl;
     var onHeightSet = function () {
       // if element is shim'ed, pass changes in dimension on to the shim
       if (el._$shim) {
@@ -645,7 +643,7 @@
   Sticky.prototype.getElForNode = function (node) {
     var matches = $.grep(this._els, function (el) { return el.$fixedEl.is(node); });
 
-    return !!matches.length ? matches[0] : false;
+    return matches.length ? matches[0] : false;
   };
   Sticky.prototype.add = function (el, setPositions, cb) {
     var self = this;
@@ -677,7 +675,7 @@
     }
 
     self.setElementDimensions(elObj, onDimensionsSet);
-  }; 
+  };
   Sticky.prototype.remove = function (el) {
     if ($.inArray(el, this._els) !== -1) {
 

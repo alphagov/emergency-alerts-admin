@@ -74,8 +74,6 @@
     while(queue.length) queue.shift()(response);
   };
 
-  var clearQueue = queue => (queue.length = 0);
-
   var poll = function(renderer, resource, queue, form) {
 
     let startTime = Date.now();

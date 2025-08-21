@@ -14,7 +14,7 @@
 .column-main {
   .heading-large,
   > .heading-medium {
-    margin: govuk-spacing(3) 0 govuk-spacing(4) 0;
+    margin: govuk-spacing(3) 0 govuk-spacing(4);
     word-wrap: break-word;
 
     &.top-gutter-0 {
@@ -129,9 +129,11 @@ td {
 summary::-moz-details-marker {
   display: none;
 }
+
 summary::-ms-details-marker {
   display: none;
 }
+
 summary::-o-details-marker {
   display: none;
 }
@@ -182,14 +184,17 @@ details .arrow {
     background: govuk-colour("red");
     box-shadow: inset 0 0 0 2px govuk-colour("red"), inset 0 0 0 4px govuk-colour("white");
   }
+
   40% {
     background: govuk-colour("red");
     box-shadow: inset 0 0 0 2px govuk-colour("red"), inset 0 0 0 4px govuk-colour("white");
   }
+
   50% {
     background: govuk-colour("white");
     box-shadow: inset 0 0 0 2px govuk-colour("red"), inset 0 0 0 2px govuk-colour("white");
   }
+
   100% {
     background: govuk-colour("white");
     box-shadow: inset 0 0 0 2px govuk-colour("red"), inset 0 0 0 4px govuk-colour("white");

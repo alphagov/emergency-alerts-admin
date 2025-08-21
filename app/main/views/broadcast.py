@@ -364,9 +364,11 @@ def write_new_broadcast(service_id):
         broadcast_message_id = broadcast_message.id
         return redirect(
             url_for(
-                ".choose_extra_content"
-                if current_service.broadcast_channel != "operator"
-                else ".choose_broadcast_library",
+                (
+                    ".choose_extra_content"
+                    if current_service.broadcast_channel != "operator"
+                    else ".choose_broadcast_library"
+                ),
                 service_id=current_service.id,
                 broadcast_message_id=broadcast_message_id,
             )
@@ -652,9 +654,11 @@ def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
         form=form,
         search_form=SearchByNameForm(),
         show_search_form=(len(form.areas.choices) > 7),
-        page_title=f"Choose {library.name[0].lower()}{library.name[1:]}"
-        if library.name != "REPPIR DEPZ sites"
-        else "Choose REPPIR DEPZ sites",
+        page_title=(
+            f"Choose {library.name[0].lower()}{library.name[1:]}"
+            if library.name != "REPPIR DEPZ sites"
+            else "Choose REPPIR DEPZ sites"
+        ),
         broadcast_message=broadcast_message,
     )
 

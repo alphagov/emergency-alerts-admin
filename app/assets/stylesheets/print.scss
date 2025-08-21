@@ -11,7 +11,7 @@ $govuk-assets-path: "/static/";
 
 * {
   background: transparent;
-  color: black;
+  color: #000000;
   text-shadow: none;
   filter: none;
   -ms-filter: none;
@@ -36,24 +36,23 @@ a[href^="https://"]:after {
   font-size: 90%;
 }
 
-a[href^="javascript:"]:after,
-a[href^="#"]:after {
+a[href^="javascript:"]::after,
+a[href^="#"]::after {
   content: "";
 }
 
 img {
-  max-width: 100% !important;
+  max-width: 100% !important; // stylelint-disable-line declaration-no-important
 }
 
 select {
-  background: white;
+  background: #ffffff;
 }
 
 .govuk-header {
-
   .govuk-header__logo {
     @include govuk-font($size: 19);
-    text-rendering: optimizeLegibility;
+    text-rendering: optimizelegibility;
 
     a {
       &,
@@ -61,7 +60,7 @@ select {
         text-decoration: none;
       }
 
-      &:after {
+      &::after {
         content: "";
       }
     }
@@ -81,5 +80,5 @@ select {
 .notify-cookie-message,
 .govuk-skip-link,
 .govuk-footer {
-  display: none !important;
+  display: none !important; // stylelint-disable-line declaration-no-important
 }

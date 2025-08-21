@@ -49,7 +49,6 @@
       // high contrast mode. Remake using a border instead
       // Also sets text colour to match govuk-button
       @media (-ms-high-contrast: active), (forced-colors: active) {
-
         &:link,
         &:active,
         &:hover,
@@ -151,14 +150,14 @@
   }
 
   &--certain {
-    &:before {
+    &::before {
       border: 2px solid $govuk-input-border-colour;
       background: govuk-tint(govuk-colour("light-blue"), 50);
     }
   }
 
   &--likely {
-    &:before {
+    &::before {
       padding: 1px;
       border: 2px dashed $govuk-brand-colour;
       border-image: file-url('dashed-border-govuk-blue.svg') 4 round;
@@ -170,7 +169,8 @@
     padding-left: govuk-spacing(1);
     margin-right: 0;
     float: right;
-    &:before {
+
+    &::before {
       display: none;
     }
   }
@@ -178,7 +178,6 @@
 }
 
 .area-list-map-details {
-
   .govuk-details__summary {
     display: block;
     padding-top: govuk-spacing(1);

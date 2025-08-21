@@ -5,11 +5,10 @@
 
 .table-heading {
   text-align: left;
-  margin: govuk-spacing(3) 0 govuk-spacing(3) 0;
+  margin: govuk-spacing(3) 0;
 }
 
 .dashboard-table {
-
   .heading-medium {
     margin-bottom: 5px;
   }
@@ -56,14 +55,13 @@
 }
 
 .template-statistics-table {
-
   .table {
     table-layout: fixed;
   }
 
   .table-heading {
     @include govuk-font(19);
-    margin: 0 0 10px 0;
+    margin: 0 0 10px;
   }
 
   .table-field-heading-first {
@@ -92,8 +90,8 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    padding: 10px 0 32px 0;
-    margin: -10px 0 -32px 0;
+    padding: 10px 0 32px;
+    margin: -10px 0 -32px;
 
     &:focus {
 
@@ -116,14 +114,12 @@
 }
 
 .settings-table {
-
   table {
     table-layout: fixed;
     margin-bottom: govuk-spacing(1);
   }
 
   th {
-
     &:first-child {
       width: 35%;  // 33.33% + fudge
     }
@@ -135,9 +131,7 @@
   }
 
   td.table-field-left-aligned {
-
     &:first-child {
-
       div {
         white-space: normal;
       }
@@ -157,7 +151,6 @@
   }
 
   td.table-field-wrap-text {
-
     div {
       white-space: normal;
     }
@@ -175,7 +168,6 @@
 }
 
 .usage-table {
-
   .table-field-heading-first {
     width: 35%;  // 33.33% + fudge
   }
@@ -218,7 +210,6 @@
   }
 
   &-status {
-
     &-default {
       color: $govuk-secondary-text-colour;
     }
@@ -238,7 +229,6 @@
     }
 
     &-sent-international {
-
       .status-hint {
         display: block;
         font-weight: normal;
@@ -263,7 +253,7 @@
   }
 
   &-noborder {
-    border: 0px;
+    border: 0;
   }
 
   &-index {
@@ -272,8 +262,7 @@
     width: 15px;
 
     a {
-
-      &:before {
+      &::before {
         content: '';
         position: absolute;
         top: 0;
@@ -286,7 +275,7 @@
 
         box-shadow: none;
 
-        &:before {
+        &::before {
           background: $govuk-focus-colour;
           box-shadow: inset 0 -4px 0 0 $govuk-focus-text-colour;
           z-index: -1;
@@ -298,7 +287,7 @@
   }
 
   p {
-    margin: 0 0 5px 0;
+    margin: 0 0 5px;
   }
 
 }
@@ -309,9 +298,8 @@
 
 
 .table-field-headings {
-
   th {
-    padding: 1px; /* needs some height for the grey border to show */
+    padding: 1px; // needs some height for the grey border to show
   }
 
 }
@@ -328,7 +316,6 @@
 
 .table-field-headings,
 .table-field-headings-visible {
-
   th {
     @include govuk-font(19, $weight: bold);
   }
@@ -340,7 +327,6 @@
 }
 
 .table-field-heading {
-
   &:last-child {
     padding-right: 0;
   }
@@ -362,12 +348,12 @@
     display: block;
     position: relative;
 
-    /* remove default focus styles in favour of those for :before pseudo class */
+    // remove default focus styles in favour of those for :before pseudo class
     &:focus {
       box-shadow: none;
     }
 
-    &:before {
+    &::before {
       content: "";
       display: block;
 
@@ -381,8 +367,8 @@
       background: transparent;
     }
 
-    &:focus:before {
-      box-shadow: inset 0px -4px $govuk-focus-text-colour, inset 0px 15px $govuk-focus-colour, inset 15px 0px $govuk-focus-colour, inset 0px -11px $govuk-focus-colour;
+    &:focus::before {
+      box-shadow: inset 0 -4px $govuk-focus-text-colour, inset 0 15px $govuk-focus-colour, inset 15px 0 $govuk-focus-colour, inset 0 -11px $govuk-focus-colour;
     }
 
   }
@@ -400,7 +386,7 @@ td.table-empty-message {
   @include govuk-font(19);
   color: $govuk-secondary-text-colour;
   border-bottom: 1px solid $govuk-border-colour;
-  padding: 20px 0 20px 0;
+  padding: 20px 0;
 }
 
 .table-show-more-link {
@@ -409,7 +395,7 @@ td.table-empty-message {
   color: $govuk-secondary-text-colour;
   margin-bottom: govuk-spacing(7);
   border-bottom: 1px solid $govuk-border-colour;
-  padding: 35px 0 10px 0;
+  padding: 35px 0 10px;
   text-align: center;
 
   .table + & {
@@ -429,7 +415,7 @@ a.table-show-more-link {
   margin-bottom: govuk-spacing(7);
   border-top: 1px solid $govuk-border-colour;
   border-bottom: 1px solid $govuk-border-colour;
-  padding: 0.75em 0 0.5625em 0;
+  padding: 0.75em 0 0.5625em;
 }
 
 .wide-left-hand-column {

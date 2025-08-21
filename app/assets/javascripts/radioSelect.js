@@ -3,11 +3,10 @@
   "use strict";
 
   var Modules = global.GOVUK.NotifyModules;
-  var Hogan = global.Hogan;
 
   // Object holding all the states for the component's HTML
   let states = {
-    'initial': Hogan.compile(`
+    'initial': window.Hogan.compile(`
       {{#showNowAsDefault}}
         <div class="radio-select__column">
           <div class="govuk-radios__item">
@@ -22,7 +21,7 @@
         {{/categories}}
       </div>
     `),
-    'choose': Hogan.compile(`
+    'choose': window.Hogan.compile(`
       {{#showNowAsDefault}}
         <div class="radio-select__column">
           <div class="govuk-radios__item">
@@ -41,7 +40,7 @@
         <input type='button' class='govuk-button govuk-button--secondary radio-select__button--done' aria-expanded='true' value='Done' />
       </div>
     `),
-    'chosen': Hogan.compile(`
+    'chosen': window.Hogan.compile(`
       {{#showNowAsDefault}}
         <div class="radio-select__column">
           <div class="govuk-radios__item">
@@ -151,7 +150,7 @@
           shiftFocus('option', component);
 
         })
-        .on('mousedown', '.js-option', function(event) {
+        .on('mousedown', '.js-option', function() {
           mousedownOption = this;
 
           // mouseup on the same option completes the click action

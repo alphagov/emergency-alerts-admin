@@ -1,6 +1,6 @@
 .hmrc-timeout {
   &-dialog {
-    background-color: #FFF;
+    background-color: #FFFFFF;
     border: 5px solid #0B0C0C;
     left: 30%;
     overflow-x: hidden;
@@ -32,14 +32,14 @@
       width: 435px;
   }
   }
+
   &-dialog__message {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-family: GDS Transport, arial, sans-serif;
+    font-family: "GDS Transport", arial, sans-serif;
     font-size: 16px;
     font-size: 1rem;
     font-weight: 400;
-    line-height: 1.25;
     line-height: 1.31579;
   }
   @media print {
@@ -57,7 +57,9 @@
       font-size: 14pt;
       line-height: 1.15;
   }
-  }&-dialog__countdown {
+  }
+
+&-dialog__countdown {
     display: inline-block;
     font-weight: 700;
     white-space: nowrap;
@@ -68,11 +70,13 @@
       line-height: 2.5em;
       vertical-align: baseline;
   }
-  }&-dialog__link {
+  }
+
+&-dialog__link {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     display: inline-block;
-    font-family: GDS Transport, arial, sans-serif;
+    font-family: "GDS Transport", arial, sans-serif;
     font-size: 18px;
     font-size: 1.125rem;
     font-weight: 400;
@@ -97,11 +101,10 @@
     &-dialog__link {
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      font-family: GDS Transport, arial, sans-serif;
+      font-family: "GDS Transport", arial, sans-serif;
       font-size: 16px;
       font-size: 1rem;
       font-weight: 400;
-      line-height: 1.25;
       line-height: 1.5;
       padding: .526315em .789473em .263157em;
       position: relative;

@@ -44,7 +44,7 @@
   };
   Summary.prototype.bindEvents = function () {
     // take summary out of tab order when focus moves
-    this.$el.on('blur', (e) => $(this).attr('tabindex', '-1'));
+    this.$el.on('blur', () => $(this).attr('tabindex', '-1'));
   };
 
   function Footer (module) {
@@ -158,12 +158,10 @@
       this.expand(e);
     }
   };
-  CollapsibleCheckboxes.prototype.handleSelection = function(e) {
+  CollapsibleCheckboxes.prototype.handleSelection = function() {
     this.summary.update(this.getSelection(), this.total, this.fieldLabel);
   };
   CollapsibleCheckboxes.prototype.bindEvents = function() {
-    const self = this;
-
     this.$formGroup.on('click', '.govuk-button', this.handleClick.bind(this));
     this.$checkboxes.on('click', this.handleSelection.bind(this));
 

@@ -1,3 +1,5 @@
+/* eslint no-undef: 0 */ // The vars aren't globally scoped and are therefore viewed as undefined
+
 window.GOVUK.Frontend.initAll();
 
 var consentData = window.GOVUK.getConsentCookie();

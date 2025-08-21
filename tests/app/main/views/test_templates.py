@@ -906,7 +906,7 @@ def test_should_create_broadcast_template_without_downgrading_unicode_characters
     client_request,
     mock_create_service_template,
 ):
-    msg = "here:\tare some “fancy quotes” and non\u200Bbreaking\u200Bspaces"
+    msg = "here:\tare some “fancy quotes” and non\u200bbreaking\u200bspaces"
 
     client_request.post(
         ".add_service_template",
