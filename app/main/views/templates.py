@@ -1190,6 +1190,8 @@ def search_coordinates_for_template(service_id, coordinate_type, template_id=Non
 def remove_template_area(service_id, template_id, area_slug):
     template = Template.from_id(template_id, service_id=service_id)
     template.remove_area(area_slug)
+    # Fetch updated template as not returned by method
+    template = Template.from_id(template_id, service_id=service_id)
     url = ".choose_library" if len(template.areas) == 0 else ".preview_areas"
     return redirect(
         url_for(
