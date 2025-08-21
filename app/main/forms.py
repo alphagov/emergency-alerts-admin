@@ -1912,5 +1912,5 @@ class ChooseTemplateFieldsForm(StripWhitespaceForm):
             },
             "hint": {"text": "Select one option"},
         },
-        validators=[DataRequired(message="Select which type of coordinates you'd like to use")],
+        validators=[DataRequired(message="Select which fields you'd like to use to populate template")],
     )
