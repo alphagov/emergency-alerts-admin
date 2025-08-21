@@ -15,6 +15,7 @@ from notifications_python_client.errors import HTTPError
 from app import create_app, webauthn_server
 from app.models.broadcast_message import BroadcastMessage
 from app.models.template import Template
+from tests.app.broadcast_areas.custom_polygons import ENGLAND
 
 from . import (
     NotifyBeautifulSoup,
@@ -235,6 +236,27 @@ def mock_get_template(mocker):
         )
         if version:
             template.update({"version": version})
+        return {"data": template}
+
+    return mocker.patch("app.template_api_client.get_template", side_effect=_get)
+
+
+@pytest.fixture(scope="function")
+def mock_get_template_with_area(mocker):
+    def _get(service_id, template_id, version=None):
+        template = template_json(
+            service_id,
+            template_id,
+            "Sample Template",
+            "broadcast",
+            "Template <em>content</em> with & entity",
+            areas={
+                "ids": ["ctry19-E92000001"],
+                "names": ["England"],
+                "aggregate_names": ["England"],
+                "simple_polygons": ENGLAND,
+            },
+        )
         return {"data": template}
 
     return mocker.patch("app.template_api_client.get_template", side_effect=_get)
