@@ -445,7 +445,7 @@ def delete_template_folder(service_id, template_folder_id):
 )
 @user_has_permissions("manage_templates")
 def add_service_template(service_id, template_type, template_folder_id=None):
-    adding_area = request.args.get("adding_area", False)
+    adding_area = request.args.get("adding_area")
     if template_type not in current_service.available_template_types:
         return redirect(
             url_for(
@@ -729,7 +729,6 @@ def choose_template_fields(service_id, template_folder_id=None):
                     service_id=service_id,
                     template_type="broadcast",
                     template_folder_id=template_folder_id,
-                    adding_area=False,
                 )
             )
         elif template_fields == "area_only":
