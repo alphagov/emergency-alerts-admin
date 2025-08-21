@@ -15,7 +15,7 @@ from notifications_python_client.errors import HTTPError
 from app import create_app, webauthn_server
 from app.models.broadcast_message import BroadcastMessage
 from app.models.template import Template
-from tests.app.broadcast_areas.custom_polygons import ENGLAND
+from tests.app.broadcast_areas.custom_polygons import ENGLAND, HG3_2RL
 
 from . import (
     NotifyBeautifulSoup,
@@ -257,6 +257,45 @@ def mock_get_template_with_area(mocker):
                 "simple_polygons": ENGLAND,
             },
         )
+        return {"data": template}
+
+    return mocker.patch("app.template_api_client.get_template", side_effect=_get)
+
+
+@pytest.fixture(scope="function")
+def mock_get_template_with_custom_area(mocker):
+    def _get(service_id, template_id, version=None):
+        template = template_json(
+            service_id,
+            template_id,
+            "Sample Template",
+            "broadcast",
+            "Template <em>content</em> with & entity",
+            areas={
+                "ids": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
+                "names": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
+                "aggregate_names": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
+                "simple_polygons": [HG3_2RL],
+            },
+        )
+        return {"data": template}
+
+    return mocker.patch("app.template_api_client.get_template", side_effect=_get)
+
+
+@pytest.fixture(scope="function")
+def mock_get_template_with_no_area(mocker):
+    def _get(service_id, template_id, version=None):
+        template = {
+            "id": template_id,
+            "reference": "Sample template",
+            "template_type": "broadcast",
+            "content": "Sample template content",
+            "service": service_id,
+            "version": version,
+            "areas": {},
+            "folder": None,
+        }
         return {"data": template}
 
     return mocker.patch("app.template_api_client.get_template", side_effect=_get)
