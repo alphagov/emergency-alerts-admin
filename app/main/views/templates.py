@@ -917,9 +917,11 @@ def choose_template_area(service_id, library_slug, template_id=None, template_fo
         form=form,
         search_form=SearchByNameForm(),
         show_search_form=(len(form.areas.choices) > 7),
-        page_title=f"Choose {library.name[0].lower()}{library.name[1:]}"
-        if library.name != "REPPIR DEPZ sites"
-        else "Choose REPPIR DEPZ sites",
+        page_title=(
+            f"Choose {library.name[0].lower()}{library.name[1:]}"
+            if library.name != "REPPIR DEPZ sites"
+            else "Choose REPPIR DEPZ sites"
+        ),
         message=template,
         back_link=url_for(
             ".choose_library",
