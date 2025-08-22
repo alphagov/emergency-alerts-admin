@@ -13,9 +13,7 @@ def app_with_mock_config(mocker):
     subdomain = (
         "dev."
         if os.environ.get("ENVIRONMENT") == "development"
-        else f"{os.environ.get('ENVIRONMENT')}."
-        if os.environ.get("ENVIRONMENT") != "production"
-        else ""
+        else f"{os.environ.get('ENVIRONMENT')}." if os.environ.get("ENVIRONMENT") != "production" else ""
     )
 
     app.config = {

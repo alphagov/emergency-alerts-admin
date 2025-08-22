@@ -14,7 +14,6 @@ $notify-secondary-button-hover-colour: govuk-shade(govuk-colour("light-grey"), 1
 }
 
 .govuk-header {
-
   &__logo {
     width: auto;
     padding-right: 5px;
@@ -38,7 +37,7 @@ $notify-secondary-button-hover-colour: govuk-shade(govuk-colour("light-grey"), 1
 }
 
 .govuk-button {
-  margin-bottom: 0px;
+  margin-bottom: 0;
 }
 
 // Allow legends that contain the h1 to go full width

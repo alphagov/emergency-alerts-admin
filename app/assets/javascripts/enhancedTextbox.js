@@ -5,7 +5,7 @@
     !('oninput' in document.createElement('input'))
   ) return;
 
-  const tagPattern = /\(\(([^\)\((\?)]+)(\?\?)?([^\)\(]*)\)\)/g;
+  const tagPattern = /\(\(([^\)\((\?)]+)(\?\?)?([^\)\(]*)\)\)/g; // eslint-disable-line no-useless-escape
 
   Modules.EnhancedTextbox = function() {
 

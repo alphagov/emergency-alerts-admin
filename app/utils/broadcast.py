@@ -362,13 +362,15 @@ def render_current_alert_page(
         broadcast_message=broadcast_message,
         rejection_form=RejectionReasonForm() if rejection_form is None else rejection_form,
         return_for_edit_form=ReturnForEditForm() if return_for_edit_form is None else return_for_edit_form,
-        form=ConfirmBroadcastForm(
-            service_is_live=current_service.live,
-            channel=current_service.broadcast_channel,
-            max_phones=broadcast_message.count_of_phones_likely,
-        )
-        if confirm_broadcast_form is None
-        else confirm_broadcast_form,
+        form=(
+            ConfirmBroadcastForm(
+                service_is_live=current_service.live,
+                channel=current_service.broadcast_channel,
+                max_phones=broadcast_message.count_of_phones_likely,
+            )
+            if confirm_broadcast_form is None
+            else confirm_broadcast_form
+        ),
         is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
         areas=format_areas_list(broadcast_message.areas),
         back_link=url_for(
@@ -377,9 +379,9 @@ def render_current_alert_page(
         ),
         hide_stop_link=hide_stop_link,
         broadcast_message_version_count=broadcast_message.get_count_of_versions(),
-        last_updated_time=broadcast_message.get_latest_version().get("created_at")
-        if broadcast_message.get_latest_version()
-        else None,
+        last_updated_time=(
+            broadcast_message.get_latest_version().get("created_at") if broadcast_message.get_latest_version() else None
+        ),
         edit_reasons=broadcast_message.get_returned_for_edit_reasons(),
         returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
         errors=errors,

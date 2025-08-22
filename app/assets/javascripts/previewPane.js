@@ -16,7 +16,7 @@
   const $previewPane = $(`<iframe src="/_${previewType}?${buildQueryString(['branding_style', branding_style])}" class="branding-preview" scrolling="no"></iframe>`);
 
   function buildQueryString () {
-    return $.map(arguments, (val, idx) => encodeURI(val[0]) + '=' + encodeURI(val[1])).join('&');
+    return $.map(arguments, (val,) => encodeURI(val[0]) + '=' + encodeURI(val[1])).join('&');
   }
 
   function setPreviewPane (e) {

@@ -157,11 +157,11 @@
                       // space, enter or no keyCode (must be mouse input)
                       if ([13, 32, undefined].indexOf(event.keyCode) > -1) {
                         event.preventDefault();
-                        if (opts.hasOwnProperty('onclick')) { opts.onclick(); }
+                        if (Object.prototype.hasOwnProperty.call(opts, 'onclick')) { opts.onclick(); }
                       }
                     });
 
-        if (opts.hasOwnProperty('nonvisualText')) {
+        if (Object.prototype.hasOwnProperty.call(opts, 'nonvisualText')) {
           $btn.append(`<span class="govuk-visually-hidden"> ${opts.nonvisualText}</span>`);
         }
 

@@ -3,10 +3,9 @@ $govuk-touch-target-size: 70px;
 $govuk-checkboxes-size: 40px;
 
 .selection-summary {
-
   .selection-summary__text {
     @include govuk-font(19, $tabular: true);
-    padding: 5px 0 0 0;
+    padding: 5px 0 0;
     margin-bottom: govuk-spacing(3);
 
     &:focus {
@@ -19,7 +18,7 @@ $govuk-checkboxes-size: 40px;
     background-image: file-url('folder-black.svg');
     background-repeat: no-repeat;
     background-size: 39px auto;
-    background-position: 0px 4px;
+    background-position: 0 4px;
   }
 
 }
@@ -38,7 +37,7 @@ $govuk-checkboxes-size: 40px;
     float: none;
     position: relative;
 
-    &:before {
+    &::before {
       content: "";
       position: absolute;
       bottom: 0;
@@ -52,7 +51,7 @@ $govuk-checkboxes-size: 40px;
       float: none;
     }
 
-    [type=checkbox]+label::before {
+    [type="checkbox"]+label::before {
       // To overlap the grey inset line
       background: govuk-colour("white");
     }
@@ -82,7 +81,7 @@ $govuk-checkboxes-size: 40px;
   margin-bottom: govuk-spacing(1) * -1;
   padding-left: govuk-spacing(2) + 2;
 
-  &:before {
+  &::before {
     content: "";
     position: absolute;
     bottom: 0;

@@ -883,7 +883,7 @@ def test_should_not_update_broadcast_template_with_emoji(
 def test_should_create_broadcast_template_without_downgrading_unicode_characters(
     client_request, mock_get_template_from_id, mocker, fake_uuid
 ):
-    msg = "here:\tare some “fancy quotes” and non\u200Bbreaking\u200Bspaces"
+    msg = "here:\tare some “fancy quotes” and non\u200bbreaking\u200bspaces"
     template = template_json(SERVICE_ONE_ID, fake_uuid, reference="Template")
     mock_create_template = mocker.patch("app.models.template.Template.create", return_value=Template(template))
 

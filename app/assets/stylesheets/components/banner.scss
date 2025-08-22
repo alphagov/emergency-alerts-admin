@@ -6,7 +6,7 @@
   color: $govuk-success-colour;
   display: block;
   padding: govuk-spacing(3);
-  margin: govuk-spacing(3) 0 govuk-spacing(6) 0;
+  margin: govuk-spacing(3) 0 govuk-spacing(6);
   text-align: left;
   position: relative;
   clear: both;
@@ -17,7 +17,7 @@
   }
 
   p {
-    margin: 10px 0 5px 0;
+    margin: 10px 0 5px;
   }
 
   .page-footer {
@@ -132,7 +132,7 @@
     font-weight: bold;
     display: block;
     padding: 0 ;
-    margin: 0 0 govuk-spacing(6) 0;
+    margin: 0 0 govuk-spacing(6);
 
     &:focus {
       background-color: $govuk-focus-colour;
@@ -166,7 +166,7 @@
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
-  padding: (govuk-spacing(3) - 1px) 0 (govuk-spacing(3) + 1px) 0;
+  padding: (govuk-spacing(3) - 1px) 0 (govuk-spacing(3) + 1px);
   border-top: 1px solid $govuk-border-colour;
   border-bottom: 1px solid $govuk-border-colour;
   margin-bottom: govuk-spacing(6);
@@ -206,7 +206,7 @@
     @include govuk-font(24, $weight: bold);
     @include govuk-link-decoration;
     padding-right: govuk-spacing(6);
-    margin: 10px 0px 5px; // 10px includes 5px extra to counter the -5px margin-top on the count item
+    margin: 10px 0 5px; // 10px includes 5px extra to counter the -5px margin-top on the count item
     flex: 2 1 auto;
   }
 

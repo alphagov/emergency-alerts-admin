@@ -41,7 +41,6 @@
     };
 
     this.addClearButton = function(state) {
-      let selector = 'button[value=add-new-template]';
       let $clear = this.makeButton('Clear', {
         'onclick': () => {
 
@@ -67,11 +66,11 @@
                       // space, enter or no keyCode (must be mouse input)
                       if ([13, 32, undefined].indexOf(event.keyCode) > -1) {
                         event.preventDefault();
-                        if (opts.hasOwnProperty('onclick')) { opts.onclick(); }
+                        if (Object.prototype.hasOwnProperty.call(opts, 'onclick')) { opts.onclick(); }
                       }
                     });
 
-        if (opts.hasOwnProperty('nonvisualText')) {
+        if (Object.prototype.hasOwnProperty.call(opts, 'nonvisualText')) {
           $btn.append(`<span class="govuk-visually-hidden"> ${opts.nonvisualText}</span>`);
         }
 
@@ -147,9 +146,6 @@
     };
 
     this.render = function() {
-      let mode = 'default';
-      let currentStateObj = this.states.filter(state => { return (state.key === this.currentState); })[0];
-
       // detach everything, unless they are the currentState
       this.states.forEach(
         state => (state.key === this.currentState ? this.$liveRegionCounter.before(state.$el) : state.$el.detach())

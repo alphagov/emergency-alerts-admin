@@ -1,5 +1,4 @@
 .dashboard {
-
   th {
     font-weight: normal;
   }
@@ -36,7 +35,7 @@
     padding: 10px 6px 8px 0;
     text-indent: 12px;
     text-align: right;
-    margin: 2px 0 1px 0;
+    margin: 2px 0 1px;
     transition: width 0.6s ease-in-out;
   }
 
@@ -120,36 +119,32 @@
   &-hint {
     @include govuk-font(16);
     color: $govuk-secondary-text-colour;
-    display: -webkit-box;
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2; /* number of lines to show */
+    -webkit-line-clamp: 2; // number of lines to show
     max-width: 60ch;
   }
 
   &-hint-large {
     @include govuk-font(19);
-    display: block;
     color: $govuk-secondary-text-colour;
-    display: -webkit-box;
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2; /* number of lines to show */
+    -webkit-line-clamp: 2; // number of lines to show
     max-width: 60ch;
   }
 
 }
 
-/* The focus state for sibling links overlaps the hint so the hint's text colour needs to adapt */
+// The focus state for sibling links overlaps the hint so the hint's text colour needs to adapt
 .govuk-link:focus {
-
   &.file-list-filename,
   &.file-list-filename-large {
-    /* override box-shadow to push underline down a bit */
+    // override box-shadow to push underline down a bit
     box-shadow: 0 -2px $govuk-focus-colour, 0 5px $govuk-focus-text-colour;
 
     // File-list items contained by keyline-blocks have more spacing at the top so adapt to cover it
@@ -168,7 +163,6 @@
 // Note: this selector should use the :has() pseudo-class in the future when it is supported
 //       which will remove the need for JS
 .file-list .js-child-has-focus {
-
   & + .file-list-hint-large,
   & ~ .file-list-status {
     color: $govuk-focus-text-colour;

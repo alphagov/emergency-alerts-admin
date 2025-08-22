@@ -7,19 +7,16 @@
     flex-grow: 1;
     text-align: left;
 
-    /*
-      For browsers that don’t support flexbox, use float instead.
-      Float does not create floating of flex item, and do not take it
-      out-of-flow. So this is ignored by browsers that support flexbox.
-      See: https://www.w3.org/TR/css-flexbox-1/#flex-containers
-    */
+    // For browsers that don’t support flexbox, use float instead.
+    // Float does not create floating of flex item, and do not take it
+    // out-of-flow. So this is ignored by browsers that support flexbox.
+    // See: https://www.w3.org/TR/css-flexbox-1/#flex-containers
     float: left;
-    /*
-      Setting this as a flex container means the contents (1 item)
-      will fill the vertical space due to `align-items` defaulting
-      to `stretch`.
-      See: https://css-tricks.com/snippets/css/a-guide-to-flexbox/#prop-align-items
-    */
+
+    // Setting this as a flex container means the contents (1 item)
+    // will fill the vertical space due to `align-items` defaulting
+    // to `stretch`.
+    // See: https://css-tricks.com/snippets/css/a-guide-to-flexbox/#prop-align-items
     display: flex;
   }
 
@@ -48,10 +45,11 @@
       z-index: 10;
       background-color: $govuk-focus-colour;
       color: $govuk-focus-text-colour; // required for Safari, which doesn't fire :focus on :active
-      /* override default focus styles to inset bottom underline */
+
+      // override default focus styles to inset bottom underline
       box-shadow: inset 0 -4px $govuk-focus-text-colour;
       border: none;
-      padding: 12px 2px; /* compensate for lack of border with padding */
+      padding: 12px 2px; // compensate for lack of border with padding
     }
   }
 
@@ -77,8 +75,8 @@
       z-index: 1000;
       color: $govuk-focus-text-colour; // required for Safari, which doesn't fire :focus on :active
       border: solid 2px $govuk-focus-text-colour;
-      padding: 10px 0px; /* reset padding to default */
-      box-shadow: inset 0 -2px $govuk-focus-text-colour; /* remove bottom border from underline */
+      padding: 10px 0; // reset padding to default
+      box-shadow: inset 0 -2px $govuk-focus-text-colour; // remove bottom border from underline
     }
 
   }
@@ -115,11 +113,9 @@
 }
 
 .pill-separate {
-
   &-item {
 
     display: block;
-    text-align: left;
     background-color: $govuk-link-colour; // text colour is set in the HTML by govuk-link--inverse
     padding: 9px (govuk-spacing(3) - 1);
     border: 1px solid transparent;
@@ -131,7 +127,8 @@
       background-color: $govuk-focus-colour;
       color: $govuk-focus-text-colour; // required for Safari, which doesn't fire :focus on :active
       text-decoration: none; // required for Safari, which doesn't fire :focus on :active
-      /* override default focus style to inset bottom underline */
+
+      // override default focus style to inset bottom underline
       box-shadow: inset 0 -4px $govuk-focus-text-colour;
     }
 

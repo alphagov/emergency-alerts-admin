@@ -7,7 +7,7 @@ $app-body-text-line-height-default: get-govuk-typography-style($size: 19, $break
   height: govuk-spacing(6);
   position: relative;
 
-  &:before {
+  &::before {
     content: "";
     display: block;
     position: absolute;
@@ -31,8 +31,7 @@ $govuk-checkboxes-label-padding-left-right: govuk-spacing(3);
 $message-type-bottom-spacing: govuk-spacing(4);
 
 a {
-
-  &:hover .message-name-separator:before {
+  &:hover .message-name-separator::before {
     border-color: $govuk-link-hover-colour;
   }
 
@@ -41,7 +40,7 @@ a {
     margin-right: -2px;
     margin-left: -2px;
 
-    &:before {
+    &::before {
       border-color: $govuk-link-colour;
     }
   }
@@ -53,9 +52,7 @@ a {
 }
 
 .template-list {
-
   &-item {
-
     &-with-checkbox {
       padding-left: 44px + $govuk-checkboxes-label-padding-left-right;
       min-height: $govuk-touch-target-size;
@@ -77,7 +74,6 @@ a {
     }
 
     &-without-ancestors {
-
       a {
 
         display: block;
@@ -102,8 +98,8 @@ a {
       .template-list-template,
       .template-list-folder {
 
-        position: relative; /* contain absolutely positioned ::before pseudo element*/
-        display: block; /* fill horizontal space to allow hint/meta below to float */
+        position: relative; // contain absolutely positioned ::before pseudo element
+        display: block; // fill horizontal space to allow hint/meta below to float
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -111,8 +107,8 @@ a {
         &::before {
           content: '';
           position: absolute;
-          left: 0px;
-          bottom: -1 * $app-body-text-line-height-default; /* extend link by line height of hint/meta so it covers it */
+          left: 0;
+          bottom: -1 * $app-body-text-line-height-default; // extend link by line height of hint/meta so it covers it */
           width: 100%;
           height: $app-body-text-line-height-default;
 
@@ -123,7 +119,6 @@ a {
         }
 
         &:focus {
-
           &,
           &::before {
             background-color: $govuk-focus-colour;
@@ -136,14 +131,14 @@ a {
           }
 
           &::before {
-            box-shadow: 0px -2px $govuk-focus-colour, 0px 4px $govuk-focus-text-colour;
+            box-shadow: 0 -2px $govuk-focus-colour, 0 4px $govuk-focus-text-colour;
           }
 
         }
 
         & + .template-list-item-hint,
         & + .message-type {
-          position: relative; /* needs to be non-static to have a z-index above the link :before element */
+          position: relative; // needs to be non-static to have a z-index above the link :before element
         }
 
       }
@@ -185,7 +180,7 @@ a {
     background-image: file-url('folder-blue-bold.svg');
     background-repeat: no-repeat;
     background-size: auto 20px;
-    background-position: 0px 4px;
+    background-position: 0 4px;
 
     @include govuk-media-query($from: tablet) {
       padding-left: 40px;
@@ -210,7 +205,7 @@ a {
 
   &-empty {
     color: $govuk-secondary-text-colour;
-    padding: govuk-spacing(3) 0 govuk-spacing(2) 0;
+    padding: govuk-spacing(3) 0 govuk-spacing(2);
   }
 }
 
@@ -244,9 +239,8 @@ a {
 }
 
 .folder-heading {
-
   .govuk-grid-row & {
-    margin: govuk-spacing(3) 0 20px 0;
+    margin: govuk-spacing(3) 0 20px;
     word-wrap: break-word;
   }
 
@@ -258,7 +252,7 @@ a {
     vertical-align: top;
     background-repeat: no-repeat;
     background-size: auto 20px;
-    background-position: 0px 4px;
+    background-position: 0 4px;
     min-height: 30px;
 
   }
@@ -291,7 +285,7 @@ a {
 
       display: inline;
       background-image: file-url('folder-blue-bold.svg');
-      background-position: 0px 4px;
+      background-position: 0 4px;
       overflow: hidden;
       text-overflow: ellipsis;
 
@@ -303,7 +297,7 @@ a {
 
     &.folder-heading-folder-truncated {
       display: inline-block;
-      background-position: 0px 2px;
+      background-position: 0 2px;
     }
 
     &:hover {
@@ -319,7 +313,7 @@ a {
   &-manage-link {
     display: block;
     text-align: right;
-    padding: govuk-spacing(4) 0 0 0;
+    padding: govuk-spacing(4) 0 0;
     position: relative;
     top: -6px;
   }
