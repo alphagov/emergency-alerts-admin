@@ -11,6 +11,7 @@ def test_view_template_version(
     mock_get_user_by_email,
     mock_has_permissions,
     fake_uuid,
+    mock_get_template_from_id,
 ):
     service_id = fake_uuid
     template_id = fake_uuid
@@ -36,7 +37,7 @@ def test_view_template_versions(
     mock_login,
     mock_get_service,
     mock_get_template_versions,
-    mock_get_service_template,
+    mock_get_template,
     mock_get_user,
     mock_get_user_by_email,
     mock_has_permissions,

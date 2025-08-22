@@ -23,7 +23,7 @@ def test_sign_out_user(
     mock_get_user,
     mock_get_user_by_email,
     mock_login,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_has_permissions,
     mock_get_service_statistics,
 ):

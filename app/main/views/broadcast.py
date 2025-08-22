@@ -39,6 +39,9 @@ from app.main.forms import (
 from app.models.broadcast_message import BroadcastMessage, BroadcastMessages
 from app.utils import service_has_permission
 from app.utils.broadcast import (
+    _get_back_link_from_view_broadcast_endpoint,
+    _get_broadcast_sub_area_back_link,
+    _get_choose_library_back_link,
     adding_invalid_coords_errors_to_form,
     all_coordinate_form_fields_empty,
     all_fields_empty,
@@ -78,18 +81,6 @@ from app.utils.broadcast import (
 )
 from app.utils.datetime import fromisoformat_allow_z_tz
 from app.utils.user import user_has_permissions
-
-
-def _get_back_link_from_view_broadcast_endpoint():
-    return {
-        "main.view_current_broadcast": ".broadcast_dashboard",
-        "main.view_previous_broadcast": ".broadcast_dashboard_previous",
-        "main.view_rejected_broadcast": ".broadcast_dashboard_rejected",
-        "main.approve_broadcast_message": ".broadcast_dashboard",
-        "main.reject_broadcast_message": ".broadcast_dashboard",
-        "main.return_broadcast_for_edit": ".broadcast_dashboard",
-        "main.discard_broadcast_message": ".broadcast_dashboard",
-    }[request.endpoint]
 
 
 @main.route("/services/<uuid:service_id>/broadcast-tour/<int:step_index>")
@@ -211,19 +202,15 @@ def choose_extra_content(service_id, broadcast_message_id):
 
     form = ChooseExtraContentForm()
 
+    broadcast_message = BroadcastMessage.from_id(broadcast_message_id=broadcast_message_id, service_id=service_id)
+
     if form.validate_on_submit():
         if str(form.data["content"]) == "yes":
             return redirect(
                 url_for(".add_extra_content", service_id=current_service.id, broadcast_message_id=broadcast_message_id)
             )
         else:
-            return redirect(
-                url_for(
-                    ".choose_broadcast_library",
-                    service_id=current_service.id,
-                    broadcast_message_id=broadcast_message_id,
-                )
-            )
+            return redirect_dependent_on_alert_area(broadcast_message)
 
     return render_template(
         "views/broadcast/choose-extra-content.html",
@@ -337,61 +324,6 @@ def remove_extra_content(service_id, broadcast_message_id):
     )
 
 
-@main.route("/services/<uuid:service_id>/write-new-broadcast", methods=["GET", "POST"])
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-@service_has_permission("broadcast")
-def write_new_broadcast(service_id):
-    broadcast_message_id = request.args.get("broadcast_message_id")
-    broadcast_message = (
-        BroadcastMessage.from_id(broadcast_message_id, service_id=current_service.id) if broadcast_message_id else None
-    )
-    form = BroadcastTemplateForm()
-
-    if form.validate_on_submit():
-        if broadcast_message_id:
-            BroadcastMessage.update_from_content(
-                service_id=current_service.id,
-                broadcast_message_id=broadcast_message_id,
-                content=form.template_content.data,
-                reference=form.name.data,
-            )
-        else:
-            broadcast_message = BroadcastMessage.create_from_content(
-                service_id=current_service.id,
-                content=form.template_content.data,
-                reference=form.name.data,
-            )
-        broadcast_message_id = broadcast_message.id
-        return redirect(
-            url_for(
-                (
-                    ".choose_extra_content"
-                    if current_service.broadcast_channel != "operator"
-                    else ".choose_broadcast_library"
-                ),
-                service_id=current_service.id,
-                broadcast_message_id=broadcast_message_id,
-            )
-        )
-
-    if broadcast_message_id:
-        broadcast_message = BroadcastMessage.from_id(
-            broadcast_message_id,
-            service_id=current_service.id,
-        )
-        if broadcast_message.status in ["draft", "returned"]:
-            form.template_content.data = broadcast_message.content
-            form.name.data = broadcast_message.reference
-        else:
-            broadcast_message = None
-
-    return render_template(
-        "views/broadcast/write-new-broadcast.html",
-        broadcast_message=broadcast_message,
-        form=form,
-    )
-
-
 @main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/edit", methods=["GET", "POST"])
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
@@ -410,7 +342,7 @@ def edit_broadcast(service_id, broadcast_message_id):
 
     if request.method == "GET":
         # When the page loads initially, the fields are populated with alerts current data
-        form = BroadcastTemplateForm(template_content=broadcast_message.content, name=broadcast_message.reference)
+        form = BroadcastTemplateForm(content=broadcast_message.content, reference=broadcast_message.reference)
         form.initial_name.data = broadcast_message.reference
         form.initial_content.data = broadcast_message.content
     elif overwrite_reference_button_clicked():
@@ -423,7 +355,7 @@ def edit_broadcast(service_id, broadcast_message_id):
         """
         form = BroadcastTemplateForm()
         form.overwrite_name.data = True
-        form.name.data = request.form.get("name")
+        form.reference.data = request.form.get("reference")
         return render_edit_alert_page(broadcast_message, form)
     elif overwrite_content_button_clicked():
         """
@@ -435,7 +367,7 @@ def edit_broadcast(service_id, broadcast_message_id):
         """
         form = BroadcastTemplateForm()
         form.overwrite_content.data = True
-        form.template_content.data = request.form.get("template_content")
+        form.content.data = request.form.get("content")
         return render_edit_alert_page(broadcast_message, form)
     elif keep_alert_reference_button_clicked():
         """
@@ -443,7 +375,7 @@ def edit_broadcast(service_id, broadcast_message_id):
         and the new name field are set to alert's current reference value and the page is re-rendered.
         """
         form = BroadcastTemplateForm()
-        form.name.data = broadcast_message.reference
+        form.reference.data = broadcast_message.reference
         form.initial_name.data = broadcast_message.reference
         return render_edit_alert_page(broadcast_message, form)
 
@@ -453,14 +385,12 @@ def edit_broadcast(service_id, broadcast_message_id):
         and the new template-content field are set to alert's current value and the page is re-rendered.
         """
         form = BroadcastTemplateForm()
-        form.template_content.data = broadcast_message.content
+        form.content.data = broadcast_message.content
         form.initial_content.data = broadcast_message.content
         return render_edit_alert_page(broadcast_message, form)
 
     else:
-        form = BroadcastTemplateForm(
-            name=request.form.get("name"), template_content=request.form.get("template_content")
-        )
+        form = BroadcastTemplateForm(reference=request.form.get("reference"), content=request.form.get("content"))
 
     if form.validate_on_submit():
         """
@@ -469,7 +399,7 @@ def edit_broadcast(service_id, broadcast_message_id):
         while page open.
         """
 
-        if broadcast_message.content == form.template_content.data and broadcast_message.reference == form.name.data:
+        if broadcast_message.content == form.content.data and broadcast_message.reference == form.reference.data:
             return render_template(
                 "views/broadcast/write-new-broadcast.html",
                 broadcast_message=broadcast_message,
@@ -493,518 +423,6 @@ def edit_broadcast(service_id, broadcast_message_id):
     return render_edit_alert_page(broadcast_message, form)
 
 
-@main.route("/services/<uuid:service_id>/new-broadcast/<uuid:template_id>")
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-@service_has_permission("broadcast")
-def broadcast(service_id, template_id):
-    """If the current service is an operator service, user is redirected
-    straight to choose area as extra_content attribute shouldn't be set for
-    alerts created in operator services"""
-    if current_service.broadcast_channel == "operator":
-        return redirect(
-            url_for(
-                ".choose_broadcast_library",
-                service_id=current_service.id,
-                broadcast_message_id=BroadcastMessage.create(
-                    service_id=service_id,
-                    template_id=template_id,
-                ).id,
-            )
-        )
-    else:
-        return redirect(
-            url_for(
-                ".choose_extra_content",
-                service_id=current_service.id,
-                broadcast_message_id=BroadcastMessage.create(
-                    service_id=service_id,
-                    template_id=template_id,
-                ).id,
-            )
-        )
-
-
-@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/areas")
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-@service_has_permission("broadcast")
-def preview_broadcast_areas(service_id, broadcast_message_id):
-    broadcast_message = BroadcastMessage.from_id(
-        broadcast_message_id,
-        service_id=current_service.id,
-    )
-
-    if broadcast_message.status != "returned":
-        try:
-            broadcast_message.check_can_update_status("draft")
-        except HTTPError as e:
-            flash(e.message)
-            return render_current_alert_page(
-                broadcast_message,
-            )
-
-    if broadcast_message.template_id and broadcast_message.status not in ["draft", "returned"]:
-        back_link = url_for(
-            ".view_template",
-            service_id=current_service.id,
-            template_id=broadcast_message.template_id,
-        )
-    elif broadcast_message.status in ["draft", "returned"]:
-        back_link = url_for(
-            ".view_current_broadcast", service_id=current_service.id, broadcast_message_id=broadcast_message_id
-        )
-    else:
-        back_link = url_for(
-            ".write_new_broadcast", service_id=current_service.id, broadcast_message_id=broadcast_message_id
-        )
-
-    return render_template(
-        "views/broadcast/preview-areas.html",
-        broadcast_message=broadcast_message,
-        back_link=back_link,
-        is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
-    )
-
-
-@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/libraries")
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-@service_has_permission("broadcast")
-def choose_broadcast_library(service_id, broadcast_message_id):
-    broadcast_message = BroadcastMessage.from_id(
-        broadcast_message_id,
-        service_id=current_service.id,
-    )
-    is_custom_broadcast = type(broadcast_message.areas) is CustomBroadcastAreas
-    if is_custom_broadcast:
-        broadcast_message.clear_areas()
-    return render_template(
-        "views/broadcast/libraries.html",
-        libraries=BroadcastMessage.libraries,
-        broadcast_message=broadcast_message,
-        custom_broadcast=is_custom_broadcast,
-        back_link=request.referrer,
-    )
-
-
-@main.route(
-    "/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/libraries/<library_slug>",
-    methods=["GET", "POST"],
-)
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-@service_has_permission("broadcast")
-def choose_broadcast_area(service_id, broadcast_message_id, library_slug):
-    broadcast_message = BroadcastMessage.from_id(
-        broadcast_message_id,
-        service_id=current_service.id,
-    )
-    library = BroadcastMessage.libraries.get(library_slug)
-
-    if library_slug == "coordinates":
-        form = ChooseCoordinateTypeForm()
-        if form.validate_on_submit():
-            return redirect(
-                url_for(
-                    ".search_coordinates",
-                    service_id=current_service.id,
-                    broadcast_message_id=broadcast_message.id,
-                    library_slug="coordinates",
-                    coordinate_type=form.content.data,
-                )
-            )
-
-        return render_template(
-            "views/broadcast/choose-coordinates-type.html",
-            page_title="Choose coordinate type",
-            form=form,
-            back_link=url_for(
-                ".choose_broadcast_library", service_id=service_id, broadcast_message_id=broadcast_message_id
-            ),
-        )
-    elif library_slug == "postcodes":
-        return redirect(
-            url_for(
-                ".search_postcodes",
-                service_id=current_service.id,
-                broadcast_message_id=broadcast_message.id,
-                library_slug="postcodes",
-            )
-        )
-
-    if library.is_group:
-        return render_template(
-            "views/broadcast/areas-with-sub-areas.html",
-            search_form=SearchByNameForm(),
-            show_search_form=(len(library) > 7),
-            library=library,
-            page_title=f"Choose a {library.name_singular.lower()}",
-            broadcast_message=broadcast_message,
-        )
-
-    form = BroadcastAreaForm.from_library(library)
-    if form.validate_on_submit():
-        broadcast_message.replace_areas([*form.areas.data])
-        return redirect(
-            url_for(
-                ".preview_broadcast_areas",
-                service_id=current_service.id,
-                broadcast_message_id=broadcast_message.id,
-            )
-        )
-    return render_template(
-        "views/broadcast/areas.html",
-        form=form,
-        search_form=SearchByNameForm(),
-        show_search_form=(len(form.areas.choices) > 7),
-        page_title=(
-            f"Choose {library.name[0].lower()}{library.name[1:]}"
-            if library.name != "REPPIR DEPZ sites"
-            else "Choose REPPIR DEPZ sites"
-        ),
-        broadcast_message=broadcast_message,
-    )
-
-
-def _get_broadcast_sub_area_back_link(service_id, broadcast_message_id, library_slug):
-    if prev_area_slug := request.args.get("prev_area_slug"):
-        return url_for(
-            ".choose_broadcast_sub_area",
-            service_id=service_id,
-            broadcast_message_id=broadcast_message_id,
-            library_slug=library_slug,
-            area_slug=prev_area_slug,
-        )
-    else:
-        return url_for(
-            ".choose_broadcast_area",
-            service_id=service_id,
-            broadcast_message_id=broadcast_message_id,
-            library_slug=library_slug,
-        )
-
-
-@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/remove_custom/<postcode_slug>")
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-@service_has_permission("broadcast")
-def remove_postcode_area(service_id, broadcast_message_id, postcode_slug):
-    BroadcastMessage.from_id(
-        broadcast_message_id,
-        service_id=current_service.id,
-    ).remove_area(postcode_slug)
-    return redirect(
-        url_for(
-            ".choose_broadcast_library",
-            service_id=current_service.id,
-            broadcast_message_id=broadcast_message_id,
-            library_slug="postcodes",
-        )
-    )
-
-
-@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/remove/>")
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-@service_has_permission("broadcast")
-def remove_coordinate_area(service_id, broadcast_message_id):
-    broadcast_message = BroadcastMessage.from_id(
-        broadcast_message_id,
-        service_id=current_service.id,
-    )
-    broadcast_message.clear_areas()
-    return redirect(
-        url_for(
-            ".choose_broadcast_library",
-            service_id=current_service.id,
-            broadcast_message_id=broadcast_message.id,
-        )
-    )
-
-
-@main.route(
-    "/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/libraries/<library_slug>/postcodes/",  # noqa: E501
-    methods=["GET", "POST"],
-)
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-@service_has_permission("broadcast")
-def search_postcodes(service_id, broadcast_message_id, library_slug):
-    broadcast_message = BroadcastMessage.from_id(
-        broadcast_message_id,
-        service_id=current_service.id,
-    )
-    form = PostcodeForm()
-    # Initialising variables here that may be assigned values, to be then passed into jinja template.
-    centroid, bleed, estimated_area, estimated_area_with_bleed, count_of_phones, count_of_phones_likely = (
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-    )
-
-    if all_fields_empty(request, form):
-        """
-        If no input fields have values then the request will use the button clicked
-        to determine which fields to validate.
-        """
-        validate_form_based_on_fields_entered(request, form)
-    elif postcode_entered(request, form):
-        """
-        Clears any areas in broadcast message, then creates the ID to search for in SQLite database,
-        if query returns IndexError, the postcode isn't in the database and thus error is appended to
-        postcode field and displayed on the page.
-        """
-        postcode = create_postcode_db_id(form)
-        centroid = get_centroid_if_postcode_in_db(postcode, form)
-        form.pre_validate(form)  # Validating the postcode field
-    elif postcode_and_radius_entered(request, form):
-        """
-        If postcode and radius entered, that are validated successfully,
-        custom polygon is created using radius and centroid.
-        """
-        postcode = create_postcode_db_id(form)
-        form.pre_validate(form)
-        centroid, circle_polygon = create_custom_area_polygon(broadcast_message, form, postcode)
-        if form.validate_on_submit():
-            """
-            If postcode is in database, i.e. creating the Polygon didn't return IndexError,
-            then a dummy CustomBroadcastArea is created and used for the attributes that
-            are required for the Leaflet map, key, number of phones to display etc.
-            """
-            (
-                bleed,
-                estimated_area,
-                estimated_area_with_bleed,
-                count_of_phones,
-                count_of_phones_likely,
-            ) = extract_attributes_from_custom_area(circle_polygon)
-            id = create_postcode_area_slug(form)
-            if continue_button_clicked(request):
-                """
-                If 'Continue' button is clicked, area is added to Broadcast Message
-                and message is updated.
-                """
-                broadcast_message.add_custom_areas(circle_polygon, id=id)
-                return redirect(
-                    url_for(
-                        ".preview_broadcast_message" if broadcast_message.duration else ".choose_broadcast_duration",
-                        service_id=current_service.id,
-                        broadcast_message_id=broadcast_message.id,
-                    ),
-                )
-    return render_postcode_page(
-        service_id,
-        broadcast_message_id,
-        broadcast_message,
-        form,
-        centroid,
-        bleed,
-        estimated_area,
-        estimated_area_with_bleed,
-        count_of_phones,
-        count_of_phones_likely,
-    )
-
-
-@main.route(
-    "/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/libraries/<library_slug>/<coordinate_type>/",  # noqa: E501
-    methods=["GET", "POST"],
-)
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-@service_has_permission("broadcast")
-def search_coordinates(service_id, broadcast_message_id, library_slug, coordinate_type):
-    (
-        polygon,
-        bleed,
-        estimated_area,
-        estimated_area_with_bleed,
-        count_of_phones,
-        count_of_phones_likely,
-        marker,
-    ) = (
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-    )
-    broadcast_message = BroadcastMessage.from_id(
-        broadcast_message_id,
-        service_id=current_service.id,
-    )
-    form = select_coordinate_form(coordinate_type)
-
-    if all_coordinate_form_fields_empty(request, form):
-        """
-        If no input fields have values then the request will use the button clicked
-        to determine which fields to validate.
-        """
-        validate_form_based_on_fields_entered(request, form)
-    elif coordinates_entered_but_no_radius(request, form):
-        """
-        If only coordinates are entered then they're checked to determine if within
-        either UK or test area. If they are within test or UK, the coordinate point is created
-        and converted accordingly into latitude, longitude format to be passed into jinja
-        and displayed in Leaflet map.
-        Otherwise, an error is displayed on the page.
-        """
-        first_coordinate = float(form.data["first_coordinate"])
-        second_coordinate = float(form.data["second_coordinate"])
-        if check_coordinates_valid_for_enclosed_polygons(
-            broadcast_message,
-            first_coordinate,
-            second_coordinate,
-            coordinate_type,
-        ):
-            Point = normalising_point(first_coordinate, second_coordinate, coordinate_type)
-            marker = [Point.y, Point.x]
-        else:
-            adding_invalid_coords_errors_to_form(coordinate_type, form)
-        form.pre_validate(form)  # To validate the fields don't have any errors
-    elif coordinates_and_radius_entered(request, form):
-        """
-        If both radius and coordinates entered, then coordinates are checked to determine if within
-        either UK or test area. If they are within test or UK, polygon is created using coordinates and
-        radius. Then a CustomBroadcastArea is created and used for the attributes that
-        are required for the Leaflet map, key, number of phones to display etc.
-        """
-        first_coordinate, second_coordinate, radius = parse_coordinate_form_data(form)
-        if check_coordinates_valid_for_enclosed_polygons(
-            broadcast_message,
-            first_coordinate,
-            second_coordinate,
-            coordinate_type,
-        ):
-            marker = [first_coordinate, second_coordinate]
-            if form.validate_on_submit():
-                if polygon := create_coordinate_area(
-                    first_coordinate,
-                    second_coordinate,
-                    radius,
-                    coordinate_type,
-                ):
-                    id = create_coordinate_area_slug(coordinate_type, first_coordinate, second_coordinate, radius)
-                    (
-                        bleed,
-                        estimated_area,
-                        estimated_area_with_bleed,
-                        count_of_phones,
-                        count_of_phones_likely,
-                    ) = extract_attributes_from_custom_area(polygon)
-        else:
-            adding_invalid_coords_errors_to_form(coordinate_type, form)
-            form.validate_on_submit()
-        if continue_button_clicked(request):
-            """
-            If 'Preview alert' button is clicked, area is added to Broadcast Message
-            and message is updated.
-            """
-            broadcast_message.add_custom_areas(polygon, id=id)
-            return redirect(
-                url_for(
-                    ".preview_broadcast_message" if broadcast_message.duration else ".choose_broadcast_duration",
-                    service_id=current_service.id,
-                    broadcast_message_id=broadcast_message.id,
-                ),
-            )
-    return render_coordinates_page(
-        service_id,
-        broadcast_message_id,
-        coordinate_type,
-        bleed,
-        estimated_area,
-        estimated_area_with_bleed,
-        count_of_phones,
-        count_of_phones_likely,
-        marker,
-        broadcast_message,
-        form,
-    )
-
-
-@main.route(
-    "/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/libraries/<library_slug>/<area_slug>",
-    methods=["GET", "POST"],
-)
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-@service_has_permission("broadcast")
-def choose_broadcast_sub_area(service_id, broadcast_message_id, library_slug, area_slug):
-    broadcast_message = BroadcastMessage.from_id(
-        broadcast_message_id,
-        service_id=current_service.id,
-    )
-    area = BroadcastMessage.libraries.get_areas([area_slug])[0]
-
-    back_link = _get_broadcast_sub_area_back_link(service_id, broadcast_message_id, library_slug)
-
-    is_county = any(sub_area.sub_areas for sub_area in area.sub_areas)
-
-    form = BroadcastAreaFormWithSelectAll.from_library(
-        [] if is_county else area.sub_areas,
-        select_all_choice=(area.id, f"All of {area.name}"),
-    )
-    if form.validate_on_submit():
-        broadcast_message.replace_areas([*form.selected_areas])
-        return redirect(
-            url_for(
-                ".preview_broadcast_areas",
-                service_id=current_service.id,
-                broadcast_message_id=broadcast_message.id,
-            )
-        )
-
-    if is_county:
-        # area = county. sub_areas = districts. they have wards, so link to individual district pages
-        return render_template(
-            "views/broadcast/counties.html",
-            form=form,
-            search_form=SearchByNameForm(),
-            show_search_form=(len(area.sub_areas) > 7),
-            library_slug=library_slug,
-            page_title=f"Choose an area of {area.name}",
-            broadcast_message=broadcast_message,
-            county=area,
-            back_link=back_link,
-        )
-
-    return render_template(
-        "views/broadcast/sub-areas.html",
-        form=form,
-        search_form=SearchByNameForm(),
-        show_search_form=(len(form.areas.choices) > 7),
-        library_slug=library_slug,
-        page_title=f"Choose an area of {area.name}",
-        broadcast_message=broadcast_message,
-        back_link=back_link,
-    )
-
-
-@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/remove/<area_slug>")
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-@service_has_permission("broadcast")
-def remove_broadcast_area(service_id, broadcast_message_id, area_slug):
-    broadcast_message = BroadcastMessage.from_id(
-        broadcast_message_id,
-        service_id=current_service.id,
-    )
-    broadcast_message.remove_area(area_slug)
-    if len(broadcast_message.areas) == 0:
-        return redirect(
-            url_for(
-                ".choose_broadcast_library",
-                service_id=current_service.id,
-                broadcast_message_id=broadcast_message_id,
-            )
-        )
-    else:
-        return redirect(
-            url_for(
-                ".preview_broadcast_areas",
-                service_id=current_service.id,
-                broadcast_message_id=broadcast_message_id,
-            )
-        )
-
-
 @main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/duration", methods=["GET", "POST"])
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
@@ -1016,7 +434,10 @@ def choose_broadcast_duration(service_id, broadcast_message_id):
     is_custom_broadcast = type(broadcast_message.areas) is CustomBroadcastAreas
     form = ChooseDurationForm(channel=current_service.broadcast_channel, duration=broadcast_message.broadcast_duration)
     back_link = url_for(
-        ".preview_broadcast_areas", service_id=current_service.id, broadcast_message_id=broadcast_message_id
+        ".preview_areas",
+        service_id=current_service.id,
+        message_id=broadcast_message_id,
+        message_type="broadcast",
     )
 
     if form.validate_on_submit():
@@ -1378,10 +799,11 @@ def view_broadcast_versions(service_id, broadcast_message_id):
     )
     versions = broadcast_message.get_versions()
     for message in versions:
+        # BroadcastPreviewTemplate required for the display of broadcast_message content
         message["template"] = BroadcastPreviewTemplate(
             {
                 "template_type": BroadcastPreviewTemplate.template_type,
-                "name": message.get("reference"),
+                "reference": message.get("reference"),
                 "content": message.get("content"),
             }
         )
@@ -1396,7 +818,6 @@ def view_broadcast_versions(service_id, broadcast_message_id):
             service_id=current_service.id,
             broadcast_message_id=broadcast_message.id,
         ),
-        is_edited=len(versions) > 1,
     )
 
 
@@ -1496,4 +917,484 @@ def get_broadcast_unsigned_xml(service_id, broadcast_message_id, xml_type):
             "Content-Disposition": f"attachment;filename={broadcast_message.reference}-{broadcast_message.id}"
             f".{xml_type}.xml"
         },
+    )
+
+
+@user_has_permissions("create_broadcasts")
+def update_broadcast(service_id, message_id):
+    message = BroadcastMessage.from_id(message_id, service_id=service_id) if message_id else None
+
+    form = BroadcastTemplateForm()
+
+    if form.validate_on_submit():
+        # broadcast_message already made so just update with form data
+        message = BroadcastMessage.update_from_content(
+            service_id=current_service.id,
+            message_id=message_id,
+            content=form.content.data,
+            reference=form.reference.data,
+        )
+
+        return redirect(
+            # Redirects to 'Choose library' page if created in operator service,
+            # as you cannot add extra_content in operator service, otherwise redirects
+            # to page to add extra_content
+            url_for(
+                ".choose_extra_content" if current_service.broadcast_channel != "operator" else ".choose_library",
+                service_id=current_service.id,
+                broadcast_message_id=message_id,
+            )
+        )
+
+    message = BroadcastMessage.from_id(
+        message_id,
+        service_id=current_service.id,
+    )
+    if message.status in ["draft", "returned"]:
+        form.content.data = message.content
+        form.reference.data = message.reference
+    else:
+        message = None
+
+    return render_template(
+        "views/broadcast/write-new-broadcast.html",
+        broadcast_message=message,
+        form=form,
+    )
+
+
+@user_has_permissions("create_broadcasts")
+def create_new_broadcast(service_id):
+    form = BroadcastTemplateForm()
+    message = None
+
+    if form.validate_on_submit():
+        # Create broadcast_message from the form data submitted on this page only
+        message = BroadcastMessage.create_from_content(
+            service_id=service_id,
+            content=form.content.data,
+            reference=form.reference.data,
+        )
+        # Redirects to 'Choose library' page if created in operator service,
+        # as you cannot add extra_content in operator service, otherwise redirects
+        # to page to add extra_content
+        if current_service.broadcast_channel != "operator":
+            return redirect(
+                url_for(
+                    ".choose_extra_content",
+                    service_id=service_id,
+                    broadcast_message_id=message.id,
+                )
+            )
+        else:
+            return redirect(
+                url_for(".choose_library", service_id=service_id, message_id=message.id, message_type="broadcast")
+            )
+
+    return render_template(
+        "views/broadcast/write-new-broadcast.html",
+        broadcast_message=message,
+        form=form,
+    )
+
+
+@user_has_permissions("create_broadcasts")
+def preview_broadcast_areas(service_id, message_id):
+    message = BroadcastMessage.from_id(message_id, service_id=service_id)
+
+    if message.status != "returned":
+        try:
+            message.check_can_update_status("draft")
+        except HTTPError as e:
+            flash(e.message)
+            return render_current_alert_page(
+                message,
+            )
+
+    if message.template_id and message.status not in ["draft", "returned"]:
+        back_link = url_for(
+            ".view_template",
+            service_id=current_service.id,
+            template_id=message.template_id,
+        )
+    elif message.status in ["draft", "returned"]:
+        back_link = url_for(".view_current_broadcast", service_id=current_service.id, broadcast_message_id=message_id)
+    else:
+        back_link = url_for(".write_new_broadcast", service_id=current_service.id, message_id=message_id)
+
+    return render_template(
+        "views/broadcast/preview-areas.html",
+        message=message,
+        back_link=back_link,
+        is_custom_broadcast=type(message.areas) is CustomBroadcastAreas,
+        redirect_url=url_for(
+            ".preview_broadcast_message" if message.duration else ".choose_broadcast_duration",
+            service_id=service_id,
+            broadcast_message_id=message.id,
+        ),  # The url for when 'Save and continue' button clicked
+        message_type="broadcast",
+    )
+
+
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+def choose_broadcast_library(service_id, message_id):
+    message = None
+    is_custom_broadcast = False
+    if message_id:
+        message = BroadcastMessage.from_id(message_id, service_id=service_id)
+        is_custom_broadcast = type(message.areas) is CustomBroadcastAreas
+        if is_custom_broadcast:
+            message.clear_areas()
+    return render_template(
+        "views/broadcast/libraries.html",
+        libraries=BroadcastMessage.libraries,
+        message=message,
+        custom_broadcast=is_custom_broadcast,
+        back_link=_get_choose_library_back_link(service_id=service_id, message_type="broadcast", message_id=message_id),
+        message_type="broadcast",
+        message_id=message_id,
+    )
+
+
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+def choose_broadcast_area(service_id, library_slug, message_id=None):
+    message = BroadcastMessage.from_id(message_id, service_id=service_id) if message_id else None
+    library = BroadcastMessage.libraries.get(library_slug)
+    if library_slug == "coordinates":
+        form = ChooseCoordinateTypeForm()
+        if form.validate_on_submit():
+            return redirect(
+                url_for(
+                    ".search_coordinates",
+                    service_id=current_service.id,
+                    message_id=message.id,
+                    library_slug="coordinates",
+                    coordinate_type=form.content.data,
+                    message_type="broadcast",
+                )
+            )
+
+        return render_template(
+            "views/broadcast/choose-coordinates-type.html",
+            page_title="Choose coordinate type",
+            form=form,
+            back_link=url_for(
+                ".choose_library", service_id=service_id, message_id=message_id, message_type="broadcast"
+            ),
+        )
+
+    elif library_slug == "postcodes":
+        return redirect(
+            url_for(
+                ".search_postcodes",
+                service_id=current_service.id,
+                broadcast_message_id=message.id,
+                library_slug="postcodes",
+                message_type="broadcast",
+            )
+        )
+
+    if library.is_group:
+        return render_template(
+            "views/broadcast/areas-with-sub-areas.html",
+            search_form=SearchByNameForm(),
+            show_search_form=(len(library) > 7),
+            library=library,
+            page_title=f"Choose a {library.name_singular.lower()}",
+            message=message,
+            message_type="broadcast",
+        )
+
+    form = BroadcastAreaForm.from_library(library)
+    if form.validate_on_submit() and message:
+        message.replace_areas([*form.areas.data])
+        return redirect(
+            url_for(".preview_areas", service_id=current_service.id, message_id=message.id, message_type="broadcast")
+        )
+
+    return render_template(
+        "views/broadcast/areas.html",
+        form=form,
+        search_form=SearchByNameForm(),
+        show_search_form=(len(form.areas.choices) > 7),
+        page_title=(
+            f"Choose {library.name[0].lower()}{library.name[1:]}"
+            if library.name != "REPPIR DEPZ sites"
+            else "Choose REPPIR DEPZ sites"
+        ),
+        message=message,
+        back_link=url_for(
+            ".choose_library",
+            service_id=service_id,
+            message_type="broadcast",
+            message_id=message_id,
+        ),
+        message_type="broadcast",
+    )
+
+
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+def choose_broadcast_sub_area(service_id, library_slug, area_slug, message_id):
+    message = BroadcastMessage.from_id(message_id, service_id=service_id)
+    area = BroadcastMessage.libraries.get_areas([area_slug])[0]
+    back_link = _get_broadcast_sub_area_back_link(service_id, message_id, library_slug, "broadcast")
+    is_county = any(sub_area.sub_areas for sub_area in area.sub_areas)
+
+    form = BroadcastAreaFormWithSelectAll.from_library(
+        [] if is_county else area.sub_areas,
+        select_all_choice=(area.id, f"All of {area.name}"),
+    )
+    if form.validate_on_submit():
+        message.replace_areas([*form.selected_areas])
+        return redirect(
+            url_for(
+                ".preview_areas",
+                service_id=current_service.id,
+                message_id=message.id,
+                message_type="broadcast",
+            )
+        )
+    if is_county:
+        # area = county. sub_areas = districts. they have wards, so link to individual district pages
+        return render_template(
+            "views/broadcast/counties.html",
+            form=form,
+            search_form=SearchByNameForm(),
+            show_search_form=(len(area.sub_areas) > 7),
+            library_slug=library_slug,
+            page_title=f"Choose an area of {area.name}",
+            message=message,
+            county=area,
+            back_link=back_link,
+            message_type="broadcast",
+        )
+
+    return render_template(
+        "views/broadcast/sub-areas.html",
+        form=form,
+        search_form=SearchByNameForm(),
+        show_search_form=(len(form.areas.choices) > 7),
+        library_slug=library_slug,
+        page_title=f"Choose an area of {area.name}",
+        message=message,
+        back_link=back_link,
+        message_type="broadcast",
+    )
+
+
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+def search_postcodes_for_broadcast(service_id, message_id):
+    message = BroadcastMessage.from_id(message_id, service_id=service_id)
+    form = PostcodeForm()
+    # Initialising variables here that may be assigned values, to be then passed into jinja template.
+    centroid, bleed, estimated_area, estimated_area_with_bleed, count_of_phones, count_of_phones_likely = (
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+
+    if all_fields_empty(request, form):
+        """
+        If no input fields have values then the request will use the button clicked
+        to determine which fields to validate.
+        """
+        validate_form_based_on_fields_entered(request, form)
+    elif postcode_entered(request, form):
+        """
+        Clears any areas in broadcast message, then creates the ID to search for in SQLite database,
+        if query returns IndexError, the postcode isn't in the database and thus error is appended to
+        postcode field and displayed on the page.
+        """
+        postcode = create_postcode_db_id(form)
+        centroid = get_centroid_if_postcode_in_db(postcode, form)
+        form.pre_validate(form)  # Validating the postcode field
+    elif postcode_and_radius_entered(request, form):
+        """
+        If postcode and radius entered, that are validated successfully,
+        custom polygon is created using radius and centroid.
+        """
+        postcode = create_postcode_db_id(form)
+        form.pre_validate(form)
+        centroid, circle_polygon = create_custom_area_polygon(form, postcode)
+        if form.validate_on_submit():
+            """
+            If postcode is in database, i.e. creating the Polygon didn't return IndexError,
+            then a dummy CustomBroadcastArea is created and used for the attributes that
+            are required for the Leaflet map, key, number of phones to display etc.
+            """
+            (
+                bleed,
+                estimated_area,
+                estimated_area_with_bleed,
+                count_of_phones,
+                count_of_phones_likely,
+            ) = extract_attributes_from_custom_area(circle_polygon)
+            id = create_postcode_area_slug(form)
+            if continue_button_clicked(request):
+                """
+                If 'Continue' button is clicked, area is added to Broadcast Message
+                and message is updated.
+                """
+                message.add_custom_areas(circle_polygon, id=id)
+                return redirect(
+                    url_for(
+                        ".preview_broadcast_message" if message.duration else ".choose_broadcast_duration",
+                        service_id=current_service.id,
+                        broadcast_message_id=message.id,
+                    ),
+                )
+
+    return render_postcode_page(
+        service_id,
+        message_id,
+        message,
+        form,
+        centroid,
+        bleed,
+        estimated_area,
+        estimated_area_with_bleed,
+        count_of_phones,
+        count_of_phones_likely,
+        "broadcast",
+    )
+
+
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+def search_coordinates_for_broadcast(service_id, coordinate_type, message_id):
+    (
+        polygon,
+        bleed,
+        estimated_area,
+        estimated_area_with_bleed,
+        count_of_phones,
+        count_of_phones_likely,
+        marker,
+    ) = (
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+    message = BroadcastMessage.from_id(message_id, service_id=service_id)
+    form = select_coordinate_form(coordinate_type)
+
+    if all_coordinate_form_fields_empty(request, form):
+        """
+        If no input fields have values then the request will use the button clicked
+        to determine which fields to validate.
+        """
+        validate_form_based_on_fields_entered(request, form)
+    elif coordinates_entered_but_no_radius(request, form):
+        """
+        If only coordinates are entered then they're checked to determine if within
+        either UK or test area. If they are within test or UK, the coordinate point is created
+        and converted accordingly into latitude, longitude format to be passed into jinja
+        and displayed in Leaflet map.
+        Otherwise, an error is displayed on the page.
+        """
+        first_coordinate = float(form.data["first_coordinate"])
+        second_coordinate = float(form.data["second_coordinate"])
+        if check_coordinates_valid_for_enclosed_polygons(
+            first_coordinate,
+            second_coordinate,
+            coordinate_type,
+        ):
+            Point = normalising_point(first_coordinate, second_coordinate, coordinate_type)
+            marker = [Point.y, Point.x]
+        else:
+            adding_invalid_coords_errors_to_form(coordinate_type, form)
+        form.pre_validate(form)  # To validate the fields don't have any errors
+    elif coordinates_and_radius_entered(request, form):
+        """
+        If both radius and coordinates entered, then coordinates are checked to determine if within
+        either UK or test area. If they are within test or UK, polygon is created using coordinates and
+        radius. Then a CustomBroadcastArea is created and used for the attributes that
+        are required for the Leaflet map, key, number of phones to display etc.
+        """
+        first_coordinate, second_coordinate, radius = parse_coordinate_form_data(form)
+        if check_coordinates_valid_for_enclosed_polygons(
+            first_coordinate,
+            second_coordinate,
+            coordinate_type,
+        ):
+            marker = [first_coordinate, second_coordinate]
+            if form.validate_on_submit():
+                if polygon := create_coordinate_area(
+                    first_coordinate,
+                    second_coordinate,
+                    radius,
+                    coordinate_type,
+                ):
+                    id = create_coordinate_area_slug(coordinate_type, first_coordinate, second_coordinate, radius)
+                    (
+                        bleed,
+                        estimated_area,
+                        estimated_area_with_bleed,
+                        count_of_phones,
+                        count_of_phones_likely,
+                    ) = extract_attributes_from_custom_area(polygon)
+        else:
+            adding_invalid_coords_errors_to_form(coordinate_type, form)
+            form.validate_on_submit()
+        if continue_button_clicked(request):
+            """
+            If 'Preview alert' button is clicked, area is added to Broadcast Message
+            and message is updated.
+            """
+            message.add_custom_areas(polygon, id=id)
+            return redirect(
+                url_for(
+                    ".preview_broadcast_message" if message.duration else ".choose_broadcast_duration",
+                    service_id=current_service.id,
+                    broadcast_message_id=message.id,
+                ),
+            )
+    return render_coordinates_page(
+        service_id,
+        message_id,
+        coordinate_type,
+        bleed,
+        estimated_area,
+        estimated_area_with_bleed,
+        count_of_phones,
+        count_of_phones_likely,
+        marker,
+        message,
+        form,
+        "broadcast",
+    )
+
+
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+def remove_broadcast_area(service_id, message_id, area_slug):
+    message = BroadcastMessage.from_id(message_id, service_id=service_id)
+    message.remove_area(area_slug)
+    url = ".choose_library" if len(message.areas) == 0 else ".preview_areas"
+    return redirect(
+        url_for(
+            url,
+            service_id=current_service.id,
+            message_id=message_id,
+            message_type="broadcast",
+        )
+    )
+
+
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+def remove_custom_area_from_broadcast(service_id, message_id):
+    message = BroadcastMessage.from_id(message_id, service_id=service_id)
+    message.clear_areas()
+    return redirect(
+        url_for(
+            ".choose_library",
+            service_id=service_id,
+            message_id=message_id,
+            message_type="broadcast",
+        )
     )

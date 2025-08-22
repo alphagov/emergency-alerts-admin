@@ -81,12 +81,12 @@
         {{form.initial_content()}}
         {{form.overwrite_name()}}
         {{form.overwrite_content()}}
-        {{ form.name(param_extensions={
+        {{ form.reference(param_extensions={
           "classes": "govuk-!-width-full",
           "hint": {"text": "Your recipients will not see this"}
         }) }}
         {{ textbox(
-          form.template_content,
+          form.content,
           highlight_placeholders=False,
           autosize=True,
           width='1-1',
@@ -96,7 +96,7 @@
       </div>
       <div class="govuk-grid-column-full">
         <div class="template-content-count">
-          <div data-notify-module="update-status" data-target="template_content" data-updates-url="{{ url_for('.count_content_length', service_id=current_service.id, template_type='broadcast', field='template_content') }}" aria-live="polite">
+          <div data-notify-module="update-status" data-target="content" data-updates-url="{{ url_for('.count_content_length', service_id=current_service.id, template_type='broadcast', field='content') }}" aria-live="polite">
             &nbsp;
           </div>
         </div>

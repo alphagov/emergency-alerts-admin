@@ -2,40 +2,46 @@
 {% from "components/page-header.html" import page_header %}
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
 
+{% if message_type == "broadcast" %}
+    {% set page_title = "Choose where to send this alert" %}
+  {% elif message_type == "templates" %}
+    {% set page_title ="Choose area to add to template" %}
+  {% endif %}
+
 {% block service_page_title %}
-  Choose where to send this alert
+  {{page_title}}
 {% endblock %}
 
 {% block backLink %}
   {% if back_link %}
     {{ govukBackLink({ "href": back_link }) }}
-  {% else %}
-    {{ govukBackLink({ "href": url_for(".preview_broadcast_areas", service_id=current_service.id, broadcast_message_id=broadcast_message.id) }) }}
   {% endif %}
 {% endblock %}
 
 {% block maincolumn_content %}
 
-  {{ page_header("Choose where to send this alert") }}
+  {{ page_header(page_title) }}
 
-  {% for area in broadcast_message.ancestor_areas %}
-    <a class="govuk-heading-m govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_broadcast_sub_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug=area.library_id, area_slug=area.id) }}">{{ area.name }}</a>
-    {% if loop.last %}
-      <div class="keyline-block"></div>
-    {% endif %}
-  {% endfor %}
+  {% if message %}
+    {% for area in message.ancestor_areas %}
+      <a class="govuk-heading-m govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_sub_area', service_id=current_service.id, message_id=message.id, library_slug=area.library_id, area_slug=area.id or None, message_type=message_type, template_folder_id=template_folder_id or None) }}">{{ area.name }}</a>
+      {% if loop.last %}
+        <div class="keyline-block"></div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
 
   {% for library in libraries|sort %}
     {% if library.id not in ['coordinates', 'postcodes']  %}
-      <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_broadcast_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug=library.id) }}">{{ library.name }}</a>
+      <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_area', service_id=current_service.id, message_id=message_id, library_slug=library.id, message_type=message_type, template_folder_id=template_folder_id or None) }}">{{ library.name }}</a>
       <p class="file-list-hint-large">{{ library.get_examples() }}</p>
     {% else %}
-      {% if (broadcast_message.areas|length == 0) or (custom_broadcast)  %}
+      {% if (message.areas|length == 0) or (custom_broadcast)  %}
         {% if library.id == 'coordinates' %}
-          <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_broadcast_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug=library.id) }}">{{ library.name }}</a>
+          <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_area', service_id=current_service.id, message_id=message_id, library_slug=library.id, message_type=message_type, template_folder_id=template_folder_id or None) }}">{{ library.name }}</a>
           <p class="file-list-hint-large">Use coordinates to create an alert area.</p>
         {% elif library.id == 'postcodes' %}
-          <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_broadcast_area', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug=library.id) }}">{{ library.name }}</a>
+          <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_area', service_id=current_service.id, message_id=message_id, library_slug=library.id, message_type=message_type, template_folder_id=template_folder_id or None) }}">{{ library.name }}</a>
           <p class="file-list-hint-large">Choose a postcode to create a broadcast area from.</p>
         {% endif %}
       {% endif %}

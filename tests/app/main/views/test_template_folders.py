@@ -4,8 +4,9 @@ import pytest
 from flask import abort, url_for
 from notifications_python_client.errors import HTTPError
 
+from app.models.template import Template
 from app.models.user import User
-from tests import sample_uuid
+from tests import sample_uuid, template_json
 from tests.conftest import (
     SERVICE_ONE_ID,
     TEMPLATE_ONE_ID,
@@ -304,8 +305,8 @@ def test_should_show_templates_folder_page(
             _template("broadcast", "broadcast_template_nested_two", parent=GRANDCHILD_FOLDER_ID),
         ]
     )
-    mock_get_service_templates = mocker.patch(
-        "app.service_api_client.get_service_templates",
+    mock_get_templates = mocker.patch(
+        "app.template_api_client.get_templates",
         return_value={"data": mock_template_data},
     )
 
@@ -353,15 +354,11 @@ def test_should_show_templates_folder_page(
     else:
         assert not page.select(".template-list-empty")
 
-    mock_get_service_templates.assert_called_once_with(SERVICE_ONE_ID)
+    mock_get_templates.assert_called_once_with(SERVICE_ONE_ID)
 
 
 def test_template_id_is_searchable_for_services_with_api_keys(
-    client_request,
-    mock_get_template_folders,
-    mock_get_api_keys,
-    service_one,
-    mocker,
+    client_request, mock_get_template_folders, mock_get_api_keys, service_one, mocker
 ):
     mock_get_template_folders.return_value = [
         _folder("folder one", PARENT_FOLDER_ID),
@@ -369,7 +366,7 @@ def test_template_id_is_searchable_for_services_with_api_keys(
     template_1 = _template("broadcast", "template one")
     template_2 = _template("broadcast", "template two", parent=PARENT_FOLDER_ID)
     mocker.patch(
-        "app.service_api_client.get_service_templates",
+        "app.template_api_client.get_templates",
         return_value={
             "data": [
                 template_1,
@@ -421,10 +418,14 @@ def test_template_id_is_searchable_for_services_with_api_keys(
     mock_get_api_keys.assert_called_once_with(SERVICE_ONE_ID)
 
 
-def test_can_create_email_template_with_parent_folder(client_request, mock_create_service_template):
+def test_can_create_email_template_with_parent_folder(
+    client_request, mock_get_templates, mock_get_template_from_id, fake_uuid, mocker
+):
+    template = template_json(SERVICE_ONE_ID, fake_uuid, reference="Template", folder=PARENT_FOLDER_ID)
+    mock_create_template = mocker.patch("app.models.template.Template.create", return_value=Template(template))
     data = {
-        "name": "new name",
-        "template_content": "Broadcast template content",
+        "reference": "new name",
+        "content": "Broadcast template content",
         "template_type": "broadcast",
         "service": SERVICE_ONE_ID,
         "parent_folder_id": PARENT_FOLDER_ID,
@@ -438,15 +439,14 @@ def test_can_create_email_template_with_parent_folder(client_request, mock_creat
         _expected_redirect=url_for(
             "main.view_template",
             service_id=SERVICE_ONE_ID,
-            template_id="new%20name",
+            template_id=fake_uuid,
         ),
     )
-    mock_create_service_template.assert_called_once_with(
-        data["name"],
-        data["template_type"],
-        data["template_content"],
-        SERVICE_ONE_ID,
-        data["parent_folder_id"],
+    mock_create_template.assert_called_once_with(
+        reference=data["reference"],
+        content=data["content"],
+        service_id=SERVICE_ONE_ID,
+        template_folder_id=data["parent_folder_id"],
     )
 
 
@@ -777,31 +777,25 @@ def test_manage_folder_users_doesnt_change_permissions_current_user_cannot_manag
 
 
 def test_delete_template_folder_should_request_confirmation(
-    client_request,
-    service_one,
-    mock_get_template_folders,
-    mocker,
-    mock_get_service_templates_when_no_templates_exist,
+    client_request, service_one, mocker, mock_get_service_templates_when_no_templates_exist, mock_get_templates
 ):
     mocker.patch("app.models.service.Service.active_users", [])
     folder_id = str(uuid.uuid4())
-    mock_get_template_folders.side_effect = [
-        [
+    mocker.patch(
+        "app.template_folder_api_client.get_template_folders",
+        return_value=[
             _folder("sacrifice", folder_id, None),
         ],
-        [],
-    ]
+    )
     page = client_request.get(
         "main.delete_template_folder",
         service_id=service_one["id"],
         template_folder_id=folder_id,
         _test_page_title=False,
     )
-    assert normalize_spaces(page.select(".banner-dangerous")[0].text) == (
+    assert normalize_spaces(page.select_one(".banner-dangerous").text) == (
         "Are you sure you want to delete the ‘sacrifice’ folder? Yes, delete"
     )
-
-    assert page.select_one("input[name=name]")["value"] == "sacrifice"
 
     assert len(page.select("main form")) == 2
     assert len(page.select("main button")) == 2
@@ -818,13 +812,11 @@ def test_delete_template_folder_should_request_confirmation(
 
 
 def test_delete_template_folder_should_detect_non_empty_folder_on_get(
-    client_request, service_one, mock_get_template_folders, mocker
+    client_request, service_one, mock_get_template_folders, mocker, mock_get_templates, mock_get_user
 ):
     folder_id = str(uuid.uuid4())
     mock_get_template_folders.side_effect = [[_folder("can't touch me", folder_id, None)], []]
-    mocker.patch(
-        "app.service_api_client.get_service_templates", return_value={"data": [create_template(folder=folder_id)]}
-    )
+    mocker.patch("app.template_api_client.get_templates", return_value={"data": [create_template(folder=folder_id)]})
     client_request.get(
         "main.delete_template_folder",
         service_id=service_one["id"],
@@ -853,6 +845,7 @@ def test_delete_folder(
     mocker,
     parent_folder_id,
     mock_get_service_templates_when_no_templates_exist,
+    mock_get_templates,
 ):
     mock_delete = mocker.patch("app.template_folder_api_client.delete_template_folder")
     folder_id = str(uuid.uuid4())
@@ -888,7 +881,7 @@ def test_should_show_checkboxes_for_selecting_templates(
     client_request,
     mocker,
     service_one,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_template_folders,
     mock_get_no_api_keys,
     user,
@@ -926,7 +919,7 @@ def test_should_not_show_radios_and_buttons_for_move_destination_if_incorrect_pe
     client_request,
     mocker,
     service_one,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_template_folders,
     mock_get_no_api_keys,
     user,
@@ -950,7 +943,7 @@ def test_should_show_radios_and_buttons_for_move_destination_if_correct_permissi
     client_request,
     mocker,
     service_one,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_template_folders,
     mock_get_no_api_keys,
     fake_uuid,
@@ -1001,7 +994,7 @@ def test_move_to_shouldnt_select_a_folder_by_default(
     client_request,
     mocker,
     service_one,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_template_folders,
     mock_get_no_api_keys,
     fake_uuid,
@@ -1025,7 +1018,7 @@ def test_move_to_shouldnt_select_a_folder_by_default(
 def test_should_be_able_to_move_to_existing_folder(
     client_request,
     service_one,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_template_folders,
     mock_move_to_template_folder,
 ):
@@ -1071,7 +1064,7 @@ def test_should_not_be_able_to_move_to_existing_folder_if_dont_have_permission(
     client_request,
     service_one,
     fake_uuid,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_template_folders,
     mock_move_to_template_folder,
     user,
@@ -1103,7 +1096,7 @@ def test_should_not_be_able_to_move_to_existing_folder_if_dont_have_permission(
 def test_move_folder_form_shows_current_folder_hint_when_in_a_folder(
     client_request,
     service_one,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_template_folders,
     mock_get_no_api_keys,
 ):
@@ -1128,7 +1121,7 @@ def test_move_folder_form_shows_current_folder_hint_when_in_a_folder(
 def test_move_folder_form_does_not_show_current_folder_hint_at_the_top_level(
     client_request,
     service_one,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_template_folders,
     mock_get_no_api_keys,
 ):
@@ -1152,7 +1145,7 @@ def test_should_be_able_to_move_a_sub_item(
     client_request,
     service_one,
     fake_uuid,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_template_folders,
     mock_move_to_template_folder,
 ):
@@ -1237,7 +1230,7 @@ def test_should_be_able_to_move_a_sub_item(
 def test_no_action_if_user_fills_in_ambiguous_fields(
     client_request,
     service_one,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_template_folders,
     mock_move_to_template_folder,
     mock_create_template_folder,
@@ -1277,7 +1270,7 @@ def test_no_action_if_user_fills_in_ambiguous_fields(
 def test_new_folder_is_created_if_only_new_folder_is_filled_out(
     client_request,
     service_one,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_template_folders,
     mock_move_to_template_folder,
     mock_create_template_folder,
@@ -1304,7 +1297,7 @@ def test_new_folder_is_created_if_only_new_folder_is_filled_out(
 def test_should_be_able_to_move_to_new_folder(
     client_request,
     service_one,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_template_folders,
     mock_move_to_template_folder,
     mock_create_template_folder,
@@ -1344,7 +1337,7 @@ def test_should_be_able_to_move_to_new_folder(
 def test_radio_button_with_no_value_shows_custom_error_message(
     client_request,
     service_one,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_template_folders,
     mock_move_to_template_folder,
     mock_create_template_folder,
@@ -1390,7 +1383,7 @@ def test_radio_button_with_no_value_shows_custom_error_message(
 def test_show_custom_error_message(
     client_request,
     service_one,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_template_folders,
     mock_move_to_template_folder,
     mock_create_template_folder,
@@ -1500,6 +1493,7 @@ def test_should_filter_templates_folder_page_based_on_user_permissions(
     expected_displayed_items,
     expected_items,
     expected_empty_message,
+    mock_get_templates,
 ):
     mock_get_template_folders.return_value = [
         _folder("folder_A", FOLDER_TWO_ID, None, [active_user_with_permissions["id"]]),
@@ -1511,7 +1505,7 @@ def test_should_filter_templates_folder_page_based_on_user_permissions(
         _folder("folder_G", GRANDCHILD_FOLDER_ID, CHILD_FOLDER_ID, [active_user_with_permissions["id"]]),
     ]
     mocker.patch(
-        "app.service_api_client.get_service_templates",
+        "app.template_api_client.get_templates",
         return_value={
             "data": [
                 _template("broadcast", "broadcast_template_root"),

@@ -13,7 +13,7 @@
   <h1 class="heading-large">Previous versions</h1>
   <div class="govuk-grid-row">
     {% for broadcast_message in versions %}
-      {% with show_title=True %}
+      {% with show_title=True, is_edited=not loop.last %}
         {% include 'views/broadcast/_broadcast_message_history.html' %}
       {% endwith %}
     {% endfor %}

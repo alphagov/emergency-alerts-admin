@@ -126,7 +126,7 @@ def test_should_add_service_and_redirect_to_index_when_no_services(
     mocker,
     client_request,
     mock_create_service,
-    mock_create_service_template,
+    mock_create_template,
     mock_get_services_with_no_services,
     api_user_active,
     inherited,
@@ -164,7 +164,7 @@ def test_add_service_has_to_choose_org_type(
     client_request,
     platform_admin_user_no_service_permissions,
     mock_create_service,
-    mock_create_service_template,
+    mock_create_template,
     mock_get_services_with_no_services,
     api_user_active,
 ):
@@ -182,7 +182,7 @@ def test_add_service_has_to_choose_org_type(
     )
     assert normalize_spaces(page.select_one(".govuk-error-message").text) == "Error: Select the type of organisation"
     assert mock_create_service.called is False
-    assert mock_create_service_template.called is False
+    assert mock_create_template.called is False
 
 
 @pytest.mark.parametrize(
@@ -204,7 +204,7 @@ def test_should_add_service_and_redirect_to_dashboard_when_existing_service(
     client_request,
     platform_admin_user_no_service_permissions,
     mock_create_service,
-    mock_create_service_template,
+    mock_create_template,
     mock_get_services,
     mock_get_no_organisation_by_domain,
     api_user_active,
@@ -231,7 +231,7 @@ def test_should_add_service_and_redirect_to_dashboard_when_existing_service(
         restricted=True,
         user_id=api_user_active["id"],
     )
-    assert len(mock_create_service_template.call_args_list) == 0
+    assert len(mock_create_template.call_args_list) == 0
     with client_request.session_transaction() as session:
         assert session["service_id"] == 101
 
@@ -319,7 +319,7 @@ def test_non_admin_user_cannot_create_service(
     client_request,
     mock_get_no_organisation_by_domain,
     mock_get_services,
-    mock_create_service_template,
+    mock_create_template,
 ):
     def expect_unauthorised_create_service():
         client_request.post(

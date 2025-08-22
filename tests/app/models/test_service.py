@@ -3,7 +3,7 @@ import pytest
 from app.models.organisation import Organisation
 from app.models.service import Service
 from tests import organisation_json
-from tests.conftest import ORGANISATION_ID, create_folder, create_template
+from tests.conftest import ORGANISATION_ID, create_folder
 
 
 def test_organisation_type_when_services_organisation_has_no_org_type(mocker, service_one):
@@ -44,16 +44,7 @@ def test_bad_permission_raises(service_one):
     assert str(e.value) == "'foo is not a service permission'"
 
 
-def test_has_templates_of_type_includes_folders(
-    mocker,
-    service_one,
-    mock_get_template_folders,
-):
-    mocker.patch(
-        "app.service_api_client.get_service_templates",
-        return_value={"data": [create_template(folder="something", template_type="broadcast")]},
-    )
-
+def test_has_templates_of_type_includes_folders(mocker, service_one, mock_get_template_folders, mock_get_templates):
     mocker.patch("app.template_folder_api_client.get_template_folders", return_value=[create_folder(id="something")])
 
     assert Service(service_one).has_templates_of_type("broadcast")

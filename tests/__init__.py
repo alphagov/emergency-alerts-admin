@@ -239,16 +239,17 @@ def organisation_json(
 def template_json(
     service_id,
     id_,
-    name="sample template",
+    reference="sample template",
     type_=None,
     content=None,
     version=1,
     archived=False,
     folder=None,
+    areas=None,
 ):
     template = {
         "id": id_,
-        "name": name,
+        "reference": reference,
         "template_type": type_ or "broadcast",
         "content": content,
         "service": service_id,
@@ -256,6 +257,8 @@ def template_json(
         "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f"),
         "archived": archived,
         "folder": folder,
+        "areas": areas
+        or {"ids": ["ctry19-E92000001", "ctry19-S92000003"], "simple_polygons": [], "aggregate_names": []},
     }
     if content is None:
         template["content"] = "template content"
@@ -418,9 +421,8 @@ def broadcast_message_json(
     area_ids=None,
     simple_polygons=None,
     content=None,
-    reference=None,
     cap_event=None,
-    template_name="Example template",
+    reference="Example template",
     created_by=None,
     approved_by=None,
     rejected_by=None,
@@ -439,7 +441,6 @@ def broadcast_message_json(
         "service_id": service_id,
         "template_id": template_id,
         "template_version": 123,
-        "template_name": template_name,
         "content": content or "This is a test",
         "reference": reference,
         "cap_event": cap_event,

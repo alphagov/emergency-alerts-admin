@@ -373,7 +373,7 @@ def test_route_permissions(
     service_one,
     mock_get_invites_for_service,
     route,
-    mock_get_service_templates,
+    mock_get_templates,
 ):
     validate_route_permission(
         mocker,
@@ -403,7 +403,7 @@ def test_route_invalid_permissions(
     api_user_active,
     service_one,
     route,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_invites_for_service,
 ):
     validate_route_permission(
@@ -432,7 +432,7 @@ def test_route_for_platform_admin(
     platform_admin_user,
     service_one,
     route,
-    mock_get_service_templates,
+    mock_get_templates,
     mock_get_invites_for_service,
 ):
     validate_route_permission(
@@ -488,7 +488,7 @@ def test_archive_service_after_confirm(
     mock_get_service_and_organisation_counts,
     mock_get_organisations_and_services_for_user,
     mock_get_users_by_service,
-    mock_get_service_templates,
+    mock_get_templates,
     service_one,
     user,
     is_trial_service,
