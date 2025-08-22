@@ -143,9 +143,16 @@ function resetStickyMocks () {
 
 beforeAll(() => {
   require('../../app/assets/javascripts/templateFolderForm.js');
+  delete window.location;
 
   // plug JSDOM's lack of support for window.scrollTo
   window.scrollTo = () => {};
+
+  window.location = {
+    ...window.location,
+    pathname: "services/service_id/templates/all/folders/12345"
+  };
+
 });
 
 afterAll(() => {
@@ -352,7 +359,7 @@ describe('TemplateFolderForm', () => {
       // click
       helpers.triggerEvent(formControls.querySelector('[value=add-new-template]'), 'click');
       // expect url to change
-      expect(mockCallback).toHaveBeenCalledWith("/services/123/templates/add-sms")
+      expect(mockCallback).toHaveBeenCalledWith("/services/123/templates/folders/12345/choose-template-fields")
 
       setFixtures(hierarchy)
       resetStickyMocks()
@@ -931,6 +938,13 @@ describe('TemplateFolderForm', () => {
 
       // reset sticky JS mocks called when the module starts
       resetStickyMocks();
+
+      delete window.location;
+
+      window.location = {
+      ...window.location,
+      pathname: "/mock/path"
+      };
 
     });
 
