@@ -974,6 +974,7 @@ def choose_template_sub_area(service_id, library_slug, area_slug, template_id=No
             message=template,
             county=area,
             back_link=back_link,
+            message_type="templates",
         )
 
     return render_template(
