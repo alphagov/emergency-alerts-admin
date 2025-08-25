@@ -104,7 +104,6 @@ class MainNavigation(Navigation):
             "choose_library",
             "choose_broadcast_duration",
             "preview_areas",
-            "choose_library",
             "choose_area",
             "choose_sub_area",
             "remove_area",
