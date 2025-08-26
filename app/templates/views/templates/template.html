@@ -37,12 +37,11 @@
   {% block additionalBeforeContent %}
     {% for folder in template_folder_path %}
       {% set breadcrumb_href = url_for('.choose_template', service_id=current_service.id, template_type='all', template_folder_id=folder.id) %}
-      {% if loop.last %}
-        {% set breadcrumb_href = None %}
-      {% endif %}
       {% set breadcrumb_item = {'text': folder.name, 'href': breadcrumb_href} %}
       {% set _ = breadcrumbs.append(breadcrumb_item) %}
     {% endfor %}
+    {% set breadcrumb_item = {'text': template.reference or "Template", 'href': None} %}
+    {% set _ = breadcrumbs.append(breadcrumb_item) %}
     {{ govukBreadcrumbs({
       "items": breadcrumbs
     }) }}
