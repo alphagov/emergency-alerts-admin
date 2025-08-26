@@ -161,7 +161,9 @@ def test_client_posts_data_when_updating_template(mocker, fake_uuid):
 def test_client_posts_data_when_creating_template(mocker):
     mocker.patch("app.notify_client.current_user", id="1")
     mock_post = mocker.patch("app.notify_client.template_api_client.TemplateAPIClient.post")
-    TemplateAPIClient().create_template(SERVICE_ONE_ID, reference="Template Reference", content="Template Content")
+    TemplateAPIClient().create_template(
+        service_id=SERVICE_ONE_ID, reference="Template Reference", content="Template Content"
+    )
     mock_post.assert_called_once_with(
         "/service/{0}/template".format(SERVICE_ONE_ID),
         {
