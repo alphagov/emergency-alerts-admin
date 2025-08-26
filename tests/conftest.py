@@ -350,8 +350,8 @@ def mock_get_empty_service_template_with_optional_placeholder(mocker):
 
 @pytest.fixture(scope="function")
 def mock_create_template(mocker, fake_uuid):
-    def _create(name, type_, content, service, parent_folder_id=None):
-        template = template_json(fake_uuid, name, type_, content, service, parent_folder_id)
+    def _create(*, service_id, reference="", content="", template_folder_id=None, areas=None):
+        template = template_json(fake_uuid, reference, "broadcast", content, service_id, template_folder_id)
         return {"data": template}
 
     return mocker.patch("app.template_api_client.create_template", side_effect=_create)
