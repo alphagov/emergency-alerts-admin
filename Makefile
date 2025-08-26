@@ -117,7 +117,7 @@ watch-frontend:  ## Build frontend and watch for changes
 
 .PHONY: run-flask
 run-flask:  ## Run flask
-	. environment.sh && flask --debug run -p 6012
+	. environment.sh && flask run -p 6012
 
 .PHONY: npm-audit
 npm-audit:  ## Check for vulnerabilities in NPM packages
