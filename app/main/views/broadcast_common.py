@@ -30,11 +30,12 @@ from app.models.broadcast_message import BroadcastMessage
 from app.models.template import Template
 from app.utils import service_has_permission
 from app.utils.broadcast import redirect_dependent_on_alert_area
-from app.utils.user import user_has_permissions
+from app.utils.user import user_has_any_permissions, user_has_permissions
 
 
 @main.route("/services/<uuid:service_id>/write-new-broadcast", methods=["GET", "POST"])
 @service_has_permission("broadcast")
+@user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def write_new_broadcast(service_id):
     # If message_id in request then pre-populate with any existing data
     message_id = request.args.get("message_id")
@@ -54,6 +55,7 @@ def write_new_broadcast(service_id):
 @main.route("/services/<uuid:service_id>/new-broadcast/<uuid:template_id>")
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
+@user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def broadcast(service_id, template_id):
     template = Template.from_id(template_id=template_id, service_id=service_id)
     broadcast_message = None
@@ -117,6 +119,7 @@ def broadcast(service_id, template_id):
     "/services/<uuid:service_id>/<message_type>/libraries",
 )
 @service_has_permission("broadcast")
+@user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def choose_library(service_id, message_type, message_id=None):
     template_folder_id = request.args.get("template_folder_id")
     if message_type == "broadcast":
@@ -134,6 +137,7 @@ def choose_library(service_id, message_type, message_id=None):
     methods=["GET", "POST"],
 )
 @service_has_permission("broadcast")
+@user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def choose_area(
     service_id,
     library_slug,
@@ -153,7 +157,12 @@ def choose_area(
     "/services/<uuid:service_id>/<message_type>/<uuid:message_id>/libraries/<library_slug>/<area_slug>",  # noqa: E501
     methods=["GET", "POST"],
 )
+@main.route(
+    "/services/<uuid:service_id>/<message_type>/libraries/<library_slug>/<area_slug>",  # noqa: E501
+    methods=["GET", "POST"],
+)
 @service_has_permission("broadcast")
+@user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def choose_sub_area(service_id, message_type, library_slug, area_slug, message_id=None):
     template_folder_id = request.args.get("template_folder_id")
     if message_type == "broadcast":
@@ -164,6 +173,7 @@ def choose_sub_area(service_id, message_type, library_slug, area_slug, message_i
 
 @main.route("/services/<uuid:service_id>/<message_type>/<uuid:message_id>/areas")
 @service_has_permission("broadcast")
+@user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def preview_areas(service_id, message_id, message_type):
     if message_type == "broadcast":
         return preview_broadcast_areas(service_id, message_id)
@@ -180,6 +190,7 @@ def preview_areas(service_id, message_id, message_type):
     methods=["GET", "POST"],
 )
 @service_has_permission("broadcast")
+@user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def search_postcodes(service_id, message_type, message_id=None):
     template_folder_id = request.args.get("template_folder_id")
     if message_type == "broadcast":
@@ -197,6 +208,7 @@ def search_postcodes(service_id, message_type, message_id=None):
     methods=["GET", "POST"],
 )
 @service_has_permission("broadcast")
+@user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def search_coordinates(service_id, coordinate_type, message_type, message_id=None):
     template_folder_id = request.args.get("template_folder_id")
     if message_type == "broadcast":
@@ -207,6 +219,7 @@ def search_coordinates(service_id, coordinate_type, message_type, message_id=Non
 
 @main.route("/services/<uuid:service_id>/<message_type>/<uuid:message_id>/remove/<area_slug>")
 @service_has_permission("broadcast")
+@user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def remove_area(service_id, message_id, area_slug, message_type):
     if message_type == "broadcast":
         return remove_broadcast_area(service_id, message_id, area_slug)
@@ -216,6 +229,7 @@ def remove_area(service_id, message_id, area_slug, message_type):
 
 @main.route("/services/<uuid:service_id>/<message_type>/<uuid:message_id>/remove/")
 @service_has_permission("broadcast")
+@user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def remove_custom_area(service_id, message_id, message_type):
     if message_type == "broadcast":
         return remove_custom_area_from_broadcast(service_id, message_id)
