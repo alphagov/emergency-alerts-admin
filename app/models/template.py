@@ -32,14 +32,14 @@ class Template(BaseBroadcast):
         super().__init__(_dict)
 
     @classmethod
-    def create(cls, *, service_id, reference=None, content=None, template_folder_id=None, areas=[]):
+    def create(cls, *, service_id, reference=None, content=None, template_folder_id=None, areas=None):
         return cls(
             template_api_client.create_template(
                 service_id=service_id,
                 reference=reference,
                 content=content,
                 template_folder_id=template_folder_id,
-                areas=areas,
+                areas=areas or [],
             )
         )
 
