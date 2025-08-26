@@ -72,14 +72,6 @@ class BroadcastMessage(BaseBroadcast):
         return self.updated_at < other.updated_at
 
     @classmethod
-    def create(cls, *, service_id, template_id):
-        return cls(
-            broadcast_message_api_client.create_broadcast_message(
-                service_id=service_id, template_id=template_id, content=None, reference=None, areas=[]
-            )
-        )
-
-    @classmethod
     def create_from_content(cls, *, service_id, content, reference):
         return cls(
             broadcast_message_api_client.create_broadcast_message(
