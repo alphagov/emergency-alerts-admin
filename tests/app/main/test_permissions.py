@@ -152,7 +152,7 @@ def test_routes_have_permissions_decorators():
         if "user_is_platform_admin" in decorators:
             continue
 
-        assert "user_has_permissions" in decorators, (
+        assert "user_has_permissions" in decorators or "user_has_any_permissions" in decorators, (
             "Missing @user_has_permissions decorator\n"
             "Use @user_has_permissions() or @user_is_platform_admin instead\n"
             "app/main/views/{}.py::{}\n"
