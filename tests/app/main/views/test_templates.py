@@ -8,6 +8,7 @@ from freezegun import freeze_time
 
 from app.models.template import Template
 from tests import NotifyBeautifulSoup, template_json, validate_route_permission
+from tests.app.broadcast_areas.custom_polygons import ENGLAND
 from tests.app.main.views.test_template_folders import PARENT_FOLDER_ID, _folder
 from tests.conftest import (
     SERVICE_ONE_ID,
@@ -488,6 +489,8 @@ def test_view_broadcast_template(
         _test_page_title=False,
     )
 
+    # The following assertions test that the expected content, for templateSummaryList component,
+    # appears on the page
     assert [(link.text.strip(), link["href"]) for link in page.select(".pill-separate-item")] == [
         (
             "Save and get ready to send",
@@ -498,12 +501,35 @@ def test_view_broadcast_template(
             ),
         ),
     ]
+    assert (normalize_spaces(page.select_one(".heading-large").text)) == "Template"
 
     assert (
         (normalize_spaces(page.select_one(".template-container").text))
         == (normalize_spaces(page.select_one(".broadcast-message-wrapper").text))
         == "Emergency alert This is a test"
     )
+
+    assert [normalize_spaces(area.text) for area in page.select(".area-list-item.area-list-item--unremoveable")] == [
+        "England",
+        "Scotland",
+    ]
+
+    assert [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__key")] == [
+        "Reference",
+        "Template message",
+        "Area",
+    ]
+    assert [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__value")] == [
+        "Example template",
+        "Emergency alert This is a test",
+        "England Scotland Use the arrow keys to move the map. "
+        + "Use the buttons to zoom the map in or out View larger map",
+    ]
+    assert [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__actions")] == [
+        "Change reference",
+        "Change message",
+        "Change areas",
+    ]
 
 
 def test_should_hide_template_id_for_broadcast_templates(
@@ -1058,4 +1084,216 @@ def test_content_count_json_endpoint_for_unsupported_template_types(
         field="content",
         content="foo",
         _expected_status=404,
+    )
+
+
+def test_choose_how_to_populate_template_page(client_request):
+    page = client_request.get(
+        "main.choose_template_fields",
+        service_id=SERVICE_ONE_ID,
+    )
+    form = page.select_one("form")
+    assert form
+    assert normalize_spaces(form.select_one("fieldset legend").text) == "Choose how to populate template"
+    assert [choice["value"] for choice in page.select("input[type=radio]")] == [
+        "content_and_area",
+        "content_only",
+        "area_only",
+    ]
+    assert [normalize_spaces(choice.text) for choice in form.select("label")] == [
+        "Content and area",
+        "Only content",
+        "Only area",
+    ]
+
+
+def test_choose_how_to_populate_template_page_displays_error_if_none_selected(client_request):
+    page = client_request.post(
+        "main.choose_template_fields", service_id=SERVICE_ONE_ID, _data={"content": ""}, _expected_status=200
+    )
+    assert (
+        normalize_spaces(page.select_one(".govuk-error-message").text)
+        == "Error: Select which fields you'd like to use to populate template"
+    )
+
+
+@pytest.mark.parametrize(
+    "chosen_fields, expected_redirect_url, extra_args",
+    (
+        (
+            "content_and_area",
+            "main.add_service_template",
+            {"template_folder_id": None, "template_type": "broadcast", "adding_area": True},
+        ),
+        ("content_only", "main.add_service_template", {"template_folder_id": None, "template_type": "broadcast"}),
+        ("area_only", "main.choose_library", {"message_type": "templates"}),
+    ),
+)
+def test_create_template_with_chosen_fields_redirects_to_correct_page(
+    chosen_fields, expected_redirect_url, extra_args, client_request
+):
+    client_request.post(
+        "main.choose_template_fields",
+        service_id=SERVICE_ONE_ID,
+        message_type="templates",
+        message_id=None,
+        _data={"content": chosen_fields},
+        _expected_status=302,
+        _expected_redirect=url_for(expected_redirect_url, service_id=SERVICE_ONE_ID, **extra_args),
+    )
+
+
+def test_edit_content_redirects_to_write_template_page_and_updates_template(
+    client_request, mock_get_template, fake_uuid, mock_update_template
+):
+    page = client_request.get("main.edit_service_template", service_id=SERVICE_ONE_ID, template_id=fake_uuid)
+
+    assert [normalize_spaces(p.text) for p in page.select("label")] == [
+        "Reference",
+        "Alert message",
+    ]
+    assert normalize_spaces(page.select_one(".govuk-input")["value"]) == "Sample Template"
+    assert normalize_spaces(page.select_one("textarea").text) == "Template <em>content</em> with & entity"
+    new_data = {"content": "Sample Template 2", "reference": "test content"}
+    page = client_request.post(
+        "main.edit_service_template",
+        service_id=SERVICE_ONE_ID,
+        template_id=fake_uuid,
+        _data=new_data,
+    )
+
+    mock_update_template.assert_called_with(
+        service_id=SERVICE_ONE_ID,
+        id_=fake_uuid,
+        data=new_data,
+    )
+
+
+def test_add_area_to_template(client_request, fake_uuid, mock_get_template_with_no_area, mock_update_template):
+    page = client_request.get(
+        "main.view_template",
+        service_id=SERVICE_ONE_ID,
+        template_id=fake_uuid,
+        _test_page_title=False,
+    )
+    assert [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__actions")] == [
+        "Change reference",
+        "Change message",
+        "Add area",
+    ]
+    page = client_request.get(
+        "main.preview_areas",
+        service_id=SERVICE_ONE_ID,
+        template_id=fake_uuid,
+        message_type="templates",
+        message_id=fake_uuid,
+    )
+
+    assert not page.select_one(".area-list-item")
+
+    page = client_request.get(
+        "main.choose_library",
+        service_id=SERVICE_ONE_ID,
+        template_id=fake_uuid,
+        message_type="templates",
+        message_id=fake_uuid,
+    )
+
+    assert normalize_spaces(page.select_one("h1").text) == "Choose area to add to template"
+
+    page = client_request.post(
+        "main.choose_area",
+        service_id=SERVICE_ONE_ID,
+        template_id=fake_uuid,
+        message_type="templates",
+        message_id=fake_uuid,
+        library_slug="ctry19",
+        _data={"areas": "ctry19-E92000001"},
+        _follow_redirects=True,
+    )
+
+    mock_update_template.assert_called_with(
+        id_=fake_uuid,
+        data={
+            "areas": {
+                "ids": ["ctry19-E92000001"],
+                "names": ["England"],
+                "aggregate_names": ["England"],
+                "simple_polygons": ENGLAND,
+            }
+        },
+        service_id=SERVICE_ONE_ID,
+    )
+
+
+def test_remove_template_area(client_request, fake_uuid, mock_update_template, mock_get_template_with_area):
+    page = client_request.get(
+        "main.view_template",
+        service_id=SERVICE_ONE_ID,
+        template_id=fake_uuid,
+        _test_page_title=False,
+    )
+    assert [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__actions")] == [
+        "Change reference",
+        "Change message",
+        "Change areas",
+    ]
+    page = client_request.get(
+        "main.preview_areas",
+        service_id=SERVICE_ONE_ID,
+        template_id=fake_uuid,
+        message_type="templates",
+        message_id=fake_uuid,
+    )
+    assert normalize_spaces(page.select(".heading-large")) == "Confirm the area for the template"
+    assert normalize_spaces(page.select_one(".area-list-item").text) == "England Remove England"
+
+    page = client_request.get(
+        "main.remove_area",
+        service_id=SERVICE_ONE_ID,
+        template_id=fake_uuid,
+        message_type="templates",
+        message_id=fake_uuid,
+        area_slug="ctry19-E92000001",
+        _follow_redirects=True,
+    )
+
+    # Asserts that Template areas is updated with no area, as only area was removed
+    mock_update_template.assert_called_with(
+        id_=fake_uuid,
+        data={"areas": {"ids": [], "names": [], "aggregate_names": [], "simple_polygons": []}},
+        service_id=SERVICE_ONE_ID,
+    )
+
+
+def test_remove_custom_template_area(
+    client_request, fake_uuid, mock_update_template, mock_get_template_with_custom_area
+):
+    page = client_request.get(
+        "main.preview_areas",
+        service_id=SERVICE_ONE_ID,
+        template_id=fake_uuid,
+        message_type="templates",
+        message_id=fake_uuid,
+    )
+    assert normalize_spaces(page.select(".heading-large")) == "Confirm the area for the template"
+    assert normalize_spaces(page.select_one(".area-list-item").text) == (
+        "5km around 54.0 latitude, -1.7 longitude, in Harrogate Remove 5km "
+        + "around 54.0 latitude, -1.7 longitude, in Harrogate"
+    )
+
+    page = client_request.get(
+        "main.remove_custom_area",
+        service_id=SERVICE_ONE_ID,
+        template_id=fake_uuid,
+        message_type="templates",
+        message_id=fake_uuid,
+        _follow_redirects=True,
+    )
+
+    # Asserts that Template areas is updated with no area, as only area was removed
+    mock_update_template.assert_called_with(
+        id_=fake_uuid,
+        data={"areas": {"ids": [], "names": [], "aggregate_names": [], "simple_polygons": []}},
+        service_id=SERVICE_ONE_ID,
     )
