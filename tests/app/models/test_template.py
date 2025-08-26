@@ -13,7 +13,7 @@ def test_create_template_from_content(mocker, fake_uuid, mock_create_template):
         reference="Test Reference",
         content="Test Content",
         template_folder_id=None,
-        areas=None,
+        areas=[],
     )
 
 
