@@ -33,7 +33,15 @@ class Template(BaseBroadcast):
 
     @classmethod
     def create(cls, *, service_id, reference=None, content=None, template_folder_id=None, areas=None):
-        return cls(template_api_client.create_template(service_id, reference, content, template_folder_id, areas))
+        return cls(
+            template_api_client.create_template(
+                service_id=service_id,
+                reference=reference,
+                content=content,
+                template_folder_id=template_folder_id,
+                areas=areas,
+            )
+        )
 
     @classmethod
     def create_with_custom_area(cls, circle_polygon, area_id, service_id, template_folder_id=None):
