@@ -114,9 +114,7 @@ class Hosted(Config):
     SUBDOMAIN = (
         "dev."
         if os.environ.get("ENVIRONMENT") == "development"
-        else f"{os.environ.get('ENVIRONMENT')}."
-        if os.environ.get("ENVIRONMENT") != "production"
-        else ""
+        else f"{os.environ.get('ENVIRONMENT')}." if os.environ.get("ENVIRONMENT") != "production" else ""
     )
     API_HOST_NAME = f"http://api.{TENANT}ecs.local:6011"
     ADMIN_BASE_URL = f"http://admin.{TENANT}ecs.local:6012"
@@ -140,9 +138,7 @@ class Test(Config):
     SUBDOMAIN = (
         "dev."
         if os.environ.get("ENVIRONMENT") == "development"
-        else f"{os.environ.get('ENVIRONMENT')}."
-        if os.environ.get("ENVIRONMENT") != "production"
-        else ""
+        else f"{os.environ.get('ENVIRONMENT')}." if os.environ.get("ENVIRONMENT") != "production" else ""
     )
     ADMIN_EXTERNAL_URL = f"https://{TENANT}admin.{SUBDOMAIN}emergency-alerts.service.gov.uk"
     ASSET_DOMAIN = "static.example.com"

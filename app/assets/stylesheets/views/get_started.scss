@@ -6,10 +6,10 @@
 
     counter-increment: get-started-counter;
     padding: 0 0 0 govuk-spacing(6) + 5px;
-    margin: govuk-spacing(8) 0 0 0;
+    margin: govuk-spacing(8) 0 0;
     position: relative;
 
-    &:before {
+    &::before {
       @include govuk-font(24, $weight: bold);
       content: counter(get-started-counter) ".";
       position: absolute;
@@ -17,7 +17,7 @@
       left: 0;
     }
 
-    summary[aria-expanded=false] {
+    summary[aria-expanded="false"] {
       margin-bottom: 0;
     }
 
@@ -26,7 +26,7 @@
   &__heading {
     @include govuk-font(24, $weight: bold);
     display: inline-block;
-    margin: 5px 0 govuk-spacing(3) 0;
+    margin: 5px 0 govuk-spacing(3);
   }
 
 }

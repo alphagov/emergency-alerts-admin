@@ -45,7 +45,7 @@
       }
 
       $(buttonHTMLStr)
-      .on('click', e => this.$field.click())
+      .on('click', () => this.$field.click())
       .insertAfter(this.$field);
 
     };

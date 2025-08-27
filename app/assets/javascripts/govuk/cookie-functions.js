@@ -1,6 +1,6 @@
 // used by the cookie banner component
 
-(function (root) {
+(function () {
   'use strict';
   window.GOVUK = window.GOVUK || {};
 
@@ -51,7 +51,7 @@
     if (consentCookie) {
       try {
         consentCookieObj = JSON.parse(consentCookie);
-      } catch (err) {
+      } catch {
         return null;
       }
 

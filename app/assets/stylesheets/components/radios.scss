@@ -25,7 +25,7 @@
 
     display: block;
     clear: both;
-    margin: 0 0 govuk-spacing(6) 0;
+    margin: 0 0 govuk-spacing(6);
     position: relative;
     top: govuk-spacing(3);
 
@@ -65,7 +65,7 @@
     float: none;
     position: relative;
 
-    &:before {
+    &::before {
       content: "";
       position: absolute;
       bottom: 0;
@@ -79,7 +79,7 @@
       float: none;
     }
 
-    [type=radio]+label::before {
+    [type="radio"]+label::before {
       // To overlap the grey inset line
       background: govuk-colour("white");
     }
@@ -93,7 +93,7 @@
     }
 
     .block-label-hint {
-      &:after {
+      &::after {
         // Adds an little extra segment of line alongside the ‘current folder’
         // hint so that it extends all the way down to the next radio
         content: "";

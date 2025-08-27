@@ -7,7 +7,7 @@ $item-top-padding: govuk-spacing(3);
 
   &-item {
 
-    padding: govuk-spacing(3) 0px;
+    padding: govuk-spacing(3) 0;
     border-top: 1px solid $govuk-border-colour;
 
     &-heading {
@@ -46,7 +46,7 @@ $item-top-padding: govuk-spacing(3);
 
     position: relative;
     display: block;
-    margin: govuk-spacing(3) 0 govuk-spacing(3);
+    margin: govuk-spacing(3) 0;
 
     @include govuk-media-query($from: tablet) {
       float: right;
@@ -54,11 +54,11 @@ $item-top-padding: govuk-spacing(3);
     }
 
     &:focus {
-      /* cancel default focus styling in favour of that from :before pseudo class */
+      // cancel default focus styling in favour of that from :before pseudo class */
       box-shadow: none;
     }
 
-    &:before {
+    &::before {
       content: "";
       display: block;
 
@@ -72,15 +72,15 @@ $item-top-padding: govuk-spacing(3);
       background: transparent;
     }
 
-    &:active:before,
-    &:focus:before {
-      box-shadow: inset 0px -4px $govuk-focus-text-colour, inset 0px 16px $govuk-focus-colour, inset 3px 0px $govuk-focus-colour, inset 0px -15px $govuk-focus-colour, inset -3px 0px $govuk-focus-colour;
+    &:active::before,
+    &:focus::before {
+      box-shadow: inset 0 -4px $govuk-focus-text-colour, inset 0 16px $govuk-focus-colour, inset 3px 0 $govuk-focus-colour, inset 0 -15px $govuk-focus-colour, inset -3px 0 $govuk-focus-colour;
       right: -3px;
       left: -3px;
 
       @include govuk-media-query($from: tablet) {
         border-width: 15px 3px 15px 15px;
-        box-shadow: inset 0px -4px $govuk-focus-text-colour, inset 0px 16px $govuk-focus-colour, inset 15px 0px $govuk-focus-colour, inset 0px -15px $govuk-focus-colour, inset -3px 0px $govuk-focus-colour;
+        box-shadow: inset 0 -4px $govuk-focus-text-colour, inset 0 16px $govuk-focus-colour, inset 15px 0 $govuk-focus-colour, inset 0 -15px $govuk-focus-colour, inset -3px 0 $govuk-focus-colour;
         left: -15px;
       }
     }

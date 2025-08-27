@@ -13,7 +13,6 @@ BUCKET_NAME = ${BROADCAST_AREAS_BUCKET_NAME}
 VIRTUALENV_ROOT := $(shell [ -z $$VIRTUAL_ENV ] && echo $$(pwd)/venv || echo $$VIRTUAL_ENV)
 PYTHON_EXECUTABLE_PREFIX := $(shell test -d "$${VIRTUALENV_ROOT}" && echo "$${VIRTUALENV_ROOT}/bin/" || echo "")
 
-
 ## DEVELOPMENT
 .PHONY: bootstrap
 bootstrap: generate-version-file ## Set up everything to run the app

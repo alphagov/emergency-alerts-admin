@@ -58,7 +58,6 @@
   &-service-switch,
   &-service-back-to,
   &-organisation-link {
-
     &:focus {
       text-decoration: none; // override the :hover style (the focus style has its own underline)
       // hack to make the focus style fit in the navigation bar
@@ -111,7 +110,7 @@
     box-sizing: border-box;
     position: relative;
 
-    &:before {
+    &::before {
       content: "";
       display: block;
       position: absolute;
@@ -129,7 +128,7 @@
       border-color: $govuk-secondary-text-colour;
     }
 
-    &:focus:before {
+    &:focus::before {
       border-color: $govuk-focus-text-colour;
     }
 

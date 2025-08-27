@@ -96,7 +96,6 @@
     margin-bottom: 5px;
 
     &:hover {
-
       .big-number-label {
         @include govuk-link-hover-decoration;
       }
@@ -107,8 +106,9 @@
     &:focus {
       background: $govuk-focus-colour;
       border: none;
-      padding: 2px; /* replace the spacing the border gave */
-      /* override the default focus style to inset the underline */
+      padding: 2px; // replace the spacing the border gave
+
+      // override the default focus style to inset the underline
       box-shadow: inset 0 -4px $govuk-focus-text-colour;
 
       .big-number-number,
