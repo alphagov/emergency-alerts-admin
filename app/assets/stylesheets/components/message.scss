@@ -27,7 +27,7 @@ $app-body-text-line-height-default: get-govuk-typography-style($size: 19, $break
 }
 
 $govuk-checkboxes-size: 40px;
-$govuk-checkboxes-label-padding-left-right: govuk-spacing(3);
+$govuk-checkboxes-label-padding-left-right: govuk-spacing(9);
 $message-type-bottom-spacing: govuk-spacing(4);
 
 a {
@@ -54,7 +54,7 @@ a {
 .template-list {
   &-item {
     &-with-checkbox {
-      padding-left: 44px + $govuk-checkboxes-label-padding-left-right;
+      padding-left: $govuk-checkboxes-label-padding-left-right;
       min-height: $govuk-touch-target-size;
 
       .template-list-item-hint {
@@ -148,7 +148,7 @@ a {
     &-label {
       position: absolute;
       left: 0;
-      width: $govuk-checkboxes-size + $govuk-checkboxes-label-padding-left-right;
+      width: $govuk-checkboxes-label-padding-left-right;
       height: 100%;
       padding: 0;
     }
