@@ -702,7 +702,6 @@ def search_postcodes_for_broadcast(service_id, message_id):
                         broadcast_message_id=broadcast_message.id,
                     ),
                 )
-
     return render_postcode_page(
         service_id,
         message_id,
