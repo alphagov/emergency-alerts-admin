@@ -524,17 +524,17 @@ def preview_broadcast_areas(service_id, message_id):
 
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 def choose_broadcast_library(service_id, message_id):
-    message = None
+    broadcast_message = None
     is_custom_broadcast = False
     if message_id:
-        message = BroadcastMessage.from_id(message_id, service_id=service_id)
-        is_custom_broadcast = type(message.areas) is CustomBroadcastAreas
+        broadcast_message = BroadcastMessage.from_id(message_id, service_id=service_id)
+        is_custom_broadcast = type(broadcast_message.areas) is CustomBroadcastAreas
         if is_custom_broadcast:
-            message.clear_areas()
+            broadcast_message.clear_areas()
     return render_template(
         "views/broadcast/libraries.html",
         libraries=BroadcastMessage.libraries,
-        message=message,
+        message=broadcast_message,
         custom_broadcast=is_custom_broadcast,
         back_link=_get_choose_library_back_link(service_id=service_id, message_type="broadcast", message_id=message_id),
         message_type="broadcast",
