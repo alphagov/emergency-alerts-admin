@@ -1390,9 +1390,7 @@ def get_broadcast_unsigned_xml(service_id, broadcast_message_id, xml_type):
 @user_has_permissions("create_broadcasts")
 def update_broadcast(service_id, message_id):
     message = BroadcastMessage.from_id(message_id, service_id=service_id) if message_id else None
-
     form = BroadcastTemplateForm()
-
     if form.validate_on_submit():
         # broadcast_message already made so just update with form data
         message = BroadcastMessage.update_from_content(
@@ -1401,7 +1399,6 @@ def update_broadcast(service_id, message_id):
             content=form.content.data,
             reference=form.reference.data,
         )
-
         return redirect(
             # Redirects to 'Choose library' page if created in operator service,
             # as you cannot add extra_content in operator service, otherwise redirects
@@ -1412,7 +1409,6 @@ def update_broadcast(service_id, message_id):
                 broadcast_message_id=message_id,
             )
         )
-
     message = BroadcastMessage.from_id(
         message_id,
         service_id=current_service.id,
@@ -1434,7 +1430,6 @@ def update_broadcast(service_id, message_id):
 def create_new_broadcast(service_id):
     form = BroadcastTemplateForm()
     message = None
-
     if form.validate_on_submit():
         # Create broadcast_message from the form data submitted on this page only
         message = BroadcastMessage.create_from_content(
@@ -1457,7 +1452,6 @@ def create_new_broadcast(service_id):
             return redirect(
                 url_for(".choose_library", service_id=service_id, message_id=message.id, message_type="broadcast")
             )
-
     return render_template(
         "views/broadcast/write-new-broadcast.html",
         broadcast_message=message,
