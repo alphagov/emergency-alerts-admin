@@ -484,6 +484,155 @@ def broadcast(service_id, template_id):
         )
 
 
+@user_has_permissions("create_broadcasts")
+def preview_broadcast_areas(service_id, message_id):
+    message = BroadcastMessage.from_id(message_id, service_id=service_id)
+
+    if message.status != "returned":
+        try:
+            message.check_can_update_status("draft")
+        except HTTPError as e:
+            flash(e.message)
+            return render_current_alert_page(
+                message,
+            )
+
+    if message.template_id and message.status not in ["draft", "returned"]:
+        back_link = url_for(
+            ".view_template",
+            service_id=current_service.id,
+            template_id=message.template_id,
+        )
+    elif message.status in ["draft", "returned"]:
+        back_link = url_for(".view_current_broadcast", service_id=current_service.id, broadcast_message_id=message_id)
+    else:
+        back_link = url_for(".write_new_broadcast", service_id=current_service.id, message_id=message_id)
+
+    return render_template(
+        "views/broadcast/preview-areas.html",
+        message=message,
+        back_link=back_link,
+        is_custom_broadcast=type(message.areas) is CustomBroadcastAreas,
+        redirect_url=url_for(
+            ".preview_broadcast_message" if message.duration else ".choose_broadcast_duration",
+            service_id=service_id,
+            broadcast_message_id=message.id,
+        ),  # The url for when 'Save and continue' button clicked
+        message_type="broadcast",
+    )
+
+
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+def choose_broadcast_library(service_id, message_id):
+    message = None
+    is_custom_broadcast = False
+    if message_id:
+        message = BroadcastMessage.from_id(message_id, service_id=service_id)
+        is_custom_broadcast = type(message.areas) is CustomBroadcastAreas
+        if is_custom_broadcast:
+            message.clear_areas()
+    return render_template(
+        "views/broadcast/libraries.html",
+        libraries=BroadcastMessage.libraries,
+        message=message,
+        custom_broadcast=is_custom_broadcast,
+        back_link=_get_choose_library_back_link(service_id=service_id, message_type="broadcast", message_id=message_id),
+        message_type="broadcast",
+        message_id=message_id,
+    )
+
+
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+def choose_broadcast_area(service_id, library_slug, message_id=None):
+    message = BroadcastMessage.from_id(message_id, service_id=service_id) if message_id else None
+    library = BroadcastMessage.libraries.get(library_slug)
+    if library_slug == "coordinates":
+        form = ChooseCoordinateTypeForm()
+        if form.validate_on_submit():
+            return redirect(
+                url_for(
+                    ".search_coordinates",
+                    service_id=current_service.id,
+                    message_id=message.id,
+                    library_slug="coordinates",
+                    coordinate_type=form.content.data,
+                    message_type="broadcast",
+                )
+            )
+
+        return render_template(
+            "views/broadcast/choose-coordinates-type.html",
+            page_title="Choose coordinate type",
+            form=form,
+            back_link=url_for(
+                ".choose_library", service_id=service_id, message_id=message_id, message_type="broadcast"
+            ),
+        )
+
+    elif library_slug == "postcodes":
+        return redirect(
+            url_for(
+                ".search_postcodes",
+                service_id=current_service.id,
+                broadcast_message_id=message.id,
+                library_slug="postcodes",
+                message_type="broadcast",
+            )
+        )
+
+    if library.is_group:
+        return render_template(
+            "views/broadcast/areas-with-sub-areas.html",
+            search_form=SearchByNameForm(),
+            show_search_form=(len(library) > 7),
+            library=library,
+            page_title=f"Choose a {library.name_singular.lower()}",
+            message=message,
+            message_type="broadcast",
+        )
+
+    form = BroadcastAreaForm.from_library(library)
+    if form.validate_on_submit() and message:
+        message.replace_areas([*form.areas.data])
+        return redirect(
+            url_for(".preview_areas", service_id=current_service.id, message_id=message.id, message_type="broadcast")
+        )
+
+    return render_template(
+        "views/broadcast/areas.html",
+        form=form,
+        search_form=SearchByNameForm(),
+        show_search_form=(len(form.areas.choices) > 7),
+        page_title=(
+            f"Choose {library.name[0].lower()}{library.name[1:]}"
+            if library.name != "REPPIR DEPZ sites"
+            else "Choose REPPIR DEPZ sites"
+        ),
+        message=message,
+        back_link=url_for(
+            ".choose_library",
+            service_id=service_id,
+            message_type="broadcast",
+            message_id=message_id,
+        ),
+        message_type="broadcast",
+    )
+
+
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+def remove_custom_area_from_broadcast(service_id, message_id):
+    message = BroadcastMessage.from_id(message_id, service_id=service_id)
+    message.clear_areas()
+    return redirect(
+        url_for(
+            ".choose_library",
+            service_id=service_id,
+            message_id=message_id,
+            message_type="broadcast",
+        )
+    )
+
+
 @main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/duration", methods=["GET", "POST"])
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
@@ -1059,141 +1208,6 @@ def create_new_broadcast(service_id):
     )
 
 
-@user_has_permissions("create_broadcasts")
-def preview_broadcast_areas(service_id, message_id):
-    message = BroadcastMessage.from_id(message_id, service_id=service_id)
-
-    if message.status != "returned":
-        try:
-            message.check_can_update_status("draft")
-        except HTTPError as e:
-            flash(e.message)
-            return render_current_alert_page(
-                message,
-            )
-
-    if message.template_id and message.status not in ["draft", "returned"]:
-        back_link = url_for(
-            ".view_template",
-            service_id=current_service.id,
-            template_id=message.template_id,
-        )
-    elif message.status in ["draft", "returned"]:
-        back_link = url_for(".view_current_broadcast", service_id=current_service.id, broadcast_message_id=message_id)
-    else:
-        back_link = url_for(".write_new_broadcast", service_id=current_service.id, message_id=message_id)
-
-    return render_template(
-        "views/broadcast/preview-areas.html",
-        message=message,
-        back_link=back_link,
-        is_custom_broadcast=type(message.areas) is CustomBroadcastAreas,
-        redirect_url=url_for(
-            ".preview_broadcast_message" if message.duration else ".choose_broadcast_duration",
-            service_id=service_id,
-            broadcast_message_id=message.id,
-        ),  # The url for when 'Save and continue' button clicked
-        message_type="broadcast",
-    )
-
-
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-def choose_broadcast_library(service_id, message_id):
-    message = None
-    is_custom_broadcast = False
-    if message_id:
-        message = BroadcastMessage.from_id(message_id, service_id=service_id)
-        is_custom_broadcast = type(message.areas) is CustomBroadcastAreas
-        if is_custom_broadcast:
-            message.clear_areas()
-    return render_template(
-        "views/broadcast/libraries.html",
-        libraries=BroadcastMessage.libraries,
-        message=message,
-        custom_broadcast=is_custom_broadcast,
-        back_link=_get_choose_library_back_link(service_id=service_id, message_type="broadcast", message_id=message_id),
-        message_type="broadcast",
-        message_id=message_id,
-    )
-
-
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-def choose_broadcast_area(service_id, library_slug, message_id=None):
-    message = BroadcastMessage.from_id(message_id, service_id=service_id) if message_id else None
-    library = BroadcastMessage.libraries.get(library_slug)
-    if library_slug == "coordinates":
-        form = ChooseCoordinateTypeForm()
-        if form.validate_on_submit():
-            return redirect(
-                url_for(
-                    ".search_coordinates",
-                    service_id=current_service.id,
-                    message_id=message.id,
-                    library_slug="coordinates",
-                    coordinate_type=form.content.data,
-                    message_type="broadcast",
-                )
-            )
-
-        return render_template(
-            "views/broadcast/choose-coordinates-type.html",
-            page_title="Choose coordinate type",
-            form=form,
-            back_link=url_for(
-                ".choose_library", service_id=service_id, message_id=message_id, message_type="broadcast"
-            ),
-        )
-
-    elif library_slug == "postcodes":
-        return redirect(
-            url_for(
-                ".search_postcodes",
-                service_id=current_service.id,
-                broadcast_message_id=message.id,
-                library_slug="postcodes",
-                message_type="broadcast",
-            )
-        )
-
-    if library.is_group:
-        return render_template(
-            "views/broadcast/areas-with-sub-areas.html",
-            search_form=SearchByNameForm(),
-            show_search_form=(len(library) > 7),
-            library=library,
-            page_title=f"Choose a {library.name_singular.lower()}",
-            message=message,
-            message_type="broadcast",
-        )
-
-    form = BroadcastAreaForm.from_library(library)
-    if form.validate_on_submit() and message:
-        message.replace_areas([*form.areas.data])
-        return redirect(
-            url_for(".preview_areas", service_id=current_service.id, message_id=message.id, message_type="broadcast")
-        )
-
-    return render_template(
-        "views/broadcast/areas.html",
-        form=form,
-        search_form=SearchByNameForm(),
-        show_search_form=(len(form.areas.choices) > 7),
-        page_title=(
-            f"Choose {library.name[0].lower()}{library.name[1:]}"
-            if library.name != "REPPIR DEPZ sites"
-            else "Choose REPPIR DEPZ sites"
-        ),
-        message=message,
-        back_link=url_for(
-            ".choose_library",
-            service_id=service_id,
-            message_type="broadcast",
-            message_id=message_id,
-        ),
-        message_type="broadcast",
-    )
-
-
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 def choose_broadcast_sub_area(service_id, library_slug, area_slug, message_id):
     message = BroadcastMessage.from_id(message_id, service_id=service_id)
@@ -1441,20 +1455,6 @@ def remove_broadcast_area(service_id, message_id, area_slug):
         url_for(
             url,
             service_id=current_service.id,
-            message_id=message_id,
-            message_type="broadcast",
-        )
-    )
-
-
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-def remove_custom_area_from_broadcast(service_id, message_id):
-    message = BroadcastMessage.from_id(message_id, service_id=service_id)
-    message.clear_areas()
-    return redirect(
-        url_for(
-            ".choose_library",
-            service_id=service_id,
             message_id=message_id,
             message_type="broadcast",
         )
