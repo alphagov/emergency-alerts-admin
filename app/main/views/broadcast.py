@@ -640,7 +640,7 @@ def remove_custom_area_from_broadcast(service_id, message_id):
 
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 def search_postcodes_for_broadcast(service_id, message_id):
-    message = BroadcastMessage.from_id(message_id, service_id=service_id)
+    broadcast_message = BroadcastMessage.from_id(message_id, service_id=service_id)
     form = PostcodeForm()
     # Initialising variables here that may be assigned values, to be then passed into jinja template.
     centroid, bleed, estimated_area, estimated_area_with_bleed, count_of_phones, count_of_phones_likely = (
@@ -694,19 +694,19 @@ def search_postcodes_for_broadcast(service_id, message_id):
                 If 'Continue' button is clicked, area is added to Broadcast Message
                 and message is updated.
                 """
-                message.add_custom_areas(circle_polygon, id=id)
+                broadcast_message.add_custom_areas(circle_polygon, id=id)
                 return redirect(
                     url_for(
-                        ".preview_broadcast_message" if message.duration else ".choose_broadcast_duration",
+                        ".preview_broadcast_message" if broadcast_message.duration else ".choose_broadcast_duration",
                         service_id=current_service.id,
-                        broadcast_message_id=message.id,
+                        broadcast_message_id=broadcast_message.id,
                     ),
                 )
 
     return render_postcode_page(
         service_id,
         message_id,
-        message,
+        broadcast_message,
         form,
         centroid,
         bleed,
@@ -737,7 +737,7 @@ def search_coordinates_for_broadcast(service_id, coordinate_type, message_id):
         None,
         None,
     )
-    message = BroadcastMessage.from_id(message_id, service_id=service_id)
+    broadcast_message = BroadcastMessage.from_id(message_id, service_id=service_id)
     form = select_coordinate_form(coordinate_type)
 
     if all_coordinate_form_fields_empty(request, form):
@@ -803,12 +803,12 @@ def search_coordinates_for_broadcast(service_id, coordinate_type, message_id):
             If 'Preview alert' button is clicked, area is added to Broadcast Message
             and message is updated.
             """
-            message.add_custom_areas(polygon, id=id)
+            broadcast_message.add_custom_areas(polygon, id=id)
             return redirect(
                 url_for(
-                    ".preview_broadcast_message" if message.duration else ".choose_broadcast_duration",
+                    ".preview_broadcast_message" if broadcast_message.duration else ".choose_broadcast_duration",
                     service_id=current_service.id,
-                    broadcast_message_id=message.id,
+                    broadcast_message_id=broadcast_message.id,
                 ),
             )
     return render_coordinates_page(
@@ -821,7 +821,7 @@ def search_coordinates_for_broadcast(service_id, coordinate_type, message_id):
         count_of_phones,
         count_of_phones_likely,
         marker,
-        message,
+        broadcast_message,
         form,
         "broadcast",
     )
