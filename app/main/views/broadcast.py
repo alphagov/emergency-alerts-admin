@@ -828,7 +828,7 @@ def search_coordinates_for_broadcast(service_id, coordinate_type, message_id):
 
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 def choose_broadcast_sub_area(service_id, library_slug, area_slug, message_id):
-    message = BroadcastMessage.from_id(message_id, service_id=service_id)
+    broadcast_message = BroadcastMessage.from_id(message_id, service_id=service_id)
     area = BroadcastMessage.libraries.get_areas([area_slug])[0]
     back_link = _get_broadcast_sub_area_back_link(service_id, message_id, library_slug, "broadcast")
     is_county = any(sub_area.sub_areas for sub_area in area.sub_areas)
@@ -838,12 +838,12 @@ def choose_broadcast_sub_area(service_id, library_slug, area_slug, message_id):
         select_all_choice=(area.id, f"All of {area.name}"),
     )
     if form.validate_on_submit():
-        message.replace_areas([*form.selected_areas])
+        broadcast_message.replace_areas([*form.selected_areas])
         return redirect(
             url_for(
                 ".preview_areas",
                 service_id=current_service.id,
-                message_id=message.id,
+                message_id=broadcast_message.id,
                 message_type="broadcast",
             )
         )
@@ -856,7 +856,7 @@ def choose_broadcast_sub_area(service_id, library_slug, area_slug, message_id):
             show_search_form=(len(area.sub_areas) > 7),
             library_slug=library_slug,
             page_title=f"Choose an area of {area.name}",
-            message=message,
+            message=broadcast_message,
             county=area,
             back_link=back_link,
             message_type="broadcast",
@@ -869,7 +869,7 @@ def choose_broadcast_sub_area(service_id, library_slug, area_slug, message_id):
         show_search_form=(len(form.areas.choices) > 7),
         library_slug=library_slug,
         page_title=f"Choose an area of {area.name}",
-        message=message,
+        message=broadcast_message,
         back_link=back_link,
         message_type="broadcast",
     )
