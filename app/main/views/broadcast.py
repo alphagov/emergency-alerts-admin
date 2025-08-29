@@ -544,7 +544,7 @@ def choose_broadcast_library(service_id, message_id):
 
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 def choose_broadcast_area(service_id, library_slug, message_id=None):
-    message = BroadcastMessage.from_id(message_id, service_id=service_id) if message_id else None
+    broadcast_message = BroadcastMessage.from_id(message_id, service_id=service_id) if message_id else None
     library = BroadcastMessage.libraries.get(library_slug)
     if library_slug == "coordinates":
         form = ChooseCoordinateTypeForm()
@@ -553,7 +553,7 @@ def choose_broadcast_area(service_id, library_slug, message_id=None):
                 url_for(
                     ".search_coordinates",
                     service_id=current_service.id,
-                    message_id=message.id,
+                    message_id=broadcast_message.id,
                     library_slug="coordinates",
                     coordinate_type=form.content.data,
                     message_type="broadcast",
@@ -574,7 +574,7 @@ def choose_broadcast_area(service_id, library_slug, message_id=None):
             url_for(
                 ".search_postcodes",
                 service_id=current_service.id,
-                broadcast_message_id=message.id,
+                broadcast_message_id=broadcast_message.id,
                 library_slug="postcodes",
                 message_type="broadcast",
             )
@@ -587,15 +587,20 @@ def choose_broadcast_area(service_id, library_slug, message_id=None):
             show_search_form=(len(library) > 7),
             library=library,
             page_title=f"Choose a {library.name_singular.lower()}",
-            message=message,
+            message=broadcast_message,
             message_type="broadcast",
         )
 
     form = BroadcastAreaForm.from_library(library)
-    if form.validate_on_submit() and message:
-        message.replace_areas([*form.areas.data])
+    if form.validate_on_submit() and broadcast_message:
+        broadcast_message.replace_areas([*form.areas.data])
         return redirect(
-            url_for(".preview_areas", service_id=current_service.id, message_id=message.id, message_type="broadcast")
+            url_for(
+                ".preview_areas",
+                service_id=current_service.id,
+                message_id=broadcast_message.id,
+                message_type="broadcast",
+            )
         )
 
     return render_template(
@@ -608,7 +613,7 @@ def choose_broadcast_area(service_id, library_slug, message_id=None):
             if library.name != "REPPIR DEPZ sites"
             else "Choose REPPIR DEPZ sites"
         ),
-        message=message,
+        message=broadcast_message,
         back_link=url_for(
             ".choose_library",
             service_id=service_id,
