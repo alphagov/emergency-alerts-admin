@@ -37,6 +37,7 @@ from app.main.forms import (
     SearchByNameForm,
 )
 from app.models.broadcast_message import BroadcastMessage, BroadcastMessages
+from app.models.template import Template
 from app.utils import service_has_permission
 from app.utils.broadcast import (
     _get_back_link_from_view_broadcast_endpoint,
@@ -80,7 +81,7 @@ from app.utils.broadcast import (
     validate_form_based_on_fields_entered,
 )
 from app.utils.datetime import fromisoformat_allow_z_tz
-from app.utils.user import user_has_permissions
+from app.utils.user import user_has_any_permissions, user_has_permissions
 
 
 @main.route("/services/<uuid:service_id>/broadcast-tour/<int:step_index>")
@@ -421,6 +422,66 @@ def edit_broadcast(service_id, broadcast_message_id):
         return redirect_dependent_on_alert_area(broadcast_message)
 
     return render_edit_alert_page(broadcast_message, form)
+
+
+@main.route("/services/<uuid:service_id>/new-broadcast/<uuid:template_id>")
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+@service_has_permission("broadcast")
+@user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
+def broadcast(service_id, template_id):
+    template = Template.from_id(template_id=template_id, service_id=service_id)
+    broadcast_message = None
+    if template.reference and template.content:
+        if template.areas:
+            # As Template area already exists, created broadcast_message using this
+            # and reference and content if they have been set also
+            broadcast_message = (
+                BroadcastMessage.create_from_custom_area(
+                    service_id=service_id,
+                    template_id=template_id,
+                    areas=template.areas,
+                    content=template.content,
+                    reference=template.reference,
+                )
+                if type(template.areas) is CustomBroadcastAreas
+                else BroadcastMessage.create_from_area(
+                    service_id=service_id,
+                    template_id=template_id,
+                    area_ids=template.area_ids,
+                    content=template.content,
+                    reference=template.reference,
+                )
+            )
+        else:
+            # Only reference and content have been set for Template,
+            # so can only use these to create broadcast_message
+            broadcast_message = BroadcastMessage.create_from_content(
+                service_id=service_id, content=template.content, reference=template.reference
+            )
+
+        # If the current service is an operator service, user is redirected
+        # straight to choose area as extra_content attribute shouldn't be set for
+        # alerts created in operator services
+        if current_service.broadcast_channel == "operator":
+            return redirect_dependent_on_alert_area(broadcast_message)
+        else:
+            return redirect(
+                url_for(
+                    ".choose_extra_content",
+                    service_id=current_service.id,
+                    broadcast_message_id=broadcast_message.id,
+                )
+            )
+    elif template.areas:
+        # ONLY Template area has been set, reference and content must be provided to
+        # create broadcast_message so redirected to relevant page
+        return redirect(
+            url_for(
+                ".write_new_broadcast",
+                service_id=current_service.id,
+                template_id=template.id,
+            )
+        )
 
 
 @main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/duration", methods=["GET", "POST"])
