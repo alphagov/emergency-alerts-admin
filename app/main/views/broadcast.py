@@ -875,6 +875,21 @@ def choose_broadcast_sub_area(service_id, library_slug, area_slug, message_id):
     )
 
 
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+def remove_broadcast_area(service_id, message_id, area_slug):
+    message = BroadcastMessage.from_id(message_id, service_id=service_id)
+    message.remove_area(area_slug)
+    url = ".choose_library" if len(message.areas) == 0 else ".preview_areas"
+    return redirect(
+        url_for(
+            url,
+            service_id=current_service.id,
+            message_id=message_id,
+            message_type="broadcast",
+        )
+    )
+
+
 @main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/duration", methods=["GET", "POST"])
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
@@ -1447,19 +1462,4 @@ def create_new_broadcast(service_id):
         "views/broadcast/write-new-broadcast.html",
         broadcast_message=message,
         form=form,
-    )
-
-
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-def remove_broadcast_area(service_id, message_id, area_slug):
-    message = BroadcastMessage.from_id(message_id, service_id=service_id)
-    message.remove_area(area_slug)
-    url = ".choose_library" if len(message.areas) == 0 else ".preview_areas"
-    return redirect(
-        url_for(
-            url,
-            service_id=current_service.id,
-            message_id=message_id,
-            message_type="broadcast",
-        )
     )
