@@ -4,7 +4,6 @@ from werkzeug.utils import cached_property
 
 from app.models import JSONModel
 from app.models.organisation import Organisation
-from app.models.template import Template
 from app.models.user import InvitedUsers, PendingUsers, User, Users
 from app.notify_client.api_key_api_client import api_key_api_client
 from app.notify_client.invite_api_client import invite_api_client
@@ -137,9 +136,9 @@ class Service(JSONModel):
         return template_folder
 
     def get_template_with_user_permission_or_403(self, template_id, user):
-        template = Template.from_id(template_id, service_id=self.id)
+        template = template_api_client.get_template(service_id=self.id, template_id=template_id)
 
-        self.get_template_folder_with_user_permission_or_403(template.folder, user)
+        self.get_template_folder_with_user_permission_or_403(template.get("folder"), user)
 
         return template
 
