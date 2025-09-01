@@ -42,7 +42,6 @@ from app.utils import service_has_permission
 from app.utils.broadcast import (
     _get_back_link_from_view_broadcast_endpoint,
     _get_broadcast_sub_area_back_link,
-    _get_choose_library_back_link,
     adding_invalid_coords_errors_to_form,
     all_coordinate_form_fields_empty,
     all_fields_empty,
@@ -519,26 +518,6 @@ def preview_broadcast_areas(service_id, message_id):
             broadcast_message_id=broadcast_message.id,
         ),  # The url for when 'Save and continue' button clicked
         message_type="broadcast",
-    )
-
-
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-def choose_broadcast_library(service_id, message_id):
-    broadcast_message = None
-    is_custom_broadcast = False
-    if message_id:
-        broadcast_message = BroadcastMessage.from_id(message_id, service_id=service_id)
-        is_custom_broadcast = type(broadcast_message.areas) is CustomBroadcastAreas
-        if is_custom_broadcast:
-            broadcast_message.clear_areas()
-    return render_template(
-        "views/broadcast/libraries.html",
-        libraries=BroadcastMessage.libraries,
-        message=broadcast_message,
-        custom_broadcast=is_custom_broadcast,
-        back_link=_get_choose_library_back_link(service_id=service_id, message_type="broadcast", message_id=message_id),
-        message_type="broadcast",
-        message_id=message_id,
     )
 
 

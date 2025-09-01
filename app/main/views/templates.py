@@ -32,7 +32,6 @@ from app.models.template_list import TemplateList, UserTemplateList, UserTemplat
 from app.utils import BROADCAST_TYPE
 from app.utils.broadcast import (
     _get_broadcast_sub_area_back_link,
-    _get_choose_library_back_link,
     adding_invalid_coords_errors_to_form,
     all_coordinate_form_fields_empty,
     all_fields_empty,
@@ -292,7 +291,6 @@ def copy_template(service_id, template_id):
     if request.method == "POST":
         return add_service_template(service_id, template["template_type"])
 
-    template["content"] = template["content"]
     template["reference"] = _get_template_copy_name(template, current_service.all_templates)
     form = form_objects[template["template_type"]](**template)
 
@@ -804,29 +802,6 @@ def preview_template_areas(service_id, template_id):
             ".view_template", service_id=current_service.id, template_id=template.id
         ),  # The url for when 'Save and continue' button clicked
         message_type="templates",
-    )
-
-
-@user_has_permissions("manage_templates")
-def choose_template_library(service_id, template_id=None, template_folder_id=None):
-    template = None
-    is_custom_broadcast = False
-    if template_id:
-        template = Template.from_id(template_id, service_id=service_id)
-        is_custom_broadcast = type(template.areas) is CustomBroadcastAreas
-        if is_custom_broadcast:
-            template.clear_areas()
-    return render_template(
-        "views/broadcast/libraries.html",
-        libraries=BroadcastMessage.libraries,
-        message=template,
-        custom_broadcast=is_custom_broadcast,
-        back_link=_get_choose_library_back_link(
-            service_id, "templates", template_folder_id=template_folder_id, message_id=template_id
-        ),
-        message_type="templates",
-        message_id=template_id,
-        template_folder_id=template_folder_id,
     )
 
 
