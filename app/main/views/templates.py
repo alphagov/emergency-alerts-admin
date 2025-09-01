@@ -14,11 +14,9 @@ from app.broadcast_areas.models import CustomBroadcastAreas
 from app.formatters import character_count
 from app.main import main
 from app.main.forms import (
-    BroadcastAreaFormWithSelectAll,
     BroadcastTemplateForm,
     ChooseTemplateFieldsForm,
     PostcodeForm,
-    SearchByNameForm,
     SearchTemplatesForm,
     TemplateAndFoldersSelectionForm,
     TemplateFolderForm,
@@ -29,7 +27,6 @@ from app.models.template import Template
 from app.models.template_list import TemplateList, UserTemplateList, UserTemplateLists
 from app.utils import BROADCAST_TYPE
 from app.utils.broadcast import (
-    _get_broadcast_sub_area_back_link,
     adding_invalid_coords_errors_to_form,
     all_coordinate_form_fields_empty,
     all_fields_empty,
@@ -800,60 +797,6 @@ def preview_template_areas(service_id, template_id):
             ".view_template", service_id=current_service.id, template_id=template.id
         ),  # The url for when 'Save and continue' button clicked
         message_type="templates",
-    )
-
-
-@user_has_permissions("manage_templates")
-def choose_template_sub_area(service_id, library_slug, area_slug, template_id=None, template_folder_id=None):
-    template = Template.from_id(template_id, service_id=service_id) if template_id else None
-    area = BroadcastMessage.libraries.get_areas([area_slug])[0]
-    back_link = _get_broadcast_sub_area_back_link(service_id, template_id, library_slug, "templates")
-    is_county = any(sub_area.sub_areas for sub_area in area.sub_areas)
-
-    form = BroadcastAreaFormWithSelectAll.from_library(
-        [] if is_county else area.sub_areas,
-        select_all_choice=(area.id, f"All of {area.name}"),
-    )
-    if form.validate_on_submit():
-        if template:
-            template.replace_areas([*form.selected_areas])
-        else:
-            template = Template.create_from_area(
-                service_id=service_id, area_ids=[*form.selected_areas], template_folder_id=template_folder_id
-            )
-        return redirect(
-            url_for(
-                ".preview_areas",
-                service_id=current_service.id,
-                message_id=template.id,
-                message_type="templates",
-            )
-        )
-
-    if is_county:
-        # area = county. sub_areas = districts. they have wards, so link to individual district pages
-        return render_template(
-            "views/broadcast/counties.html",
-            form=form,
-            search_form=SearchByNameForm(),
-            show_search_form=(len(area.sub_areas) > 7),
-            library_slug=library_slug,
-            page_title=f"Choose an area of {area.name}",
-            message=template,
-            county=area,
-            back_link=back_link,
-            message_type="templates",
-        )
-
-    return render_template(
-        "views/broadcast/sub-areas.html",
-        form=form,
-        search_form=SearchByNameForm(),
-        show_search_form=(len(form.areas.choices) > 7),
-        library_slug=library_slug,
-        page_title=f"Choose an area of {area.name}",
-        message=template,
-        back_link=back_link,
     )
 
 

@@ -2,9 +2,13 @@ from flask import redirect, render_template, request, url_for
 
 from app.broadcast_areas.models import CustomBroadcastAreas
 from app.main import main
-from app.main.forms import BroadcastAreaForm, ChooseCoordinateTypeForm, SearchByNameForm
+from app.main.forms import (
+    BroadcastAreaForm,
+    BroadcastAreaFormWithSelectAll,
+    ChooseCoordinateTypeForm,
+    SearchByNameForm,
+)
 from app.main.views.broadcast import (
-    choose_broadcast_sub_area,
     create_new_broadcast,
     preview_broadcast_areas,
     remove_broadcast_area,
@@ -14,7 +18,6 @@ from app.main.views.broadcast import (
     update_broadcast,
 )
 from app.main.views.templates import (
-    choose_template_sub_area,
     preview_template_areas,
     remove_custom_area_from_template,
     remove_template_area,
@@ -25,7 +28,10 @@ from app.main.views.templates import (
 from app.models.broadcast_message import BroadcastMessage
 from app.models.template import Template
 from app.utils import service_has_permission
-from app.utils.broadcast import _get_choose_library_back_link
+from app.utils.broadcast import (
+    _get_broadcast_sub_area_back_link,
+    _get_choose_library_back_link,
+)
 from app.utils.user import user_has_any_permissions
 
 
@@ -212,10 +218,57 @@ def choose_area(
 @user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def choose_sub_area(service_id, message_type, library_slug, area_slug, message_id=None):
     template_folder_id = request.args.get("template_folder_id")
-    if message_type == "broadcast":
-        return choose_broadcast_sub_area(service_id, library_slug, area_slug, message_id)
-    elif message_type == "templates":
-        return choose_template_sub_area(service_id, library_slug, area_slug, message_id, template_folder_id)
+    Message = get_message_type(message_type)
+    message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
+    area = BroadcastMessage.libraries.get_areas([area_slug])[0]
+    back_link = _get_broadcast_sub_area_back_link(service_id, message_id, library_slug, message_type)
+    is_county = any(sub_area.sub_areas for sub_area in area.sub_areas)
+
+    form = BroadcastAreaFormWithSelectAll.from_library(
+        [] if is_county else area.sub_areas,
+        select_all_choice=(area.id, f"All of {area.name}"),
+    )
+    if form.validate_on_submit():
+        if message:
+            message.replace_areas([*form.selected_areas])
+        else:
+            message = Message.create_from_area(
+                service_id=service_id, area_ids=[*form.selected_areas], template_folder_id=template_folder_id
+            )
+        return redirect(
+            url_for(
+                ".preview_areas",
+                service_id=service_id,
+                message_id=message.id,
+                message_type=message_type,
+            )
+        )
+
+    if is_county:
+        # area = county. sub_areas = districts. they have wards, so link to individual district pages
+        return render_template(
+            "views/broadcast/counties.html",
+            form=form,
+            search_form=SearchByNameForm(),
+            show_search_form=(len(area.sub_areas) > 7),
+            library_slug=library_slug,
+            page_title=f"Choose an area of {area.name}",
+            message=message,
+            county=area,
+            back_link=back_link,
+            message_type=message_type,
+        )
+
+    return render_template(
+        "views/broadcast/sub-areas.html",
+        form=form,
+        search_form=SearchByNameForm(),
+        show_search_form=(len(form.areas.choices) > 7),
+        library_slug=library_slug,
+        page_title=f"Choose an area of {area.name}",
+        message=message,
+        back_link=back_link,
+    )
 
 
 @main.route("/services/<uuid:service_id>/<message_type>/<uuid:message_id>/areas")
