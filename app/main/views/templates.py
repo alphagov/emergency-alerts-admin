@@ -14,10 +14,8 @@ from app.broadcast_areas.models import CustomBroadcastAreas
 from app.formatters import character_count
 from app.main import main
 from app.main.forms import (
-    BroadcastAreaForm,
     BroadcastAreaFormWithSelectAll,
     BroadcastTemplateForm,
-    ChooseCoordinateTypeForm,
     ChooseTemplateFieldsForm,
     PostcodeForm,
     SearchByNameForm,
@@ -802,111 +800,6 @@ def preview_template_areas(service_id, template_id):
             ".view_template", service_id=current_service.id, template_id=template.id
         ),  # The url for when 'Save and continue' button clicked
         message_type="templates",
-    )
-
-
-@user_has_permissions("manage_templates")
-def choose_template_area(service_id, library_slug, template_id=None, template_folder_id=None):
-    template = Template.from_id(template_id, service_id=service_id) if template_id else None
-    library = BroadcastMessage.libraries.get(library_slug)
-    if library_slug == "coordinates":
-        form = ChooseCoordinateTypeForm()
-        if form.validate_on_submit():
-            return redirect(
-                url_for(
-                    ".search_coordinates",
-                    service_id=current_service.id,
-                    message_id=template_id,
-                    library_slug="coordinates",
-                    coordinate_type=form.content.data,
-                    message_type="templates",
-                    template_folder_id=template_folder_id,
-                )
-            )
-
-        return render_template(
-            "views/broadcast/choose-coordinates-type.html",
-            page_title="Choose coordinate type",
-            form=form,
-            back_link=url_for(
-                ".choose_library",
-                service_id=service_id,
-                message_id=template_id,
-                message_type="templates",
-                template_folder_id=template_folder_id,
-            ),
-        )
-
-    elif library_slug == "postcodes":
-        return redirect(
-            url_for(
-                ".search_postcodes",
-                service_id=current_service.id,
-                broadcast_message_id=template.id,
-                library_slug="postcodes",
-                message_type="templates",
-                template_folder_id=template_folder_id,
-            )
-        )
-
-    if library.is_group:
-        return render_template(
-            "views/broadcast/areas-with-sub-areas.html",
-            search_form=SearchByNameForm(),
-            show_search_form=(len(library) > 7),
-            library=library,
-            page_title=f"Choose a {library.name_singular.lower()}",
-            message=template,
-            message_type="templates",
-            template_folder_id=template_folder_id,
-        )
-
-    form = BroadcastAreaForm.from_library(library)
-    if form.validate_on_submit():
-        if template:
-            template.replace_areas([*form.areas.data])
-            return redirect(
-                url_for(
-                    ".preview_areas",
-                    service_id=current_service.id,
-                    message_id=template.id,
-                    message_type="templates",
-                    template_folder_id=template_folder_id,
-                )
-            )
-        else:
-            template = Template.create_from_area(
-                service_id=service_id, area_ids=[*form.areas.data], template_folder_id=template_folder_id
-            )
-            return redirect(
-                url_for(
-                    ".preview_areas",
-                    service_id=current_service.id,
-                    message_id=template.id,
-                    message_type="templates",
-                    template_folder_id=template_folder_id,
-                )
-            )
-    return render_template(
-        "views/broadcast/areas.html",
-        form=form,
-        search_form=SearchByNameForm(),
-        show_search_form=(len(form.areas.choices) > 7),
-        page_title=(
-            f"Choose {library.name[0].lower()}{library.name[1:]}"
-            if library.name != "REPPIR DEPZ sites"
-            else "Choose REPPIR DEPZ sites"
-        ),
-        message=template,
-        back_link=url_for(
-            ".choose_library",
-            service_id=service_id,
-            message_id=template_id,
-            message_type="templates",
-            template_folder_id=template_folder_id,
-        ),
-        message_type="templates",
-        template_folder_id=template_folder_id,
     )
 
 

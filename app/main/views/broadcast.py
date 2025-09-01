@@ -23,10 +23,8 @@ from app.broadcast_areas.models import BaseBroadcastArea, CustomBroadcastAreas
 from app.main import main
 from app.main.forms import (
     AddExtraContentForm,
-    BroadcastAreaForm,
     BroadcastAreaFormWithSelectAll,
     BroadcastTemplateForm,
-    ChooseCoordinateTypeForm,
     ChooseDurationForm,
     ChooseExtraContentForm,
     ConfirmBroadcastForm,
@@ -517,88 +515,6 @@ def preview_broadcast_areas(service_id, message_id):
             service_id=service_id,
             broadcast_message_id=broadcast_message.id,
         ),  # The url for when 'Save and continue' button clicked
-        message_type="broadcast",
-    )
-
-
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-def choose_broadcast_area(service_id, library_slug, message_id=None):
-    broadcast_message = BroadcastMessage.from_id(message_id, service_id=service_id) if message_id else None
-    library = BroadcastMessage.libraries.get(library_slug)
-    if library_slug == "coordinates":
-        form = ChooseCoordinateTypeForm()
-        if form.validate_on_submit():
-            return redirect(
-                url_for(
-                    ".search_coordinates",
-                    service_id=current_service.id,
-                    message_id=broadcast_message.id,
-                    library_slug="coordinates",
-                    coordinate_type=form.content.data,
-                    message_type="broadcast",
-                )
-            )
-
-        return render_template(
-            "views/broadcast/choose-coordinates-type.html",
-            page_title="Choose coordinate type",
-            form=form,
-            back_link=url_for(
-                ".choose_library", service_id=service_id, message_id=message_id, message_type="broadcast"
-            ),
-        )
-
-    elif library_slug == "postcodes":
-        return redirect(
-            url_for(
-                ".search_postcodes",
-                service_id=current_service.id,
-                broadcast_message_id=broadcast_message.id,
-                library_slug="postcodes",
-                message_type="broadcast",
-            )
-        )
-
-    if library.is_group:
-        return render_template(
-            "views/broadcast/areas-with-sub-areas.html",
-            search_form=SearchByNameForm(),
-            show_search_form=(len(library) > 7),
-            library=library,
-            page_title=f"Choose a {library.name_singular.lower()}",
-            message=broadcast_message,
-            message_type="broadcast",
-        )
-
-    form = BroadcastAreaForm.from_library(library)
-    if form.validate_on_submit() and broadcast_message:
-        broadcast_message.replace_areas([*form.areas.data])
-        return redirect(
-            url_for(
-                ".preview_areas",
-                service_id=current_service.id,
-                message_id=broadcast_message.id,
-                message_type="broadcast",
-            )
-        )
-
-    return render_template(
-        "views/broadcast/areas.html",
-        form=form,
-        search_form=SearchByNameForm(),
-        show_search_form=(len(form.areas.choices) > 7),
-        page_title=(
-            f"Choose {library.name[0].lower()}{library.name[1:]}"
-            if library.name != "REPPIR DEPZ sites"
-            else "Choose REPPIR DEPZ sites"
-        ),
-        message=broadcast_message,
-        back_link=url_for(
-            ".choose_library",
-            service_id=service_id,
-            message_type="broadcast",
-            message_id=message_id,
-        ),
         message_type="broadcast",
     )
 

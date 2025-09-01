@@ -1,9 +1,9 @@
-from flask import render_template, request
+from flask import redirect, render_template, request, url_for
 
 from app.broadcast_areas.models import CustomBroadcastAreas
 from app.main import main
+from app.main.forms import BroadcastAreaForm, ChooseCoordinateTypeForm, SearchByNameForm
 from app.main.views.broadcast import (
-    choose_broadcast_area,
     choose_broadcast_sub_area,
     create_new_broadcast,
     preview_broadcast_areas,
@@ -14,7 +14,6 @@ from app.main.views.broadcast import (
     update_broadcast,
 )
 from app.main.views.templates import (
-    choose_template_area,
     choose_template_sub_area,
     preview_template_areas,
     remove_custom_area_from_template,
@@ -106,12 +105,99 @@ def choose_area(
     message_id=None,
 ):
     template_folder_id = request.args.get("template_folder_id")
-    if message_type == "broadcast":
-        return choose_broadcast_area(service_id, library_slug, message_id)
-    elif message_type == "templates":
-        return choose_template_area(
-            service_id, library_slug, template_id=message_id, template_folder_id=template_folder_id
+    Message = get_message_type(message_type)
+    message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
+    library = BroadcastMessage.libraries.get(library_slug)
+    if library_slug == "coordinates":
+        form = ChooseCoordinateTypeForm()
+        if form.validate_on_submit():
+            return redirect(
+                url_for(
+                    ".search_coordinates",
+                    service_id=service_id,
+                    message_id=message_id,
+                    library_slug="coordinates",
+                    coordinate_type=form.content.data,
+                    message_type=message_type,
+                    template_folder_id=template_folder_id,
+                )
+            )
+
+        return render_template(
+            "views/broadcast/choose-coordinates-type.html",
+            page_title="Choose coordinate type",
+            form=form,
+            back_link=url_for(
+                ".choose_library",
+                service_id=service_id,
+                message_id=message_id,
+                message_type=message_type,
+                template_folder_id=template_folder_id,
+            ),
         )
+
+    elif library_slug == "postcodes":
+        return redirect(
+            url_for(
+                ".search_postcodes",
+                service_id=service_id,
+                broadcast_message_id=message_id,
+                library_slug="postcodes",
+                message_type=message_type,
+                template_folder_id=template_folder_id,
+            )
+        )
+
+    if library.is_group:
+        return render_template(
+            "views/broadcast/areas-with-sub-areas.html",
+            search_form=SearchByNameForm(),
+            show_search_form=(len(library) > 7),
+            library=library,
+            page_title=f"Choose a {library.name_singular.lower()}",
+            message=message,
+            message_type=message_type,
+            template_folder_id=template_folder_id,
+        )
+
+    form = BroadcastAreaForm.from_library(library)
+    if form.validate_on_submit():
+        if message:
+            message.replace_areas([*form.areas.data])
+        else:
+            message = Message.create_from_area(
+                service_id=service_id, area_ids=[*form.areas.data], template_folder_id=template_folder_id
+            )
+        return redirect(
+            url_for(
+                ".preview_areas",
+                service_id=service_id,
+                message_id=message.id,
+                message_type=message_type,
+                template_folder_id=template_folder_id,
+            )
+        )
+    return render_template(
+        "views/broadcast/areas.html",
+        form=form,
+        search_form=SearchByNameForm(),
+        show_search_form=(len(form.areas.choices) > 7),
+        page_title=(
+            f"Choose {library.name[0].lower()}{library.name[1:]}"
+            if library.name != "REPPIR DEPZ sites"
+            else "Choose REPPIR DEPZ sites"
+        ),
+        message=message,
+        back_link=url_for(
+            ".choose_library",
+            service_id=service_id,
+            message_id=message_id,
+            message_type=message_type,
+            template_folder_id=template_folder_id,
+        ),
+        message_type=message_type,
+        template_folder_id=template_folder_id,
+    )
 
 
 @main.route(
