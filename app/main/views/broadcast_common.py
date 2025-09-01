@@ -1,9 +1,9 @@
-from flask import request
+from flask import render_template, request
 
+from app.broadcast_areas.models import CustomBroadcastAreas
 from app.main import main
 from app.main.views.broadcast import (
     choose_broadcast_area,
-    choose_broadcast_library,
     choose_broadcast_sub_area,
     create_new_broadcast,
     preview_broadcast_areas,
@@ -15,7 +15,6 @@ from app.main.views.broadcast import (
 )
 from app.main.views.templates import (
     choose_template_area,
-    choose_template_library,
     choose_template_sub_area,
     preview_template_areas,
     remove_custom_area_from_template,
@@ -24,8 +23,18 @@ from app.main.views.templates import (
     search_postcodes_for_template,
     write_new_broadcast_from_template,
 )
+from app.models.broadcast_message import BroadcastMessage
+from app.models.template import Template
 from app.utils import service_has_permission
+from app.utils.broadcast import _get_choose_library_back_link
 from app.utils.user import user_has_any_permissions
+
+
+def get_message_type(message_type):
+    return {
+        "broadcast": BroadcastMessage,
+        "templates": Template,
+    }[message_type]
 
 
 @main.route("/services/<uuid:service_id>/write-new-broadcast", methods=["GET", "POST"])
@@ -57,10 +66,27 @@ def write_new_broadcast(service_id):
 @user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def choose_library(service_id, message_type, message_id=None):
     template_folder_id = request.args.get("template_folder_id")
-    if message_type == "broadcast":
-        return choose_broadcast_library(service_id, message_id)
-    elif message_type == "templates":
-        return choose_template_library(service_id, message_id, template_folder_id=template_folder_id)
+    Message = get_message_type(message_type)
+    if message_id:
+        message = Message.from_id_or_403(message_id, service_id=service_id)
+        is_custom_broadcast = type(message.areas) is CustomBroadcastAreas
+        if is_custom_broadcast:
+            message.clear_areas()
+    else:
+        message = None
+        is_custom_broadcast = False
+    return render_template(
+        "views/broadcast/libraries.html",
+        libraries=BroadcastMessage.libraries,
+        message=message,
+        custom_broadcast=is_custom_broadcast,
+        back_link=_get_choose_library_back_link(
+            service_id, message_type, template_folder_id=template_folder_id, message_id=message_id
+        ),
+        message_type=message_type,
+        message_id=message_id,
+        template_folder_id=template_folder_id,
+    )
 
 
 @main.route(
