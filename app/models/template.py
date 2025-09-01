@@ -1,3 +1,7 @@
+from flask import abort
+from flask_login import current_user
+
+from app import current_service
 from app.broadcast_areas.models import (
     BroadcastAreaLibraries,
     CustomBroadcastArea,
@@ -98,6 +102,22 @@ class Template(BaseBroadcast):
                 template_id=template_id,
             )["data"]
         )
+
+    @classmethod
+    def from_id_or_403(cls, template_id, *, service_id):
+        if not current_user.has_permissions("manage_templates"):
+            abort(403)
+
+        template = cls(
+            template_api_client.get_template(
+                service_id=service_id,
+                template_id=template_id,
+            )["data"]
+        )
+        # Checks user has parent folder access also
+        current_service.get_template_with_user_permission_or_403(template_id, current_user)
+
+        return template
 
     def _update(self, **kwargs):
         template_api_client.update_template(

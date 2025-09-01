@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta, timezone
 
 from emergency_alerts_utils.template import BroadcastPreviewTemplate
+from flask import abort
+from flask_login import current_user
 from ordered_set import OrderedSet
 
 from app.broadcast_areas.models import (
@@ -149,6 +151,17 @@ class BroadcastMessage(BaseBroadcast):
 
     @classmethod
     def from_id(cls, broadcast_message_id, *, service_id):
+        return cls(
+            broadcast_message_api_client.get_broadcast_message(
+                service_id=service_id,
+                broadcast_message_id=broadcast_message_id,
+            )
+        )
+
+    @classmethod
+    def from_id_or_403(cls, broadcast_message_id, *, service_id):
+        if not current_user.has_permissions("create_broadcasts", restrict_admin_usage=True):
+            abort(403)
         return cls(
             broadcast_message_api_client.get_broadcast_message(
                 service_id=service_id,
