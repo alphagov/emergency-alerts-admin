@@ -21,7 +21,6 @@ from app.main.forms import (
     TemplateFolderForm,
 )
 from app.models.broadcast_message import BroadcastMessage
-from app.models.service import Service
 from app.models.template import Template
 from app.models.template_list import TemplateList, UserTemplateList, UserTemplateLists
 from app.utils import BROADCAST_TYPE
@@ -106,12 +105,10 @@ def choose_template(service_id, template_type="all", template_folder_id=None):
     if request.method == "GET" and initial_state:
         templates_and_folders_form.op = initial_state
 
-    service = Service(service_api_client.get_service(service_id)["data"])
-
     return render_template(
         "views/templates/choose.html",
         current_template_folder_id=template_folder_id,
-        template_folder_path=service.get_template_folder_path(template_folder_id),
+        template_folder_path=current_service.get_template_folder_path(template_folder_id),
         template_list=template_list,
         show_search_box=current_service.count_of_templates_and_folders > 7,
         template_nav_items=get_template_nav_items(template_folder_id),
@@ -225,15 +222,14 @@ def choose_template_to_copy(
 ):
     if from_service:
         current_user.belongs_to_service_or_403(from_service)
-        service = Service(service_api_client.get_service(from_service)["data"])
 
         return render_template(
             "views/templates/copy.html",
             services_templates_and_folders=UserTemplateList(
-                service=service, template_folder_id=from_folder, user=current_user
+                service=current_service, template_folder_id=from_folder, user=current_user
             ),
-            template_folder_path=service.get_template_folder_path(from_folder),
-            from_service=service,
+            template_folder_path=current_service.get_template_folder_path(from_folder),
+            from_service=current_service,
             search_form=SearchTemplatesForm(current_service.api_keys),
         )
 
@@ -346,11 +342,10 @@ def manage_template_folder(service_id, template_folder_id):
         )
         return redirect(url_for(".choose_template", service_id=service_id, template_folder_id=template_folder_id))
 
-    service = Service(service_api_client.get_service(service_id)["data"])
     return render_template(
         "views/templates/manage-template-folder.html",
         form=form,
-        template_folder_path=service.get_template_folder_path(template_folder_id),
+        template_folder_path=current_service.get_template_folder_path(template_folder_id),
         current_service_id=service_id,
         template_folder_id=template_folder_id,
         template_type="all",
@@ -530,13 +525,12 @@ def edit_service_template(service_id, template_id):
             )
         )
     else:
-        service = Service(service_api_client.get_service(service_id)["data"])
         return render_template(
             "views/edit-{}-template.html".format(template.template_type),
             form=form,
             template=template,
             back_link=url_for("main.view_template", service_id=service_id, template_id=template.id),
-            template_folder_path=service.get_template_folder_path(template.folder),
+            template_folder_path=current_service.get_template_folder_path(template.folder),
         )
 
 
