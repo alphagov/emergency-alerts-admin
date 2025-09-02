@@ -1041,9 +1041,7 @@ def test_broadcast_page(
         ".broadcast",
         service_id=SERVICE_ONE_ID,
         template_id=fake_uuid,
-        _expected_redirect=url_for(
-            ".choose_library", service_id=SERVICE_ONE_ID, message_id=fake_uuid, message_type="broadcast"
-        ),
+        _expected_redirect=url_for(".choose_extra_content", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid),
     )
 
 

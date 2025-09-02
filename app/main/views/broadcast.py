@@ -433,7 +433,7 @@ def broadcast(service_id, template_id):
         # If the current service is an operator service, user is redirected
         # straight to choose area as extra_content attribute shouldn't be set for
         # alerts created in operator services
-        if current_service.alerts_can_have_extra_content:
+        if not current_service.alerts_can_have_extra_content:
             return redirect_dependent_on_alert_area(broadcast_message)
         else:
             return redirect(
