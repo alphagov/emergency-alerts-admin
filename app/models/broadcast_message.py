@@ -5,19 +5,11 @@ from flask import abort
 from flask_login import current_user
 from ordered_set import OrderedSet
 
-from app.broadcast_areas.models import (
-    BroadcastAreaLibraries,
-    CustomBroadcastArea,
-    broadcast_area_libraries,
-)
+from app.broadcast_areas.models import BroadcastAreaLibraries, CustomBroadcastArea
 from app.broadcast_areas.utils import aggregate_areas, generate_aggregate_names
 from app.models import ModelList
 from app.models.base_broadcast import BaseBroadcast
 from app.notify_client.broadcast_message_api_client import broadcast_message_api_client
-
-ESTIMATED_AREA_OF_LARGEST_UK_COUNTY = broadcast_area_libraries.get_areas(["lad23-E06000065"])[  # North Yorkshire
-    0
-].polygons.estimated_area
 
 
 class BroadcastMessage(BaseBroadcast):
