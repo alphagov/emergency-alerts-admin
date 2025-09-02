@@ -10,17 +10,8 @@ from app.main.forms import (
     PostcodeForm,
     SearchByNameForm,
 )
-from app.main.views.broadcast import (
-    create_new_broadcast,
-    remove_broadcast_area,
-    remove_custom_area_from_broadcast,
-    update_broadcast,
-)
-from app.main.views.templates import (
-    remove_custom_area_from_template,
-    remove_template_area,
-    write_new_broadcast_from_template,
-)
+from app.main.views.broadcast import create_new_broadcast, update_broadcast
+from app.main.views.templates import write_new_broadcast_from_template
 from app.models.broadcast_message import BroadcastMessage
 from app.models.template import Template
 from app.utils import service_has_permission
@@ -571,17 +562,35 @@ def search_coordinates(service_id, coordinate_type, message_type, message_id=Non
 @service_has_permission("broadcast")
 @user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def remove_area(service_id, message_id, area_slug, message_type):
-    if message_type == "broadcast":
-        return remove_broadcast_area(service_id, message_id, area_slug)
-    elif message_type == "templates":
-        return remove_template_area(service_id, message_id, area_slug)
+    Message = get_message_type(message_type)
+    message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
+    message.remove_area(area_slug)
+    if len(message.areas) == 0:
+        url = ".choose_library"
+    else:
+        url = ".preview_areas"
+    return redirect(
+        url_for(
+            url,
+            service_id=service_id,
+            message_id=message_id,
+            message_type=message_type,
+        )
+    )
 
 
 @main.route("/services/<uuid:service_id>/<message_type>/<uuid:message_id>/remove/")
 @service_has_permission("broadcast")
 @user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def remove_custom_area(service_id, message_id, message_type):
-    if message_type == "broadcast":
-        return remove_custom_area_from_broadcast(service_id, message_id)
-    elif message_type == "templates":
-        return remove_custom_area_from_template(service_id, message_id)
+    Message = get_message_type(message_type)
+    message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
+    message.clear_areas()
+    return redirect(
+        url_for(
+            ".choose_library",
+            service_id=service_id,
+            message_id=message_id,
+            message_type=message_type,
+        )
+    )

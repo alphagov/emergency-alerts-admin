@@ -455,35 +455,6 @@ def broadcast(service_id, template_id):
         )
 
 
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-def remove_custom_area_from_broadcast(service_id, message_id):
-    message = BroadcastMessage.from_id(message_id, service_id=service_id)
-    message.clear_areas()
-    return redirect(
-        url_for(
-            ".choose_library",
-            service_id=service_id,
-            message_id=message_id,
-            message_type="broadcast",
-        )
-    )
-
-
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-def remove_broadcast_area(service_id, message_id, area_slug):
-    message = BroadcastMessage.from_id(message_id, service_id=service_id)
-    message.remove_area(area_slug)
-    url = ".choose_library" if len(message.areas) == 0 else ".preview_areas"
-    return redirect(
-        url_for(
-            url,
-            service_id=current_service.id,
-            message_id=message_id,
-            message_type="broadcast",
-        )
-    )
-
-
 @main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/duration", methods=["GET", "POST"])
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")

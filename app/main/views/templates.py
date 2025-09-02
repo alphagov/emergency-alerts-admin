@@ -758,34 +758,3 @@ def write_new_broadcast_from_template(service_id, template_id):
         broadcast_message=message,
         form=form,
     )
-
-
-@user_has_permissions("manage_templates")
-def remove_template_area(service_id, template_id, area_slug):
-    template = Template.from_id(template_id, service_id=service_id)
-    template.remove_area(area_slug)
-    # Fetch updated template as not returned by method
-    template = Template.from_id(template_id, service_id=service_id)
-    url = ".choose_library" if len(template.areas) == 0 else ".preview_areas"
-    return redirect(
-        url_for(
-            url,
-            service_id=service_id,
-            message_id=template_id,
-            message_type="templates",
-        )
-    )
-
-
-@user_has_permissions("manage_templates")
-def remove_custom_area_from_template(service_id, template_id):
-    template = Template.from_id(template_id, service_id=service_id)
-    template.clear_areas()
-    return redirect(
-        url_for(
-            ".choose_library",
-            service_id=service_id,
-            message_id=template_id,
-            message_type="templates",
-        )
-    )
