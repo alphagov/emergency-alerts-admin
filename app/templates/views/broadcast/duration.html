@@ -16,14 +16,14 @@
     {{ govukBackLink({ "href": back_link }) }}
   {% elif custom_broadcast %}
     {% if 'postcode' in broadcast_message.areas[0].name %}
-      {{ govukBackLink({ "href": url_for('.search_postcodes', service_id=current_service.id, broadcast_message_id=broadcast_message.id, library_slug='postcodes') }) }}
+      {{ govukBackLink({ "href": url_for('.search_postcodes', service_id=current_service.id, message_id=broadcast_message.id, library_slug='postcodes', message_type=message_type) }) }}
     {% elif 'latitude' in broadcast_message.areas[0].name%}
       {{ govukBackLink({ "href": url_for('.search_coordinates', service_id=current_service.id, message_id=broadcast_message.id, library_slug='coordinates', coordinate_type='latitude_longitude') }) }}
     {% elif 'easting' in broadcast_message.areas[0].name%}
       {{ govukBackLink({ "href": url_for('.search_coordinates', service_id=current_service.id, message_id=broadcast_message.id, library_slug='coordinates', coordinate_type='easting_northing') }) }}
     {% endif %}
   {% else %}
-    {{ govukBackLink({ "href": url_for('.preview_areas', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }) }}
+    {{ govukBackLink({ "href": url_for('.preview_areas', service_id=current_service.id, message_id=broadcast_message.id, message_type=message_type) }) }}
   {% endif %}
 {% endblock %}
 
