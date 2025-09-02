@@ -1027,22 +1027,24 @@ def test_broadcast_page(
     client_request,
     service_one,
     fake_uuid,
-    mock_create_broadcast_message,
     active_user_create_broadcasts_permission,
-    mock_get_template,
+    mock_get_template_from_id,
+    mocker,
 ):
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
+    mocker.patch(
+        "app.broadcast_message_api_client.create_broadcast_message",
+        return_value={"id": fake_uuid, "service_id": service_one, "template_id": fake_uuid, "areas": {}},
+    )
     client_request.get(
         ".broadcast",
         service_id=SERVICE_ONE_ID,
         template_id=fake_uuid,
         _expected_redirect=url_for(
-            ".choose_extra_content",
-            service_id=SERVICE_ONE_ID,
-            broadcast_message_id=fake_uuid,
+            ".choose_library", service_id=SERVICE_ONE_ID, message_id=fake_uuid, message_type="broadcast"
         ),
-    ),
+    )
 
 
 @pytest.mark.parametrize(
