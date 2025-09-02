@@ -786,21 +786,6 @@ def write_new_broadcast_from_template(service_id, template_id):
 
 
 @user_has_permissions("manage_templates")
-def preview_template_areas(service_id, template_id):
-    template = Template.from_id(template_id, service_id=service_id)
-    return render_template(
-        "views/broadcast/preview-areas.html",
-        message=template,
-        back_link=request.referrer,
-        is_custom_broadcast=type(template.areas) is CustomBroadcastAreas,
-        redirect_url=url_for(
-            ".view_template", service_id=service_id, template_id=template.id
-        ),  # The url for when 'Save and continue' button clicked
-        message_type="templates",
-    )
-
-
-@user_has_permissions("manage_templates")
 def search_postcodes_for_template(service_id, template_id=None, template_folder_id=None):
     template = Template.from_id(template_id, service_id=service_id) if template_id else None
     form = PostcodeForm()

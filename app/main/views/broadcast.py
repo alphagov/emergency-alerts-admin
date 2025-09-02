@@ -478,44 +478,6 @@ def broadcast(service_id, template_id):
         )
 
 
-@user_has_permissions("create_broadcasts")
-def preview_broadcast_areas(service_id, message_id):
-    broadcast_message = BroadcastMessage.from_id(message_id, service_id=service_id)
-
-    if broadcast_message.status != "returned":
-        try:
-            broadcast_message.check_can_update_status("draft")
-        except HTTPError as e:
-            flash(e.message)
-            return render_current_alert_page(
-                broadcast_message,
-            )
-
-    if broadcast_message.template_id and broadcast_message.status not in ["draft", "returned"]:
-        back_link = url_for(
-            ".view_template",
-            service_id=current_service.id,
-            template_id=broadcast_message.template_id,
-        )
-    elif broadcast_message.status in ["draft", "returned"]:
-        back_link = url_for(".view_current_broadcast", service_id=current_service.id, broadcast_message_id=message_id)
-    else:
-        back_link = url_for(".write_new_broadcast", service_id=current_service.id, message_id=message_id)
-
-    return render_template(
-        "views/broadcast/preview-areas.html",
-        message=broadcast_message,
-        back_link=back_link,
-        is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
-        redirect_url=url_for(
-            ".preview_broadcast_message" if broadcast_message.duration else ".choose_broadcast_duration",
-            service_id=service_id,
-            broadcast_message_id=broadcast_message.id,
-        ),  # The url for when 'Save and continue' button clicked
-        message_type="broadcast",
-    )
-
-
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 def remove_custom_area_from_broadcast(service_id, message_id):
     message = BroadcastMessage.from_id(message_id, service_id=service_id)

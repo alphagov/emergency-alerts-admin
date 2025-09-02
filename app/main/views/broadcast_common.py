@@ -1,4 +1,5 @@
-from flask import redirect, render_template, request, url_for
+from flask import flash, redirect, render_template, request, url_for
+from notifications_python_client.errors import HTTPError
 
 from app.broadcast_areas.models import CustomBroadcastAreas
 from app.main import main
@@ -10,7 +11,6 @@ from app.main.forms import (
 )
 from app.main.views.broadcast import (
     create_new_broadcast,
-    preview_broadcast_areas,
     remove_broadcast_area,
     remove_custom_area_from_broadcast,
     search_coordinates_for_broadcast,
@@ -18,7 +18,6 @@ from app.main.views.broadcast import (
     update_broadcast,
 )
 from app.main.views.templates import (
-    preview_template_areas,
     remove_custom_area_from_template,
     remove_template_area,
     search_coordinates_for_template,
@@ -31,6 +30,7 @@ from app.utils import service_has_permission
 from app.utils.broadcast import (
     _get_broadcast_sub_area_back_link,
     _get_choose_library_back_link,
+    render_current_alert_page,
 )
 from app.utils.user import user_has_any_permissions
 
@@ -275,10 +275,40 @@ def choose_sub_area(service_id, message_type, library_slug, area_slug, message_i
 @service_has_permission("broadcast")
 @user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def preview_areas(service_id, message_id, message_type):
-    if message_type == "broadcast":
-        return preview_broadcast_areas(service_id, message_id)
-    elif message_type == "templates":
-        return preview_template_areas(service_id, message_id)
+    back_link = None
+    Message = get_message_type(message_type)
+    message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
+    if Message is BroadcastMessage:
+        if message.status != "returned":
+            try:
+                message.check_can_update_status("draft")
+            except HTTPError as e:
+                flash(e.message)
+                return render_current_alert_page(
+                    message,
+                )
+
+        if message.template_id and message.status not in ["draft", "returned"]:
+            back_link = url_for(
+                ".view_template",
+                service_id=service_id,
+                template_id=message.template_id,
+            )
+        elif message.status in ["draft", "returned"]:
+            back_link = url_for(".view_current_broadcast", service_id=service_id, broadcast_message_id=message_id)
+        else:
+            back_link = url_for(".write_new_broadcast", service_id=service_id, message_id=message_id)
+        redirect_url = url_for(".view_current_broadcast", service_id=service_id, broadcast_message_id=message_id)
+    else:
+        redirect_url = url_for(".view_template", service_id=service_id, template_id=message_id)
+    return render_template(
+        "views/broadcast/preview-areas.html",
+        message=message,
+        back_link=back_link or request.referrer,
+        is_custom_broadcast=type(message.areas) is CustomBroadcastAreas,
+        redirect_url=redirect_url,  # The url for when 'Save and continue' button clicked
+        message_type=message_type,
+    )
 
 
 @main.route(
