@@ -465,12 +465,6 @@ def choose_broadcast_duration(service_id, broadcast_message_id):
     )
     is_custom_broadcast = type(broadcast_message.areas) is CustomBroadcastAreas
     form = ChooseDurationForm(channel=current_service.broadcast_channel, duration=broadcast_message.broadcast_duration)
-    back_link = url_for(
-        ".preview_areas",
-        service_id=current_service.id,
-        message_id=broadcast_message_id,
-        message_type="broadcast",
-    )
 
     if form.validate_on_submit():
         BroadcastMessage.update_duration(
@@ -488,7 +482,7 @@ def choose_broadcast_duration(service_id, broadcast_message_id):
         "views/broadcast/duration.html",
         form=form,
         broadcast_message=broadcast_message,
-        back_link=back_link,
+        back_link=request.referrer,
         custom_broadcast=is_custom_broadcast,
     )
 
