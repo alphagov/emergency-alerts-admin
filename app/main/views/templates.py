@@ -741,17 +741,27 @@ def write_new_broadcast_from_template(service_id, template_id):
                     reference=form.reference.data,
                     area_ids=template.area_ids,
                 )
-
-        return redirect(
-            # Redirects to 'Choose library' page if created in operator service,
-            # as you cannot add extra_content in operator service, otherwise redirects
-            # to page to add extra_content
-            url_for(
-                ".choose_extra_content" if current_service.alerts_can_have_extra_content else ".choose_library",
-                service_id=service_id,
-                broadcast_message_id=message.id,
+        # Redirects to 'Choose library' page if created in operator service,
+        # as you cannot add extra_content in operator service, otherwise redirects
+        # to page to add extra_content
+        if current_service.alerts_can_have_extra_content:
+            return redirect(
+                url_for(
+                    ".choose_extra_content",
+                    service_id=service_id,
+                    broadcast_message_id=message.id,
+                    message_type="broadcast",
+                )
             )
-        )
+        else:
+            return redirect(
+                url_for(
+                    ".choose_library",
+                    service_id=service_id,
+                    message_id=message.id,
+                    message_type="broadcast",
+                )
+            )
 
     return render_template(
         "views/broadcast/write-new-broadcast.html",
