@@ -32,6 +32,7 @@ from app.utils.broadcast import (
     create_postcode_db_id,
     extract_attributes_from_custom_area,
     get_centroid_if_postcode_in_db,
+    get_message_type,
     normalising_point,
     parse_coordinate_form_data,
     postcode_and_radius_entered,
@@ -43,13 +44,6 @@ from app.utils.broadcast import (
     validate_form_based_on_fields_entered,
 )
 from app.utils.user import user_has_any_permissions
-
-
-def get_message_type(message_type):
-    return {
-        "broadcast": BroadcastMessage,
-        "templates": Template,
-    }[message_type]
 
 
 @main.route("/services/<uuid:service_id>/write-new-broadcast", methods=["GET", "POST"])

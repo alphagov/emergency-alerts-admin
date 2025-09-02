@@ -17,6 +17,7 @@ from app.main.forms import (
     ReturnForEditForm,
 )
 from app.models.broadcast_message import BroadcastMessage
+from app.models.template import Template
 
 
 def create_coordinate_area_slug(coordinate_type, first_coordinate, second_coordinate, radius):
@@ -583,3 +584,10 @@ def _get_choose_library_back_link(
             )
         else:
             return request.referrer
+
+
+def get_message_type(message_type):
+    return {
+        "broadcast": BroadcastMessage,
+        "templates": Template,
+    }[message_type]
