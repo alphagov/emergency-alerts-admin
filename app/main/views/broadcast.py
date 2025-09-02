@@ -36,34 +36,20 @@ from app.models.template import Template
 from app.utils import service_has_permission
 from app.utils.broadcast import (
     _get_back_link_from_view_broadcast_endpoint,
-    adding_invalid_coords_errors_to_form,
-    all_coordinate_form_fields_empty,
-    check_coordinates_valid_for_enclosed_polygons,
     check_for_missing_fields,
-    continue_button_clicked,
-    coordinates_and_radius_entered,
-    coordinates_entered_but_no_radius,
-    create_coordinate_area,
-    create_coordinate_area_slug,
-    extract_attributes_from_custom_area,
     format_areas_list,
     get_changed_alert_form_data,
     get_changed_extra_content_form_data,
     keep_alert_content_button_clicked,
     keep_alert_reference_button_clicked,
-    normalising_point,
     overwrite_content_button_clicked,
     overwrite_reference_button_clicked,
-    parse_coordinate_form_data,
     redirect_dependent_on_alert_area,
     redirect_if_operator_service,
-    render_coordinates_page,
     render_current_alert_page,
     render_edit_alert_page,
     render_preview_alert_page,
-    select_coordinate_form,
     update_broadcast_message_using_changed_data,
-    validate_form_based_on_fields_entered,
 )
 from app.utils.datetime import fromisoformat_allow_z_tz
 from app.utils.user import user_has_any_permissions, user_has_permissions
@@ -480,115 +466,6 @@ def remove_custom_area_from_broadcast(service_id, message_id):
             message_id=message_id,
             message_type="broadcast",
         )
-    )
-
-
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-def search_coordinates_for_broadcast(service_id, coordinate_type, message_id):
-    (
-        polygon,
-        bleed,
-        estimated_area,
-        estimated_area_with_bleed,
-        count_of_phones,
-        count_of_phones_likely,
-        marker,
-    ) = (
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-    )
-    broadcast_message = BroadcastMessage.from_id(message_id, service_id=service_id)
-    form = select_coordinate_form(coordinate_type)
-
-    if all_coordinate_form_fields_empty(request, form):
-        """
-        If no input fields have values then the request will use the button clicked
-        to determine which fields to validate.
-        """
-        validate_form_based_on_fields_entered(request, form)
-    elif coordinates_entered_but_no_radius(request, form):
-        """
-        If only coordinates are entered then they're checked to determine if within
-        either UK or test area. If they are within test or UK, the coordinate point is created
-        and converted accordingly into latitude, longitude format to be passed into jinja
-        and displayed in Leaflet map.
-        Otherwise, an error is displayed on the page.
-        """
-        first_coordinate = float(form.data["first_coordinate"])
-        second_coordinate = float(form.data["second_coordinate"])
-        if check_coordinates_valid_for_enclosed_polygons(
-            first_coordinate,
-            second_coordinate,
-            coordinate_type,
-        ):
-            Point = normalising_point(first_coordinate, second_coordinate, coordinate_type)
-            marker = [Point.y, Point.x]
-        else:
-            adding_invalid_coords_errors_to_form(coordinate_type, form)
-        form.pre_validate(form)  # To validate the fields don't have any errors
-    elif coordinates_and_radius_entered(request, form):
-        """
-        If both radius and coordinates entered, then coordinates are checked to determine if within
-        either UK or test area. If they are within test or UK, polygon is created using coordinates and
-        radius. Then a CustomBroadcastArea is created and used for the attributes that
-        are required for the Leaflet map, key, number of phones to display etc.
-        """
-        first_coordinate, second_coordinate, radius = parse_coordinate_form_data(form)
-        if check_coordinates_valid_for_enclosed_polygons(
-            first_coordinate,
-            second_coordinate,
-            coordinate_type,
-        ):
-            marker = [first_coordinate, second_coordinate]
-            if form.validate_on_submit():
-                if polygon := create_coordinate_area(
-                    first_coordinate,
-                    second_coordinate,
-                    radius,
-                    coordinate_type,
-                ):
-                    id = create_coordinate_area_slug(coordinate_type, first_coordinate, second_coordinate, radius)
-                    (
-                        bleed,
-                        estimated_area,
-                        estimated_area_with_bleed,
-                        count_of_phones,
-                        count_of_phones_likely,
-                    ) = extract_attributes_from_custom_area(polygon)
-        else:
-            adding_invalid_coords_errors_to_form(coordinate_type, form)
-            form.validate_on_submit()
-        if continue_button_clicked(request):
-            """
-            If 'Preview alert' button is clicked, area is added to Broadcast Message
-            and message is updated.
-            """
-            broadcast_message.add_custom_areas(polygon, id=id)
-            return redirect(
-                url_for(
-                    ".preview_broadcast_message" if broadcast_message.duration else ".choose_broadcast_duration",
-                    service_id=current_service.id,
-                    broadcast_message_id=broadcast_message.id,
-                ),
-            )
-    return render_coordinates_page(
-        service_id,
-        message_id,
-        coordinate_type,
-        bleed,
-        estimated_area,
-        estimated_area_with_bleed,
-        count_of_phones,
-        count_of_phones_likely,
-        marker,
-        broadcast_message,
-        form,
-        "broadcast",
     )
 
 

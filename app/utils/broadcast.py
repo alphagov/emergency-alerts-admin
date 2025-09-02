@@ -250,7 +250,6 @@ def coordinates_and_radius_entered(request, form):
 
 def render_coordinates_page(
     service_id,
-    message_id,
     coordinate_type,
     bleed,
     estimated_area,
@@ -258,15 +257,16 @@ def render_coordinates_page(
     count_of_phones,
     count_of_phones_likely,
     marker,
-    broadcast_message,
+    message,
     form,
     message_type,
     template_folder_id=None,
 ):
+    message_id = message.id if message else None
     return render_template(
         "views/broadcast/search-coordinates.html",
         page_title="Choose alert area" if message_type == "broadcast" else "Choose template area",
-        message=broadcast_message,
+        message=message,
         back_link=url_for(
             ".choose_area",
             service_id=service_id,

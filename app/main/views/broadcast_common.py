@@ -14,13 +14,11 @@ from app.main.views.broadcast import (
     create_new_broadcast,
     remove_broadcast_area,
     remove_custom_area_from_broadcast,
-    search_coordinates_for_broadcast,
     update_broadcast,
 )
 from app.main.views.templates import (
     remove_custom_area_from_template,
     remove_template_area,
-    search_coordinates_for_template,
     write_new_broadcast_from_template,
 )
 from app.models.broadcast_message import BroadcastMessage
@@ -29,17 +27,28 @@ from app.utils import service_has_permission
 from app.utils.broadcast import (
     _get_broadcast_sub_area_back_link,
     _get_choose_library_back_link,
+    adding_invalid_coords_errors_to_form,
+    all_coordinate_form_fields_empty,
     all_fields_empty,
+    check_coordinates_valid_for_enclosed_polygons,
     continue_button_clicked,
+    coordinates_and_radius_entered,
+    coordinates_entered_but_no_radius,
+    create_coordinate_area,
+    create_coordinate_area_slug,
     create_custom_area_polygon,
     create_postcode_area_slug,
     create_postcode_db_id,
     extract_attributes_from_custom_area,
     get_centroid_if_postcode_in_db,
+    normalising_point,
+    parse_coordinate_form_data,
     postcode_and_radius_entered,
     postcode_entered,
+    render_coordinates_page,
     render_current_alert_page,
     render_postcode_page,
+    select_coordinate_form,
     validate_form_based_on_fields_entered,
 )
 from app.utils.user import user_has_any_permissions
@@ -437,10 +446,125 @@ def search_postcodes(service_id, message_type, message_id=None):
 @user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def search_coordinates(service_id, coordinate_type, message_type, message_id=None):
     template_folder_id = request.args.get("template_folder_id")
-    if message_type == "broadcast":
-        return search_coordinates_for_broadcast(service_id, coordinate_type, message_id)
-    elif message_type == "templates":
-        return search_coordinates_for_template(service_id, coordinate_type, message_id, template_folder_id)
+    Message = get_message_type(message_type)
+    message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
+    (
+        polygon,
+        bleed,
+        estimated_area,
+        estimated_area_with_bleed,
+        count_of_phones,
+        count_of_phones_likely,
+        marker,
+    ) = (
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+    form = select_coordinate_form(coordinate_type)
+
+    if all_coordinate_form_fields_empty(request, form):
+        """
+        If no input fields have values then the request will use the button clicked
+        to determine which fields to validate.
+        """
+        validate_form_based_on_fields_entered(request, form)
+    elif coordinates_entered_but_no_radius(request, form):
+        """
+        If only coordinates are entered then they're checked to determine if within
+        either UK or test area. If they are within test or UK, the coordinate point is created
+        and converted accordingly into latitude, longitude format to be passed into jinja
+        and displayed in Leaflet map.
+        Otherwise, an error is displayed on the page.
+        """
+        first_coordinate = float(form.data["first_coordinate"])
+        second_coordinate = float(form.data["second_coordinate"])
+        if check_coordinates_valid_for_enclosed_polygons(
+            first_coordinate,
+            second_coordinate,
+            coordinate_type,
+        ):
+            Point = normalising_point(first_coordinate, second_coordinate, coordinate_type)
+            marker = [Point.y, Point.x]
+        else:
+            adding_invalid_coords_errors_to_form(coordinate_type, form)
+        form.pre_validate(form)  # To validate the fields don't have any errors
+    elif coordinates_and_radius_entered(request, form):
+        """
+        If both radius and coordinates entered, then coordinates are checked to determine if within
+        either UK or test area. If they are within test or UK, polygon is created using coordinates and
+        radius. Then a CustomBroadcastArea is created and used for the attributes that
+        are required for the Leaflet map, key, number of phones to display etc.
+        """
+        first_coordinate, second_coordinate, radius = parse_coordinate_form_data(form)
+        if check_coordinates_valid_for_enclosed_polygons(
+            first_coordinate,
+            second_coordinate,
+            coordinate_type,
+        ):
+            marker = [first_coordinate, second_coordinate]
+            if form.validate_on_submit():
+                if polygon := create_coordinate_area(
+                    first_coordinate,
+                    second_coordinate,
+                    radius,
+                    coordinate_type,
+                ):
+                    id = create_coordinate_area_slug(coordinate_type, first_coordinate, second_coordinate, radius)
+                    (
+                        bleed,
+                        estimated_area,
+                        estimated_area_with_bleed,
+                        count_of_phones,
+                        count_of_phones_likely,
+                    ) = extract_attributes_from_custom_area(polygon)
+        else:
+            adding_invalid_coords_errors_to_form(coordinate_type, form)
+            form.validate_on_submit()
+        if continue_button_clicked(request):
+            """
+            If 'Preview alert' button is clicked, area is added to Broadcast Message
+            and message is updated.
+            """
+            if message:
+                message.add_custom_areas(polygon, id=id)
+            elif Message is Template:
+                message = Message.create_with_custom_area(
+                    polygon, id, service_id, template_folder_id=template_folder_id
+                )
+            if Message is BroadcastMessage:
+                return redirect(
+                    url_for(
+                        ".preview_broadcast_message" if message.duration else ".choose_broadcast_duration",
+                        service_id=service_id,
+                        broadcast_message_id=message.id,
+                    ),
+                )
+            else:
+                return redirect(
+                    url_for(
+                        ".view_template",
+                        service_id=service_id,
+                        template_id=message.id,
+                    )
+                )
+    return render_coordinates_page(
+        service_id,
+        coordinate_type,
+        bleed,
+        estimated_area,
+        estimated_area_with_bleed,
+        count_of_phones,
+        count_of_phones_likely,
+        marker,
+        message,
+        form,
+        message_type,
+    )
 
 
 @main.route("/services/<uuid:service_id>/<message_type>/<uuid:message_id>/remove/<area_slug>")
