@@ -154,7 +154,7 @@
     %}
     {# The additional information row in the table will only be displayed if service isn't
     an operator service, as the field isn't relevant to operator service alerts. #}
-    {% if current_service.broadcast_channel != "operator" %}
+    {% if current_service.alerts_can_have_extra_content %}
         {% set summaryListItems = summaryListItems + [
             {
                 'key': {

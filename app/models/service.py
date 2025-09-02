@@ -72,6 +72,10 @@ class Service(JSONModel):
     def live(self):
         return not self.trial_mode
 
+    @property
+    def alerts_can_have_extra_content(self):
+        return self.broadcast_channel != "operator"
+
     def has_permission(self, permission):
         if permission not in self.ALL_PERMISSIONS:
             raise KeyError(f"{permission} is not a service permission")

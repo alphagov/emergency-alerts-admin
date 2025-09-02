@@ -498,7 +498,7 @@ def redirect_dependent_on_alert_area(broadcast_message):
 def redirect_if_operator_service(broadcast_message_id):
     # Redirects to the current broadcast view if the current service is an operator service.
     # Returns a redirect response if the service is an operator service, otherwise None.
-    if current_service.broadcast_channel == "operator":
+    if not current_service.alerts_can_have_extra_content:
         return redirect(
             url_for(
                 ".view_current_broadcast",
@@ -571,7 +571,7 @@ def _get_choose_library_back_link(
 ):
     if message_type == "broadcast":
         return url_for(
-            ".choose_extra_content" if current_service.broadcast_channel != "operator" else ".write_new_broadcast",
+            ".choose_extra_content" if current_service.alerts_can_have_extra_content else ".write_new_broadcast",
             service_id=service_id,
             broadcast_message_id=message_id,
         )

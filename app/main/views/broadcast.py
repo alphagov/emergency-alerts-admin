@@ -433,7 +433,7 @@ def broadcast(service_id, template_id):
         # If the current service is an operator service, user is redirected
         # straight to choose area as extra_content attribute shouldn't be set for
         # alerts created in operator services
-        if current_service.broadcast_channel == "operator":
+        if current_service.alerts_can_have_extra_content:
             return redirect_dependent_on_alert_area(broadcast_message)
         else:
             return redirect(
@@ -969,7 +969,7 @@ def update_broadcast(service_id, message_id):
             # as you cannot add extra_content in operator service, otherwise redirects
             # to page to add extra_content
             url_for(
-                ".choose_extra_content" if current_service.broadcast_channel != "operator" else ".choose_library",
+                ".choose_extra_content" if current_service.alerts_can_have_extra_content else ".choose_library",
                 service_id=current_service.id,
                 broadcast_message_id=message_id,
             )
@@ -1005,7 +1005,7 @@ def create_new_broadcast(service_id):
         # Redirects to 'Choose library' page if created in operator service,
         # as you cannot add extra_content in operator service, otherwise redirects
         # to page to add extra_content
-        if current_service.broadcast_channel != "operator":
+        if current_service.alerts_can_have_extra_content:
             return redirect(
                 url_for(
                     ".choose_extra_content",

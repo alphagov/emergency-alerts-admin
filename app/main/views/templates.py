@@ -747,7 +747,7 @@ def write_new_broadcast_from_template(service_id, template_id):
             # as you cannot add extra_content in operator service, otherwise redirects
             # to page to add extra_content
             url_for(
-                ".choose_extra_content" if current_service.broadcast_channel != "operator" else ".choose_library",
+                ".choose_extra_content" if current_service.alerts_can_have_extra_content else ".choose_library",
                 service_id=service_id,
                 broadcast_message_id=message.id,
             )
