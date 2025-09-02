@@ -186,8 +186,7 @@ def continue_button_clicked(request):
 
 def render_postcode_page(
     service_id,
-    message_id,
-    broadcast_message,
+    message,
     form,
     centroid,
     bleed,
@@ -198,9 +197,10 @@ def render_postcode_page(
     message_type,
     template_folder_id=None,
 ):
+    message_id = message.id if message else None
     return render_template(
         "views/broadcast/search-postcodes.html",
-        broadcast_message=broadcast_message,
+        broadcast_message=message,
         page_title="Choose alert area" if message_type == "broadcast" else "Choose template area",
         form=form,
         bleed=bleed or None,

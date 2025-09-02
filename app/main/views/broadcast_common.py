@@ -7,6 +7,7 @@ from app.main.forms import (
     BroadcastAreaForm,
     BroadcastAreaFormWithSelectAll,
     ChooseCoordinateTypeForm,
+    PostcodeForm,
     SearchByNameForm,
 )
 from app.main.views.broadcast import (
@@ -14,14 +15,12 @@ from app.main.views.broadcast import (
     remove_broadcast_area,
     remove_custom_area_from_broadcast,
     search_coordinates_for_broadcast,
-    search_postcodes_for_broadcast,
     update_broadcast,
 )
 from app.main.views.templates import (
     remove_custom_area_from_template,
     remove_template_area,
     search_coordinates_for_template,
-    search_postcodes_for_template,
     write_new_broadcast_from_template,
 )
 from app.models.broadcast_message import BroadcastMessage
@@ -30,7 +29,18 @@ from app.utils import service_has_permission
 from app.utils.broadcast import (
     _get_broadcast_sub_area_back_link,
     _get_choose_library_back_link,
+    all_fields_empty,
+    continue_button_clicked,
+    create_custom_area_polygon,
+    create_postcode_area_slug,
+    create_postcode_db_id,
+    extract_attributes_from_custom_area,
+    get_centroid_if_postcode_in_db,
+    postcode_and_radius_entered,
+    postcode_entered,
     render_current_alert_page,
+    render_postcode_page,
+    validate_form_based_on_fields_entered,
 )
 from app.utils.user import user_has_any_permissions
 
@@ -323,10 +333,96 @@ def preview_areas(service_id, message_id, message_type):
 @user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def search_postcodes(service_id, message_type, message_id=None):
     template_folder_id = request.args.get("template_folder_id")
-    if message_type == "broadcast":
-        return search_postcodes_for_broadcast(service_id, message_id)
-    elif message_type == "templates":
-        return search_postcodes_for_template(service_id, message_id, template_folder_id)
+    Message = get_message_type(message_type)
+    message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
+    form = PostcodeForm()
+    # Initialising variables here that may be assigned values, to be then passed into jinja template.
+    centroid, bleed, estimated_area, estimated_area_with_bleed, count_of_phones, count_of_phones_likely = (
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+
+    if all_fields_empty(request, form):
+        """
+        If no input fields have values then the request will use the button clicked
+        to determine which fields to validate.
+        """
+        validate_form_based_on_fields_entered(request, form)
+    elif postcode_entered(request, form):
+        """
+        Clears any areas in broadcast message, then creates the ID to search for in SQLite database,
+        if query returns IndexError, the postcode isn't in the database and thus error is appended to
+        postcode field and displayed on the page.
+        """
+        postcode = create_postcode_db_id(form)
+        centroid = get_centroid_if_postcode_in_db(postcode, form)
+        form.pre_validate(form)  # Validating the postcode field
+    elif postcode_and_radius_entered(request, form):
+        """
+        If postcode and radius entered, that are validated successfully,
+        custom polygon is created using radius and centroid.
+        """
+        postcode = create_postcode_db_id(form)
+        form.pre_validate(form)
+        centroid, circle_polygon = create_custom_area_polygon(form, postcode)
+        if form.validate_on_submit():
+            """
+            If postcode is in database, i.e. creating the Polygon didn't return IndexError,
+            then a dummy CustomBroadcastArea is created and used for the attributes that
+            are required for the Leaflet map, key, number of phones to display etc.
+            """
+            (
+                bleed,
+                estimated_area,
+                estimated_area_with_bleed,
+                count_of_phones,
+                count_of_phones_likely,
+            ) = extract_attributes_from_custom_area(circle_polygon)
+            id = create_postcode_area_slug(form)
+            if continue_button_clicked(request):
+                """
+                If 'Continue' button is clicked, area is added to Broadcast Message
+                and message is updated.
+                """
+                if message:
+                    message.add_custom_areas(circle_polygon, id=id)
+                elif Message is Template:
+                    message = Message.create_with_custom_area(
+                        circle_polygon, id, service_id, template_folder_id=template_folder_id
+                    )
+                if Message is BroadcastMessage:
+                    return redirect(
+                        url_for(
+                            ".preview_broadcast_message" if message.duration else ".choose_broadcast_duration",
+                            service_id=service_id,
+                            broadcast_message_id=message.id,
+                        ),
+                    )
+                else:
+                    return redirect(
+                        url_for(
+                            ".view_template",
+                            service_id=service_id,
+                            template_id=message.id,
+                        )
+                    )
+    return render_postcode_page(
+        service_id,
+        message,
+        form,
+        centroid,
+        bleed,
+        estimated_area,
+        estimated_area_with_bleed,
+        count_of_phones,
+        count_of_phones_likely,
+        message_type,
+        template_folder_id,
+    )
 
 
 @main.route(

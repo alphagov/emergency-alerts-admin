@@ -16,7 +16,6 @@ from app.main import main
 from app.main.forms import (
     BroadcastTemplateForm,
     ChooseTemplateFieldsForm,
-    PostcodeForm,
     SearchTemplatesForm,
     TemplateAndFoldersSelectionForm,
     TemplateFolderForm,
@@ -29,24 +28,16 @@ from app.utils import BROADCAST_TYPE
 from app.utils.broadcast import (
     adding_invalid_coords_errors_to_form,
     all_coordinate_form_fields_empty,
-    all_fields_empty,
     check_coordinates_valid_for_enclosed_polygons,
     continue_button_clicked,
     coordinates_and_radius_entered,
     coordinates_entered_but_no_radius,
     create_coordinate_area,
     create_coordinate_area_slug,
-    create_custom_area_polygon,
-    create_postcode_area_slug,
-    create_postcode_db_id,
     extract_attributes_from_custom_area,
-    get_centroid_if_postcode_in_db,
     normalising_point,
     parse_coordinate_form_data,
-    postcode_and_radius_entered,
-    postcode_entered,
     render_coordinates_page,
-    render_postcode_page,
     select_coordinate_form,
     validate_form_based_on_fields_entered,
 )
@@ -782,91 +773,6 @@ def write_new_broadcast_from_template(service_id, template_id):
         "views/broadcast/write-new-broadcast.html",
         broadcast_message=message,
         form=form,
-    )
-
-
-@user_has_permissions("manage_templates")
-def search_postcodes_for_template(service_id, template_id=None, template_folder_id=None):
-    template = Template.from_id(template_id, service_id=service_id) if template_id else None
-    form = PostcodeForm()
-    # Initialising variables here that may be assigned values, to be then passed into jinja template.
-    centroid, bleed, estimated_area, estimated_area_with_bleed, count_of_phones, count_of_phones_likely = (
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-    )
-
-    if all_fields_empty(request, form):
-        """
-        If no input fields have values then the request will use the button clicked
-        to determine which fields to validate.
-        """
-        validate_form_based_on_fields_entered(request, form)
-    elif postcode_entered(request, form):
-        """
-        Clears any areas in broadcast message, then creates the ID to search for in SQLite database,
-        if query returns IndexError, the postcode isn't in the database and thus error is appended to
-        postcode field and displayed on the page.
-        """
-        postcode = create_postcode_db_id(form)
-        centroid = get_centroid_if_postcode_in_db(postcode, form)
-        form.pre_validate(form)  # Validating the postcode field
-    elif postcode_and_radius_entered(request, form):
-        """
-        If postcode and radius entered, that are validated successfully,
-        custom polygon is created using radius and centroid.
-        """
-        postcode = create_postcode_db_id(form)
-        form.pre_validate(form)
-        centroid, circle_polygon = create_custom_area_polygon(form, postcode)
-        if form.validate_on_submit():
-            """
-            If postcode is in database, i.e. creating the Polygon didn't return IndexError,
-            then a dummy CustomBroadcastArea is created and used for the attributes that
-            are required for the Leaflet map, key, number of phones to display etc.
-            """
-            (
-                bleed,
-                estimated_area,
-                estimated_area_with_bleed,
-                count_of_phones,
-                count_of_phones_likely,
-            ) = extract_attributes_from_custom_area(circle_polygon)
-            id = create_postcode_area_slug(form)
-            if continue_button_clicked(request):
-                """
-                If 'Continue' button is clicked, area is added to Broadcast Message
-                and message is updated.
-                """
-                if template:
-                    template.add_custom_areas(circle_polygon, id=id)
-                else:
-                    template = Template.create_with_custom_area(
-                        circle_polygon, id, service_id, template_folder_id=template_folder_id
-                    )
-                return redirect(
-                    url_for(
-                        ".view_template",
-                        service_id=service_id,
-                        template_id=template.id,
-                    )
-                )
-    return render_postcode_page(
-        service_id,
-        template_id,
-        template,
-        form,
-        centroid,
-        bleed,
-        estimated_area,
-        estimated_area_with_bleed,
-        count_of_phones,
-        count_of_phones_likely,
-        "templates",
-        template_folder_id,
     )
 
 

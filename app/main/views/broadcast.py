@@ -28,7 +28,6 @@ from app.main.forms import (
     ChooseExtraContentForm,
     ConfirmBroadcastForm,
     NewBroadcastForm,
-    PostcodeForm,
     RejectionReasonForm,
     ReturnForEditForm,
 )
@@ -39,7 +38,6 @@ from app.utils.broadcast import (
     _get_back_link_from_view_broadcast_endpoint,
     adding_invalid_coords_errors_to_form,
     all_coordinate_form_fields_empty,
-    all_fields_empty,
     check_coordinates_valid_for_enclosed_polygons,
     check_for_missing_fields,
     continue_button_clicked,
@@ -47,12 +45,8 @@ from app.utils.broadcast import (
     coordinates_entered_but_no_radius,
     create_coordinate_area,
     create_coordinate_area_slug,
-    create_custom_area_polygon,
-    create_postcode_area_slug,
-    create_postcode_db_id,
     extract_attributes_from_custom_area,
     format_areas_list,
-    get_centroid_if_postcode_in_db,
     get_changed_alert_form_data,
     get_changed_extra_content_form_data,
     keep_alert_content_button_clicked,
@@ -61,14 +55,11 @@ from app.utils.broadcast import (
     overwrite_content_button_clicked,
     overwrite_reference_button_clicked,
     parse_coordinate_form_data,
-    postcode_and_radius_entered,
-    postcode_entered,
     redirect_dependent_on_alert_area,
     redirect_if_operator_service,
     render_coordinates_page,
     render_current_alert_page,
     render_edit_alert_page,
-    render_postcode_page,
     render_preview_alert_page,
     select_coordinate_form,
     update_broadcast_message_using_changed_data,
@@ -489,85 +480,6 @@ def remove_custom_area_from_broadcast(service_id, message_id):
             message_id=message_id,
             message_type="broadcast",
         )
-    )
-
-
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-def search_postcodes_for_broadcast(service_id, message_id):
-    broadcast_message = BroadcastMessage.from_id(message_id, service_id=service_id)
-    form = PostcodeForm()
-    # Initialising variables here that may be assigned values, to be then passed into jinja template.
-    centroid, bleed, estimated_area, estimated_area_with_bleed, count_of_phones, count_of_phones_likely = (
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-    )
-
-    if all_fields_empty(request, form):
-        """
-        If no input fields have values then the request will use the button clicked
-        to determine which fields to validate.
-        """
-        validate_form_based_on_fields_entered(request, form)
-    elif postcode_entered(request, form):
-        """
-        Clears any areas in broadcast message, then creates the ID to search for in SQLite database,
-        if query returns IndexError, the postcode isn't in the database and thus error is appended to
-        postcode field and displayed on the page.
-        """
-        postcode = create_postcode_db_id(form)
-        centroid = get_centroid_if_postcode_in_db(postcode, form)
-        form.pre_validate(form)  # Validating the postcode field
-    elif postcode_and_radius_entered(request, form):
-        """
-        If postcode and radius entered, that are validated successfully,
-        custom polygon is created using radius and centroid.
-        """
-        postcode = create_postcode_db_id(form)
-        form.pre_validate(form)
-        centroid, circle_polygon = create_custom_area_polygon(form, postcode)
-        if form.validate_on_submit():
-            """
-            If postcode is in database, i.e. creating the Polygon didn't return IndexError,
-            then a dummy CustomBroadcastArea is created and used for the attributes that
-            are required for the Leaflet map, key, number of phones to display etc.
-            """
-            (
-                bleed,
-                estimated_area,
-                estimated_area_with_bleed,
-                count_of_phones,
-                count_of_phones_likely,
-            ) = extract_attributes_from_custom_area(circle_polygon)
-            id = create_postcode_area_slug(form)
-            if continue_button_clicked(request):
-                """
-                If 'Continue' button is clicked, area is added to Broadcast Message
-                and message is updated.
-                """
-                broadcast_message.add_custom_areas(circle_polygon, id=id)
-                return redirect(
-                    url_for(
-                        ".preview_broadcast_message" if broadcast_message.duration else ".choose_broadcast_duration",
-                        service_id=current_service.id,
-                        broadcast_message_id=broadcast_message.id,
-                    ),
-                )
-    return render_postcode_page(
-        service_id,
-        message_id,
-        broadcast_message,
-        form,
-        centroid,
-        bleed,
-        estimated_area,
-        estimated_area_with_bleed,
-        count_of_phones,
-        count_of_phones_likely,
-        "broadcast",
     )
 
 
