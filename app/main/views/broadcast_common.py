@@ -302,7 +302,11 @@ def preview_areas(service_id, message_id, message_type):
             back_link = url_for(".view_current_broadcast", service_id=service_id, broadcast_message_id=message_id)
         else:
             back_link = url_for(".write_new_broadcast", service_id=service_id, message_id=message_id)
-        redirect_url = url_for(".view_current_broadcast", service_id=service_id, broadcast_message_id=message_id)
+
+        if message.duration:
+            redirect_url = url_for(".preview_broadcast_message", service_id=service_id, broadcast_message_id=message_id)
+        else:
+            redirect_url = url_for(".choose_broadcast_duration", service_id=service_id, broadcast_message_id=message_id)
     else:
         redirect_url = url_for(".view_template", service_id=service_id, template_id=message_id)
     return render_template(
