@@ -197,7 +197,6 @@ ltla_utla_map_filepath = (
 )  # noqa: E501
 
 # https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/populationandmigration/populationestimates/datasets/wardlevelmidyearpopulationestimatesexperimental/mid2020sape23dt8a/wards210120popest.zip
-# Munged using https://docs.google.com/spreadsheets/d/1gR50P0l02Fz7ZH7EwZI87F3axDbNp6oIDDnkKYgWEpA/edit#gid=2092678703
 population_filepath_england_wales = source_files_path / "Mid-2022_Persons_England_Wales_(2023_wards).csv"
 
 # https://www.nrscotland.gov.uk/statistics-and-data/statistics/statistics-by-theme/population/population-estimates/2011-based-special-area-population-estimates/electoral-ward-population-estimates
