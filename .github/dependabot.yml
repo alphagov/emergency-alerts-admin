@@ -27,11 +27,11 @@ updates:
     open-pull-requests-limit: 10
     rebase-strategy: "auto"
     groups:
-      pip-security:
+      npm-security:
         applies-to: security-updates
         patterns:
           - "*"
-      pip-updates:
+      npm-updates:
         applies-to: version-updates
         patterns:
           - "*"
