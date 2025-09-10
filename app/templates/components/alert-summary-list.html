@@ -104,12 +104,13 @@
 
     {% set conditional_area_action_link %}
         {% if broadcast_message.areas %}
-            {{url_for('.preview_broadcast_areas', service_id=current_service.id, broadcast_message_id=broadcast_message.id)}}
+            {{url_for('.preview_areas', service_id=current_service.id, message_id=broadcast_message.id, message_type="broadcast")}}
         {% else %}
             {{url_for(
-                ".choose_broadcast_library",
+                ".choose_library",
                 service_id=current_service.id,
-                broadcast_message_id=broadcast_message.id,
+                message_id=broadcast_message.id,
+                message_type="broadcast"
             )}}
         {% endif%}
     {% endset %}
@@ -153,7 +154,7 @@
     %}
     {# The additional information row in the table will only be displayed if service isn't
     an operator service, as the field isn't relevant to operator service alerts. #}
-    {% if current_service.broadcast_channel != "operator" %}
+    {% if current_service.alerts_can_have_extra_content %}
         {% set summaryListItems = summaryListItems + [
             {
                 'key': {

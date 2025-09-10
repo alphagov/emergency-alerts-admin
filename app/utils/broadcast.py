@@ -17,6 +17,7 @@ from app.main.forms import (
     ReturnForEditForm,
 )
 from app.models.broadcast_message import BroadcastMessage
+from app.models.template import Template
 
 
 def create_coordinate_area_slug(coordinate_type, first_coordinate, second_coordinate, radius):
@@ -50,9 +51,9 @@ def create_coordinate_area(lat, lng, radius, type):
     return [[lat, lon] for lat, lon in zip(xx_wgs84, yy_wgs84)]
 
 
-def check_coordinates_valid_for_enclosed_polygons(message, lat, lng, type):
+def check_coordinates_valid_for_enclosed_polygons(lat, lng, type):
     in_polygon = []
-    uk_countries = message.libraries.get_areas(
+    uk_countries = BroadcastMessage.libraries.get_areas(
         [
             "ctry19-E92000001",
             "ctry19-N92000002",
@@ -60,7 +61,7 @@ def check_coordinates_valid_for_enclosed_polygons(message, lat, lng, type):
             "ctry19-W92000004",
         ]
     )
-    test_areas = message.libraries.get_areas(
+    test_areas = BroadcastMessage.libraries.get_areas(
         [
             "test-santa-claus-village-rovaniemi-a",
             "test-santa-claus-village-rovaniemi-b",
@@ -116,7 +117,7 @@ def create_postcode_db_id(form):
         return postcode
 
 
-def create_custom_area_polygon(BroadcastMessage, form: PostcodeForm, postcode):
+def create_custom_area_polygon(form: PostcodeForm, postcode):
     centroid = None
     circle_polygon = None
     radius = float(form.data["radius"]) if form.data["radius"] else 0
@@ -186,8 +187,7 @@ def continue_button_clicked(request):
 
 def render_postcode_page(
     service_id,
-    broadcast_message_id,
-    broadcast_message,
+    message,
     form,
     centroid,
     bleed,
@@ -195,21 +195,23 @@ def render_postcode_page(
     estimated_area_with_bleed,
     count_of_phones,
     count_of_phones_likely,
+    message_type,
+    template_folder_id=None,
 ):
+    message_id = message.id if message else None
     return render_template(
         "views/broadcast/search-postcodes.html",
-        broadcast_message=broadcast_message,
-        page_title="Choose alert area",
+        broadcast_message=message,
+        page_title="Choose alert area" if message_type == "broadcast" else "Choose template area",
         form=form,
         bleed=bleed or None,
-        back_link=url_for(
-            ".choose_broadcast_library", service_id=service_id, broadcast_message_id=broadcast_message_id
-        ),
+        back_link=url_for(".choose_library", service_id=service_id, message_id=message_id, message_type=message_type),
         estimated_area=estimated_area,
         estimated_area_with_bleed=estimated_area_with_bleed,
         count_of_phones=count_of_phones,
         count_of_phones_likely=count_of_phones_likely,
         centroid=[centroid.y, centroid.x] if centroid else None,
+        template_folder_id=template_folder_id,
     )
 
 
@@ -249,7 +251,6 @@ def coordinates_and_radius_entered(request, form):
 
 def render_coordinates_page(
     service_id,
-    broadcast_message_id,
     coordinate_type,
     bleed,
     estimated_area,
@@ -257,18 +258,23 @@ def render_coordinates_page(
     count_of_phones,
     count_of_phones_likely,
     marker,
-    broadcast_message,
+    message,
     form,
+    message_type,
+    template_folder_id=None,
 ):
+    message_id = message.id if message else None
     return render_template(
         "views/broadcast/search-coordinates.html",
-        page_title="Choose alert area",
-        broadcast_message=broadcast_message,
+        page_title="Choose alert area" if message_type == "broadcast" else "Choose template area",
+        message=message,
         back_link=url_for(
-            ".choose_broadcast_area",
+            ".choose_area",
             service_id=service_id,
-            broadcast_message_id=broadcast_message_id,
             library_slug="coordinates",
+            message_id=message_id,
+            message_type=message_type,
+            template_folder_id=template_folder_id,
         ),
         form=form,
         coordinate_type=coordinate_type,
@@ -380,6 +386,7 @@ def render_current_alert_page(
         edit_reasons=broadcast_message.get_returned_for_edit_reasons(),
         returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
         errors=errors,
+        message=broadcast_message,  # Required parameter for map javascripts
     )
 
 
@@ -396,6 +403,7 @@ def render_preview_alert_page(broadcast_message, is_custom_broadcast, areas, err
     return render_template(
         "views/broadcast/preview-message.html",
         broadcast_message=broadcast_message,
+        message=broadcast_message,
         custom_broadcast=is_custom_broadcast,
         areas=areas,
         back_link=request.referrer,
@@ -455,9 +463,9 @@ def get_changed_extra_content_form_data(form, broadcast_message):
 def update_broadcast_message_using_changed_data(broadcast_message_id, form):
     BroadcastMessage.update_from_content(
         service_id=current_service.id,
-        broadcast_message_id=broadcast_message_id,
-        content=form.template_content.data if form.initial_content.data != form.template_content.data else None,
-        reference=form.name.data if form.initial_name.data != form.name.data else None,
+        message_id=broadcast_message_id,
+        content=form.content.data if form.initial_content.data != form.content.data else None,
+        reference=form.reference.data if form.initial_name.data != form.reference.data else None,
     )
 
 
@@ -478,7 +486,10 @@ def redirect_dependent_on_alert_area(broadcast_message):
             )
     else:
         redirect_url = url_for(
-            ".choose_broadcast_library", service_id=current_service.id, broadcast_message_id=broadcast_message.id
+            ".choose_library",
+            service_id=current_service.id,
+            message_id=broadcast_message.id,
+            message_type="broadcast",
         )
 
     return redirect(redirect_url)
@@ -487,7 +498,7 @@ def redirect_dependent_on_alert_area(broadcast_message):
 def redirect_if_operator_service(broadcast_message_id):
     # Redirects to the current broadcast view if the current service is an operator service.
     # Returns a redirect response if the service is an operator service, otherwise None.
-    if current_service.broadcast_channel == "operator":
+    if not current_service.alerts_can_have_extra_content:
         return redirect(
             url_for(
                 ".view_current_broadcast",
@@ -511,9 +522,72 @@ def check_for_missing_fields(broadcast_message):
         errors.append({"html": f"""<a href="{edit_url}">Add alert message</a>"""})
     if not broadcast_message.areas:
         area_url = url_for(
-            ".choose_broadcast_library",
+            ".choose_library",
             service_id=current_service.id,
-            broadcast_message_id=broadcast_message.id,
+            message_id=broadcast_message.id,
+            message_type="broadcast",
         )
         errors.append({"html": f"""<a href="{area_url}">Add alert area</a>"""})
     return errors
+
+
+def _get_back_link_from_view_broadcast_endpoint():
+    return {
+        "main.view_current_broadcast": ".broadcast_dashboard",
+        "main.view_previous_broadcast": ".broadcast_dashboard_previous",
+        "main.view_rejected_broadcast": ".broadcast_dashboard_rejected",
+        "main.approve_broadcast_message": ".broadcast_dashboard",
+        "main.reject_broadcast_message": ".broadcast_dashboard",
+        "main.return_broadcast_for_edit": ".broadcast_dashboard",
+        "main.discard_broadcast_message": ".broadcast_dashboard",
+    }[request.endpoint]
+
+
+def _get_broadcast_sub_area_back_link(service_id, message_id, library_slug, message_type):
+    if prev_area_slug := request.args.get("prev_area_slug"):
+        return url_for(
+            ".choose_sub_area",
+            service_id=service_id,
+            message_id=message_id,
+            library_slug=library_slug,
+            area_slug=prev_area_slug,
+            message_type=message_type,
+        )
+    else:
+        return url_for(
+            ".choose_area",
+            service_id=service_id,
+            message_id=message_id,
+            library_slug=library_slug,
+            message_type=message_type,
+        )
+
+
+def _get_choose_library_back_link(
+    service_id,
+    message_type,
+    message_id=None,
+    template_folder_id=None,
+):
+    if message_type == "broadcast":
+        return url_for(
+            ".choose_extra_content" if current_service.alerts_can_have_extra_content else ".write_new_broadcast",
+            service_id=service_id,
+            broadcast_message_id=message_id,
+        )
+    else:
+        if not message_id:
+            return url_for(
+                ".choose_template_fields",
+                service_id=service_id,
+                template_folder_id=template_folder_id,
+            )
+        else:
+            return request.referrer
+
+
+def get_message_type(message_type):
+    return {
+        "broadcast": BroadcastMessage,
+        "templates": Template,
+    }[message_type]

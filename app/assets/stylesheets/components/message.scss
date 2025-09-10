@@ -27,7 +27,7 @@ $app-body-text-line-height-default: get-govuk-typography-style($size: 19, $break
 }
 
 $govuk-checkboxes-size: 40px;
-$govuk-checkboxes-label-padding-left-right: govuk-spacing(3);
+$govuk-checkboxes-label-padding-left-right: govuk-spacing(9);
 $message-type-bottom-spacing: govuk-spacing(4);
 
 a {
@@ -54,7 +54,19 @@ a {
 .template-list {
   &-item {
     &-with-checkbox {
-      padding-left: $govuk-checkboxes-size + $govuk-checkboxes-label-padding-left-right;
+      padding-left: $govuk-checkboxes-label-padding-left-right;
+      min-height: $govuk-touch-target-size;
+
+      .template-list-item-hint {
+        width: 100%;
+        margin-top: 0;
+      }
+
+      input {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
     }
 
     &-hidden-by-default {
@@ -88,6 +100,9 @@ a {
 
         position: relative; // contain absolutely positioned ::before pseudo element
         display: block; // fill horizontal space to allow hint/meta below to float
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
 
         &::before {
           content: '';
@@ -133,7 +148,7 @@ a {
     &-label {
       position: absolute;
       left: 0;
-      width: $govuk-checkboxes-size + $govuk-checkboxes-label-padding-left-right;
+      width: $govuk-checkboxes-label-padding-left-right;
       height: 100%;
       padding: 0;
     }
@@ -303,4 +318,14 @@ a {
     top: -6px;
   }
 
+}
+
+.message-name {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+.template-version-list-item {
+  border-top: 1px solid #B1B4B6;
+  padding: 15px 15px 0;
 }

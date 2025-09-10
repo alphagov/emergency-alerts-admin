@@ -11,7 +11,7 @@
     fill_color = "#5694ca"
   {% endif %}
 
-  {% for polygon in broadcast_message.simple_polygons_with_bleed.as_coordinate_pairs_lat_long %}
+  {% for polygon in message.simple_polygons_with_bleed.as_coordinate_pairs_lat_long %}
     polygons.push(
       L.polygon({{polygon}}, {
         opacity: 1,
@@ -25,7 +25,7 @@
     );
   {% endfor %}
 
-  {% for polygon in broadcast_message.polygons.as_coordinate_pairs_lat_long %}
+  {% for polygon in message.polygons.as_coordinate_pairs_lat_long %}
     polygons.push(
       L.polygon({{polygon}}, {
         color: area_color,
