@@ -512,7 +512,7 @@ def redirect_if_operator_service(broadcast_message_id):
 def check_for_missing_fields(broadcast_message):
     errors = []
     edit_url = url_for(
-        ".write_new_broadcast",
+        ".edit_broadcast",
         service_id=current_service.id,
         broadcast_message_id=broadcast_message.id,
     )
