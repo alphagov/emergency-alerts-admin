@@ -163,8 +163,9 @@ class BroadcastMessage(BaseBroadcast):
 
     @property
     def reference(self):
-        if self.template_id and not self._dict["reference"]:
-            return self._dict["reference"]
+        if self.template_id and self._dict["template_name"] and not self._dict["reference"]:
+            # Alert has been created in past using template and so reference not stored
+            return self._dict["template_name"]
         return self._dict["cap_event"] or self._dict["reference"]
 
     @property
