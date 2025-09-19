@@ -727,6 +727,7 @@ def write_new_broadcast_from_template(service_id, template_id):
                     content=form.content.data,
                     reference=form.reference.data,
                     areas=template.areas,
+                    template_id=template_id,
                 )
             else:
                 message = BroadcastMessage.create_from_area(
@@ -734,6 +735,7 @@ def write_new_broadcast_from_template(service_id, template_id):
                     content=form.content.data,
                     reference=form.reference.data,
                     area_ids=template.area_ids,
+                    template_id=template_id,
                 )
         # Redirects to 'Choose library' page if created in operator service,
         # as you cannot add extra_content in operator service, otherwise redirects

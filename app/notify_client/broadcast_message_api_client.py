@@ -9,7 +9,7 @@ class BroadcastMessageAPIClient(AdminAPIClient):
             "service_id": service_id,
             "personalisation": {},
         }
-        if template_id and not reference and not content:
+        if template_id:
             data.update(template_id=template_id)
         if content:
             data.update(content=content)

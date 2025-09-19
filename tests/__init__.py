@@ -440,6 +440,7 @@ def broadcast_message_json(
         "id": id_,
         "service_id": service_id,
         "template_id": template_id,
+        "template_name": None,
         "template_version": 123,
         "content": content or "This is a test",
         "reference": reference,
