@@ -1104,7 +1104,6 @@ class ChooseDurationForm(StripWhitespaceForm):
     hours = GovukIntegerField(
         validators=[
             InputRequired("Hours required"),
-            NumberRange(min=0, max=22, message="Hours must be between 0 and 22"),
         ],
         param_extensions={
             "hint": {"text": "Hours"},
@@ -1132,6 +1131,7 @@ class ChooseDurationForm(StripWhitespaceForm):
 
         if duration < timedelta(minutes=30):
             self.minutes.errors.append("Duration must be at least 30 minutes")
+            return False
 
         if channel in ["test", "operator"]:
             if duration > timedelta(hours=4):
