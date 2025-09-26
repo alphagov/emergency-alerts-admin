@@ -537,6 +537,10 @@ def submit_broadcast_message(service_id, broadcast_message_id):
     if errors := check_for_missing_fields(broadcast_message):
         return render_current_alert_page(broadcast_message, hide_stop_link=True, errors=errors)
 
+    if type(broadcast_message.areas) is CustomBroadcastAreas and not broadcast_message.areas.is_valid_area():
+        errors = [{"text": "The area is invalid"}]
+        return render_current_alert_page(broadcast_message, hide_stop_link=True, errors=errors)
+
     broadcast_message.request_approval()
     return redirect(
         url_for(
