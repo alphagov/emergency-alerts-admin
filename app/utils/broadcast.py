@@ -358,6 +358,9 @@ def render_current_alert_page(
     hide_stop_link=False,
     errors=None,
 ):
+    if type(broadcast_message.areas) is CustomBroadcastAreas and not broadcast_message.areas.is_valid_area():
+        errors = [{"text": "The area is invalid"}]
+
     return render_template(
         "views/broadcast/view-message.html",
         broadcast_message=broadcast_message,
