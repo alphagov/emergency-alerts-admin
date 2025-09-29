@@ -5,23 +5,43 @@
 {% from "components/page-footer.html" import page_footer %}
 {% from "components/copy-to-clipboard.html" import copy_to_clipboard %}
 {% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
+{% from "views/broadcast/macros/area-map.html" import map %}
+{% from "components/template-summary-list.html" import templateSummaryList %}
+
+{% block extra_stylesheets %}
+  {% include "views/broadcast/partials/area-map-stylesheets.html" %}
+{% endblock %}
+
+{% block extra_javascripts %}
+  {% include "views/broadcast/partials/area-map-javascripts.html" %}
+  {% include "views/broadcast/partials/enlarged-map-javascripts.html" %}
+{% endblock %}
 
 {% block service_page_title %}
-  {{ page_title_folder_path(current_service.get_template_path(template._template)) }}
+  {{ page_title_folder_path(current_service.get_template_path(template)) }}
 {% endblock %}
 
 {% set breadcrumbs = [] %}
+
+{% if template.areas %}
+  {% if template.areas|length == 1 or is_custom_broadcast %}
+    {% set label = "Map of the United Kingdom, showing the area for "+template.areas[0].name %}
+  {% elif template.areas|length > 1 %}
+    {% set label = "Map of the United Kingdom, showing the areas for "+template.areas[:-1]|map(attribute='name')|join(', ')+' and '+template.areas[-1].name  %}
+  {% endif %}
+{% else %}
+  {% set label = "Map of the United Kingdom, showing no areas" %}
+{% endif %}
 
 {% if not show_redaction_message %}
   {% block additionalBeforeContent %}
     {% for folder in template_folder_path %}
       {% set breadcrumb_href = url_for('.choose_template', service_id=current_service.id, template_type='all', template_folder_id=folder.id) %}
-      {% if loop.last %}
-        {% set breadcrumb_href = None %}
-      {% endif %}
       {% set breadcrumb_item = {'text': folder.name, 'href': breadcrumb_href} %}
       {% set _ = breadcrumbs.append(breadcrumb_item) %}
     {% endfor %}
+    {% set breadcrumb_item = {'text': template.reference or "Template", 'href': None} %}
+    {% set _ = breadcrumbs.append(breadcrumb_item) %}
     {{ govukBreadcrumbs({
       "items": breadcrumbs
     }) }}
@@ -51,7 +71,7 @@
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-full">
         {{ folder_path(
-          folders=current_service.get_template_path(template._template),
+          folders=current_service.get_template_path(template),
           service_id=current_service.id,
           current_user=current_user,
           is_template=True
@@ -70,12 +90,15 @@
     </div>
   {% endif %}
 
+  {{templateSummaryList(template, areas, template.simple_polygons_with_bleed.estimated_area, template.count_of_phones, template.count_of_phones_likely, is_custom_broadcast, formatted_template, current_user, not template.archived)}}
+
+
   <div class="bottom-gutter-1-2">
-    {% if template._template.updated_at %}
+    {% if template.updated_at %}
       <h2 class="heading-small bottom-gutter-2-3 heading-inline">
         Last edited
-        <time class="timeago" datetime="{{ template._template.updated_at }}">
-          {{ template._template.updated_at|format_delta }}
+        <time class="timeago" datetime="{{ template.updated_at }}">
+          {{ template.updated_at|format_delta }}
         </time>
       </h2>
 
@@ -85,7 +108,7 @@
       <br/>
     {% endif %}
     {% if current_user.has_permissions('manage_templates') and user_has_template_permission %}
-      {% if not template._template.archived %}
+      {% if not template.archived %}
         <span class="page-footer-link page-footer-delete-link-without-button bottom-gutter-2-3">
           <a class="govuk-link govuk-link--destructive" href="{{ url_for('.delete_service_template', service_id=current_service.id, template_id=template.id) }}">Delete this template</a>
         </span>

@@ -4,16 +4,24 @@ from flask import abort, flash, jsonify, redirect, render_template, request, url
 from flask_login import current_user
 from notifications_python_client.errors import HTTPError
 
-from app import current_service, service_api_client, template_folder_api_client
+from app import (
+    current_service,
+    service_api_client,
+    template_api_client,
+    template_folder_api_client,
+)
+from app.broadcast_areas.models import CustomBroadcastAreas
 from app.formatters import character_count
 from app.main import main
 from app.main.forms import (
     BroadcastTemplateForm,
+    ChooseTemplateFieldsForm,
     SearchTemplatesForm,
     TemplateAndFoldersSelectionForm,
     TemplateFolderForm,
 )
-from app.models.service import Service
+from app.models.broadcast_message import BroadcastMessage
+from app.models.template import Template
 from app.models.template_list import TemplateList, UserTemplateList, UserTemplateLists
 from app.utils import BROADCAST_TYPE
 from app.utils.templates import get_template
@@ -27,15 +35,18 @@ form_objects = {
 @main.route("/services/<uuid:service_id>/templates/<uuid:template_id>")
 @user_has_permissions(allow_org_user=True)
 def view_template(service_id, template_id):
-    template = current_service.get_template(template_id)
-    template_folder = current_service.get_template_folder(template["folder"])
+    template = Template.from_id(template_id=template_id, service_id=service_id)
+    template_folder = current_service.get_template_folder(template.folder)
 
     user_has_template_permission = current_user.has_template_folder_permission(template_folder)
 
     return render_template(
         "views/templates/template.html",
-        template=get_template(template),
+        formatted_template=get_template(template.reference, template.content),  # returns BroadcastPreviewTemplate
         user_has_template_permission=user_has_template_permission,
+        template=template,
+        message=template,
+        template_folder_path=current_service.get_template_folder_path(template.folder),
     )
 
 
@@ -81,7 +92,7 @@ def choose_template(service_id, template_type="all", template_folder_id=None):
         return redirect(
             url_for(
                 ".action_blocked",
-                service_id=current_service.id,
+                service_id=service_id,
                 notification_type=templates_and_folders_form.add_template_by_template_type.data,
                 return_to="add_new_template",
             )
@@ -158,19 +169,23 @@ def get_template_nav_items(template_folder_id):
 
 
 def _view_template_version(service_id, template_id, version):
-    return dict(
-        template=get_template(
-            current_service.get_template(template_id, version=version),
-        )
+    version = Template.from_id(template_id, service_id=service_id).get_template_version(
+        service_id=service_id, version=version
     )
+    return version
 
 
 @main.route("/services/<uuid:service_id>/templates/<uuid:template_id>/version/<int:version>")
 @user_has_permissions(allow_org_user=True)
 def view_template_version(service_id, template_id, version):
+    template_version = _view_template_version(service_id=service_id, template_id=template_id, version=version)
     return render_template(
         "views/templates/template_history.html",
-        **_view_template_version(service_id=service_id, template_id=template_id, version=version),
+        formatted_template=get_template(
+            template_version.get("reference"),
+            template_version.get("content"),
+        ),
+        template=template_version,
     )
 
 
@@ -207,15 +222,14 @@ def choose_template_to_copy(
 ):
     if from_service:
         current_user.belongs_to_service_or_403(from_service)
-        service = Service(service_api_client.get_service(from_service)["data"])
 
         return render_template(
             "views/templates/copy.html",
             services_templates_and_folders=UserTemplateList(
-                service=service, template_folder_id=from_folder, user=current_user
+                service=current_service, template_folder_id=from_folder, user=current_user
             ),
-            template_folder_path=service.get_template_folder_path(from_folder),
-            from_service=service,
+            template_folder_path=current_service.get_template_folder_path(from_folder),
+            from_service=current_service,
             search_form=SearchTemplatesForm(current_service.api_keys),
         )
 
@@ -234,7 +248,7 @@ def copy_template(service_id, template_id):
 
     current_user.belongs_to_service_or_403(from_service)
 
-    template = service_api_client.get_service_template(from_service, template_id)["data"]
+    template = Template.get_template(from_service, template_id)["data"]
 
     template_folder = template_folder_api_client.get_template_folder(from_service, template["folder"])
     if not current_user.has_template_folder_permission(template_folder):
@@ -243,21 +257,20 @@ def copy_template(service_id, template_id):
     if request.method == "POST":
         return add_service_template(service_id, template["template_type"])
 
-    template["template_content"] = template["content"]
-    template["name"] = _get_template_copy_name(template, current_service.all_templates)
+    template["reference"] = _get_template_copy_name(template, current_service.all_templates)
     form = form_objects[template["template_type"]](**template)
 
     if template["folder"]:
         back_link = url_for(
             ".choose_template_to_copy",
-            service_id=current_service.id,
+            service_id=service_id,
             from_service=from_service,
             from_folder=template["folder"],
         )
     else:
         back_link = url_for(
             ".choose_template_to_copy",
-            service_id=current_service.id,
+            service_id=service_id,
             from_service=from_service,
         )
 
@@ -272,16 +285,16 @@ def copy_template(service_id, template_id):
 
 
 def _get_template_copy_name(template, existing_templates):
-    template_names = [existing["name"] for existing in existing_templates]
+    template_names = [existing["reference"] for existing in existing_templates]
 
     for index in reversed(range(1, 10)):
-        if "{} (copy {})".format(template["name"], index) in template_names:
-            return "{} (copy {})".format(template["name"], index + 1)
+        if "{} (copy {})".format(template["reference"], index) in template_names:
+            return "{} (copy {})".format(template["reference"], index + 1)
 
-    if "{} (copy)".format(template["name"]) in template_names:
-        return "{} (copy 2)".format(template["name"])
+    if "{} (copy)".format(template["reference"]) in template_names:
+        return "{} (copy 2)".format(template["reference"])
 
-    return "{} (copy)".format(template["name"])
+    return "{} (copy)".format(template["reference"])
 
 
 @main.route(("/services/<uuid:service_id>/templates/action-blocked/" "<template_type:notification_type>/<return_to>"))
@@ -294,9 +307,9 @@ def _get_template_copy_name(template, existing_templates):
 @user_has_permissions("manage_templates")
 def action_blocked(service_id, notification_type, return_to, template_id=None):
     back_link = {
-        "add_new_template": partial(url_for, ".choose_template", service_id=current_service.id),
-        "templates": partial(url_for, ".choose_template", service_id=current_service.id),
-        "view_template": partial(url_for, ".view_template", service_id=current_service.id, template_id=template_id),
+        "add_new_template": partial(url_for, ".choose_template", service_id=service_id),
+        "templates": partial(url_for, ".choose_template", service_id=service_id),
+        "view_template": partial(url_for, ".view_template", service_id=service_id, template_id=template_id),
     }.get(return_to)
 
     return (
@@ -325,7 +338,7 @@ def manage_template_folder(service_id, template_folder_id):
         else:
             users_with_permission = None
         template_folder_api_client.update_template_folder(
-            current_service.id, template_folder_id, name=form.name.data, users_with_permission=users_with_permission
+            service_id, template_folder_id, name=form.name.data, users_with_permission=users_with_permission
         )
         return redirect(url_for(".choose_template", service_id=service_id, template_folder_id=template_folder_id))
 
@@ -333,7 +346,7 @@ def manage_template_folder(service_id, template_folder_id):
         "views/templates/manage-template-folder.html",
         form=form,
         template_folder_path=current_service.get_template_folder_path(template_folder_id),
-        current_service_id=current_service.id,
+        current_service_id=service_id,
         template_folder_id=template_folder_id,
         template_type="all",
     )
@@ -355,7 +368,7 @@ def delete_template_folder(service_id, template_folder_id):
 
     if request.method == "POST":
         try:
-            template_folder_api_client.delete_template_folder(current_service.id, template_folder_id)
+            template_folder_api_client.delete_template_folder(service_id, template_folder_id)
 
             return redirect(
                 url_for(".choose_template", service_id=service_id, template_folder_id=template_folder["parent_id"])
@@ -384,11 +397,18 @@ def delete_template_folder(service_id, template_folder_id):
     methods=["GET", "POST"],
 )
 @main.route(
-    "/services/<uuid:service_id>/templates/folders/<uuid:template_folder_id>/add-<template_type:template_type>",
+    """/services/<uuid:service_id>/templates/folders/<uuid:template_folder_id>
+    /add-<template_type:template_type>""",
+    methods=["GET", "POST"],
+)
+@main.route(
+    """/services/<uuid:service_id>/templates/folders/<uuid:template_folder_id>
+    /add-<template_type:template_type>""",
     methods=["GET", "POST"],
 )
 @user_has_permissions("manage_templates")
 def add_service_template(service_id, template_type, template_folder_id=None):
+    adding_area = request.args.get("adding_area")
     if template_type not in current_service.available_template_types:
         return redirect(
             url_for(
@@ -403,12 +423,11 @@ def add_service_template(service_id, template_type, template_folder_id=None):
     form = form_objects[template_type]()
     if form.validate_on_submit():
         try:
-            new_template = service_api_client.create_service_template(
-                form.name.data,
-                template_type,
-                form.template_content.data,
-                service_id,
-                template_folder_id,
+            new_template = Template.create(
+                service_id=service_id,
+                reference=form.reference.data,
+                content=form.content.data,
+                template_folder_id=template_folder_id,
             )
         except HTTPError as e:
             if (
@@ -416,19 +435,35 @@ def add_service_template(service_id, template_type, template_folder_id=None):
                 and "content" in e.message
                 and any(["character count greater than" in x for x in e.message["content"]])
             ):
-                form.template_content.errors.extend(e.message["content"])
+                form.content.errors.extend(e.message["content"])
             else:
                 raise e
         else:
-            return redirect(url_for(".view_template", service_id=service_id, template_id=new_template["data"]["id"]))
+            return (
+                redirect(
+                    url_for(
+                        ".choose_library",
+                        service_id=service_id,
+                        message_type="templates",
+                        message_id=new_template.id,
+                        template_folder_id=template_folder_id,
+                    )
+                )
+                if adding_area == "True"
+                else redirect(url_for(".view_template", service_id=service_id, template_id=new_template.id))
+            )
 
     return render_template(
-        "views/edit-{}-template.html".format(template_type),
+        f"views/edit-{template_type}-template.html",
         form=form,
         template_type=template_type,
         template_folder_id=template_folder_id,
         heading_action="New",
-        back_link=url_for("main.choose_template", service_id=current_service.id, template_folder_id=template_folder_id),
+        back_link=url_for(
+            "main.choose_template",
+            service_id=service_id,
+            template_folder_id=template_folder_id,
+        ),
     )
 
 
@@ -440,19 +475,19 @@ def abort_403_if_not_admin_user():
 @main.route("/services/<uuid:service_id>/templates/<uuid:template_id>/edit", methods=["GET", "POST"])
 @user_has_permissions("manage_templates")
 def edit_service_template(service_id, template_id):
-    template = current_service.get_template_with_user_permission_or_403(template_id, current_user)
-    template["template_content"] = template["content"]
-    form = form_objects[template["template_type"]](**template)
+    template = Template.from_id_or_403(template_id, service_id=service_id)
+    template_data = {"content": template.content, "reference": template.reference}
+    form = form_objects[template.template_type](**template_data)
     if form.validate_on_submit():
         new_template_data = {
-            "name": form.name.data,
-            "content": form.template_content.data,
-            "template_type": template["template_type"],
-            "id": template["id"],
+            "reference": form.reference.data,
+            "content": form.content.data,
+            "template_type": template.template_type,
+            "id": template.id,
         }
 
-        new_template = get_template(new_template_data)
-        template_change = get_template(template).compare_to(new_template)
+        new_template = get_template(new_template_data["reference"], new_template_data["content"])
+        template_change = get_template(template_data["reference"], template_data["content"]).compare_to(new_template)
 
         if template_change.placeholders_added and not request.form.get("confirm") and current_service.api_keys:
             return render_template(
@@ -462,17 +497,16 @@ def edit_service_template(service_id, template_id):
                 form=form,
             )
         try:
-            service_api_client.update_service_template(
-                template_id,
-                form.name.data,
-                template["template_type"],
-                form.template_content.data,
-                service_id,
+            template.update_from_content(
+                service_id=service_id,
+                template_id=template.id,
+                content=form.content.data,
+                reference=form.reference.data,
             )
         except HTTPError as e:
             if e.status_code == 400:
                 if "content" in e.message and any(["character count greater than" in x for x in e.message["content"]]):
-                    form.template_content.errors.extend(e.message["content"])
+                    form.content.errors.extend(e.message["content"])
                 else:
                     raise e
             else:
@@ -480,23 +514,23 @@ def edit_service_template(service_id, template_id):
         else:
             return redirect(url_for(".view_template", service_id=service_id, template_id=template_id))
 
-    if template["template_type"] not in current_service.available_template_types:
+    if template.template_type not in current_service.available_template_types:
         return redirect(
             url_for(
                 ".action_blocked",
                 service_id=service_id,
-                notification_type=template["template_type"],
+                notification_type=template.template_type,
                 return_to="view_template",
                 template_id=template_id,
             )
         )
     else:
         return render_template(
-            "views/edit-{}-template.html".format(template["template_type"]),
+            "views/edit-{}-template.html".format(template.template_type),
             form=form,
             template=template,
-            back_link=url_for("main.view_template", service_id=current_service.id, template_id=template["id"]),
-            template_folder_path=current_service.get_template_folder_path(template["folder"]),
+            back_link=url_for("main.view_template", service_id=service_id, template_id=template.id),
+            template_folder_path=current_service.get_template_folder_path(template.folder),
         )
 
 
@@ -511,10 +545,7 @@ def count_content_length(service_id, template_type, field):
 
     error, message = _get_content_count_error_and_message_for_template(
         get_template(
-            {
-                "template_type": template_type,
-                "content": request.form.get(str(field), ""),
-            }
+            content=request.form.get(str(field), ""),
         )
     )
 
@@ -548,43 +579,50 @@ def _get_content_count_error_and_message_for_template(template):
 @main.route("/services/<uuid:service_id>/templates/<uuid:template_id>/delete", methods=["GET", "POST"])
 @user_has_permissions("manage_templates")
 def delete_service_template(service_id, template_id):
-    template = current_service.get_template_with_user_permission_or_403(template_id, current_user)
+    template = Template.from_id_or_403(template_id, service_id=service_id)
 
     if request.method == "POST":
-        service_api_client.delete_service_template(service_id, template_id)
+        template_api_client.delete_template(service_id, template_id)
         return redirect(
             url_for(
                 ".choose_template",
                 service_id=service_id,
-                template_folder_id=template["folder"],
+                template_folder_id=template.folder,
             )
         )
 
-    flash(
-        ["Are you sure you want to delete ‘{}’?".format(template["name"]), "delete_template", template["name"]],
-        "delete",
-    )
+    if template.reference:
+        flash(
+            f"Are you sure you want to delete ‘{template.reference}’?",
+            "delete",
+        )
+    else:
+        flash("Are you sure you want to delete this template?", "delete")
+
     return render_template(
         "views/templates/template.html",
-        template=get_template(
-            template,
-        ),
+        formatted_template=get_template(template.reference, template.content),
         user_has_template_permission=True,
+        template=template,
+        message=template,
+        template_folder_path=current_service.get_template_folder_path(template.folder),
     )
 
 
 @main.route("/services/<uuid:service_id>/templates/<uuid:template_id>/redact", methods=["GET"])
 @user_has_permissions("manage_templates")
 def confirm_redact_template(service_id, template_id):
-    template = current_service.get_template_with_user_permission_or_403(template_id, current_user)
+    template = Template.from_id_or_403(template_id, service_id=service_id)
 
     return render_template(
         "views/templates/template.html",
         template=get_template(
-            template,
+            template.reference,
+            template.content,
         ),
         user_has_template_permission=True,
         show_redaction_message=True,
+        template_folder_path=current_service.get_template_folder_path(template.folder),
     )
 
 
@@ -607,12 +645,122 @@ def redact_template(service_id, template_id):
 @main.route("/services/<uuid:service_id>/templates/<uuid:template_id>/versions")
 @user_has_permissions(allow_org_user=True)
 def view_template_versions(service_id, template_id):
+    template = Template.from_id(template_id=template_id, service_id=service_id)
     return render_template(
         "views/templates/choose_history.html",
         versions=[
-            get_template(
-                template,
+            (
+                get_template(
+                    template_version.get("reference"),
+                    template_version.get("content"),
+                ),
+                template_version,
             )
-            for template in service_api_client.get_service_template_versions(service_id, template_id)["data"]
+            for template_version in template.get_template_versions(service_id=service_id)
         ],
+    )
+
+
+@main.route(
+    "/services/<uuid:service_id>/templates/folders/<uuid:template_folder_id>/choose-template-fields",
+    methods=["GET", "POST"],
+)
+@main.route(
+    "/services/<uuid:service_id>/templates/choose-template-fields",
+    methods=["GET", "POST"],
+)
+@user_has_permissions("manage_templates")
+def choose_template_fields(service_id, template_folder_id=None):
+    form = ChooseTemplateFieldsForm()
+    if form.validate_on_submit():
+        template_fields = form.content.data
+        if template_fields == "content_and_area":
+            return redirect(
+                url_for(
+                    ".add_service_template",
+                    service_id=service_id,
+                    template_type="broadcast",
+                    template_folder_id=template_folder_id,
+                    adding_area=True,
+                )
+            )
+        elif template_fields == "content_only":
+            return redirect(
+                url_for(
+                    ".add_service_template",
+                    service_id=service_id,
+                    template_type="broadcast",
+                    template_folder_id=template_folder_id,
+                )
+            )
+        elif template_fields == "area_only":
+            return redirect(
+                url_for(
+                    ".choose_library",
+                    service_id=service_id,
+                    message_type="templates",
+                    template_folder_id=template_folder_id,
+                )
+            )
+    return render_template(
+        "views/templates/_choose_template_fields.html",
+        form=form,
+        back_link=url_for("main.choose_template", service_id=service_id, template_folder_id=template_folder_id),
+        page_title="Choose how to populate template",
+    )
+
+
+@user_has_permissions("manage_templates")
+def write_new_broadcast_from_template(service_id, template_id):
+    template = Template.from_id(template_id, service_id=service_id) if template_id else None
+    message = None
+
+    form = BroadcastTemplateForm()
+
+    if form.validate_on_submit():
+        if template_id and template and template.areas:
+            # If Template has already been made and has areas, create broadcast_message
+            #  from anything existing in Template
+            if isinstance(template.areas, CustomBroadcastAreas):
+                message = BroadcastMessage.create_from_custom_area(
+                    service_id=service_id,
+                    content=form.content.data,
+                    reference=form.reference.data,
+                    areas=template.areas,
+                    template_id=template_id,
+                )
+            else:
+                message = BroadcastMessage.create_from_area(
+                    service_id=service_id,
+                    content=form.content.data,
+                    reference=form.reference.data,
+                    area_ids=template.area_ids,
+                    template_id=template_id,
+                )
+        # Redirects to 'Choose library' page if created in operator service,
+        # as you cannot add extra_content in operator service, otherwise redirects
+        # to page to add extra_content
+        if current_service.alerts_can_have_extra_content:
+            return redirect(
+                url_for(
+                    ".choose_extra_content",
+                    service_id=service_id,
+                    broadcast_message_id=message.id,
+                    message_type="broadcast",
+                )
+            )
+        else:
+            return redirect(
+                url_for(
+                    ".choose_library",
+                    service_id=service_id,
+                    message_id=message.id,
+                    message_type="broadcast",
+                )
+            )
+
+    return render_template(
+        "views/broadcast/write-new-broadcast.html",
+        broadcast_message=message,
+        form=form,
     )

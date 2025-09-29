@@ -27,7 +27,7 @@
   {% if broadcast_message.status == 'pending-approval' %}
     {% if broadcast_message.created_by_id and broadcast_message.created_by_id == current_user.id
       and current_user.has_permissions('create_broadcasts', 'approve_broadcasts', restrict_admin_usage=True) %}
-      {{ broadcast_message.template.name }} is waiting for approval
+      {{ broadcast_message.reference or "Untitled alert"}} is waiting for approval
     {% elif current_user.has_permissions('approve_broadcasts', restrict_admin_usage=True) %}
       {% if broadcast_message.created_by %}
         {{ broadcast_message.created_by }}
@@ -35,12 +35,12 @@
         An API call
       {% endif %}
       wants to broadcast
-      {{ broadcast_message.template.name }}
+      {{ broadcast_message.reference or "Untitled alert" }}
     {% else %}
       This alert is waiting for approval
     {% endif %}
   {% else %}
-    {{ broadcast_message.template.name }}
+    {{ broadcast_message.reference  or "Untitled alert"}}
   {% endif %}
 {% endblock %}
 
@@ -116,7 +116,7 @@
   {% endif %}
 
   {% if broadcast_message.status == 'pending-approval' %}
-    {{ page_header(broadcast_message.template.name) }}
+    {{ page_header(broadcast_message.reference or "Untitled alert") }}
     {% if broadcast_message.created_by_id and broadcast_message.created_by_id == current_user.id
       and current_user.has_permissions('create_broadcasts', 'approve_broadcasts', restrict_admin_usage=True) %}
       {% if current_service.live and broadcast_message.submitted_by_id != current_user.id %}
@@ -129,7 +129,7 @@
                 An API call
               {% endif %}
               wants to broadcast
-              {{ broadcast_message.template.name }}
+              {{ broadcast_message.reference or "Untitled alert" }}
             </h1>
             {{ form.confirm(param_extensions={
               'formGroup': {
@@ -162,7 +162,7 @@
       {% else %}
         <div class="banner govuk-!-margin-bottom-6">
           <h1 class="govuk-heading-m govuk-!-margin-bottom-3">
-            {{ broadcast_message.template.name }} is waiting for approval
+            {{ broadcast_message.reference or "Untitled alert" }} is waiting for approval
           </h1>
           {% if current_service.live %}
             <p class="govuk-body">
@@ -220,7 +220,7 @@
       and broadcast_message.submitted_by_id == current_user.id %}
       <div class="banner govuk-!-margin-bottom-6">
         <h1 class="govuk-heading-m govuk-!-margin-bottom-3">
-          {{ broadcast_message.template.name }} is waiting for approval
+          {{ broadcast_message.reference or "Untitled alert" }} is waiting for approval
         </h1>
         <p class="govuk-body">
           You need another member of your team to approve your alert.
@@ -240,7 +240,7 @@
               An API call
             {% endif %}
             wants to broadcast
-            {{ broadcast_message.template.name }}
+            {{ broadcast_message.reference or "Untitled alert" }}
           </h1>
           {% if current_service.live %}
             {{ form.confirm(param_extensions={
@@ -301,11 +301,11 @@
       </div>
     {% endif %}
   {% elif broadcast_message.status == 'returned' %}
-    {{ page_header(broadcast_message.template.name) }}
+    {{ page_header(broadcast_message.reference or "Untitled alert") }}
   {% elif broadcast_message.status == 'draft' %}
-    {{ page_header(broadcast_message.template.name) }}
+    {{ page_header(broadcast_message.reference or "Untitled alert") }}
   {% else %}
-    {{ page_header(broadcast_message.template.name) }}
+    {{ page_header(broadcast_message.reference or "Untitled alert") }}
 
     {{broadcast_details(broadcast_message, current_service)}}
   {% endif %}

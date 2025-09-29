@@ -47,8 +47,8 @@ def test_services_pages_that_org_users_are_allowed_to_see(
     mock_get_users_by_service,
     mock_get_template_folders,
     mock_get_organisation,
-    mock_get_service_templates,
-    mock_get_service_template,
+    mock_get_templates,
+    mock_get_template,
     mock_get_template_versions,
     mock_get_template_version,
     mock_get_api_keys,
@@ -152,7 +152,7 @@ def test_routes_have_permissions_decorators():
         if "user_is_platform_admin" in decorators:
             continue
 
-        assert "user_has_permissions" in decorators, (
+        assert "user_has_permissions" in decorators or "user_has_any_permissions" in decorators, (
             "Missing @user_has_permissions decorator\n"
             "Use @user_has_permissions() or @user_is_platform_admin instead\n"
             "app/main/views/{}.py::{}\n"

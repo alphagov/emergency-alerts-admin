@@ -9,6 +9,7 @@ from app.notify_client.api_key_api_client import api_key_api_client
 from app.notify_client.invite_api_client import invite_api_client
 from app.notify_client.organisations_api_client import organisations_client
 from app.notify_client.service_api_client import service_api_client
+from app.notify_client.template_api_client import template_api_client
 from app.notify_client.template_folder_api_client import template_folder_api_client
 
 
@@ -71,6 +72,10 @@ class Service(JSONModel):
     def live(self):
         return not self.trial_mode
 
+    @property
+    def alerts_can_have_extra_content(self):
+        return self.broadcast_channel != "operator"
+
     def has_permission(self, permission):
         if permission not in self.ALL_PERMISSIONS:
             raise KeyError(f"{permission} is not a service permission")
@@ -118,16 +123,13 @@ class Service(JSONModel):
 
     @cached_property
     def all_templates(self):
-        templates = service_api_client.get_service_templates(self.id)["data"]
+        templates = template_api_client.get_templates(self.id)["data"]
 
         return [template for template in templates if template["template_type"] in self.available_template_types]
 
     @cached_property
     def all_template_ids(self):
         return {template["id"] for template in self.all_templates}
-
-    def get_template(self, template_id, version=None):
-        return service_api_client.get_service_template(self.id, template_id, version)["data"]
 
     def get_template_folder_with_user_permission_or_403(self, folder_id, user):
         template_folder = self.get_template_folder(folder_id)
@@ -138,9 +140,9 @@ class Service(JSONModel):
         return template_folder
 
     def get_template_with_user_permission_or_403(self, template_id, user):
-        template = self.get_template(template_id)
+        template = template_api_client.get_template(service_id=self.id, template_id=template_id)
 
-        self.get_template_folder_with_user_permission_or_403(template["folder"], user)
+        self.get_template_folder_with_user_permission_or_403(template.get("folder"), user)
 
         return template
 
@@ -213,9 +215,11 @@ class Service(JSONModel):
         return self.get_template_folder_path(folder["parent_id"]) + [self.get_template_folder(folder["id"])]
 
     def get_template_path(self, template):
-        return self.get_template_folder_path(template["folder"]) + [
-            template,
-        ]
+        template_dict = template.__dict__.copy()
+        template_dict["name"] = template.reference
+        if template_dict.get("name"):
+            return self.get_template_folder_path(template.folder) + [template_dict]
+        return self.get_template_folder_path(template.folder)
 
     @property
     def count_of_templates_and_folders(self):

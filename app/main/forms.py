@@ -1075,9 +1075,9 @@ class ConfirmBroadcastForm(StripWhitespaceForm):
 
 
 class BaseTemplateForm(StripWhitespaceForm):
-    name = GovukTextInputField("Template name", validators=[DataRequired(message="Template name cannot be empty")])
+    reference = GovukTextInputField("Template name", validators=[DataRequired(message="Template name cannot be empty")])
 
-    template_content = TextAreaField(
+    content = TextAreaField(
         "Alert message", validators=[DataRequired(message="Alert message cannot be empty"), NoCommasInPlaceHolders()]
     )
 
@@ -1104,7 +1104,6 @@ class ChooseDurationForm(StripWhitespaceForm):
     hours = GovukIntegerField(
         validators=[
             InputRequired("Hours required"),
-            NumberRange(min=0, max=22, message="Hours must be between 0 and 22"),
         ],
         param_extensions={
             "hint": {"text": "Hours"},
@@ -1132,6 +1131,7 @@ class ChooseDurationForm(StripWhitespaceForm):
 
         if duration < timedelta(minutes=30):
             self.minutes.errors.append("Duration must be at least 30 minutes")
+            return False
 
         if channel in ["test", "operator"]:
             if duration > timedelta(hours=4):
@@ -1156,8 +1156,14 @@ class SMSTemplateForm(BaseTemplateForm):
 
 
 class BroadcastTemplateForm(SMSTemplateForm):
-    name = GovukTextInputField("Reference", validators=[DataRequired(message="Enter a reference")])
-    template_content = TextAreaField(
+    reference = GovukTextInputField(
+        "Reference",
+        validators=[
+            DataRequired(message="Enter a reference"),
+            Length(max=255, message="Reference must be 255 characters or less"),
+        ],
+    )
+    content = TextAreaField(
         "Alert message", validators=[DataRequired(message="Enter an alert message"), NoCommasInPlaceHolders()]
     )
     # Hidden fields to store initial data and data on page when specific actions taken by user
@@ -1166,7 +1172,7 @@ class BroadcastTemplateForm(SMSTemplateForm):
     overwrite_name = BooleanField("overwrite_name", render_kw={"hidden": True})
     overwrite_content = BooleanField("overwrite_content", render_kw={"hidden": True})
 
-    def validate_template_content(self, field):
+    def validate_content(self, field):
         OnlySMSCharacters(template_type="broadcast")(None, field)
         NoPlaceholders()(None, field)
         BroadcastLength()(None, field)
@@ -1885,4 +1891,26 @@ class ReturnForEditForm(StripWhitespaceForm):
     return_for_edit_reason = GovukTextareaField(
         validators=[DataRequired(message="Enter the reason for returning the alert for edit")],
         param_extensions={"hint": {"text": hint}, "rows": 3},
+    )
+
+
+class ChooseTemplateFieldsForm(StripWhitespaceForm):
+    content = GovukRadiosField(
+        "Choose how to populate template",
+        choices=[
+            ("content_and_area", "Content and area"),
+            ("content_only", "Only content"),
+            ("area_only", "Only area"),
+        ],
+        param_extensions={
+            "fieldset": {
+                "legend": {
+                    "text": "Choose how to populate template",
+                    "isPageHeading": True,
+                    "classes": "govuk-fieldset__legend--l",
+                }
+            },
+            "hint": {"text": "Select one option"},
+        },
+        validators=[DataRequired(message="Select which fields you'd like to use to populate template")],
     )

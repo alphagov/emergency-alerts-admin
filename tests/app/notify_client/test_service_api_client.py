@@ -3,7 +3,6 @@ from uuid import uuid4
 
 import pytest
 
-from app import service_api_client
 from app.notify_client.service_api_client import ServiceAPIClient
 from tests.conftest import SERVICE_ONE_ID
 
@@ -13,22 +12,6 @@ FAKE_TEMPLATE_ID = uuid4()
 @pytest.fixture(autouse=True)
 def mock_notify_client_check_inactive_service(mocker):
     mocker.patch("app.notify_client.AdminAPIClient.check_inactive_service")
-
-
-def test_client_posts_archived_true_when_deleting_template(mocker):
-    mocker.patch("app.notify_client.current_user", id="1")
-    expected_data = {"archived": True, "created_by": "1"}
-    expected_url = "/service/{}/template/{}".format(SERVICE_ONE_ID, FAKE_TEMPLATE_ID)
-
-    client = ServiceAPIClient()
-    mock_post = mocker.patch("app.notify_client.service_api_client.ServiceAPIClient.post")
-    mocker.patch(
-        "app.notify_client.service_api_client.ServiceAPIClient.get",
-        return_value={"data": {"id": str(FAKE_TEMPLATE_ID)}},
-    )
-
-    client.delete_service_template(SERVICE_ONE_ID, FAKE_TEMPLATE_ID)
-    mock_post.assert_called_once_with(expected_url, data=expected_data)
 
 
 def test_client_gets_service(mocker):
@@ -94,81 +77,6 @@ def test_get_precompiled_template(mocker):
 
     client.get_precompiled_template(SERVICE_ONE_ID)
     mock_get.assert_called_once_with("/service/{}/template/precompiled".format(SERVICE_ONE_ID))
-
-
-@pytest.mark.parametrize(
-    "template_data, extra_args, expected_count",
-    (
-        (
-            [],
-            {},
-            0,
-        ),
-        (
-            [],
-            {"template_type": "broadcast"},
-            0,
-        ),
-        (
-            [
-                {"template_type": "broadcast"},
-            ],
-            {},
-            1,
-        ),
-        (
-            [
-                {"template_type": "broadcast"},
-            ],
-            {"template_type": "broadcast"},
-            1,
-        ),
-        (
-            [
-                {"template_type": "broadcast"},
-                {"template_type": "broadcast"},
-            ],
-            {},
-            2,
-        ),
-        (
-            [
-                {"template_type": "broadcast"},
-                {"template_type": "broadcast"},
-            ],
-            {"template_type": "broadcast"},
-            2,
-        ),
-        (
-            [
-                {"template_type": "broadcast"},
-                {"template_type": "broadcast"},
-                {"template_type": "broadcast"},
-            ],
-            {},
-            3,
-        ),
-        (
-            [
-                {"template_type": "broadcast"},
-                {"template_type": "broadcast"},
-                {"template_type": "broadcast"},
-            ],
-            {"template_type": "broadcast"},
-            3,
-        ),
-    ),
-)
-def test_client_returns_count_of_service_templates(
-    notify_admin,
-    mocker,
-    template_data,
-    extra_args,
-    expected_count,
-):
-    mocker.patch("app.service_api_client.get_service_templates", return_value={"data": template_data})
-
-    assert service_api_client.count_service_templates(SERVICE_ONE_ID, **extra_args) == expected_count
 
 
 def test_client_gets_guest_list(mocker):

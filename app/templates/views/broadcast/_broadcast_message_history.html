@@ -1,6 +1,6 @@
 <div class="govuk-grid-column-full alert-list-item">
   <div class="govuk-grid-column-full">
-    <h2 class="message-name">{{ broadcast_message.reference }}</h2>
+    <h2 class="message-name">{{ broadcast_message.reference or "Untitled alert"}}</h2>
     <p class="hint">
       {% if is_edited %}
         Edit made {% if broadcast_message.created_at %}{{ broadcast_message.created_at|format_datetime_normal }}{% endif %}
