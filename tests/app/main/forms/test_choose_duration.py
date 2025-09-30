@@ -13,8 +13,8 @@ from app.main.forms import ChooseDurationForm
 )
 def test_choose_valid_duration(channel, hours, minutes):
     form = ChooseDurationForm(channel, duration=None)
-    form.hours.raw_data = 0
-    form.minutes.raw_data = 0
+    form.hours.raw_data = str(hours)
+    form.minutes.raw_data = str(minutes)
     assert form.validate()
 
 
