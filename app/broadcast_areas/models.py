@@ -5,7 +5,7 @@ from emergency_alerts_utils.formatters import formatted_list
 from emergency_alerts_utils.polygons import Polygons
 from emergency_alerts_utils.serialised_model import SerialisedModelCollection
 from rtreelib import Rect
-from shapely import Polygon
+from shapely import Polygon, is_valid_reason
 from werkzeug.utils import cached_property
 
 from app.formatters import square_metres_to_square_miles
@@ -214,6 +214,12 @@ class CustomBroadcastAreas(SerialisedModelCollection):
 
     def is_valid_area(self):
         return all(Polygon(polygon).is_valid for polygon in self._polygons)
+
+    @cached_property
+    def invalid_reason(self):
+        # Returns to user only the first reason for why the shape is invalid, if multiple
+        # so user can correct invalid shapes one at a time
+        return [is_valid_reason(Polygon(polygon)) for polygon in self._polygons][0]
 
 
 class BroadcastAreaLibrary(SerialisedModelCollection, SortingAndEqualityMixin, GetItemByIdMixin):
