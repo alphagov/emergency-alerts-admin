@@ -40,7 +40,6 @@ from app.utils.broadcast import (
     format_areas_list,
     get_changed_alert_form_data,
     get_changed_extra_content_form_data,
-    get_error_message_from_topology_error,
     keep_alert_content_button_clicked,
     keep_alert_reference_button_clicked,
     overwrite_content_button_clicked,
@@ -539,7 +538,13 @@ def submit_broadcast_message(service_id, broadcast_message_id):
         return render_current_alert_page(broadcast_message, hide_stop_link=True, errors=errors)
 
     if type(broadcast_message.areas) is CustomBroadcastAreas and not broadcast_message.areas.is_valid_area():
-        errors = [{"text": get_error_message_from_topology_error(broadcast_message.areas.invalid_reason)}]
+        errors = [
+            {
+                "text": "The area used is invalid and the alert cannot be sent. If the alert was created"
+                " through the API, report it to the alert creator. Otherwise report it to the "
+                "Emergency Alerts team."
+            }
+        ]
         return render_current_alert_page(broadcast_message, hide_stop_link=True, errors=errors)
 
     broadcast_message.request_approval()

@@ -359,7 +359,13 @@ def render_current_alert_page(
     errors=None,
 ):
     if type(broadcast_message.areas) is CustomBroadcastAreas and not broadcast_message.areas.is_valid_area():
-        errors = [{"text": get_error_message_from_topology_error(broadcast_message.areas.invalid_reason)}]
+        errors = [
+            {
+                "text": "The area used is invalid and the alert cannot be sent. If the alert "
+                "was created through the API, report it to the alert creator. Otherwise report "
+                "it to the Emergency Alerts team."
+            }
+        ]
 
     return render_template(
         "views/broadcast/view-message.html",
@@ -594,32 +600,3 @@ def get_message_type(message_type):
         "broadcast": BroadcastMessage,
         "templates": Template,
     }[message_type]
-
-
-def get_error_message_from_topology_error(error_msg):
-    error_message_translations = {
-        "Topology Validation Error": (
-            "There’s a problem with the shape.",
-            " Make sure the outline is complete and does not overlap itself.",
-        ),
-        "Repeated Point": "The shape has the same point twice in a row. Remove any duplicate points.",
-        "Interior is disconnected": "Parts of the shape are not connected. The inside must be one continuous area.",
-        "Ring Self-intersection": "The shape loops back on itself. Check for twists or loops on the shape edges.",
-        "Self-intersection": "The shape crosses over itself. Adjust the outline so the edges do not cross.",
-        "Nested shells": (
-            "The shape has more than one outer boundary and they overlap. Separate ",
-            "the boundaries into individual shapes.",
-        ),
-        "Duplicate Rings": "The shape has the same boundary twice. Remove any duplicates.",
-        "Too few distinct points in geometry component": (
-            "The shape does not have enough points to make a valid " "outline. Add more points and close the shape."
-        ),
-        "Invalid Coordinate": "The shape contains an invalid point. Check the coordinates and correct them.",
-        "Ring is not closed": "The outline is not closed. The first and last point must be the same.",
-    }
-    return next(
-        (
-            message for key, message in error_message_translations.items() if key in error_msg
-        ),  # Returns the first value for which the key is within the error_msg string
-        "There's a problem with the area. Check that it is correct.",
-    )
