@@ -1,4 +1,4 @@
-from flask import abort, current_app
+from flask import abort
 from notifications_python_client.errors import HTTPError
 
 from app.notify_client import AdminAPIClient
@@ -87,7 +87,6 @@ class UserApiClient(AdminAPIClient):
     def update_password(self, user_id, password):
         data = {"_password": password}
         url = "/user/{}/update-password".format(user_id)
-        current_app.logger.info(f"url: {url}, data: {data}")
         user_data = self.post(url, data=data)
         return user_data["data"]
 
