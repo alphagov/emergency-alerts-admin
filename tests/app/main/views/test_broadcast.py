@@ -332,6 +332,66 @@ def test_user_cannot_cancel_broadcast_without_permission(
     )
 
 
+def test_view_broadcast_page_displays_error_if_area_invalid(
+    mocker,
+    fake_uuid,
+    service_one,
+    client_request,
+    mock_get_broadcast_message_versions,
+    mock_get_broadcast_returned_for_edit_reasons,
+    mock_get_latest_edit_reason,
+    mock_update_broadcast_message_status,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            starts_at="2020-02-20T20:20:20.000000",
+            created_at="2020-02-20T20:20:20.000000",
+            status="draft",
+            areas={
+                # Area is invalid because the final coord isn't the same as first coord, so area isn't closed
+                "simple_polygons": [[[51.5310, -0.1580], [51.5310, -0.1570], [51.5310, -0.1580], [51.5310, -0.2]]],
+                "names": ["Invalid area"],
+            },
+        ),
+    )
+    service_one["permissions"] += ["broadcast"]
+
+    client_request.login(create_active_user_create_broadcasts_permissions())
+
+    page = client_request.get(
+        ".view_current_broadcast",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+    )
+
+    # Asserts that an error is displayed because the area is invalid
+    assert normalize_spaces(page.select_one(".govuk-error-summary").text) == (
+        "There is a problem The area used is invalid and the alert cannot be sent. If the alert"
+        " was created through the API, report it to the alert creator. Otherwise report it "
+        "to the Emergency Alerts team."
+    )
+
+    submitted_alert_page = client_request.get(
+        ".submit_broadcast_message", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid, _expected_status=200
+    )
+
+    # Asserts that even when data is posted to submit broadcast, the page rendered displays
+    # error because the area is invalid, and the broadcast status remains in draft
+
+    assert normalize_spaces(submitted_alert_page.select_one(".govuk-error-summary").text) == (
+        "There is a problem The area used is invalid and the alert cannot be sent. If the alert"
+        " was created through the API, report it to the alert creator. Otherwise report it "
+        "to the Emergency Alerts team."
+    )
+
+    assert mock_update_broadcast_message_status.called is False
+
+
 @pytest.mark.parametrize(
     "endpoint, step_index, expected_link_text, expected_link_href",
     (
