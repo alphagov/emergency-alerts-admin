@@ -500,6 +500,17 @@ def preview_broadcast_message(service_id, broadcast_message_id):
     )
     is_custom_broadcast = type(broadcast_message.areas) is CustomBroadcastAreas
     areas = format_areas_list(broadcast_message.areas)
+
+    if is_custom_broadcast and not broadcast_message.areas.is_valid_area():
+        errors = [
+            {
+                "text": "The area used is invalid and the alert cannot be sent. If the alert was created"
+                " through the API, report it to the alert creator. Otherwise report it to the "
+                "Emergency Alerts team."
+            }
+        ]
+        return render_preview_alert_page(broadcast_message, is_custom_broadcast, areas, errors)
+
     if request.method == "POST":
         try:
             broadcast_message.check_can_update_status("pending-approval")
