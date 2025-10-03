@@ -198,6 +198,12 @@ def test_create_from_custom_area(mocker, service_one, fake_uuid, mock_create_bro
     )
 
 
+def test_invalid_area_returns_is_valid_False():
+    invalid_polygon = [[51.5310, -0.1580], [51.5310, -0.1570], [51.5310, -0.1580], [51.5310, -0.2]]
+    custom_areas = CustomBroadcastAreas(names="invalid area", polygons=[invalid_polygon])
+    assert custom_areas.is_valid_area() is False
+
+
 def test_create_from_content(mocker, service_one, fake_uuid, mock_create_broadcast_message):
     # Asserts that once class method create_from_content called, the mocked API
     # client method (broadcast_message_api_client.create_broadcast_message) is called

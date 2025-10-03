@@ -190,10 +190,13 @@ class CustomBroadcastArea(BaseBroadcastArea):
 
     @cached_property
     def count_of_phones(self):
-        return sum(
-            area.simple_polygons.ratio_of_intersection_with(self.polygons) * area.count_of_phones
-            for area in self.nearby_electoral_wards
-        )
+        try:
+            return sum(
+                area.simple_polygons.ratio_of_intersection_with(self.polygons) * area.count_of_phones
+                for area in self.nearby_electoral_wards
+            )
+        except Exception:
+            return 0
 
 
 class CustomBroadcastAreas(SerialisedModelCollection):
@@ -208,6 +211,9 @@ class CustomBroadcastAreas(SerialisedModelCollection):
             name=self.items[index],
             polygons=self._polygons if index == 0 else None,
         )
+
+    def is_valid_area(self):
+        return all(Polygon(polygon).is_valid for polygon in self._polygons)
 
 
 class BroadcastAreaLibrary(SerialisedModelCollection, SortingAndEqualityMixin, GetItemByIdMixin):
