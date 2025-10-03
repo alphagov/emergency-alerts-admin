@@ -1129,8 +1129,8 @@ class ChooseDurationForm(StripWhitespaceForm):
 
         duration = timedelta(hours=hours, minutes=minutes)
 
-        if duration < timedelta(minutes=30):
-            self.minutes.errors.append("Duration must be at least 30 minutes")
+        if duration < timedelta(minutes=5):
+            self.minutes.errors.append("Duration must be at least 5 minutes")
             return False
 
         if channel in ["test", "operator"]:
