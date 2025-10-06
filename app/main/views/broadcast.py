@@ -182,7 +182,7 @@ def choose_extra_content(service_id, broadcast_message_id):
                 url_for(".add_extra_content", service_id=current_service.id, broadcast_message_id=broadcast_message_id)
             )
         else:
-            return redirect_dependent_on_alert_area(broadcast_message)
+            return redirect(redirect_dependent_on_alert_area(broadcast_message))
 
     return render_template(
         "views/broadcast/choose-extra-content.html",
@@ -268,7 +268,7 @@ def add_extra_content(service_id, broadcast_message_id):
             broadcast_message_id=broadcast_message_id,
             extra_content=form.extra_content.data,
         )
-        return redirect_dependent_on_alert_area(broadcast_message)
+        return redirect(redirect_dependent_on_alert_area(broadcast_message))
 
     if broadcast_message.status in ["draft", "returned"] and broadcast_message.extra_content:
         form.extra_content.data = broadcast_message.extra_content
@@ -390,7 +390,7 @@ def edit_broadcast(service_id, broadcast_message_id):
         form.initial_name.data = broadcast_message.reference
         form.initial_content.data = broadcast_message.content
         update_broadcast_message_using_changed_data(broadcast_message_id, form)
-        return redirect_dependent_on_alert_area(broadcast_message)
+        return redirect(redirect_dependent_on_alert_area(broadcast_message))
 
     return render_edit_alert_page(broadcast_message, form)
 
@@ -434,7 +434,7 @@ def broadcast(service_id, template_id):
         # straight to choose area as extra_content attribute shouldn't be set for
         # alerts created in operator services
         if not current_service.alerts_can_have_extra_content:
-            return redirect_dependent_on_alert_area(broadcast_message)
+            return redirect(redirect_dependent_on_alert_area(broadcast_message))
         else:
             return redirect(
                 url_for(

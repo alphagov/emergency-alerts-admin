@@ -492,7 +492,7 @@ def redirect_dependent_on_alert_area(broadcast_message):
             message_type="broadcast",
         )
 
-    return redirect(redirect_url)
+    return redirect_url
 
 
 def redirect_if_operator_service(broadcast_message_id):
