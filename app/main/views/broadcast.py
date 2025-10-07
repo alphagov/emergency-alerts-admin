@@ -35,6 +35,7 @@ from app.models.broadcast_message import BroadcastMessage, BroadcastMessages
 from app.models.template import Template
 from app.utils import service_has_permission
 from app.utils.broadcast import (
+    INVALID_AREA_ERROR_TEXT,
     _get_back_link_from_view_broadcast_endpoint,
     check_for_missing_fields,
     format_areas_list,
@@ -500,6 +501,11 @@ def preview_broadcast_message(service_id, broadcast_message_id):
     )
     is_custom_broadcast = type(broadcast_message.areas) is CustomBroadcastAreas
     areas = format_areas_list(broadcast_message.areas)
+
+    if is_custom_broadcast and not broadcast_message.areas.is_valid_area():
+        errors = [{"text": INVALID_AREA_ERROR_TEXT}]
+        return render_preview_alert_page(broadcast_message, is_custom_broadcast, areas, errors)
+
     if request.method == "POST":
         try:
             broadcast_message.check_can_update_status("pending-approval")
@@ -535,6 +541,10 @@ def submit_broadcast_message(service_id, broadcast_message_id):
         return render_current_alert_page(broadcast_message, hide_stop_link=True)
 
     if errors := check_for_missing_fields(broadcast_message):
+        return render_current_alert_page(broadcast_message, hide_stop_link=True, errors=errors)
+
+    if type(broadcast_message.areas) is CustomBroadcastAreas and not broadcast_message.areas.is_valid_area():
+        errors = [{"text": INVALID_AREA_ERROR_TEXT}]
         return render_current_alert_page(broadcast_message, hide_stop_link=True, errors=errors)
 
     broadcast_message.request_approval()

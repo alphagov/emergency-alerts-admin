@@ -20,6 +20,7 @@ pwdpy==1.0.1
 itsdangerous==2.1.2
 govuk-frontend-jinja==3.3.0
 govuk-bank-holidays==0.15
+shapely==2.1.1
 
 # Packages for testing
 black==25.1.0
