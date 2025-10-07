@@ -330,6 +330,6 @@ def _is_out_of_office_hours():
         return True
     if now.hour < ADMIN_ZENDESK_OFFICE_HOURS_START:
         return True
-    if now.weekday() in [5, 6]:
+    if now.weekday() in [5, 6]:  # Saturday/Sunday
         return True
     return False
