@@ -81,6 +81,10 @@ class BroadcastArea(BaseBroadcastArea, SortingAndEqualityMixin):
     def is_REPPIR_site(self):
         return self.id.startswith("REPPIR_DEPZ_sites-")
 
+    @cached_property
+    def is_flood_warning_target_area(self):
+        return self.id.startswith("Flood_Warning_Target_Areas-")
+
     @classmethod
     def from_row_with_simple_polygons(cls, row):
         instance = cls(row[:4])
