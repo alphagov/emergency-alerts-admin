@@ -1426,6 +1426,7 @@ def test_choose_library_page(
             [
                 "Coordinates",
                 "Countries",
+                "Flood Warning Target Areas (TA code)",
                 "Local authorities",
                 "Police forces in England and Wales",
                 "Postcode areas",
@@ -1438,6 +1439,7 @@ def test_choose_library_page(
             [
                 "Coordinates",
                 "Countries",
+                "Flood Warning Target Areas (TA code)",
                 "Local authorities",
                 "Police forces in England and Wales",
                 "Postcode areas",
@@ -1450,6 +1452,7 @@ def test_choose_library_page(
             [
                 "Coordinates",
                 "Countries",
+                "Flood Warning Target Areas (TA code)",
                 "Local authorities",
                 "Police forces in England and Wales",
                 "Postcode areas",
