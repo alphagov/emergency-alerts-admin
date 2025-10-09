@@ -32,9 +32,12 @@
   {% endif %}
 
   {% for library in libraries|sort %}
-    {% if library.id not in ['coordinates', 'postcodes']  %}
+    {% if library.id not in ['coordinates', 'postcodes', 'Flood_Warning_Target_Areas']  %}
       <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_area', service_id=current_service.id, message_id=message_id, library_slug=library.id, message_type=message_type, template_folder_id=template_folder_id or None) }}">{{ library.name }}</a>
       <p class="file-list-hint-large">{{ library.get_examples() }}</p>
+    {% elif library.id == 'Flood_Warning_Target_Areas' %}
+      <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_area', service_id=current_service.id, message_id=message_id, library_slug=library.id, message_type=message_type, template_folder_id=template_folder_id or None) }}">Flood Warning Target Areas (TA code)</a>
+      <p class="file-list-hint-large">Use TA codes to create an alert area.</p>
     {% else %}
       {% if (message.areas|length == 0) or (custom_broadcast)  %}
         {% if library.id == 'coordinates' %}
