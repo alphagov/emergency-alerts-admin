@@ -20,7 +20,7 @@
 {% endblock %}
 
 {% if message.areas %}
-  {% if message.areas|length == 1 or is_custom_broadcast %}
+  {% if message.areas|length == 1 %}
     {% set label = "Map of the United Kingdom, showing the area for "+message.areas[0].name %}
   {% elif message.areas|length > 1 %}
     {% set label = "Map of the United Kingdom, showing the areas for "+message.areas[:-1]|map(attribute='name')|join(', ')+' and '+message.areas[-1].name  %}
@@ -85,9 +85,6 @@
         {% endfor %}
       </ul>
     </div>
-  {% endif %}
-
-  {% if message.areas %}
     <div class="govuk-!-margin-top-2 govuk-!-margin-bottom-3">
       {{ govukButton({
       "element": "a",
@@ -99,6 +96,6 @@
     </div>
   {% endif %}
 
-  {{ map(estimated_area, estimated_area_with_bleed, count_of_phones, count_of_phones_likely, True, "Map of the United Kingdom, showing no areas") }}
+  {{ map(message.simple_polygons.estimated_area, message.simple_polygons_with_bleed.estimated_area, message.count_of_phones, message.count_of_phones_likely, is_custom_broadcast, label) }}
 
 {% endblock %}
