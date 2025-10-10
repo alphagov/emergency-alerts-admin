@@ -1228,6 +1228,50 @@ def test_broadcast_page(
                 "Unknown number of phones",
             ],
         ),
+        (
+            [
+                "Flood_Warning_Target_Areas-011FWCN2M",
+            ],
+            ["Cumbria coast at Maryport harbour Remove Cumbria coast at Maryport harbour"],
+            [
+                "An area of 0 square miles Will get the alert",
+                "An extra area of 4 square miles is Likely to get the alert",
+                "Unknown number of phones",
+            ],
+        ),
+        (
+            [
+                "Flood_Warning_Target_Areas-011FWCN3A",
+            ],
+            [
+                "Cumbrian coastline from St Bees Head to Haverigg, along the coast from North Head "
+                "to Haverigg Remove Cumbrian coastline from St Bees Head to Haverigg, along "
+                "the coast from North Head to Haverigg",
+            ],
+            [
+                "An area of 10 square miles Will get the alert",
+                "An extra area of 70 square miles is Likely to get the alert",
+                "Unknown number of phones",
+            ],
+        ),
+        (
+            [
+                "Flood_Warning_Target_Areas-011FWCN4A",
+                "Flood_Warning_Target_Areas-011FWCN1A",
+            ],
+            [
+                "Cumbrian coastline from Gretna to Silloth including Port Carlisle, Skinburness and Rockcliffe "
+                "Remove Cumbrian coastline from Gretna to Silloth including Port Carlisle, Skinburness and Rockcliffe",
+                "Cumbrian coastline at Duddon estuary, at Haverigg to Duddon "
+                "Bridge, Foxfield, Dunnerholme Remove Cumbrian "
+                "coastline at Duddon estuary, at Haverigg to Duddon Bridge, Foxfield, Dunnerholme",
+            ],
+            [
+                "An area of 60 square miles Will get the alert",
+                "An extra area of 100 square miles is Likely to get the alert",
+                "Unknown number of phones",
+            ],
+        ),
     ),
 )
 def test_preview_areas_page(
@@ -1486,6 +1530,7 @@ def test_choose_library_page(
             [
                 "Coordinates",
                 "Countries",
+                "Flood Warning Target Areas (TA code)",
                 "Local authorities",
                 "Police forces in England and Wales",
                 "Postcode areas",
@@ -1498,6 +1543,7 @@ def test_choose_library_page(
             [
                 "Coordinates",
                 "Countries",
+                "Flood Warning Target Areas (TA code)",
                 "Local authorities",
                 "Police forces in England and Wales",
                 "Postcode areas",
@@ -1510,6 +1556,7 @@ def test_choose_library_page(
             [
                 "Coordinates",
                 "Countries",
+                "Flood Warning Target Areas (TA code)",
                 "Local authorities",
                 "Police forces in England and Wales",
                 "Postcode areas",

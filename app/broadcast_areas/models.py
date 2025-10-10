@@ -81,6 +81,10 @@ class BroadcastArea(BaseBroadcastArea, SortingAndEqualityMixin):
     def is_REPPIR_site(self):
         return self.id.startswith("REPPIR_DEPZ_sites-")
 
+    @cached_property
+    def is_flood_warning_target_area(self):
+        return self.id.startswith("Flood_Warning_Target_Areas-")
+
     @classmethod
     def from_row_with_simple_polygons(cls, row):
         instance = cls(row[:4])
@@ -228,6 +232,7 @@ class BroadcastAreaLibrary(SerialisedModelCollection, SortingAndEqualityMixin, G
         self.name_singular = name_singular
         self.is_group = bool(is_group)
         self.items = BroadcastAreasRepository().get_all_areas_for_library(self.id) if self.id != "postcodes" else []
+        self.item_ids = [item[0] for item in self.items]
 
     def get_examples(self):
         # we show up to four things. three areas, then either a fourth area if there are exactly four, or "and X more".

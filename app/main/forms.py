@@ -1874,6 +1874,17 @@ class ChooseCoordinateTypeForm(StripWhitespaceForm):
     )
 
 
+class FloodWarningForm(StripWhitespaceForm):
+    flood_warning_area = GovukSearchField(
+        "Flood warning TA code",
+        param_extensions={
+            "hint": {"text": ("You can add more TA codes after adding the first.")},
+            "classes": "govuk-input govuk-!-width-full",
+        },
+        validators=[DataRequired()],
+    )
+
+
 class RejectionReasonForm(StripWhitespaceForm):
     hint = """ Provide details of why you are rejecting the alert.
         For example, "The emergency has passed"."""

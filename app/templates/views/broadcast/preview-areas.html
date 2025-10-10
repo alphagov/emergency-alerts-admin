@@ -67,12 +67,21 @@
         {% endfor %}
       </ul>
       {% if not is_custom_broadcast %}
-        {{ govukButton({
-          "element": "a",
-          "text": "Add another area",
-          "href": url_for('.choose_library', service_id=current_service.id, message_id=message.id, message_type=message_type),
-          "classes": "govuk-button--secondary govuk-!-margin-bottom-5"
-        }) }}
+        {% if has_flood_warning_areas %}
+          {{ govukButton({
+            "element": "a",
+            "text": "Add another area",
+            "href": url_for('.search_flood_warning_areas', service_id=current_service.id, message_id=message.id, message_type=message_type),
+            "classes": "govuk-button--secondary govuk-!-margin-bottom-5"
+          }) }}
+        {% else %}
+          {{ govukButton({
+            "element": "a",
+            "text": "Add another area",
+            "href": url_for('.choose_library', service_id=current_service.id, message_id=message.id, message_type=message_type),
+            "classes": "govuk-button--secondary govuk-!-margin-bottom-5"
+          }) }}
+        {% endif %}
       {% endif %}
     </div>
 
