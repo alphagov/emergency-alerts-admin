@@ -372,6 +372,11 @@ def test_phone_density(
             "REPPIR_DEPZ_sites-awe_aldermaston",
             1_500,
         ),
+        (
+            # No population data available
+            "Flood_Warning_Target_Areas-011FWCN3A",
+            1_500,
+        ),
     ),
 )
 def test_estimated_bleed(area, expected_bleed_in_m):

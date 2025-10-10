@@ -1168,6 +1168,52 @@ def test_broadcast_page(
                 "Unknown number of phones",
             ],
         ),
+        (
+            [
+                "Flood_Warning_Target_Areas-011FWFNC10B",
+            ],
+            [
+                "River Eden at Warwick Bridge, Warwick Park and Holme Eden "
+                "Gardens Remove River Eden at Warwick Bridge, "
+                "Warwick Park and Holme Eden Gardens"
+            ],
+            [
+                # A considerably small area - added to DB as was provided and unprocessed
+                "An area of 0 square miles Will get the alert",
+                "An extra area of 6 square miles is Likely to get the alert",
+                "Unknown number of phones",
+            ],
+        ),
+        (
+            [
+                "Flood_Warning_Target_Areas-011FWFNC13",
+            ],
+            [
+                "River Eden at Edenhall Remove River Eden at Edenhall",
+            ],
+            [
+                # A considerably small area - added to DB as was provided and unprocessed
+                "An area of 0 square miles Will get the alert",
+                "An extra area of 4 square miles is Likely to get the alert",
+                "Unknown number of phones",
+            ],
+        ),
+        (
+            [
+                "Flood_Warning_Target_Areas-011FWFNC13",
+                "Flood_Warning_Target_Areas-051FWCDV5B1",
+            ],
+            [
+                "River Eden at Edenhall Remove River Eden at Edenhall",
+                "The Thames estuary at Leigh-on-Sea, from Chalkwell to Hadleigh marshes Remove "
+                "The Thames estuary at Leigh-on-Sea, from Chalkwell to Hadleigh marshes",
+            ],
+            [
+                "An area of 2 square miles Will get the alert",
+                "An extra area of 20 square miles is Likely to get the alert",
+                "Unknown number of phones",
+            ],
+        ),
     ),
 )
 def test_preview_areas_page(
