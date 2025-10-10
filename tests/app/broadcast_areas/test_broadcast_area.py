@@ -374,7 +374,7 @@ def test_phone_density(
         ),
         (
             # No population data available
-            "Flood_Warning_Target_Areas-011FWCN3A",
+            "Flood_Warning_Target_Areas-011FWBWH",
             1_500,
         ),
     ),
