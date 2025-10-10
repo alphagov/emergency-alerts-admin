@@ -1254,6 +1254,60 @@ def test_preview_areas_page(
     assert [normalize_spaces(item.text) for item in page.select(".area-list-key")] == estimates
 
 
+def test_search_flood_warning_areas_page(
+    client_request,
+    service_one,
+    mock_get_draft_broadcast_message,
+    mock_update_broadcast_message,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
+):
+    service_one["permissions"] += ["broadcast"]
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            area_ids=["Flood_Warning_Target_Areas-011FWCN2M"],
+            areas={
+                "ids": ["Flood_Warning_Target_Areas-011FWCN2M"],
+                "names": ["Cumbria coast at Maryport harbour"],
+                "aggregate_names": ["Cumbria coast at Maryport harbour"],
+                "simple_polygons": CUMBRIA_FLOOD_WARNING_AREA,
+            },
+        ),
+    )
+    client_request.login(active_user_create_broadcasts_permission)
+
+    page = client_request.get(
+        ".search_flood_warning_areas",
+        service_id=SERVICE_ONE_ID,
+        message_id=fake_uuid,
+        message_type="broadcast",
+    )
+
+    assert normalize_spaces(page.select_one("h1").text) == "Choose Flood Warning Target Areas (TA)"
+    assert [normalize_spaces(item.text) for item in page.select("ul.area-list li.area-list-item")] == [
+        "011FWCN2M: Cumbria coast at Maryport harbour Remove Cumbria coast at Maryport harbour"
+    ]
+
+    assert len(page.select("#area-list-map")) == 1
+
+    assert [normalize_spaces(item.text) for item in page.select(".area-list-key")] == [
+        "An area of 0 square miles Will get the alert",
+        "An extra area of 4 square miles is Likely to get the alert",
+        "Unknown number of phones",
+    ]
+
+    assert normalize_spaces(page.select(".govuk-button")[5].text) == "Add area"
+    assert normalize_spaces(page.select(".govuk-button")[6].text) == "Remove Cumbria coast at Maryport harbour"
+    assert normalize_spaces(page.select(".govuk-button")[7].text) == "Save and continue to preview"
+
+
 @pytest.mark.parametrize(
     "polygons, expected_list_items",
     (
