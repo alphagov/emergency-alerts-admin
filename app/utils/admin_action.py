@@ -203,7 +203,7 @@ def send_elevated_notifications():
     """Send a notification that the current user has elevated to full platform admin status."""
     if _should_supress_notifications():
         current_app.logger.info(
-            "Skipping sending elevated notification because it was supressed", current_user.email_address
+            f"Skipping sending elevated notification because it was suppressed for {current_user.email_address}"
         )
         return
 
