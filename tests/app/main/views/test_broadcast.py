@@ -1170,29 +1170,10 @@ def test_broadcast_page(
         ),
         (
             [
-                "Flood_Warning_Target_Areas-011FWFNC10B",
+                "Flood_Warning_Target_Areas-011FWCN2M",
             ],
+            ["Cumbria coast at Maryport harbour Remove Cumbria coast at Maryport harbour"],
             [
-                "River Eden at Warwick Bridge, Warwick Park and Holme Eden "
-                "Gardens Remove River Eden at Warwick Bridge, "
-                "Warwick Park and Holme Eden Gardens"
-            ],
-            [
-                # A considerably small area - added to DB as was provided and unprocessed
-                "An area of 0 square miles Will get the alert",
-                "An extra area of 6 square miles is Likely to get the alert",
-                "Unknown number of phones",
-            ],
-        ),
-        (
-            [
-                "Flood_Warning_Target_Areas-011FWFNC13",
-            ],
-            [
-                "River Eden at Edenhall Remove River Eden at Edenhall",
-            ],
-            [
-                # A considerably small area - added to DB as was provided and unprocessed
                 "An area of 0 square miles Will get the alert",
                 "An extra area of 4 square miles is Likely to get the alert",
                 "Unknown number of phones",
@@ -1200,17 +1181,34 @@ def test_broadcast_page(
         ),
         (
             [
-                "Flood_Warning_Target_Areas-011FWFNC13",
-                "Flood_Warning_Target_Areas-051FWCDV5B1",
+                "Flood_Warning_Target_Areas-011FWCN3A",
             ],
             [
-                "River Eden at Edenhall Remove River Eden at Edenhall",
-                "The Thames estuary at Leigh-on-Sea, from Chalkwell to Hadleigh marshes Remove "
-                "The Thames estuary at Leigh-on-Sea, from Chalkwell to Hadleigh marshes",
+                "Cumbrian coastline from St Bees Head to Haverigg, along the coast from North Head "
+                "to Haverigg Remove Cumbrian coastline from St Bees Head to Haverigg, along "
+                "the coast from North Head to Haverigg",
             ],
             [
-                "An area of 2 square miles Will get the alert",
-                "An extra area of 20 square miles is Likely to get the alert",
+                "An area of 10 square miles Will get the alert",
+                "An extra area of 70 square miles is Likely to get the alert",
+                "Unknown number of phones",
+            ],
+        ),
+        (
+            [
+                "Flood_Warning_Target_Areas-011FWCN4A",
+                "Flood_Warning_Target_Areas-011FWCN1A",
+            ],
+            [
+                "Cumbrian coastline from Gretna to Silloth including Port Carlisle, Skinburness and Rockcliffe "
+                "Remove Cumbrian coastline from Gretna to Silloth including Port Carlisle, Skinburness and Rockcliffe",
+                "Cumbrian coastline at Duddon estuary, at Haverigg to Duddon "
+                "Bridge, Foxfield, Dunnerholme Remove Cumbrian "
+                "coastline at Duddon estuary, at Haverigg to Duddon Bridge, Foxfield, Dunnerholme",
+            ],
+            [
+                "An area of 60 square miles Will get the alert",
+                "An extra area of 100 square miles is Likely to get the alert",
                 "Unknown number of phones",
             ],
         ),
