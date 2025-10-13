@@ -520,7 +520,7 @@ def test_create_or_upgrade_zendesk_ticket_updates_if_exists(mocker):
     "datetime_utc, expected_out_of_hours",
     [
         # Winter time
-        ("2020-11-11T06:59:00Z", True),
+        ("2020-11-11T06:59:00Z", True),  # Wednesday
         ("2020-11-11T07:00:00Z", True),
         ("2020-11-11T07:59:00Z", True),
         ("2020-11-11T08:00:00Z", False),
@@ -529,9 +529,14 @@ def test_create_or_upgrade_zendesk_ticket_updates_if_exists(mocker):
         ("2020-11-11T18:00:00Z", True),
         ("2020-11-11T18:01:00Z", True),
         ("2020-11-11T19:00:00Z", True),
+        ("2020-11-14T20:00:00Z", True),  # Saturday
+        ("2020-11-14T15:00:00Z", True),
+        ("2020-11-14T09:00:00Z", True),
+        ("2020-11-14T00:00:00Z", True),
+        ("2020-11-13T23:59:00Z", True),
         # Summer time: these times will have one hour added on locally due to DST
         # as it's parsed with the Europe/London timezone
-        ("2020-05-05T06:59:00Z", True),
+        ("2020-05-05T06:59:00Z", True),  # Tuesday
         ("2020-05-05T07:00:00Z", False),
         ("2020-05-05T07:59:00Z", False),
         ("2020-05-05T08:00:00Z", False),
@@ -540,6 +545,8 @@ def test_create_or_upgrade_zendesk_ticket_updates_if_exists(mocker):
         ("2020-05-05T17:00:00Z", True),
         ("2020-05-05T18:00:00Z", True),
         ("2020-05-05T19:00:00Z", True),
+        ("2020-05-10T17:00:00Z", True),  # Sunday
+        ("2020-05-10T10:00:00Z", True),
     ],
 )
 def test_is_out_of_office_hours(datetime_utc, expected_out_of_hours):

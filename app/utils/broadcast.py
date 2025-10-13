@@ -19,6 +19,12 @@ from app.main.forms import (
 from app.models.broadcast_message import BroadcastMessage
 from app.models.template import Template
 
+INVALID_AREA_ERROR_TEXT = (
+    "The area used is invalid and the alert cannot be sent. If the alert "
+    "was created through the API, report it to the alert creator. Otherwise report "
+    "it to the Emergency Alerts team."
+)
+
 
 def create_coordinate_area_slug(coordinate_type, first_coordinate, second_coordinate, radius):
     radius_min_sig_figs = format_number_no_scientific(radius)
@@ -358,6 +364,9 @@ def render_current_alert_page(
     hide_stop_link=False,
     errors=None,
 ):
+    if type(broadcast_message.areas) is CustomBroadcastAreas and not broadcast_message.areas.is_valid_area():
+        errors = [{"text": INVALID_AREA_ERROR_TEXT}]
+
     return render_template(
         "views/broadcast/view-message.html",
         broadcast_message=broadcast_message,
