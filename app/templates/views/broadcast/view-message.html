@@ -117,7 +117,16 @@
 
   {% if broadcast_message.status == 'pending-approval' %}
     {{ page_header(broadcast_message.reference or "Untitled alert") }}
-    {% if broadcast_message.created_by_id and broadcast_message.created_by_id == current_user.id
+    {% if errors %}
+        <div class="banner govuk-!-margin-bottom-6">
+          <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-3">
+            This alert cannot be approved.
+          </p>
+          <span class="page-footer-link page-footer-delete-link-without-button">
+            <a class="govuk-link govuk-link--destructive" href="{{ url_for('main.discard_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }}">Discard this alert</a>
+          </span>
+        </div>
+    {% elif broadcast_message.created_by_id and broadcast_message.created_by_id == current_user.id
       and current_user.has_permissions('create_broadcasts', 'approve_broadcasts', restrict_admin_usage=True) %}
       {% if current_service.live and broadcast_message.submitted_by_id != current_user.id %}
         <div class="banner govuk-!-margin-bottom-6">
@@ -289,7 +298,7 @@
         {% endif %}
         {{ page_footer(
           delete_link=url_for('main.discard_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
-          delete_link_text='Reject this alert'
+          delete_link_text='Discard this alert'
           ) }}
       </div>
     {% else %}

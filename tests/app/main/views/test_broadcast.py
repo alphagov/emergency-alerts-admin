@@ -4483,7 +4483,7 @@ def test_view_only_user_cant_approve_broadcasts_they_created(
                 "This alert is waiting for approval "
                 "Another member of your team needs to approve this alert. "
                 "This service is in training mode. No real alerts will be sent. "
-                "Reject this alert"
+                "Discard this alert"
             ),
         ),
         (
@@ -4491,7 +4491,7 @@ def test_view_only_user_cant_approve_broadcasts_they_created(
             (
                 "This alert is waiting for approval "
                 "Another member of your team needs to approve this alert. "
-                "Reject this alert"
+                "Discard this alert"
             ),
         ),
     ],
