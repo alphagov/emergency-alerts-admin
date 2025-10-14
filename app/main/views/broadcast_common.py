@@ -628,10 +628,11 @@ def search_flood_warning_areas(service_id, message_id, message_type):
 @service_has_permission("broadcast")
 @user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def remove_area(service_id, message_id, area_slug, message_type):
+    redirect_to_flood_warning_page = bool(request.args.get("redirect_to_flood_warning_page"))
     Message = get_message_type(message_type)
     message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
     message.remove_area(area_slug)
-    if area_slug.startswith("Flood_Warning_Target_Areas-"):
+    if redirect_to_flood_warning_page:
         url = ".search_flood_warning_areas"
     elif len(message.areas) == 0:
         url = ".choose_library"
