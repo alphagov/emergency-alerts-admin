@@ -609,6 +609,9 @@ def search_flood_warning_areas(service_id, message_id, message_type):
         if area_id not in library.item_ids:
             form.flood_warning_area.errors.append("Flood Warning TA Code not found")
             return render_search_flood_warning_areas_page()
+        elif area_id in message.area_ids:
+            form.flood_warning_area.errors.append("Flood Warning TA Code already selected")
+            return render_search_flood_warning_areas_page()
         if message:
             message.add_areas(area_id)
         else:
@@ -628,18 +631,10 @@ def remove_area(service_id, message_id, area_slug, message_type):
     Message = get_message_type(message_type)
     message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
     message.remove_area(area_slug)
-    if len(message.areas) == 0:
+    if area_slug.startswith("Flood_Warning_Target_Areas-"):
+        url = ".search_flood_warning_areas"
+    elif len(message.areas) == 0:
         url = ".choose_library"
-    elif area_slug.startswith("Flood_Warning_Target_Areas-"):
-        return redirect(
-            url_for(
-                ".choose_area",
-                service_id=service_id,
-                message_id=message_id,
-                message_type=message_type,
-                library_slug="Flood_Warning_Target_Areas",
-            )
-        )
     else:
         url = ".preview_areas"
     return redirect(
