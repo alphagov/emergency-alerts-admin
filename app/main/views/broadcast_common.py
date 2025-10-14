@@ -296,7 +296,6 @@ def choose_sub_area(service_id, message_type, library_slug, area_slug, message_i
 @service_has_permission("broadcast")
 @user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def preview_areas(service_id, message_id, message_type):
-    back_link = None
     is_custom = False
     has_flood_warning_areas = False
     Message = get_message_type(message_type)
@@ -317,17 +316,6 @@ def preview_areas(service_id, message_id, message_type):
                     message,
                 )
 
-        if message.template_id and message.status not in ["draft", "returned"]:
-            back_link = url_for(
-                ".view_template",
-                service_id=service_id,
-                template_id=message.template_id,
-            )
-        elif message.status in ["draft", "returned"]:
-            back_link = url_for(".view_current_broadcast", service_id=service_id, broadcast_message_id=message_id)
-        else:
-            back_link = url_for(".write_new_broadcast", service_id=service_id, message_id=message_id)
-
         if message.duration:
             redirect_url = url_for(".preview_broadcast_message", service_id=service_id, broadcast_message_id=message_id)
         else:
@@ -337,7 +325,7 @@ def preview_areas(service_id, message_id, message_type):
     return render_template(
         "views/broadcast/preview-areas.html",
         message=message,
-        back_link=back_link or request.referrer,
+        back_link=request.referrer,
         is_custom_broadcast=is_custom,
         redirect_url=redirect_url,  # The url for when 'Save and continue' button clicked
         message_type=message_type,
