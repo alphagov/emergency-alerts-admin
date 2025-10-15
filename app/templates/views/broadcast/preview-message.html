@@ -65,7 +65,7 @@
     {% set is_editable = current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) %}
   {% endif %}
 
-  {{alertSummaryList(is_editable, current_service, broadcast_message, areas, broadcast_message.simple_polygons_with_bleed.estimated_area, broadcast_message.count_of_phones, broadcast_message.count_of_phones_likely, is_custom_broadcast)}}
+  {{alertSummaryList(is_editable, current_service, broadcast_message, areas, broadcast_message.simple_polygons_with_bleed.estimated_area, broadcast_message.count_of_phones or broadcast_message.estimated_count_of_phones, broadcast_message.count_of_phones_likely, is_custom_broadcast)}}
 
   {#
   can_submit_for_approval determines whether or not the 'Submit for approval' button is displayed for user.
