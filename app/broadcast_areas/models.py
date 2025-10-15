@@ -62,6 +62,18 @@ class BaseBroadcastArea(ABC):
         estimated_bleed = 5_900 - (math.log(self.phone_density, 10) * 1_250)
         return max(500, min(estimated_bleed, 5000))
 
+    @cached_property
+    def nearby_electoral_wards(self):
+        if not self.polygons:
+            return []
+        return broadcast_area_libraries.get_areas_with_simple_polygons(
+            [
+                # We only index electoral wards in the RTree
+                overlap.data
+                for overlap in rtree_index.query(Rect(*self.simple_polygons.bounds))
+            ]
+        )
+
 
 class BroadcastArea(BaseBroadcastArea, SortingAndEqualityMixin):
     __sort_attribute__ = "name"
@@ -184,18 +196,6 @@ class CustomBroadcastArea(BaseBroadcastArea):
                 if Polygon(area.simple_polygons[0]).contains(centroid)
             ),
             None,
-        )
-
-    @cached_property
-    def nearby_electoral_wards(self):
-        if not self.polygons:
-            return []
-        return broadcast_area_libraries.get_areas_with_simple_polygons(
-            [
-                # We only index electoral wards in the RTree
-                overlap.data
-                for overlap in rtree_index.query(Rect(*self.simple_polygons.bounds))
-            ]
         )
 
     @cached_property
