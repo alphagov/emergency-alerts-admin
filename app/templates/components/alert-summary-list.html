@@ -104,7 +104,11 @@
 
     {% set conditional_area_action_link %}
         {% if broadcast_message.areas %}
-            {{url_for('.preview_areas', service_id=current_service.id, message_id=broadcast_message.id, message_type="broadcast")}}
+            {% if broadcast_message.has_flood_warning_target_areas %}
+                {{url_for('.search_flood_warning_areas', service_id=current_service.id, message_id=broadcast_message.id, message_type="broadcast")}}
+            {% else %}
+                {{url_for('.preview_areas', service_id=current_service.id, message_id=broadcast_message.id, message_type="broadcast")}}
+            {% endif %}
         {% else %}
             {{url_for(
                 ".choose_library",
