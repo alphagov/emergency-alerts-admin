@@ -325,7 +325,7 @@ def preview_areas(service_id, message_id, message_type):
     return render_template(
         "views/broadcast/preview-areas.html",
         message=message,
-        back_link=request.referrer,
+        back_link=request.referrer or url_for(".write_new_broadcast", service_id=service_id, message_id=message_id),
         is_custom_broadcast=is_custom,
         redirect_url=redirect_url,  # The url for when 'Save and continue' button clicked
         message_type=message_type,
