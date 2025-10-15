@@ -82,11 +82,7 @@ def choose_library(service_id, message_type, message_id=None):
     if message_id:
         message = Message.from_id_or_403(message_id, service_id=service_id)
         is_custom_broadcast = type(message.areas) is CustomBroadcastAreas
-        if not is_custom_broadcast:
-            # Checking whether or not alert has flood warning areas as they will be
-            # treated as custom areas on libraries page
-            has_flood_warning_areas = any(area.is_flood_warning_target_area for area in message.areas)
-        if is_custom_broadcast or has_flood_warning_areas:
+        if is_custom_broadcast or message.has_flood_warning_target_areas:
             # If alert has custom area or flood warning area, alert area is cleared as
             # they cannot be combined with other library areas
             message.clear_areas()
@@ -297,15 +293,10 @@ def choose_sub_area(service_id, message_type, library_slug, area_slug, message_i
 @user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def preview_areas(service_id, message_id, message_type):
     is_custom = False
-    has_flood_warning_areas = False
     Message = get_message_type(message_type)
     message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
     if Message:
         is_custom = type(message.areas) is CustomBroadcastAreas
-        if not is_custom:
-            # Checking whether or not the alert has flood warning areas,
-            # as this will determine content on rendered page
-            has_flood_warning_areas = any(area.is_flood_warning_target_area for area in message.areas)
     if Message is BroadcastMessage:
         if message.status != "returned":
             try:
@@ -329,7 +320,7 @@ def preview_areas(service_id, message_id, message_type):
         is_custom_broadcast=is_custom,
         redirect_url=redirect_url,  # The url for when 'Save and continue' button clicked
         message_type=message_type,
-        has_flood_warning_areas=has_flood_warning_areas,
+        has_flood_warning_areas=message.has_flood_warning_target_areas,
     )
 
 
