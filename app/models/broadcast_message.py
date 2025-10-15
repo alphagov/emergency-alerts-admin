@@ -5,11 +5,7 @@ from flask import abort
 from flask_login import current_user
 from ordered_set import OrderedSet
 
-from app.broadcast_areas.models import (
-    BroadcastAreaLibraries,
-    CustomBroadcastArea,
-    CustomBroadcastAreas,
-)
+from app.broadcast_areas.models import BroadcastAreaLibraries, CustomBroadcastArea
 from app.broadcast_areas.utils import aggregate_areas, generate_aggregate_names
 from app.models import ModelList
 from app.models.base_broadcast import BaseBroadcast
@@ -195,16 +191,6 @@ class BroadcastMessage(BaseBroadcast):
     @property
     def broadcast_duration(self):
         return self._dict["duration"]
-
-    @property
-    def has_flood_warning_target_areas(self):
-        if type(self.areas) is CustomBroadcastAreas:
-            return False
-        return any(
-            # Returns True if any of the message areas have an ID
-            # that means its a Flood Warning Target Area, otherwise False
-            (area.id.startswith("Flood_Warning_Target_Areas-") for area in self.areas)
-        )
 
     def add_areas(self, *new_area_ids):
         self.area_ids = list(OrderedSet(self.area_ids + list(new_area_ids)))
