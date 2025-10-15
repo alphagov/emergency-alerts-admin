@@ -78,7 +78,6 @@ def write_new_broadcast(service_id):
 def choose_library(service_id, message_type, message_id=None):
     template_folder_id = request.args.get("template_folder_id")
     Message = get_message_type(message_type)
-    has_flood_warning_areas = False
     if message_id:
         message = Message.from_id_or_403(message_id, service_id=service_id)
         is_custom_broadcast = type(message.areas) is CustomBroadcastAreas
@@ -100,7 +99,7 @@ def choose_library(service_id, message_type, message_id=None):
         message_type=message_type,
         message_id=message_id,
         template_folder_id=template_folder_id,
-        has_flood_warning_areas=has_flood_warning_areas,
+        has_flood_warning_areas=message.has_flood_warning_target_areas,
     )
 
 
