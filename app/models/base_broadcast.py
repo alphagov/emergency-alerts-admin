@@ -98,6 +98,10 @@ class BaseBroadcast(JSONModel):
         return round_to_significant_figures(sum(area.count_of_phones for area in self.areas), 1)
 
     @cached_property
+    def estimated_count_of_phones(self):
+        return round_to_significant_figures(sum(area.estimated_count_of_phones for area in self.areas), 1)
+
+    @cached_property
     def count_of_phones_likely(self):
         estimated_area = self.simple_polygons.estimated_area
         count_of_phones = self.count_of_phones
