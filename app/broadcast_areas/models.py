@@ -81,10 +81,6 @@ class BroadcastArea(BaseBroadcastArea, SortingAndEqualityMixin):
     def is_REPPIR_site(self):
         return self.id.startswith("REPPIR_DEPZ_sites-")
 
-    @cached_property
-    def is_flood_warning_target_area(self):
-        return self.id.startswith("Flood_Warning_Target_Areas-")
-
     @classmethod
     def from_row_with_simple_polygons(cls, row):
         instance = cls(row[:4])
@@ -119,6 +115,16 @@ class BroadcastArea(BaseBroadcastArea, SortingAndEqualityMixin):
         # TODO: remove the `or 0` once missing data is fixed, see
         # https://www.pivotaltracker.com/story/show/174837293
         return self._count_of_phones or 0
+
+    @property
+    def estimated_count_of_phones(self):
+        return (
+            sum(
+                area.simple_polygons.ratio_of_intersection_with(self.polygons) * area.count_of_phones
+                for area in self.nearby_electoral_wards
+            )
+            or 0
+        )
 
     @cached_property
     def ancestors(self):
