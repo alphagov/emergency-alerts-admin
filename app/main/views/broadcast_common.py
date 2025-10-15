@@ -292,11 +292,9 @@ def choose_sub_area(service_id, message_type, library_slug, area_slug, message_i
 @service_has_permission("broadcast")
 @user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def preview_areas(service_id, message_id, message_type):
-    is_custom = False
     Message = get_message_type(message_type)
     message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
-    if Message:
-        is_custom = type(message.areas) is CustomBroadcastAreas
+    is_custom = type(message.areas) is CustomBroadcastAreas if Message else False
     if Message is BroadcastMessage:
         if message.status != "returned":
             try:
