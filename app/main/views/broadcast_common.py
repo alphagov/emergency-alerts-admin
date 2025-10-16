@@ -38,7 +38,6 @@ from app.utils.broadcast import (
     parse_coordinate_form_data,
     postcode_and_radius_entered,
     postcode_entered,
-    redirect_dependent_on_alert_area,
     render_coordinates_page,
     render_current_alert_page,
     render_postcode_page,
@@ -575,6 +574,23 @@ def search_flood_warning_areas(service_id, message_type, message_id=None):
     library = BroadcastMessage.libraries.get("Flood_Warning_Target_Areas")
     form = FloodWarningForm()
 
+    def get_redirect_url():
+        request_url = ""
+        if message:
+            if Message is BroadcastMessage:
+                request_url = url_for(
+                    ".preview_broadcast_message" if message.duration else ".choose_broadcast_duration",
+                    service_id=service_id,
+                    broadcast_message_id=message.id,
+                )
+            else:
+                request_url = url_for(
+                    ".view_template",
+                    service_id=service_id,
+                    template_id=message.id,
+                )
+        return request_url
+
     def render_search_flood_warning_areas_page():
         # Added this as an inner function here as it's only used within this
         # function and removes repeated code
@@ -589,7 +605,7 @@ def search_flood_warning_areas(service_id, message_type, message_id=None):
             template_folder_id=template_folder_id,
             message=message,
             message_type=message_type,
-            redirect_url=redirect_dependent_on_alert_area(message),
+            redirect_url=get_redirect_url(),
         )
 
     if form.validate_on_submit():
@@ -597,7 +613,7 @@ def search_flood_warning_areas(service_id, message_type, message_id=None):
         if area_id not in library.item_ids:
             form.flood_warning_area.errors.append("Flood Warning TA Code not found")
             return render_search_flood_warning_areas_page()
-        elif area_id in message.area_ids:
+        elif message and area_id in message.area_ids:
             form.flood_warning_area.errors.append("Flood Warning TA Code already selected")
             return render_search_flood_warning_areas_page()
         if message:
@@ -609,6 +625,7 @@ def search_flood_warning_areas(service_id, message_type, message_id=None):
                 template_folder_id=template_folder_id,
             )
         form.flood_warning_area.data = ""  # clear the form field on page after area added
+
     return render_search_flood_warning_areas_page()
 
 
