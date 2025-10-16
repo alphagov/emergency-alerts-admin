@@ -11,30 +11,32 @@
     fill_color = "#5694ca"
   {% endif %}
 
-  {% for polygon in message.simple_polygons_with_bleed.as_coordinate_pairs_lat_long %}
-    polygons.push(
-      L.polygon({{polygon}}, {
-        opacity: 1,
-        color: bleed_color,
-        fillColor: fill_color,
-        fillOpacity: 0.15,
-        weight: 2,
-        dashArray: [6, 7],
-        lineCap: 'butt'
-      })
-    );
-  {% endfor %}
+  {% if message.areas %}
+    {% for polygon in message.simple_polygons_with_bleed.as_coordinate_pairs_lat_long %}
+      polygons.push(
+        L.polygon({{polygon}}, {
+          opacity: 1,
+          color: bleed_color,
+          fillColor: fill_color,
+          fillOpacity: 0.15,
+          weight: 2,
+          dashArray: [6, 7],
+          lineCap: 'butt'
+        })
+      );
+    {% endfor %}
 
-  {% for polygon in message.polygons.as_coordinate_pairs_lat_long %}
-    polygons.push(
-      L.polygon({{polygon}}, {
-        color: area_color,
-        fillColor: fill_color,
-        fillOpacity: 0.3,
-        weight: 2
-      })
-    );
-  {% endfor %}
+    {% for polygon in message.polygons.as_coordinate_pairs_lat_long %}
+      polygons.push(
+        L.polygon({{polygon}}, {
+          color: area_color,
+          fillColor: fill_color,
+          fillOpacity: 0.3,
+          weight: 2
+        })
+      );
+    {% endfor %}
+  {% endif %}
 
 
   let mapElement = document.getElementById('area-list-map');

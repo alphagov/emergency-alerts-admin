@@ -97,6 +97,10 @@
     </div>
   {% endif %}
 
-  {{ map(message.simple_polygons.estimated_area, message.simple_polygons_with_bleed.estimated_area, message.estimated_count_of_phones, message.count_of_phones_likely, is_custom_broadcast, label) }}
+  {% if message.areas %}
+    {{ map(message.simple_polygons.estimated_area, message.simple_polygons_with_bleed.estimated_area, message.estimated_count_of_phones, message.count_of_phones_likely, False, label) }}
+  {% else %}
+    {{ map(None, None, None, None, False, label) }}
+  {% endif %}
 
 {% endblock %}
