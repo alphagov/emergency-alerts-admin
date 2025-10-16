@@ -99,7 +99,7 @@ def choose_library(service_id, message_type, message_id=None):
         message_type=message_type,
         message_id=message_id,
         template_folder_id=template_folder_id,
-        has_flood_warning_areas=message.has_flood_warning_target_areas,
+        has_flood_warning_areas=message.has_flood_warning_target_areas if message else False,
     )
 
 
@@ -568,7 +568,7 @@ def search_coordinates(service_id, coordinate_type, message_type, message_id=Non
 )
 @service_has_permission("broadcast")
 @user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
-def search_flood_warning_areas(service_id, message_id, message_type):
+def search_flood_warning_areas(service_id, message_type, message_id=None):
     template_folder_id = request.args.get("template_folder_id")
     Message = get_message_type(message_type)
     message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
