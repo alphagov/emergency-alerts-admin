@@ -1,0 +1,156 @@
+{% from "govuk_frontend_jinja/components/summary-list/macro.html" import govukSummaryList %}
+{% from "views/broadcast/macros/enlarged-map.html" import enlarged_map %}
+{% from "views/broadcast/macros/area-map.html" import map %}
+{% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
+
+{% macro templateSummaryList(template, areas, bleed_estimated_area, count_of_phones, count_of_phones_likely, is_custom_broadcast, formatted_template, current_user, is_editable) %}
+
+    <dialog id="enlarged-map-dialog" tabindex="-1" aria-modal="true" class="enlarged-map-dialog"
+        role="dialog" aria-labelledby="enlarged-map-dialog-message">
+        <div class="enlarged-map-dialog-content">
+            <h2 id="enlarged-map-dialog-message" class="govuk-visually-hidden screenreader-content" aria-live="assertive">Larger version of the map.</h2>
+            {{enlarged_map(estimated_area, bleed_estimated_area, count_of_phones, count_of_phones_likely, is_custom_broadcast, label)}}
+            {{ govukButton({
+                "text": "Close enlarged map",
+                "classes": "govuk-button",
+                "id": "close-map-btn",
+            }) }}
+        </div>
+    </dialog>
+
+    {% if template.content %}
+        {% set content %}
+            <div class="govuk-grid-column-full template-container">
+                {{ formatted_template|string }}
+            </div>
+        {% endset %}
+    {% endif %}
+
+    {% if current_user.has_permissions('manage_templates') and is_editable %}
+        {% set display_action = True %}
+
+        {% if template.reference %}
+            {% set conditional_reference_text  = "Change" %}
+        {% else %}
+            {% set conditional_reference_text  = "Add" %}
+        {% endif %}
+
+        {% if template.content %}
+            {% set conditional_content_text  = "Change" %}
+        {% else %}
+            {% set conditional_content_text  = "Add" %}
+        {% endif %}
+
+
+        {% if template.areas %}
+            {% set conditional_area_action_text = "Change" %}
+            {% set visually_hidden_area_text = " areas" %}
+        {% else %}
+            {% set conditional_area_action_text = "Add area" %}
+        {% endif %}
+    {% endif %}
+
+    {% if areas %}
+        {% if areas|length == 1%}
+            {% set label = "Map of the United Kingdom, showing the area for "+areas[0] %}
+        {% else %}
+            {% set label = "Map of the United Kingdom, showing the areas for "+areas[:-1]|join(', ')+' and '+areas[-1] %}
+        {% endif %}
+    {% endif %}
+
+    {% set map_html = map(estimated_area, bleed_estimated_area, count_of_phones, count_of_phones_likely, is_custom_broadcast, label)%}
+
+    {% set areas_html %}
+        <ul class="area-list">
+        {% for area in template.areas %}
+            <li class="area-list-item area-list-item--unremoveable">
+            {{area.name}}
+            </li>
+        {% endfor %}
+        </ul>
+    {% endset %}
+
+    {% set conditional_areas %}
+        {% if template.areas %}
+            {{( areas_html | safe ~ " " ~ map_html ) | safe}}
+            {{ govukButton({
+                "text": "View larger map",
+                "classes": "govuk-button govuk-button--secondary",
+                "id": "view-larger-map-btn"
+            }) }}
+        {% endif%}
+    {% endset %}
+
+    {% set conditional_area_action_link %}
+        {% if template.areas %}
+            {{url_for('.preview_areas', service_id=template.service, message_id=template.id, message_type="templates")}}
+        {% else %}
+            {{url_for(
+                ".choose_library",
+                service_id=template.service,
+                message_id=template.id,
+                message_type="templates"
+            )}}
+        {% endif%}
+    {% endset %}
+
+    {% set summaryListItems = [
+        {
+        'key': {
+            'text': "Reference"
+        },
+        'value': {
+            'text': template.reference
+        },
+        'actions': {
+            'items': [
+            {
+                'href': url_for(".edit_service_template", service_id=template.service, template_id=template.id),
+                'text': conditional_reference_text,
+                'visuallyHiddenText': "reference"
+            }
+            ] if display_action else []
+        }
+        },
+        {
+        'key': {
+            'text': "Template message"
+        },
+        'value': {
+            'html': content
+        },
+        'actions': {
+            'items': [
+            {
+                'href': url_for(".edit_service_template", service_id=template.service, template_id=template.id),
+                'text': conditional_content_text,
+                'visuallyHiddenText': "message",
+            }
+            ] if display_action else []
+        }
+        },
+        {
+        'key': {
+            'text': "Area"
+        },
+        'value': {
+            'html': conditional_areas
+        },
+        'actions': {
+            'items': [
+            {
+                'href': conditional_area_action_link,
+                'text': conditional_area_action_text,
+                'visuallyHiddenText': visually_hidden_area_text
+            }
+            ] if display_action else []
+        }
+        }
+    ]
+    %}
+
+    {{ govukSummaryList({
+    'rows': summaryListItems
+    }) }}
+
+{% endmacro %}

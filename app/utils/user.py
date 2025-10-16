@@ -28,6 +28,23 @@ def user_has_permissions(*permissions, **permission_kwargs):
     return wrap
 
 
+def user_has_any_permissions(*permissions, **permission_kwargs):
+    # Checks whether user has any of the permissions passed in
+    # If not, 403 status is returned
+    def wrap(func):
+        @wraps(func)
+        def wrap_func(*args, **kwargs):
+            if not current_user.is_authenticated:
+                return current_app.login_manager.unauthorized()
+            if not any(current_user.has_permissions(*permission, **permission_kwargs) for permission in permissions):
+                abort(403)
+            return func(*args, **kwargs)
+
+        return wrap_func
+
+    return wrap
+
+
 def user_is_gov_user(f):
     @wraps(f)
     def wrapped(*args, **kwargs):

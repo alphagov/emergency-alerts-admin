@@ -3,7 +3,11 @@ import pytest
 from app.broadcast_areas.models import CustomBroadcastAreas
 from app.models.broadcast_message import BroadcastMessage
 from tests import broadcast_message_json
-from tests.app.broadcast_areas.custom_polygons import custom_essex_bleed_area
+from tests.app.broadcast_areas.custom_polygons import (
+    BD1_1EE_1,
+    ENGLAND,
+    custom_essex_bleed_area,
+)
 
 
 @pytest.mark.parametrize(
@@ -140,4 +144,95 @@ def test_combining_multiple_areas_keeps_same_bounds(area_ids, approx_bounds):
         [round(coordinate, 1) for coordinate in broadcast_message.polygons.bounds]
         == [round(coordinate, 1) for coordinate in broadcast_message.simple_polygons.bounds]
         == (approx_bounds)
+    )
+
+
+def test_create_from_area(mocker, service_one, fake_uuid, mock_create_broadcast_message):
+    # Asserts that once create_from_area class method called, the mocked API
+    # client method (broadcast_message_api_client.create_broadcast_message) is called
+    # with expected arguments
+    BroadcastMessage.create_from_area(
+        service_id=service_one,
+        area_ids=["ctry19-E92000001"],
+        template_id="template_id",
+        content="Test content",
+        reference="Test Reference",
+    )
+    mock_create_broadcast_message.assert_called_once_with(
+        service_id=service_one,
+        reference="Test Reference",
+        content="Test content",
+        areas={
+            "ids": ["ctry19-E92000001"],
+            "simple_polygons": [ENGLAND],
+            "names": ["England"],
+            "aggregate_names": ["England"],
+        },
+        template_id="template_id",
+    )
+
+
+def test_create_from_custom_area(mocker, service_one, fake_uuid, mock_create_broadcast_message):
+    # Asserts that once class method create_from_custom_area called, the mocked API
+    # client method (broadcast_message_api_client.create_broadcast_message) is called
+    # with expected arguments
+    custom_area = CustomBroadcastAreas(names=["1km around the postcode BD1 1EE in Bradford"], polygons=[BD1_1EE_1])
+    BroadcastMessage.create_from_custom_area(
+        service_id=service_one,
+        areas=custom_area,
+        template_id="template_id",
+        content="Test content",
+        reference="Test Reference",
+    )
+    mock_create_broadcast_message.assert_called_once_with(
+        service_id=service_one,
+        reference="Test Reference",
+        content="Test content",
+        areas={
+            "ids": ["1km around the postcode BD1 1EE in Bradford"],
+            "simple_polygons": [BD1_1EE_1],
+            "names": ["1km around the postcode BD1 1EE in Bradford"],
+            "aggregate_names": ["1km around the postcode BD1 1EE in Bradford"],
+        },
+        template_id="template_id",
+    )
+
+
+def test_invalid_area_returns_is_valid_False():
+    invalid_polygon = [[51.5310, -0.1580], [51.5310, -0.1570], [51.5310, -0.1580], [51.5310, -0.2]]
+    custom_areas = CustomBroadcastAreas(names="invalid area", polygons=[invalid_polygon])
+    assert custom_areas.is_valid_area() is False
+
+
+def test_create_from_content(mocker, service_one, fake_uuid, mock_create_broadcast_message):
+    # Asserts that once class method create_from_content called, the mocked API
+    # client method (broadcast_message_api_client.create_broadcast_message) is called
+    # with expected arguments
+    BroadcastMessage.create_from_content(
+        service_id=service_one,
+        content="Test content",
+        reference="Test Reference",
+    )
+    mock_create_broadcast_message.assert_called_once_with(
+        service_id=service_one, reference="Test Reference", content="Test content", template_id=None
+    )
+
+
+def test_update_from_content(mocker, service_one, fake_uuid, mock_update_broadcast_message):
+    # Asserts that once class method update_from_content called, the mocked API
+    # client method (broadcast_message_api_client.update_broadcast_message) is called
+    # with expected arguments
+    BroadcastMessage.update_from_content(
+        service_id=service_one,
+        message_id=fake_uuid,
+        content="Updated content",
+        reference="Test reference",
+    )
+    mock_update_broadcast_message.assert_called_once_with(
+        service_id=service_one,
+        broadcast_message_id=fake_uuid,
+        data={
+            "reference": "Test reference",
+            "content": "Updated content",
+        },
     )

@@ -90,9 +90,7 @@ def test_create_coordinate_area(coordinate_type, first_coordinate, second_coordi
 )
 def test_check_coordinates_valid_for_enclosed_polygons(first_coordinate, second_coordinate, expected, coordinate_type):
     assert (
-        check_coordinates_valid_for_enclosed_polygons(
-            BroadcastMessage, first_coordinate, second_coordinate, coordinate_type
-        )
+        check_coordinates_valid_for_enclosed_polygons(first_coordinate, second_coordinate, coordinate_type)
     ) == expected
 
 
@@ -134,13 +132,13 @@ def test_create_custom_area_polygon():
     form = PostcodeForm()
     form.postcode.data = "BD1 1EE"
     form.radius.data = 1
-    centroid, custom_polygon = create_custom_area_polygon(BroadcastMessage, form, "postcodes-BD1 1EE")
+    centroid, custom_polygon = create_custom_area_polygon(form, "postcodes-BD1 1EE")
     assert centroid.x == -1.7516431369765788
     assert centroid.y == 53.79363450437661
     for coords1, coords2 in zip(custom_polygon, BD1_1EE_1):
         assert all(abs(a - b) < math.exp(1e-12) for a, b in zip(coords1, coords2))
 
-    centroid, custom_polygon = create_custom_area_polygon(BroadcastMessage, form, "postcodes-BD1 1EP")
+    centroid, custom_polygon = create_custom_area_polygon(form, "postcodes-BD1 1EP")
     assert centroid is None
     assert custom_polygon is None
 

@@ -29,6 +29,7 @@ from app.main.views import (  # noqa isort:skip
     add_service,
     api_keys,
     broadcast,
+    broadcast_common,
     choose_account,
     code_not_received,
     dashboard,
