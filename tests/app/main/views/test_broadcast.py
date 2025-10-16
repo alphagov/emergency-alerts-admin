@@ -1213,7 +1213,7 @@ def test_broadcast_page(
             [
                 "An area of 3 square miles Will get the alert",
                 "An extra area of 10 square miles is Likely to get the alert",
-                "Unknown number of phones",
+                "10 to 50 phones",
             ],
         ),
         (
@@ -1226,7 +1226,7 @@ def test_broadcast_page(
             [
                 "An area of 8 square miles Will get the alert",
                 "An extra area of 10 square miles is Likely to get the alert",
-                "Unknown number of phones",
+                "4,000 to 9,000 phones",
             ],
         ),
         (
@@ -1237,7 +1237,7 @@ def test_broadcast_page(
             [
                 "An area of 0 square miles Will get the alert",
                 "An extra area of 4 square miles is Likely to get the alert",
-                "Unknown number of phones",
+                "80 to 2,000 phones",
             ],
         ),
         (
@@ -1252,7 +1252,7 @@ def test_broadcast_page(
             [
                 "An area of 10 square miles Will get the alert",
                 "An extra area of 70 square miles is Likely to get the alert",
-                "Unknown number of phones",
+                "200 to 3,000 phones",
             ],
         ),
         (
@@ -1270,7 +1270,7 @@ def test_broadcast_page(
             [
                 "An area of 60 square miles Will get the alert",
                 "An extra area of 100 square miles is Likely to get the alert",
-                "Unknown number of phones",
+                "3,000 to 30,000 phones",
             ],
         ),
     ),
@@ -1360,7 +1360,7 @@ def test_search_flood_warning_areas_page(
     assert [normalize_spaces(item.text) for item in page.select(".area-list-key")] == [
         "An area of 0 square miles Will get the alert",
         "An extra area of 4 square miles is Likely to get the alert",
-        "Unknown number of phones",
+        "80 to 2,000 phones",
     ]
 
     assert normalize_spaces(page.select(".govuk-button")[5].text) == "Add area"
