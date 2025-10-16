@@ -135,8 +135,7 @@ class BroadcastArea(BaseBroadcastArea, SortingAndEqualityMixin):
                 area.simple_polygons.ratio_of_intersection_with(self.polygons) * area.count_of_phones
                 for area in self.nearby_electoral_wards
             )
-            or 0
-        )
+        ) or 0
 
     @cached_property
     def ancestors(self):
