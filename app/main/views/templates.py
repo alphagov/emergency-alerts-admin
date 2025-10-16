@@ -460,7 +460,7 @@ def add_service_template(service_id, template_type, template_folder_id=None):
         template_folder_id=template_folder_id,
         heading_action="New",
         back_link=url_for(
-            "main.choose_template",
+            "main.choose_template_fields",
             service_id=service_id,
             template_folder_id=template_folder_id,
         ),

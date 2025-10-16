@@ -62,6 +62,18 @@ class BaseBroadcastArea(ABC):
         estimated_bleed = 5_900 - (math.log(self.phone_density, 10) * 1_250)
         return max(500, min(estimated_bleed, 5000))
 
+    @cached_property
+    def nearby_electoral_wards(self):
+        if not self.polygons:
+            return []
+        return broadcast_area_libraries.get_areas_with_simple_polygons(
+            [
+                # We only index electoral wards in the RTree
+                overlap.data
+                for overlap in rtree_index.query(Rect(*self.simple_polygons.bounds))
+            ]
+        )
+
 
 class BroadcastArea(BaseBroadcastArea, SortingAndEqualityMixin):
     __sort_attribute__ = "name"
@@ -115,6 +127,15 @@ class BroadcastArea(BaseBroadcastArea, SortingAndEqualityMixin):
         # TODO: remove the `or 0` once missing data is fixed, see
         # https://www.pivotaltracker.com/story/show/174837293
         return self._count_of_phones or 0
+
+    @property
+    def estimated_count_of_phones(self):
+        return (
+            sum(
+                area.simple_polygons.ratio_of_intersection_with(self.polygons) * area.count_of_phones
+                for area in self.nearby_electoral_wards
+            )
+        ) or 0
 
     @cached_property
     def ancestors(self):
@@ -177,18 +198,6 @@ class CustomBroadcastArea(BaseBroadcastArea):
         )
 
     @cached_property
-    def nearby_electoral_wards(self):
-        if not self.polygons:
-            return []
-        return broadcast_area_libraries.get_areas_with_simple_polygons(
-            [
-                # We only index electoral wards in the RTree
-                overlap.data
-                for overlap in rtree_index.query(Rect(*self.simple_polygons.bounds))
-            ]
-        )
-
-    @cached_property
     def count_of_phones(self):
         try:
             return sum(
@@ -228,6 +237,7 @@ class BroadcastAreaLibrary(SerialisedModelCollection, SortingAndEqualityMixin, G
         self.name_singular = name_singular
         self.is_group = bool(is_group)
         self.items = BroadcastAreasRepository().get_all_areas_for_library(self.id) if self.id != "postcodes" else []
+        self.item_ids = [item[0] for item in self.items]
 
     def get_examples(self):
         # we show up to four things. three areas, then either a fourth area if there are exactly four, or "and X more".

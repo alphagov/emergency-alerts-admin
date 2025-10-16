@@ -129,6 +129,7 @@ EXCLUDED_ENDPOINTS = tuple(
             "revoke_api_key",
             "search_coordinates",
             "search_postcodes",
+            "search_flood_warning_areas",
             "security",
             "security_policy",
             "service_dashboard",
