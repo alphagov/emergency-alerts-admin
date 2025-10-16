@@ -69,11 +69,13 @@
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(mymap);
 
-    let polygonGroup = L.featureGroup(polygons).addTo(mymap);
-    mymap.fitBounds(
-      polygonGroup.getBounds(),
-      {padding: [1, 1]}
-    );
+    if (polygons.length > 0) {
+      let polygonGroup = L.featureGroup(polygons).addTo(mymap);
+      mymap.fitBounds(
+        polygonGroup.getBounds(),
+        {padding: [1, 1]}
+      );
+    }
 
     // if element is inside a details element then close the details element
     if (isInDetails) {
