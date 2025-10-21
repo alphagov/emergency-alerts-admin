@@ -478,7 +478,7 @@ def update_broadcast_message_using_changed_data(broadcast_message_id, form):
     )
 
 
-def redirect_dependent_on_alert_area(broadcast_message):
+def get_alert_redirect_url(broadcast_message):
     redirect_url = ""
     if broadcast_message.areas:
         if broadcast_message.duration:
