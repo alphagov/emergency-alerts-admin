@@ -126,7 +126,7 @@ class BroadcastArea(BaseBroadcastArea, SortingAndEqualityMixin):
             return sum(area.count_of_phones for area in self.sub_areas)
         # TODO: remove the `or 0` once missing data is fixed, see
         # https://www.pivotaltracker.com/story/show/174837293
-        return self._count_of_phones or 0
+        return self._count_of_phones or self.estimated_count_of_phones or 0
 
     @property
     def estimated_count_of_phones(self):
