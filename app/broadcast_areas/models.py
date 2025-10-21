@@ -130,12 +130,14 @@ class BroadcastArea(BaseBroadcastArea, SortingAndEqualityMixin):
 
     @property
     def estimated_count_of_phones(self):
-        return (
-            sum(
-                area.simple_polygons.ratio_of_intersection_with(self.polygons) * area.count_of_phones
-                for area in self.nearby_electoral_wards
-            )
-        ) or 0
+        total_estimated_phones = 0
+        for area in self.nearby_electoral_wards:
+            # Iterate through electoral wards that overlap with polygon bounds and calculate phone count
+            # using ratio of intersection and electoral ward's count of phones
+            intersection_ratio = area.simple_polygons.ratio_of_intersection_with(self.polygons)
+            estimated_phones = intersection_ratio * area.count_of_phones
+            total_estimated_phones += estimated_phones
+        return total_estimated_phones or 0
 
     @cached_property
     def ancestors(self):
