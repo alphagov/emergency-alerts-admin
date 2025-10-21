@@ -85,7 +85,7 @@
       {% endif %}
     </div>
 
-    {{ map(message.simple_polygons.estimated_area, message.simple_polygons_with_bleed.estimated_area, message.count_of_phones or message.estimated_count_of_phones or 0, message.count_of_phones_likely, is_custom_broadcast, label) }}
+    {{ map(message.simple_polygons.estimated_area, message.simple_polygons_with_bleed.estimated_area, message.count_of_phones, message.count_of_phones_likely, is_custom_broadcast, label) }}
     {{ govukButton({
       "element": "a",
       "text": "Save and continue",
