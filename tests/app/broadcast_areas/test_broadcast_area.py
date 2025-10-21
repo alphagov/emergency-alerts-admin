@@ -175,14 +175,11 @@ def test_repository_has_all_libraries():
 @pytest.mark.parametrize("library", (broadcast_area_libraries))
 def test_every_area_has_count_of_phones(library):
     for area in library:
-        if library.id in [
-            "test",
-            "postcodes",
-            "coordinates",
-            "REPPIR_DEPZ_sites",
-            "Flood_Warning_Target_Areas",
-        ]:
+        if library.id in ["test", "postcodes", "coordinates"]:
             assert area.count_of_phones == 0
+        elif library.id in ["Flood_Warning_Target_Areas"]:
+            # Areas can be equal to zero as some areas provided are too small e.g. area with TA Code 053FWFPECR11
+            assert area.count_of_phones >= 0
         else:
             assert area.count_of_phones > 0
 
@@ -370,12 +367,12 @@ def test_phone_density(
         (
             # No population data available
             "REPPIR_DEPZ_sites-awe_aldermaston",
-            1_500,
+            2_591,
         ),
         (
             # No population data available
             "Flood_Warning_Target_Areas-011FWBWH",
-            1_500,
+            1_644,
         ),
     ),
 )
