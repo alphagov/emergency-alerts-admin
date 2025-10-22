@@ -70,7 +70,9 @@ class BaseBroadcastArea(ABC):
         bounds = self.simple_polygons.bounds
         search_rect = Rect(*bounds)  # Creates rectangle of the polygon bounds
         overlaps = rtree_index.query(search_rect)  # We only index electoral wards in the RTree
-        electoral_ward_ids = [overlap.data for overlap in overlaps]  # extracts overlapping electoral ward IDs
+        electoral_ward_ids = []
+        for overlap in overlaps:
+            electoral_ward_ids.append(overlap.data)  # Extracts overlapping electoral ward ID
 
         return broadcast_area_libraries.get_areas_with_simple_polygons(electoral_ward_ids)
 
