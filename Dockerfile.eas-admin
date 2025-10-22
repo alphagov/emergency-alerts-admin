@@ -4,8 +4,18 @@ ARG ECS_ACCOUNT_NUMBER
 ARG RESOURCE_PREFIX=eas-app
 ARG AWS_REGION=eu-west-2
 ARG BASE_VERSION=latest
+ARG BASE_IMAGE=${ECS_ACCOUNT_NUMBER}.dkr.ecr.${AWS_REGION}.amazonaws.com/${RESOURCE_PREFIX}-base:${BASE_VERSION}
 
-FROM ${ECS_ACCOUNT_NUMBER}.dkr.ecr.${AWS_REGION}.amazonaws.com/${RESOURCE_PREFIX}-base:${BASE_VERSION}
+FROM node:22-alpine AS node-binaries
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE} AS build
+
+# Migrate over our desired NodeJS version from the official Docker Node image
+# (NodeJS doesn't provide muslc binaries directly, and Alpine's packages only contain one version)
+COPY --from=node-binaries /usr/local/bin/node /usr/local/bin/
+COPY --from=node-binaries /usr/local/lib/node_modules /usr/local/lib/node_modules/
+RUN ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm && \
+    ln -s ../lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx
 
 ARG APP_VERSION=unknown
 
@@ -21,13 +31,20 @@ RUN python$PYTHON_VERSION -m venv $VENV_ADMIN && \
     pip3 install wheel && \
     APP_VERSION=${APP_VERSION} make bootstrap
 
+# Remove node_modules as we don't need to ship any of that for runtime later
+RUN rm -rf $DIR_ADMIN/node_modules
+
+# ---------
+# We can now use a fresh base as a small final image without NodeJS
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE} AS final
+COPY --from=build $VENV_ADMIN $VENV_ADMIN
+COPY --from=build $DIR_ADMIN $DIR_ADMIN
+
 # Create a blank configuration file
 RUN echo "" > $DIR_ADMIN/environment.sh
 
 COPY scripts/start.sh /
-
-# Getting rid of our `node_modules`, because we only need them at build-time.
-RUN rm -rf $DIR_GOVUK/node_modules
 
 CMD bash /start.sh
 
