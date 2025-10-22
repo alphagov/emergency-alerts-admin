@@ -241,7 +241,6 @@ class BroadcastAreaLibrary(SerialisedModelCollection, SortingAndEqualityMixin, G
         self.items = BroadcastAreasRepository().get_all_areas_for_library(self.id) if self.id != "postcodes" else []
         self.item_ids = []
         for item in self.items:
-            # iterate through areas and append their IDs to list
             self.item_ids.append(item[0])
 
     def get_examples(self):
