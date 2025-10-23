@@ -102,12 +102,8 @@ def test_check_coordinates_valid_for_enclosed_polygons(first_coordinate, second_
     ],
 )
 def test_normalising_point(coordinate_type, first_coordinate, second_coordinate, expected):
-    assert normalising_point(first_coordinate, second_coordinate, coordinate_type).x == pytest.approx(
-        expected[0], 1e-12
-    )
-    assert normalising_point(first_coordinate, second_coordinate, coordinate_type).y == pytest.approx(
-        expected[1], 1e-12
-    )
+    assert normalising_point(first_coordinate, second_coordinate, coordinate_type).x == expected[0]
+    assert normalising_point(first_coordinate, second_coordinate, coordinate_type).y == expected[1]
 
 
 def test_extract_attributes_from_custom_area():
