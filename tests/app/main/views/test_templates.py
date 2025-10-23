@@ -860,7 +860,9 @@ def test_add_template_page_furniture(
     assert normalize_spaces(page.select_one("h1").text) == "New template"
 
     back_link = page.select_one(".govuk-back-link")
-    assert back_link["href"] == url_for("main.choose_template", service_id=SERVICE_ONE_ID, template_folder_id=None)
+    assert back_link["href"] == url_for(
+        "main.choose_template_fields", service_id=SERVICE_ONE_ID, template_folder_id=None
+    )
 
 
 def test_should_not_create_sms_or_broadcast_template_with_emoji(

@@ -39,13 +39,13 @@ from app.utils.broadcast import (
     _get_back_link_from_view_broadcast_endpoint,
     check_for_missing_fields,
     format_areas_list,
+    get_alert_redirect_url,
     get_changed_alert_form_data,
     get_changed_extra_content_form_data,
     keep_alert_content_button_clicked,
     keep_alert_reference_button_clicked,
     overwrite_content_button_clicked,
     overwrite_reference_button_clicked,
-    redirect_dependent_on_alert_area,
     redirect_if_operator_service,
     render_current_alert_page,
     render_edit_alert_page,
@@ -183,7 +183,7 @@ def choose_extra_content(service_id, broadcast_message_id):
                 url_for(".add_extra_content", service_id=current_service.id, broadcast_message_id=broadcast_message_id)
             )
         else:
-            return redirect_dependent_on_alert_area(broadcast_message)
+            return redirect(get_alert_redirect_url(broadcast_message))
 
     return render_template(
         "views/broadcast/choose-extra-content.html",
@@ -269,7 +269,7 @@ def add_extra_content(service_id, broadcast_message_id):
             broadcast_message_id=broadcast_message_id,
             extra_content=form.extra_content.data,
         )
-        return redirect_dependent_on_alert_area(broadcast_message)
+        return redirect(get_alert_redirect_url(broadcast_message))
 
     if broadcast_message.status in ["draft", "returned"] and broadcast_message.extra_content:
         form.extra_content.data = broadcast_message.extra_content
@@ -391,7 +391,7 @@ def edit_broadcast(service_id, broadcast_message_id):
         form.initial_name.data = broadcast_message.reference
         form.initial_content.data = broadcast_message.content
         update_broadcast_message_using_changed_data(broadcast_message_id, form)
-        return redirect_dependent_on_alert_area(broadcast_message)
+        return redirect(get_alert_redirect_url(broadcast_message))
 
     return render_edit_alert_page(broadcast_message, form)
 
@@ -435,7 +435,7 @@ def broadcast(service_id, template_id):
         # straight to choose area as extra_content attribute shouldn't be set for
         # alerts created in operator services
         if not current_service.alerts_can_have_extra_content:
-            return redirect_dependent_on_alert_area(broadcast_message)
+            return redirect(get_alert_redirect_url(broadcast_message))
         else:
             return redirect(
                 url_for(
@@ -848,8 +848,7 @@ def view_broadcast_versions(service_id, broadcast_message_id):
         "views/broadcast/choose_history.html",
         broadcast_message_id=broadcast_message_id,
         versions=versions,
-        back_link=request.referrer
-        or url_for(
+        back_link=url_for(
             ".view_current_broadcast",
             service_id=current_service.id,
             broadcast_message_id=broadcast_message.id,

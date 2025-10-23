@@ -83,7 +83,11 @@
 
     {% set conditional_area_action_link %}
         {% if template.areas %}
-            {{url_for('.preview_areas', service_id=template.service, message_id=template.id, message_type="templates")}}
+            {% if template.has_flood_warning_target_areas %}
+                {{url_for('.search_flood_warning_areas', service_id=template.service, message_id=template.id, message_type="templates")}}
+            {% else %}
+                {{url_for('.preview_areas', service_id=template.service, message_id=template.id, message_type="templates")}}
+            {% endif %}
         {% else %}
             {{url_for(
                 ".choose_library",

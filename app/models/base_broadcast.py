@@ -71,6 +71,16 @@ class BaseBroadcast(JSONModel):
             for ancestor in area.ancestors:
                 yield ancestor
 
+    @property
+    def has_flood_warning_target_areas(self):
+        if type(self.areas) is CustomBroadcastAreas:
+            return False
+        return any(
+            # Returns True if any of the message areas have an ID
+            # that means its a Flood Warning Target Area, otherwise False
+            (area.id.startswith("Flood_Warning_Target_Areas-") for area in self.areas)
+        )
+
     @cached_property
     def polygons(self):
         return self.get_polygons_from_areas(area_attribute="polygons")
@@ -86,6 +96,10 @@ class BaseBroadcast(JSONModel):
     @cached_property
     def count_of_phones(self):
         return round_to_significant_figures(sum(area.count_of_phones for area in self.areas), 1)
+
+    @cached_property
+    def estimated_count_of_phones(self):
+        return round_to_significant_figures(sum(area.estimated_count_of_phones for area in self.areas), 1)
 
     @cached_property
     def count_of_phones_likely(self):

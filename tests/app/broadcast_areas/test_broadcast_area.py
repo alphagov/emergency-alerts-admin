@@ -30,6 +30,7 @@ def test_loads_libraries():
             "Countries",
             False,
         ),
+        ("Flood_Warning_Target_Areas", "Flood Warning Target Areas", False),
         (
             "wd23-lad23-ctyua23",
             "Local authorities",
@@ -159,8 +160,9 @@ def test_repository_has_all_libraries():
     repo = BroadcastAreasRepository()
     libraries = repo.get_libraries()
 
-    assert len(libraries) == 6
+    assert len(libraries) == 7
     assert [
+        ("Flood Warning Target Areas", "Flood Warning Target Area"),
         ("REPPIR DEPZ sites", "REPPIR DEPZ site"),
         ("Countries", "country"),
         ("Police forces in England and Wales", "police force"),
@@ -173,14 +175,11 @@ def test_repository_has_all_libraries():
 @pytest.mark.parametrize("library", (broadcast_area_libraries))
 def test_every_area_has_count_of_phones(library):
     for area in library:
-        if library.id == "test":
+        if library.id in ["test", "postcodes", "coordinates"]:
             assert area.count_of_phones == 0
-        elif library.id == "postcodes":
-            assert area.count_of_phones == 0
-        elif library.id == "coordinates":
-            assert area.count_of_phones == 0
-        elif library.id == "REPPIR_DEPZ_sites":
-            assert area.count_of_phones == 0
+        elif library.id in ["Flood_Warning_Target_Areas"]:
+            # Areas can be equal to zero as some areas provided are too small e.g. area with TA Code 053FWFPECR11
+            assert area.count_of_phones >= 0
         else:
             assert area.count_of_phones > 0
 
@@ -368,7 +367,12 @@ def test_phone_density(
         (
             # No population data available
             "REPPIR_DEPZ_sites-awe_aldermaston",
-            1_500,
+            2_591,
+        ),
+        (
+            # No population data available
+            "Flood_Warning_Target_Areas-011FWBWH",
+            1_644,
         ),
     ),
 )

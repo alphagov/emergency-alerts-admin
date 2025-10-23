@@ -1,0 +1,106 @@
+{% extends "without_sidenav_template.html" %}
+{% from "components/banner.html" import banner_wrapper %}
+{% from "components/form.html" import form_wrapper %}
+{% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
+{% from "components/page-header.html" import page_header %}
+{% from "components/page-footer.html" import page_footer %}
+{% from "views/broadcast/macros/area-map.html" import map %}
+{% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
+{% from "govuk_frontend_jinja/components/input/macro.html" import govukInput %}
+{% from "components/error-summary.html" import errorSummary %}
+{% from "components/input-custom-error.html" import inputWithCustomError %}
+{% from "components/page-footer.html" import sticky_page_footer %}
+
+{% block extra_stylesheets %}
+  {% include "views/broadcast/partials/area-map-stylesheets.html" %}
+{% endblock %}
+
+{% block extra_javascripts %}
+  {% include "views/broadcast/partials/area-map-javascripts.html" %}
+{% endblock %}
+
+{% if message.areas %}
+  {% if message.areas|length == 1 %}
+    {% set label = "Map of the United Kingdom, showing the area for "+message.areas[0].name %}
+  {% elif message.areas|length > 1 %}
+    {% set label = "Map of the United Kingdom, showing the areas for "+message.areas[:-1]|map(attribute='name')|join(', ')+' and '+message.areas[-1].name  %}
+  {% endif %}
+{% else %}
+  {% set label = "Map of the United Kingdom, showing no areas" %}
+{% endif %}
+
+{% block per_page_title %}
+  {{ page_title }} – {{ current_service.name }}
+{% endblock %}
+
+{% block service_page_title %}
+  {{ page_title }}
+{% endblock %}
+
+{% block backLink %}
+  {{ govukBackLink({ "href": back_link }) }}
+{% endblock %}
+
+
+{% block maincolumn_content %}
+  {% if bleed %}
+    {{ page_header('Chosen alert area', classes="heading-no-margin-top") }}
+  {% else %}
+    {{ page_header(page_title, classes="heading-no-margin-top") }}
+  {% endif %}
+
+    {% call form_wrapper(class="govuk-!-margin-top-3") %}
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <div class="mapping-form">
+        <div class="govuk-form-group">
+          {{ form.flood_warning_area() }}
+        </div>
+        <div class="govuk-form-group">
+          {{ govukButton({
+          "text": "Add area",
+          "classes": "govuk-button--secondary",
+          "name": "add_area_button"
+        }) }}
+        </div>
+      </div>
+    {% endcall %}
+
+  {% if message.areas %}
+    <p class="govuk-!-margin-right-2 govuk-!-margin-bottom-2">Areas selected</p>
+    <div>
+      <ul class="area-list">
+        {% for area in message.areas %}
+          {% set area_id = area.id.split('-')[1]%}
+          <li class="area-list-item">
+            {{area_id}}: {{area.name}}
+            <a class="area-list-item-remove govuk-button" data-module="govuk-button" role="button" href="{{ url_for('.remove_area', service_id=current_service.id, message_id=message.id, area_slug=area.id or None, message_type=message_type, redirect_to_flood_warning_page=True) }}">
+              <svg id="area-list-item-remove__icon" width="11" height="11" viewbox="0 0 10 10" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+                <g transform="rotate(45),translate(1, -6)">
+                  <line stroke-width="1.75" id="svg_1" y2="0" x2="6" y1="12" x1="6" stroke="currentColor" fill="none"/>
+                  <line stroke-width="1.75" id="svg_3" y2="6" x2="0" y1="6" x1="12" stroke="currentColor" fill="none"/>
+                </g>
+              </svg>
+              <span class="govuk-visually-hidden">Remove {{ area.name }}</span>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="govuk-!-margin-top-2 govuk-!-margin-bottom-3">
+      {{ govukButton({
+      "element": "a",
+      "text": "Save and continue to preview",
+      "name": "continue",
+      "href": redirect_url,
+      "classes": "govuk-button"
+      }) }}
+    </div>
+  {% endif %}
+
+  {% if message.areas %}
+    {{ map(message.simple_polygons.estimated_area, message.simple_polygons_with_bleed.estimated_area, message.estimated_count_of_phones, message.count_of_phones_likely, False, label) }}
+  {% else %}
+    {{ map(None, None, None, None, False, label) }}
+  {% endif %}
+
+{% endblock %}

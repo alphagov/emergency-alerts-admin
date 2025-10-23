@@ -7,6 +7,7 @@ from app.main.forms import (
     BroadcastAreaForm,
     BroadcastAreaFormWithSelectAll,
     ChooseCoordinateTypeForm,
+    FloodWarningForm,
     PostcodeForm,
     SearchByNameForm,
 )
@@ -79,7 +80,9 @@ def choose_library(service_id, message_type, message_id=None):
     if message_id:
         message = Message.from_id_or_403(message_id, service_id=service_id)
         is_custom_broadcast = type(message.areas) is CustomBroadcastAreas
-        if is_custom_broadcast:
+        if is_custom_broadcast or message.has_flood_warning_target_areas:
+            # If alert has custom area or flood warning area, alert area is cleared as
+            # they cannot be combined with other library areas
             message.clear_areas()
     else:
         message = None
@@ -95,6 +98,7 @@ def choose_library(service_id, message_type, message_id=None):
         message_type=message_type,
         message_id=message_id,
         template_folder_id=template_folder_id,
+        has_flood_warning_areas=message.has_flood_warning_target_areas if message else False,
     )
 
 
@@ -118,6 +122,18 @@ def choose_area(
     Message = get_message_type(message_type)
     message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
     library = BroadcastMessage.libraries.get(library_slug)
+
+    def redirect_for_library_page(url, service_id, message_type, message_id, template_folder_id):
+        return redirect(
+            url_for(
+                url,
+                service_id=service_id,
+                message_id=message_id,
+                message_type=message_type,
+                template_folder_id=template_folder_id,
+            )
+        )
+
     if library_slug == "coordinates":
         form = ChooseCoordinateTypeForm()
         if form.validate_on_submit():
@@ -126,7 +142,6 @@ def choose_area(
                     ".search_coordinates",
                     service_id=service_id,
                     message_id=message_id,
-                    library_slug="coordinates",
                     coordinate_type=form.content.data,
                     message_type=message_type,
                     template_folder_id=template_folder_id,
@@ -147,16 +162,12 @@ def choose_area(
         )
 
     elif library_slug == "postcodes":
-        return redirect(
-            url_for(
-                ".search_postcodes",
-                service_id=service_id,
-                broadcast_message_id=message_id,
-                library_slug="postcodes",
-                message_type=message_type,
-                template_folder_id=template_folder_id,
-            )
-        )
+        url = ".search_postcodes"
+        return redirect_for_library_page(url, service_id, message_type, message_id, template_folder_id)
+
+    if library_slug == "Flood_Warning_Target_Areas":
+        url = ".search_flood_warning_areas"
+        return redirect_for_library_page(url, service_id, message_type, message_id, template_folder_id)
 
     if library.is_group:
         return render_template(
@@ -279,9 +290,9 @@ def choose_sub_area(service_id, message_type, library_slug, area_slug, message_i
 @service_has_permission("broadcast")
 @user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def preview_areas(service_id, message_id, message_type):
-    back_link = None
     Message = get_message_type(message_type)
     message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
+    is_custom = type(message.areas) is CustomBroadcastAreas if Message else False
     if Message is BroadcastMessage:
         if message.status != "returned":
             try:
@@ -292,17 +303,6 @@ def preview_areas(service_id, message_id, message_type):
                     message,
                 )
 
-        if message.template_id and message.status not in ["draft", "returned"]:
-            back_link = url_for(
-                ".view_template",
-                service_id=service_id,
-                template_id=message.template_id,
-            )
-        elif message.status in ["draft", "returned"]:
-            back_link = url_for(".view_current_broadcast", service_id=service_id, broadcast_message_id=message_id)
-        else:
-            back_link = url_for(".write_new_broadcast", service_id=service_id, message_id=message_id)
-
         if message.duration:
             redirect_url = url_for(".preview_broadcast_message", service_id=service_id, broadcast_message_id=message_id)
         else:
@@ -312,10 +312,11 @@ def preview_areas(service_id, message_id, message_type):
     return render_template(
         "views/broadcast/preview-areas.html",
         message=message,
-        back_link=back_link or request.referrer,
-        is_custom_broadcast=type(message.areas) is CustomBroadcastAreas,
+        back_link=request.referrer or url_for(".write_new_broadcast", service_id=service_id, message_id=message_id),
+        is_custom_broadcast=is_custom,
         redirect_url=redirect_url,  # The url for when 'Save and continue' button clicked
         message_type=message_type,
+        has_flood_warning_areas=message.has_flood_warning_target_areas,
     )
 
 
@@ -556,14 +557,89 @@ def search_coordinates(service_id, coordinate_type, message_type, message_id=Non
     )
 
 
+@main.route(
+    "/services/<uuid:service_id>/<message_type>/<uuid:message_id>/libraries/flood_warning_areas/",
+    methods=["GET", "POST"],
+)
+@main.route(
+    "/services/<uuid:service_id>/<message_type>/libraries/flood_warning_areas/",
+    methods=["GET", "POST"],
+)
+@service_has_permission("broadcast")
+@user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
+def search_flood_warning_areas(service_id, message_type, message_id=None):
+    template_folder_id = request.args.get("template_folder_id")
+    Message = get_message_type(message_type)
+    message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
+    library = BroadcastMessage.libraries.get("Flood_Warning_Target_Areas")
+    form = FloodWarningForm()
+
+    def get_redirect_url():
+        request_url = ""
+        if message:
+            if Message is BroadcastMessage:
+                request_url = url_for(
+                    ".preview_broadcast_message" if message.duration else ".choose_broadcast_duration",
+                    service_id=service_id,
+                    broadcast_message_id=message.id,
+                )
+            else:
+                request_url = url_for(
+                    ".view_template",
+                    service_id=service_id,
+                    template_id=message.id,
+                )
+        return request_url
+
+    def render_search_flood_warning_areas_page():
+        # Added this as an inner function here as it's only used within this
+        # function and removes repeated code
+        return render_template(
+            "views/broadcast/search-flood-warning-areas.html",
+            broadcast_message=message,
+            page_title="Choose Flood Warning Target Areas (TA)",
+            form=form,
+            back_link=url_for(
+                ".choose_library", service_id=service_id, message_id=message_id, message_type=message_type
+            ),
+            template_folder_id=template_folder_id,
+            message=message,
+            message_type=message_type,
+            redirect_url=get_redirect_url(),
+        )
+
+    if form.validate_on_submit():
+        area_id = f"Flood_Warning_Target_Areas-{form.flood_warning_area.data}"
+        if area_id not in library.item_ids:
+            form.flood_warning_area.errors.append("Flood Warning TA Code not found")
+            return render_search_flood_warning_areas_page()
+        elif message and area_id in message.area_ids:
+            form.flood_warning_area.errors.append("Flood Warning TA Code already selected")
+            return render_search_flood_warning_areas_page()
+        if message:
+            message.add_areas(area_id)
+        else:
+            message = Message.create_from_area(
+                service_id=service_id,
+                area_ids=[area_id],
+                template_folder_id=template_folder_id,
+            )
+        form.flood_warning_area.data = ""  # clear the form field on page after area added
+
+    return render_search_flood_warning_areas_page()
+
+
 @main.route("/services/<uuid:service_id>/<message_type>/<uuid:message_id>/remove/<area_slug>")
 @service_has_permission("broadcast")
 @user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def remove_area(service_id, message_id, area_slug, message_type):
+    redirect_to_flood_warning_page = bool(request.args.get("redirect_to_flood_warning_page"))
     Message = get_message_type(message_type)
     message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
     message.remove_area(area_slug)
-    if len(message.areas) == 0:
+    if redirect_to_flood_warning_page:
+        url = ".search_flood_warning_areas"
+    elif len(message.areas) == 0:
         url = ".choose_library"
     else:
         url = ".preview_areas"
