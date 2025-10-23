@@ -14,7 +14,7 @@ pytz==2022.6
 notifications-python-client==8.0.0
 rtreelib==0.2.0
 fido2==1.2.0
-pyproj==3.7.1
+pyproj==3.6.1
 postcode-validator==0.0.4
 pwdpy==1.0.1
 itsdangerous==2.1.2
