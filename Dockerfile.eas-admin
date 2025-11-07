@@ -11,6 +11,9 @@ ARG APP_VERSION=unknown
 
 ENV SERVICE='admin'
 
+# This is incredibly noisy
+ENV OTEL_PYTHON_DISABLED_INSTRUMENTATIONS=jinja2
+
 # Create root directory and copy repo
 COPY . $DIR_ADMIN
 
