@@ -351,7 +351,8 @@ def inject_user_id_trace():
 def trace_id_after_request(response: Response):
     span = trace.get_current_span()
     if span is not trace.INVALID_SPAN:
-        trace_id = span.get_span_context().trace_id
+        # Convert to hex and strip out the 0x prefix
+        trace_id = hex(span.get_span_context().trace_id)[2:]
         response.headers.add("X-EAS-Trace-Id", trace_id)
 
     return response
