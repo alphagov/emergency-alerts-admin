@@ -181,6 +181,7 @@ def init_app(application: Flask):
     application.after_request(useful_headers_after_request)
     application.after_request(trace_id_after_request)
 
+    application.before_request(inject_user_id_trace)
     application.before_request(load_service_before_request)
     application.before_request(load_organisation_before_request)
     application.before_request(load_service_status_before_request)
@@ -339,6 +340,12 @@ def useful_headers_after_request(response: Response):
     for key, value in response.headers:
         response.headers[key] = SanitiseASCII.encode(value)
     return response
+
+
+def inject_user_id_trace():
+    user_id = session.get("user_id", "(unknown)")
+    span = trace.get_current_span()
+    span.set_attribute("eas.user.id", session.get(user_id))
 
 
 def trace_id_after_request(response: Response):
