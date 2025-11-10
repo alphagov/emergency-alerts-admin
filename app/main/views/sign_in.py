@@ -1,4 +1,15 @@
-from flask import abort, flash, redirect, render_template, request, session, url_for
+from random import randint
+
+from flask import (
+    abort,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
 from flask_login import current_user
 from markupsafe import Markup
 
@@ -8,6 +19,14 @@ from app.main.forms import LoginForm
 from app.models.user import InvitedUser, User
 from app.utils import hide_from_search_engines
 from app.utils.login import is_safe_redirect_url
+
+
+@main.route("/500")
+def five():
+    if randint(0, 1) == 1:
+        raise Exception("Something")
+    else:
+        return jsonify({"cool": True})
 
 
 @main.route("/sign-in", methods=(["GET", "POST"]))
