@@ -179,7 +179,7 @@ def create_app(application):
 
 def init_app(application: Flask):
     application.after_request(useful_headers_after_request)
-    application.teardown_request(trace_id_after_request)
+    application.after_request(trace_id_after_request)
 
     application.before_request(load_service_before_request)
     application.before_request(load_organisation_before_request)
