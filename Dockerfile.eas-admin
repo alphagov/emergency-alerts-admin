@@ -11,6 +11,9 @@ ARG APP_VERSION=unknown
 
 ENV SERVICE='admin'
 
+ENV OTEL_SERVICE_NAME="admin"
+ENV OTEL_PYTHON_DISTRO="aws_distro"
+ENV OTEL_PYTHON_CONFIGURATOR="aws_configurator"
 # This is incredibly noisy
 ENV OTEL_PYTHON_DISABLED_INSTRUMENTATIONS=jinja2
 
