@@ -7,6 +7,8 @@ import jinja2
 from emergency_alerts_utils import logging, request_helper
 from emergency_alerts_utils.sanitise_text import SanitiseASCII
 from flask import (
+    Flask,
+    Response,
     current_app,
     flash,
     g,
@@ -22,6 +24,7 @@ from flask_wtf import CSRFProtect
 from flask_wtf.csrf import CSRFError
 from itsdangerous import BadSignature
 from notifications_python_client.errors import HTTPError
+from opentelemetry import trace
 from werkzeug.exceptions import HTTPException as WerkzeugHTTPException
 from werkzeug.exceptions import abort
 from werkzeug.local import LocalProxy
@@ -174,8 +177,9 @@ def create_app(application):
     setup_event_handlers()
 
 
-def init_app(application):
+def init_app(application: Flask):
     application.after_request(useful_headers_after_request)
+    application.teardown_request(trace_id_after_request)
 
     application.before_request(load_service_before_request)
     application.before_request(load_organisation_before_request)
@@ -335,6 +339,13 @@ def useful_headers_after_request(response):
     for key, value in response.headers:
         response.headers[key] = SanitiseASCII.encode(value)
     return response
+
+
+def trace_id_after_request(response: Response):
+    span = trace.get_current_span()
+    if span is not trace.INVALID_SPAN:
+        trace_id = span.get_span_context().trace_id
+        response.headers.add("X-EAS-Trace-Id", trace_id)
 
 
 def register_errorhandlers(application):  # noqa (C901 too complex)
