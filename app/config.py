@@ -122,6 +122,9 @@ class Hosted(Config):
     ADMIN_EXTERNAL_URL = f"https://{TENANT}admin.{SUBDOMAIN}emergency-alerts.service.gov.uk"
     TEMPLATE_PREVIEW_API_HOST = f"http://api.{TENANT}ecs.local:6013"
 
+    HTTP_PROXY = os.environ.get("HTTP_PROXY")
+    NO_PROXY = os.environ.get("NO_PROXY")
+
     DEBUG = False
     SESSION_COOKIE_SECURE = True
     SESSION_PROTECTION = "strong"
