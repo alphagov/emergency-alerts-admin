@@ -209,6 +209,15 @@ def init_app(application: Flask):
     def _nav_selected():
         return navigation
 
+    @application.context_processor
+    def _attach_current_trace_id():
+        trace_id = "(unknown)"
+        span = trace.get_current_span()
+        if span is not trace.INVALID_SPAN:
+            # Convert to hex and strip out the 0x prefix
+            trace_id = hex(span.get_span_context().trace_id)[2:]
+        return {"trace_id": trace_id}
+
     @application.before_request
     def record_start_time():
         g.start = monotonic()
