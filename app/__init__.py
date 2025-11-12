@@ -286,7 +286,7 @@ def load_organisation_before_request():
 def load_service_status_before_request():
     g.service_status_text = None
 
-    if "/static/" in request.url:
+    if "/static/" in request.url or "_admin_status" in request.url:
         return
 
     service_is_not_live_flag = feature_toggle_api_client.get_feature_toggle("service_is_not_live")
