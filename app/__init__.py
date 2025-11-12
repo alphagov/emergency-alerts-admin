@@ -354,7 +354,7 @@ def useful_headers_after_request(response: Response):
 def inject_user_id_trace():
     user_id = session.get("user_id", "(unknown)")
     span = trace.get_current_span()
-    span.set_attribute("eas.user.id", session.get(user_id))
+    span.set_attribute("eas.user.id", user_id)
 
 
 def trace_id_after_request(response: Response):
