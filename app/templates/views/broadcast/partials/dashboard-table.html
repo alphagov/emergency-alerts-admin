@@ -25,7 +25,7 @@
             'text': 'rejected',
             'classes': 'govuk-!-margin-right-1 govuk-!-margin-top-2 broadcast-tag'
           }) }}
-          {{ item.updated_at|format_datetime_human }}
+          {{ item.rejected_at|format_datetime_human }}
         </p>
         <span class="file-list-hint-large govuk-!-margin-bottom-2">
           {{ item.content }}
@@ -80,7 +80,7 @@
           <p class="govuk-body dashboard-table">
           {% if item.rejected_by_api_key_id or item.rejected_by %}
             Rejected
-            {{ item.updated_at|format_datetime_human }}
+            {{ item.rejected_at|format_datetime_human }}
             {% if item.rejected_by %}
               by {{item.rejected_by}}.
             {% elif item.rejected_by_api_key_id %}
@@ -88,7 +88,7 @@
             {% endif %}
           {% else %}
             Rejected
-            {{ item.updated_at|format_datetime_human }}.
+            {{ item.rejected_at|format_datetime_human }}.
           {% endif %}
           </p>
         </div>
