@@ -13,10 +13,11 @@
   {% endif %}
 </p>
 {% elif broadcast_message.status == 'rejected' %}
+{% set rejection_time = broadcast_message.rejected_at if broadcast_message.rejected_at else broadcast_message.updated_at %}
 <p class="govuk-body govuk-!-margin-bottom-4">
   {% if broadcast_message.rejected_by or broadcast_message.rejected_by_api_key_id %}
     Rejected
-    {{ broadcast_message.updated_at|format_datetime_human }}
+    {{ rejection_time|format_datetime_human }}
     {% if broadcast_message.rejected_by %}
       by {{broadcast_message.rejected_by}}.
     {% elif broadcast_message.rejected_by_api_key_id %}
@@ -24,7 +25,7 @@
     {% endif %}
   {% else %}
     Rejected
-    {{ broadcast_message.updated_at|format_datetime_human }}.
+    {{ rejection_time|format_datetime_human }}.
   {% endif %}
 </p>
 {% if broadcast_message.rejection_reason %}

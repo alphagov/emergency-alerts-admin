@@ -20,12 +20,13 @@
           Waiting for approval
         </p>
       {% elif item.status == 'rejected' %}
+        {% set rejection_time = item.rejected_at if item.rejected_at else item.updated_at %}
         <p class="govuk-body live-broadcast file-list-status govuk-!-margin-top-2">
           {{ govukTag ({
             'text': 'rejected',
             'classes': 'govuk-!-margin-right-1 govuk-!-margin-top-2 broadcast-tag'
           }) }}
-          {{ item.updated_at|format_datetime_human }}
+          {{ rejection_time|format_datetime_human }}
         </p>
         <span class="file-list-hint-large govuk-!-margin-bottom-2">
           {{ item.content }}
@@ -75,12 +76,13 @@
     </div>
     <div>
       {% if item.status == 'rejected' %}
+        {% set rejection_time = item.rejected_at if item.rejected_at else item.updated_at %}
         <div class="govuk-!-margin-bottom-2">
           <p class="govuk-!-margin-right-1 dashboard-table govuk-!-font-weight-bold">Broadcast: </p>
           <p class="govuk-body dashboard-table">
           {% if item.rejected_by_api_key_id or item.rejected_by %}
             Rejected
-            {{ item.updated_at|format_datetime_human }}
+            {{ rejection_time|format_datetime_human }}
             {% if item.rejected_by %}
               by {{item.rejected_by}}.
             {% elif item.rejected_by_api_key_id %}
@@ -88,7 +90,7 @@
             {% endif %}
           {% else %}
             Rejected
-            {{ item.updated_at|format_datetime_human }}.
+            {{ rejection_time|format_datetime_human }}.
           {% endif %}
           </p>
         </div>
