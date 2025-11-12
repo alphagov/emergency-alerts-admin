@@ -2386,7 +2386,7 @@ def mock_get_broadcast_messages(
             partial_json(
                 id_=uuid4(),
                 status="rejected",
-                updated_at=(datetime.now(timezone.utc) - timedelta(hours=1)).isoformat(),
+                rejected_at=(datetime.now(timezone.utc) - timedelta(hours=1)).isoformat(),
             ),
         ]
 
