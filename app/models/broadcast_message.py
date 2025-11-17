@@ -85,7 +85,7 @@ class BroadcastMessage(BaseBroadcast):
             "ids": area_ids,
             "names": [area.name for area in areas],
             "aggregate_names": aggregate_names,
-            "simple_polygons": [area.simple_polygons.as_coordinate_pairs_lat_long for area in areas],
+            "simple_polygons": [area.simple_polygons.as_coordinate_pairs_lat_long for area in areas][0],
         }
         return cls(
             broadcast_message_api_client.create_broadcast_message(
