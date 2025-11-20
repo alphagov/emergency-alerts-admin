@@ -6,7 +6,7 @@ from flask_login import current_user
 from ordered_set import OrderedSet
 
 from app.broadcast_areas.models import BroadcastAreaLibraries, CustomBroadcastArea
-from app.broadcast_areas.utils import aggregate_areas, generate_aggregate_names
+from app.broadcast_areas.utils import create_areas_dict
 from app.models import ModelList
 from app.models.base_broadcast import BaseBroadcast
 from app.notify_client.broadcast_message_api_client import broadcast_message_api_client
@@ -79,17 +79,15 @@ class BroadcastMessage(BaseBroadcast):
     @classmethod
     def create_from_area(cls, service_id, area_ids, template_id=None, content="", reference=""):
         areas = BroadcastAreaLibraries().get_areas(area_ids)
-        aggregated_areas = aggregate_areas(areas)
-        aggregate_names = generate_aggregate_names(aggregated_areas)
-        areas = {
-            "ids": area_ids,
-            "names": [area.name for area in areas],
-            "aggregate_names": aggregate_names,
-            "simple_polygons": [area.simple_polygons.as_coordinate_pairs_lat_long for area in areas][0],
-        }
+        areas_dict = create_areas_dict(areas)
+
         return cls(
             broadcast_message_api_client.create_broadcast_message(
-                service_id=service_id, template_id=template_id, content=content, reference=reference, areas=areas
+                service_id=service_id,
+                template_id=template_id,
+                content=content,
+                reference=reference,
+                areas=areas_dict,
             )
         )
 
