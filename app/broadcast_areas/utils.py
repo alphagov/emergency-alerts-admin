@@ -1,4 +1,7 @@
+import itertools
 from collections import defaultdict
+
+from emergency_alerts_utils.polygons import Polygons
 
 from app.broadcast_areas.models import CustomBroadcastArea
 
@@ -78,3 +81,42 @@ def generate_aggregate_names(areas):
         else:
             aggregate_names.append(area.name)
     return aggregate_names
+
+
+def create_areas_dict(areas):
+    polygons = get_polygons_from_areas(areas, "simple_polygons")
+    return {
+        "ids": [area.id for area in areas],
+        "names": [area.name for area in areas],
+        "aggregate_names": [area.name for area in aggregate_areas(areas)],
+        "simple_polygons": polygons.as_coordinate_pairs_lat_long,
+    }
+
+
+def get_polygons_from_areas(areas, area_attribute):
+    areas_polygons = [getattr(area, area_attribute) for area in areas]
+    coordinate_reference_systems = {polygons.utm_crs for polygons in areas_polygons}
+
+    if len(coordinate_reference_systems) == 1:
+        # All our polygons are defined in the same coordinate
+        # reference system so we just have to flatten the list and
+        # say which coordinate reference system we are using
+        polygons = Polygons(
+            list(itertools.chain(*areas_polygons)),
+            utm_crs=next(iter(coordinate_reference_systems)),
+        )
+    else:
+        # Our polygons are in different coordinate reference systems
+        # We need to convert them back to degrees and make a new
+        # instance of `Polygons` which will determine a common
+        # coordinate reference system
+        polygons = Polygons(
+            list(itertools.chain(*(area_polygon.as_wgs84_coordinates for area_polygon in areas_polygons)))
+        )
+
+    if area_attribute != "polygons" and len(areas) > 1:
+        # We’re combining simplified polygons from multiple areas so we
+        # need to re-simplify the combined polygons to keep the point
+        # count down
+        return polygons.smooth.simplify
+    return polygons
