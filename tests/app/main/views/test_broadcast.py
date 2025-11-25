@@ -8,6 +8,7 @@ import pytest
 from flask import url_for
 from freezegun import freeze_time
 
+from app.broadcast_areas.models import BroadcastAreaLibraries
 from tests import (
     NotifyBeautifulSoup,
     broadcast_message_json,
@@ -2150,9 +2151,9 @@ def test_add_broadcast_area(
     polygon_class = namedtuple("polygon_class", ["as_coordinate_pairs_lat_long"])
     coordinates = [[50.1, 0.1], [50.2, 0.2], [50.3, 0.2]]
     polygons = polygon_class(as_coordinate_pairs_lat_long=coordinates)
+    areas = BroadcastAreaLibraries().get_areas(["ctry19-E92000001", "ctry19-W92000004"])
     mock_get_polygons_from_areas = mocker.patch(
-        "app.models.broadcast_message.BroadcastMessage.get_polygons_from_areas",
-        return_value=polygons,
+        "app.models.base_broadcast.get_polygons_from_areas", return_value=polygons
     )
     mock_get_broadcast_message = mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -2180,7 +2181,7 @@ def test_add_broadcast_area(
         library_slug="ctry19",
         _data={"areas": ["ctry19-E92000001", "ctry19-W92000004"]},
     )
-    mock_get_polygons_from_areas.assert_called_once_with(area_attribute="simple_polygons")
+    mock_get_polygons_from_areas.assert_called_once_with(areas, area_attribute="simple_polygons")
     mock_get_broadcast_message.assert_called_once_with(service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
 
     mock_update_broadcast_message_kwargs = mock_update_broadcast_message.call_args.kwargs
@@ -3390,9 +3391,9 @@ def test_add_broadcast_sub_area_district_view(
     polygon_class = namedtuple("polygon_class", ["as_coordinate_pairs_lat_long"])
     coordinates = [[50.1, 0.1], [50.2, 0.2], [50.3, 0.2]]
     polygons = polygon_class(as_coordinate_pairs_lat_long=coordinates)
+    areas = BroadcastAreaLibraries().get_areas(["ctry19-E92000001", "ctry19-S92000003", "lad23-S12000033"])
     mock_get_polygons_from_areas = mocker.patch(
-        "app.models.broadcast_message.BroadcastMessage.get_polygons_from_areas",
-        return_value=polygons,
+        "app.models.base_broadcast.get_polygons_from_areas", return_value=polygons
     )
 
     client_request.login(active_user_create_broadcasts_permission)
@@ -3410,8 +3411,7 @@ def test_add_broadcast_sub_area_district_view(
     expected_data["ids"] = ["ctry19-E92000001", "ctry19-S92000003"] + expected_data["ids"]
     expected_data["names"] = ["England", "Scotland"] + expected_data["names"]
     expected_data["aggregate_names"] = sorted(["England", "Scotland"] + expected_data["aggregate_names"])
-
-    mock_get_polygons_from_areas.assert_called_once_with(area_attribute="simple_polygons")
+    mock_get_polygons_from_areas.assert_called_once_with(areas, area_attribute="simple_polygons")
     mock_update_broadcast_message_kwargs = mock_update_broadcast_message.call_args.kwargs
     assert mock_update_broadcast_message_kwargs["service_id"] == SERVICE_ONE_ID
     assert mock_update_broadcast_message_kwargs["broadcast_message_id"] == fake_uuid
@@ -3437,9 +3437,9 @@ def test_add_broadcast_sub_area_county_view(
     polygon_class = namedtuple("polygon_class", ["as_coordinate_pairs_lat_long"])
     coordinates = [[50.1, 0.1], [50.2, 0.2], [50.3, 0.2]]
     polygons = polygon_class(as_coordinate_pairs_lat_long=coordinates)
+    areas = BroadcastAreaLibraries().get_areas(["ctry19-E92000001", "ctry19-S92000003", "ctyua23-E10000016"])
     mock_get_polygons_from_areas = mocker.patch(
-        "app.models.broadcast_message.BroadcastMessage.get_polygons_from_areas",
-        return_value=polygons,
+        "app.models.base_broadcast.get_polygons_from_areas", return_value=polygons
     )
 
     client_request.login(active_user_create_broadcasts_permission)
@@ -3452,7 +3452,7 @@ def test_add_broadcast_sub_area_county_view(
         message_type="broadcast",
         _data={"select_all": "y"},
     )
-    mock_get_polygons_from_areas.assert_called_once_with(area_attribute="simple_polygons")
+    mock_get_polygons_from_areas.assert_called_once_with(areas, area_attribute="simple_polygons")
     mock_update_broadcast_message_kwargs = mock_update_broadcast_message.call_args.kwargs
     assert mock_update_broadcast_message_kwargs["service_id"] == SERVICE_ONE_ID
     assert mock_update_broadcast_message_kwargs["broadcast_message_id"] == fake_uuid
@@ -3489,9 +3489,9 @@ def test_remove_area_page(
     polygon_class = namedtuple("polygon_class", ["as_coordinate_pairs_lat_long"])
     coordinates = [[50.1, 0.1], [50.2, 0.2], [50.3, 0.2]]
     polygons = polygon_class(as_coordinate_pairs_lat_long=coordinates)
+    areas = BroadcastAreaLibraries().get_areas(["ctry19-S92000003"])
     mock_get_polygons_from_areas = mocker.patch(
-        "app.models.broadcast_message.BroadcastMessage.get_polygons_from_areas",
-        return_value=polygons,
+        "app.models.base_broadcast.get_polygons_from_areas", return_value=polygons
     )
 
     client_request.login(active_user_create_broadcasts_permission)
@@ -3505,7 +3505,7 @@ def test_remove_area_page(
             ".preview_areas", service_id=SERVICE_ONE_ID, message_id=fake_uuid, message_type="broadcast"
         ),
     )
-    mock_get_polygons_from_areas.assert_called_once_with(area_attribute="simple_polygons")
+    mock_get_polygons_from_areas.assert_called_once_with(areas, area_attribute="simple_polygons")
     mock_update_broadcast_message.assert_called_once_with(
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
