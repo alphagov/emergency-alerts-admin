@@ -3391,7 +3391,6 @@ def test_add_broadcast_sub_area_district_view(
     polygon_class = namedtuple("polygon_class", ["as_coordinate_pairs_lat_long"])
     coordinates = [[50.1, 0.1], [50.2, 0.2], [50.3, 0.2]]
     polygons = polygon_class(as_coordinate_pairs_lat_long=coordinates)
-    areas = BroadcastAreaLibraries().get_areas(["ctry19-E92000001", "ctry19-S92000003", "lad23-S12000033"])
     mock_get_polygons_from_areas = mocker.patch(
         "app.models.base_broadcast.get_polygons_from_areas", return_value=polygons
     )
@@ -3411,7 +3410,13 @@ def test_add_broadcast_sub_area_district_view(
     expected_data["ids"] = ["ctry19-E92000001", "ctry19-S92000003"] + expected_data["ids"]
     expected_data["names"] = ["England", "Scotland"] + expected_data["names"]
     expected_data["aggregate_names"] = sorted(["England", "Scotland"] + expected_data["aggregate_names"])
-    mock_get_polygons_from_areas.assert_called_once_with(areas, area_attribute="simple_polygons")
+
+    # Asserting that the polygons created are created from all of the areas
+    areas = BroadcastAreaLibraries().get_areas(expected_data["ids"])
+    mock_get_polygons_from_areas_kwargs = mock_get_polygons_from_areas.call_args
+    assert sorted(mock_get_polygons_from_areas_kwargs[0][0]) == sorted(areas)
+    assert mock_get_polygons_from_areas_kwargs[1] == {"area_attribute": "simple_polygons"}
+
     mock_update_broadcast_message_kwargs = mock_update_broadcast_message.call_args.kwargs
     assert mock_update_broadcast_message_kwargs["service_id"] == SERVICE_ONE_ID
     assert mock_update_broadcast_message_kwargs["broadcast_message_id"] == fake_uuid
