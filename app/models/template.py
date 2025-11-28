@@ -3,7 +3,7 @@ from flask_login import current_user
 
 from app import current_service
 from app.broadcast_areas.models import BroadcastAreaLibraries, CustomBroadcastArea
-from app.broadcast_areas.utils import aggregate_areas, generate_aggregate_names
+from app.broadcast_areas.utils import create_areas_dict
 from app.models.base_broadcast import BaseBroadcast
 from app.notify_client.template_api_client import template_api_client
 
@@ -62,19 +62,12 @@ class Template(BaseBroadcast):
     @classmethod
     def create_from_area(cls, service_id, template_folder_id=None, area_ids=None):
         areas = BroadcastAreaLibraries().get_areas(area_ids)
-        aggregated_areas = aggregate_areas(areas)
-        aggregate_names = generate_aggregate_names(aggregated_areas)
-        areas = {
-            "ids": area_ids,
-            "names": [area.name for area in areas],
-            "aggregate_names": aggregate_names,
-            "simple_polygons": [area.simple_polygons.as_coordinate_pairs_lat_long for area in areas],
-        }
+        areas_dict = create_areas_dict(areas)
         return cls(
             template_api_client.create_template(
                 service_id=service_id,
                 template_folder_id=template_folder_id,
-                areas=areas,
+                areas=areas_dict,
             )
         )
 
