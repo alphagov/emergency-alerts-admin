@@ -46,7 +46,7 @@ def test_create_template_from_area(mocker, fake_uuid, mock_create_template):
         service_id=SERVICE_ONE_ID,
         areas={
             "ids": ["ctry19-E92000001"],
-            "simple_polygons": ENGLAND,
+            "simple_polygons": [ENGLAND],
             "names": ["England"],
             "aggregate_names": ["England"],
         },

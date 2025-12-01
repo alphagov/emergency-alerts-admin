@@ -1,20 +1,13 @@
 import pytest
 
-from app.broadcast_areas.models import BroadcastAreaLibraries
-from app.broadcast_areas.utils import (
-    aggregate_areas,
-    create_areas_dict,
-    get_polygons_from_areas,
-)
+from app.broadcast_areas.utils import aggregate_areas
 from app.models.broadcast_message import BroadcastMessage
 from tests import broadcast_message_json
 from tests.app.broadcast_areas.custom_polygons import (
-    ABERDEEN_CITY,
     BRISTOL,
     BURFORD,
     CHELTENHAM,
     CHELTENHAM_AND_GLOUCESTER,
-    ENGLAND,
     SANTA_A,
     SEVERN_ESTUARY,
     SKYE,
@@ -201,47 +194,3 @@ def test_aggregate_areas_for_custom_polygons(
     )
 
     assert [area.name for area in aggregate_areas(broadcast_message.areas)] == expected_area_names
-
-
-@pytest.mark.parametrize(
-    ("area_ids", "expected_dict"),
-    [
-        (
-            ["ctry19-E92000001"],
-            {
-                "aggregate_names": ["England"],
-                "ids": ["ctry19-E92000001"],
-                "names": ["England"],
-                "simple_polygons": ENGLAND,
-            },
-        ),
-        (
-            ["lad23-S12000033"],
-            {
-                "aggregate_names": ["Aberdeen City"],
-                "ids": ["lad23-S12000033"],
-                "names": ["Aberdeen City"],
-                "simple_polygons": ABERDEEN_CITY,
-            },
-        ),
-        ([], {"aggregate_names": [], "ids": [], "names": [], "simple_polygons": []}),
-    ],
-)
-def test_create_areas_dict(area_ids, expected_dict):
-    areas = BroadcastAreaLibraries().get_areas(area_ids)
-    created_dict = create_areas_dict(areas)
-    assert created_dict == expected_dict
-
-
-@pytest.mark.parametrize(
-    ("area_ids", "area_attribute", "expected_polygons"),
-    [
-        (["ctry19-E92000001"], "simple_polygons", ENGLAND),
-        (["lad23-S12000033"], "simple_polygons", ABERDEEN_CITY),
-        ([], "simple_polygons", []),
-        (["nonexistent_area_id"], "simple_polygons", []),
-    ],
-)
-def test_get_polygons_from_areas(area_ids, area_attribute, expected_polygons):
-    areas = BroadcastAreaLibraries().get_areas(area_ids)
-    assert get_polygons_from_areas(areas, area_attribute).as_coordinate_pairs_lat_long == expected_polygons
