@@ -164,7 +164,7 @@ def test_create_from_area(mocker, service_one, fake_uuid, mock_create_broadcast_
         content="Test content",
         areas={
             "ids": ["ctry19-E92000001"],
-            "simple_polygons": ENGLAND,
+            "simple_polygons": [ENGLAND],
             "names": ["England"],
             "aggregate_names": ["England"],
         },
