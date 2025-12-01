@@ -1,3 +1,6 @@
+import itertools
+
+from emergency_alerts_utils.polygons import Polygons
 from flask import current_app
 from ordered_set import OrderedSet
 from werkzeug.utils import cached_property
@@ -7,11 +10,7 @@ from app.broadcast_areas.models import (
     CustomBroadcastAreas,
     broadcast_area_libraries,
 )
-from app.broadcast_areas.utils import (
-    aggregate_areas,
-    generate_aggregate_names,
-    get_polygons_from_areas,
-)
+from app.broadcast_areas.utils import aggregate_areas, generate_aggregate_names
 from app.formatters import round_to_significant_figures
 from app.models import JSONModel
 
@@ -84,15 +83,15 @@ class BaseBroadcast(JSONModel):
 
     @cached_property
     def polygons(self):
-        return get_polygons_from_areas(self.areas, area_attribute="polygons")
+        return self.get_polygons_from_areas(area_attribute="polygons")
 
     @cached_property
     def simple_polygons(self):
-        return get_polygons_from_areas(self.areas, area_attribute="simple_polygons")
+        return self.get_polygons_from_areas(area_attribute="simple_polygons")
 
     @cached_property
     def simple_polygons_with_bleed(self):
-        return get_polygons_from_areas(self.areas, area_attribute="simple_polygons_with_bleed")
+        return self.get_polygons_from_areas(area_attribute="simple_polygons_with_bleed")
 
     @cached_property
     def count_of_phones(self):
@@ -135,6 +134,34 @@ class BaseBroadcast(JSONModel):
 
     def get_areas(self, area_ids):
         return broadcast_area_libraries.get_areas(area_ids)
+
+    def get_polygons_from_areas(self, area_attribute):
+        areas_polygons = [getattr(area, area_attribute) for area in self.areas]
+        coordinate_reference_systems = {polygons.utm_crs for polygons in areas_polygons}
+
+        if len(coordinate_reference_systems) == 1:
+            # All our polygons are defined in the same coordinate
+            # reference system so we just have to flatten the list and
+            # say which coordinate reference system we are using
+            polygons = Polygons(
+                list(itertools.chain(*areas_polygons)),
+                utm_crs=next(iter(coordinate_reference_systems)),
+            )
+        else:
+            # Our polygons are in different coordinate reference systems
+            # We need to convert them back to degrees and make a new
+            # instance of `Polygons` which will determine a common
+            # coordinate reference system
+            polygons = Polygons(
+                list(itertools.chain(*(area_polygon.as_wgs84_coordinates for area_polygon in areas_polygons)))
+            )
+
+        if area_attribute != "polygons" and len(self.areas) > 1:
+            # We’re combining simplified polygons from multiple areas so we
+            # need to re-simplify the combined polygons to keep the point
+            # count down
+            return polygons.smooth.simplify
+        return polygons
 
     def add_areas(self, *new_area_ids):
         self.area_ids = list(OrderedSet(self.area_ids + list(new_area_ids)))
