@@ -1374,7 +1374,6 @@ def set_config_values(app, dict):
 def webauthn_dev_server(notify_admin, mocker):
     overrides = {
         "HOST": "local",
-        "ADMIN_BASE_URL": "https://webauthn.io",
         "ADMIN_EXTERNAL_URL": "https://webauthn.io",
     }
 
