@@ -1,15 +1,22 @@
 # Sensible defaults, but they will be explicitly overridden in the context of a buildspec anyway.
 # The only one that needs to be passed in however is the ECS_ACCOUNT_NUMBER, as this changes per environment.
+# For local/ad-hoc builds you can specify BASE_IMAGE entirely
 ARG ECS_ACCOUNT_NUMBER
 ARG RESOURCE_PREFIX=eas-app
 ARG AWS_REGION=eu-west-2
 ARG BASE_VERSION=latest
-
-FROM ${ECS_ACCOUNT_NUMBER}.dkr.ecr.${AWS_REGION}.amazonaws.com/${RESOURCE_PREFIX}-base:${BASE_VERSION}
+ARG BASE_IMAGE=${ECS_ACCOUNT_NUMBER}.dkr.ecr.${AWS_REGION}.amazonaws.com/${RESOURCE_PREFIX}-base:${BASE_VERSION}
+FROM ${BASE_IMAGE} AS build
 
 ARG APP_VERSION=unknown
 
-ENV SERVICE='admin'
+# Grab nvm and NodeJS, configuring future commands to work without sourcing
+SHELL ["/bin/bash", "-c"]
+ENV BASH_ENV /home/easuser/.bash_env
+RUN touch "${BASH_ENV}"
+RUN echo '. "${BASH_ENV}"' >> ~/.bashrc
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | PROFILE="${BASH_ENV}" bash
+RUN nvm install v22.21.1 && nvm use v22.21.1
 
 ENV OTEL_SERVICE_NAME="admin"
 ENV OTEL_PYTHON_DISTRO="aws_distro"
@@ -19,23 +26,30 @@ ENV OTEL_PYTHON_DISABLED_INSTRUMENTATIONS="jinja2"
 ENV OTEL_PYTHON_EXCLUDED_URLS="_admin_status"
 
 # Create root directory and copy repo
-COPY . $DIR_ADMIN
+COPY --chown=easuser:easuser . $DIR_ADMIN
 
-# Run emergency-alerts-admin
-RUN python$PYTHON_VERSION -m venv $VENV_ADMIN && \
-    cd $DIR_ADMIN && \
+# Bootstrap venv and emergency-alerts-admin
+RUN python$PYTHON_VERSION -m venv $VENV_ADMIN
+RUN cd $DIR_ADMIN && \
     . $VENV_ADMIN/bin/activate && \
-    pip3 install wheel && \
     APP_VERSION=${APP_VERSION} make bootstrap
 
-# Create a blank configuration file
+# Get rid of our `node_modules` because we only need them at build-time.
+RUN rm -rf $DIR_ADMIN/node_modules
+
+# ---------
+# We can now use a fresh base as a small final image without NodeJS
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE} AS final
+
+ENV SERVICE='admin'
+
+# Copy over bootstrapped contents
+COPY --chown=easuser:easuser --from=build $VENV_ADMIN $VENV_ADMIN
+COPY --chown=easuser:easuser --from=build $DIR_ADMIN $DIR_ADMIN
+
 RUN echo "" > $DIR_ADMIN/environment.sh
-
-COPY scripts/start.sh /
-
-# Getting rid of our `node_modules`, because we only need them at build-time.
-RUN rm -rf $DIR_GOVUK/node_modules
-
+COPY --chown=easuser:easuser scripts/start.sh /
 CMD bash /start.sh
 
 EXPOSE 6012

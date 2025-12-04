@@ -453,21 +453,23 @@ pycparser==2.22
     # via cffi
 pyflakes==3.2.0
     # via flake8
+pygments==2.19.2
+    # via pytest
 pyjwt==2.10.1
     # via notifications-python-client
 pyproj==3.6.1
     # via -r requirements.in
-pytest==8.3.5
+pytest==9.0.1
     # via
     #   -r requirements.in
     #   pytest-env
     #   pytest-mock
     #   pytest-xdist
-pytest-env==1.1.5
+pytest-env==1.2.0
     # via -r requirements.in
-pytest-mock==3.14.0
+pytest-mock==3.15.1
     # via -r requirements.in
-pytest-xdist==3.6.1
+pytest-xdist==3.8.0
     # via -r requirements.in
 python-dateutil==2.9.0.post0
     # via
