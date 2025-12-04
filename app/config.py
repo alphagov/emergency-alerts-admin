@@ -32,9 +32,6 @@ class Config(object):
 
     GEOJSON_BUCKET = os.environ.get("POSTCODE_BUCKET_NAME")
 
-    # if we're not on cloudfoundry, we can get to this app from localhost. but on cloudfoundry its different
-    ADMIN_BASE_URL = os.environ.get("ADMIN_BASE_URL", "http://localhost:6012")
-
     TEMPLATE_PREVIEW_API_HOST = os.environ.get("TEMPLATE_PREVIEW_API_HOST", "http://localhost:6013")
     TEMPLATE_PREVIEW_API_KEY = os.environ.get("TEMPLATE_PREVIEW_API_KEY", "my-secret-key")
 
@@ -116,10 +113,11 @@ class Hosted(Config):
         if os.environ.get("ENVIRONMENT") == "development"
         else f"{os.environ.get('ENVIRONMENT')}." if os.environ.get("ENVIRONMENT") != "production" else ""
     )
-    API_HOST_NAME = f"http://api.{TENANT}ecs.local:6011"
-    ADMIN_BASE_URL = f"http://admin.{TENANT}ecs.local:6012"
+    API_HOST_NAME = os.environ.get("API_HOST_NAME", f"http://api.{TENANT}ecs.local:6011")
     HEADER_COLOUR = header_colors.get(os.environ.get("ENVIRONMENT"), "#81878b")
-    ADMIN_EXTERNAL_URL = f"https://{TENANT}admin.{SUBDOMAIN}emergency-alerts.service.gov.uk"
+    ADMIN_EXTERNAL_URL = os.environ.get(
+        "ADMIN_EXTERNAL_URL", f"https://{TENANT}admin.{SUBDOMAIN}emergency-alerts.service.gov.uk"
+    )
     TEMPLATE_PREVIEW_API_HOST = f"http://api.{TENANT}ecs.local:6013"
 
     DEBUG = False

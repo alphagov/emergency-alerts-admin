@@ -177,10 +177,10 @@ def create_app(application):
 def init_app(application):
     application.after_request(useful_headers_after_request)
 
+    application.before_request(generate_nonce_before_request)
     application.before_request(load_service_before_request)
     application.before_request(load_organisation_before_request)
     application.before_request(load_service_status_before_request)
-    application.before_request(generate_nonce_before_request)
     application.before_request(request_helper.check_proxy_header_before_request)
 
     font_paths = [
