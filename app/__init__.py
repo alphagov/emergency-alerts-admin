@@ -7,6 +7,8 @@ import jinja2
 from emergency_alerts_utils import logging, request_helper
 from emergency_alerts_utils.sanitise_text import SanitiseASCII
 from flask import (
+    Flask,
+    Response,
     current_app,
     flash,
     g,
@@ -22,6 +24,7 @@ from flask_wtf import CSRFProtect
 from flask_wtf.csrf import CSRFError
 from itsdangerous import BadSignature
 from notifications_python_client.errors import HTTPError
+from opentelemetry import trace
 from werkzeug.exceptions import HTTPException as WerkzeugHTTPException
 from werkzeug.exceptions import abort
 from werkzeug.local import LocalProxy
@@ -174,10 +177,12 @@ def create_app(application):
     setup_event_handlers()
 
 
-def init_app(application):
+def init_app(application: Flask):
     application.after_request(useful_headers_after_request)
+    application.after_request(trace_id_after_request)
 
     application.before_request(generate_nonce_before_request)
+    application.before_request(inject_user_id_trace)
     application.before_request(load_service_before_request)
     application.before_request(load_organisation_before_request)
     application.before_request(load_service_status_before_request)
@@ -203,6 +208,15 @@ def init_app(application):
     @application.context_processor
     def _nav_selected():
         return navigation
+
+    @application.context_processor
+    def _attach_current_trace_id():
+        trace_id = "(unknown)"
+        span = trace.get_current_span()
+        if span is not trace.INVALID_SPAN:
+            # Convert to hex and strip out the 0x prefix
+            trace_id = hex(span.get_span_context().trace_id)[2:]
+        return {"trace_id": trace_id}
 
     @application.before_request
     def record_start_time():
@@ -281,7 +295,7 @@ def load_organisation_before_request():
 def load_service_status_before_request():
     g.service_status_text = None
 
-    if "/static/" in request.url:
+    if "/static/" in request.url or "_admin_status" in request.url:
         return
 
     service_is_not_live_flag = feature_toggle_api_client.get_feature_toggle("service_is_not_live")
@@ -298,7 +312,7 @@ def generate_nonce():
 
 
 #  https://www.owasp.org/index.php/List_of_useful_HTTP_headers
-def useful_headers_after_request(response):
+def useful_headers_after_request(response: Response):
     response.headers.add("X-Frame-Options", "deny")
     response.headers.add("X-Content-Type-Options", "nosniff")
     response.headers.add("X-XSS-Protection", "1; mode=block")
@@ -334,6 +348,22 @@ def useful_headers_after_request(response):
     )
     for key, value in response.headers:
         response.headers[key] = SanitiseASCII.encode(value)
+    return response
+
+
+def inject_user_id_trace():
+    user_id = session.get("user_id", "(unknown)")
+    span = trace.get_current_span()
+    span.set_attribute("eas.user.id", user_id)
+
+
+def trace_id_after_request(response: Response):
+    span = trace.get_current_span()
+    if span is not trace.INVALID_SPAN:
+        # Convert to hex and strip out the 0x prefix
+        trace_id = hex(span.get_span_context().trace_id)[2:]
+        response.headers.add("X-EAS-Trace-Id", trace_id)
+
     return response
 
 
