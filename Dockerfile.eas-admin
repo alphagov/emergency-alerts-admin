@@ -37,6 +37,13 @@ FROM ${BASE_IMAGE} AS final
 
 ENV SERVICE='admin'
 
+ENV OTEL_SERVICE_NAME="admin"
+ENV OTEL_PYTHON_DISTRO="aws_distro"
+ENV OTEL_PYTHON_CONFIGURATOR="aws_configurator"
+# This is incredibly noisy
+ENV OTEL_PYTHON_DISABLED_INSTRUMENTATIONS="jinja2"
+ENV OTEL_PYTHON_EXCLUDED_URLS="_admin_status"
+
 # Copy over bootstrapped contents
 COPY --chown=easuser:easuser --from=build $VENV_ADMIN $VENV_ADMIN
 COPY --chown=easuser:easuser --from=build $DIR_ADMIN $DIR_ADMIN
