@@ -762,7 +762,7 @@ def discard_broadcast_message(service_id, broadcast_message_id):
         flash(e.message)
         return render_current_alert_page(broadcast_message, back_link_url=_get_back_link_from_view_broadcast_endpoint())
 
-    if broadcast_message.status != "pending-approval":
+    if broadcast_message.status not in ["draft", "pending-approval"]:
         return redirect(
             url_for(
                 ".view_current_broadcast",
