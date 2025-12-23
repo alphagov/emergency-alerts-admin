@@ -508,8 +508,9 @@ typing-extensions==4.15.0
     # via
     #   grpcio
     #   opentelemetry-sdk
-urllib3==2.5.0
+urllib3==2.6.2
     # via
+    #   -r requirements.in
     #   botocore
     #   requests
     #   responses
