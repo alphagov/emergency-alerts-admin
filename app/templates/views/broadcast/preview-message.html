@@ -97,14 +97,17 @@
       ),
       "classes": "govuk-button"
     }) }}
+    {{ govukButton({
+      "element": "a",
+      "text": "Discard this alert",
+      "href":url_for(
+        ".discard_broadcast_message",
+        service_id=current_service.id,
+        broadcast_message_id=broadcast_message.id,
+      ),
+      "classes": "govuk-button govuk-button--warning"
+    }) }}
   {% endcall %}
-
-  {% if can_submit_for_approval %}
-    {{ page_footer(
-      delete_link=url_for('main.discard_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
-      delete_link_text='Discard this alert'
-    ) }}
-  {% endif %}
 
   {% if broadcast_message.status in ["draft", "returned"] and broadcast_message_version_count > 1 %}
   <div class="bottom-gutter-1-2">
