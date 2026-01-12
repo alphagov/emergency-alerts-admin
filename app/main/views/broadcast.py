@@ -27,6 +27,7 @@ from app.main.forms import (
     ChooseDurationForm,
     ChooseExtraContentForm,
     ConfirmBroadcastForm,
+    DraftMessagesForm,
     NewBroadcastForm,
     RejectionReasonForm,
     ReturnForEditForm,
@@ -160,6 +161,36 @@ def new_broadcast(service_id):
 
     return render_template(
         "views/broadcast/new-broadcast.html",
+        form=form,
+    )
+
+
+@main.route("/services/<uuid:service_id>/select-drafts", methods=["GET", "POST"])
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+@service_has_permission("broadcast")
+def select_draft_alerts(service_id):
+    return render_template(
+        "views/broadcast/draft-broadcasts.html",
+        broadcasts=BroadcastMessages(service_id).with_status(
+            "draft",
+        ),
+        page_title="Draft alerts",
+        empty_message="You do not have any draft alerts",
+        view_broadcast_endpoint=".view_rejected_broadcast",
+        reverse_chronological_sort=True,
+    )
+
+
+@main.route("/services/<uuid:service_id>/drafts", methods=["GET", "POST"])
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+@service_has_permission("broadcast")
+def select_drafts(service_id):
+    form = DraftMessagesForm(
+        choices=BroadcastMessages(service_id).with_status("draft"),
+    )
+
+    return render_template(
+        "views/broadcast/drafts.html",
         form=form,
     )
 

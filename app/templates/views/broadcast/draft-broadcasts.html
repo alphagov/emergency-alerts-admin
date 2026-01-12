@@ -1,40 +1,35 @@
 {% from 'components/ajax-block.html' import ajax_block %}
 {% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
+{% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
 
 {% extends "withnav_template.html" %}
 
 {% block service_page_title %}
-  Current alerts
+  {{ page_title }}
+{% endblock %}
+
+{% block backLink %}
+  {{ govukBackLink({ "href": url_for('main.service_dashboard', service_id=current_service.id) }) }}
 {% endblock %}
 
 {% block maincolumn_content %}
 
-  <h1 class="heading-medium">Current alerts</h1>
+  <h1 class="heading-medium">{{ page_title }}</h1>
 
-  {{ ajax_block(
-    partials,
-    url_for('.broadcast_dashboard_updates', service_id=current_service.id),
-    'current_broadcasts'
-  ) }}
+  {% include('views/broadcast/partials/drafts-table.html') %}
 
   {% if current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) %}
     <div class="js-stick-at-bottom-when-scrolling">
       {{ govukButton({
         "element": "a",
-        "text": "Create new alert",
-        "href": url_for('.new_broadcast', service_id=current_service.id),
+        "text": "Select all",
+        "href":url_for(".select_draft_alerts", service_id=current_service.id),
         "classes": "govuk-button--secondary govuk-!-margin-right-3"
       }) }}
       {{ govukButton({
         "element": "a",
-        "text": "Select draft alerts",
-        "href":url_for(".select_draft_alerts", service_id=current_service.id),
-        "classes": "govuk-button--secondary"
-      }) }}
-      {{ govukButton({
-        "element": "a",
-        "text": "Select drafts",
-        "href":url_for(".select_drafts", service_id=current_service.id),
+        "text": "Create new alert",
+        "href": url_for('.new_broadcast', service_id=current_service.id),
         "classes": "govuk-button--secondary"
       }) }}
     </div>
