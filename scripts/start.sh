@@ -8,7 +8,7 @@ function configure_container_role(){
 
 function run_admin(){
     cd $DIR_ADMIN;
-    . $VENV_ADMIN/bin/activate && flask run -p 6012 --host=0.0.0.0
+    . $VENV_ADMIN/bin/activate && opentelemetry-instrument flask run -p 6012 --host=0.0.0.0
 }
 
 if [[ ! -z $DEBUG ]]; then

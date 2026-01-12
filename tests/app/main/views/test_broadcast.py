@@ -8,6 +8,7 @@ import pytest
 from flask import url_for
 from freezegun import freeze_time
 
+from app.broadcast_areas.models import BroadcastAreaLibraries
 from tests import (
     NotifyBeautifulSoup,
     broadcast_message_json,
@@ -2150,9 +2151,9 @@ def test_add_broadcast_area(
     polygon_class = namedtuple("polygon_class", ["as_coordinate_pairs_lat_long"])
     coordinates = [[50.1, 0.1], [50.2, 0.2], [50.3, 0.2]]
     polygons = polygon_class(as_coordinate_pairs_lat_long=coordinates)
+    areas = BroadcastAreaLibraries().get_areas(["ctry19-E92000001", "ctry19-W92000004"])
     mock_get_polygons_from_areas = mocker.patch(
-        "app.models.broadcast_message.BroadcastMessage.get_polygons_from_areas",
-        return_value=polygons,
+        "app.models.base_broadcast.get_polygons_from_areas", return_value=polygons
     )
     mock_get_broadcast_message = mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -2180,7 +2181,7 @@ def test_add_broadcast_area(
         library_slug="ctry19",
         _data={"areas": ["ctry19-E92000001", "ctry19-W92000004"]},
     )
-    mock_get_polygons_from_areas.assert_called_once_with(area_attribute="simple_polygons")
+    mock_get_polygons_from_areas.assert_called_once_with(areas, area_attribute="simple_polygons")
     mock_get_broadcast_message.assert_called_once_with(service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
 
     mock_update_broadcast_message_kwargs = mock_update_broadcast_message.call_args.kwargs
@@ -3391,8 +3392,7 @@ def test_add_broadcast_sub_area_district_view(
     coordinates = [[50.1, 0.1], [50.2, 0.2], [50.3, 0.2]]
     polygons = polygon_class(as_coordinate_pairs_lat_long=coordinates)
     mock_get_polygons_from_areas = mocker.patch(
-        "app.models.broadcast_message.BroadcastMessage.get_polygons_from_areas",
-        return_value=polygons,
+        "app.models.base_broadcast.get_polygons_from_areas", return_value=polygons
     )
 
     client_request.login(active_user_create_broadcasts_permission)
@@ -3411,7 +3411,12 @@ def test_add_broadcast_sub_area_district_view(
     expected_data["names"] = ["England", "Scotland"] + expected_data["names"]
     expected_data["aggregate_names"] = sorted(["England", "Scotland"] + expected_data["aggregate_names"])
 
-    mock_get_polygons_from_areas.assert_called_once_with(area_attribute="simple_polygons")
+    # Asserting that the polygons created are created from all of the areas
+    areas = BroadcastAreaLibraries().get_areas(expected_data["ids"])
+    mock_get_polygons_from_areas_kwargs = mock_get_polygons_from_areas.call_args
+    assert sorted(mock_get_polygons_from_areas_kwargs[0][0]) == sorted(areas)
+    assert mock_get_polygons_from_areas_kwargs[1] == {"area_attribute": "simple_polygons"}
+
     mock_update_broadcast_message_kwargs = mock_update_broadcast_message.call_args.kwargs
     assert mock_update_broadcast_message_kwargs["service_id"] == SERVICE_ONE_ID
     assert mock_update_broadcast_message_kwargs["broadcast_message_id"] == fake_uuid
@@ -3437,9 +3442,9 @@ def test_add_broadcast_sub_area_county_view(
     polygon_class = namedtuple("polygon_class", ["as_coordinate_pairs_lat_long"])
     coordinates = [[50.1, 0.1], [50.2, 0.2], [50.3, 0.2]]
     polygons = polygon_class(as_coordinate_pairs_lat_long=coordinates)
+    areas = BroadcastAreaLibraries().get_areas(["ctry19-E92000001", "ctry19-S92000003", "ctyua23-E10000016"])
     mock_get_polygons_from_areas = mocker.patch(
-        "app.models.broadcast_message.BroadcastMessage.get_polygons_from_areas",
-        return_value=polygons,
+        "app.models.base_broadcast.get_polygons_from_areas", return_value=polygons
     )
 
     client_request.login(active_user_create_broadcasts_permission)
@@ -3452,7 +3457,7 @@ def test_add_broadcast_sub_area_county_view(
         message_type="broadcast",
         _data={"select_all": "y"},
     )
-    mock_get_polygons_from_areas.assert_called_once_with(area_attribute="simple_polygons")
+    mock_get_polygons_from_areas.assert_called_once_with(areas, area_attribute="simple_polygons")
     mock_update_broadcast_message_kwargs = mock_update_broadcast_message.call_args.kwargs
     assert mock_update_broadcast_message_kwargs["service_id"] == SERVICE_ONE_ID
     assert mock_update_broadcast_message_kwargs["broadcast_message_id"] == fake_uuid
@@ -3489,9 +3494,9 @@ def test_remove_area_page(
     polygon_class = namedtuple("polygon_class", ["as_coordinate_pairs_lat_long"])
     coordinates = [[50.1, 0.1], [50.2, 0.2], [50.3, 0.2]]
     polygons = polygon_class(as_coordinate_pairs_lat_long=coordinates)
+    areas = BroadcastAreaLibraries().get_areas(["ctry19-S92000003"])
     mock_get_polygons_from_areas = mocker.patch(
-        "app.models.broadcast_message.BroadcastMessage.get_polygons_from_areas",
-        return_value=polygons,
+        "app.models.base_broadcast.get_polygons_from_areas", return_value=polygons
     )
 
     client_request.login(active_user_create_broadcasts_permission)
@@ -3505,7 +3510,7 @@ def test_remove_area_page(
             ".preview_areas", service_id=SERVICE_ONE_ID, message_id=fake_uuid, message_type="broadcast"
         ),
     )
-    mock_get_polygons_from_areas.assert_called_once_with(area_attribute="simple_polygons")
+    mock_get_polygons_from_areas.assert_called_once_with(areas, area_attribute="simple_polygons")
     mock_update_broadcast_message.assert_called_once_with(
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
@@ -4050,9 +4055,9 @@ def test_view_broadcast_message_page(
             {
                 "status": "rejected",
                 "created_at": "2020-02-20T19:20:20.000000",
-                "updated_at": "2020-02-21T21:21:21.000000",
+                "updated_at": "2020-02-20T20:40:20.000000",
                 "submitted_at": "2020-02-21T21:21:21.000000",
-                "rejected_at": "2020-02-20T20:40:20.000000",
+                "rejected_at": "2020-02-21T21:21:21.000000",
                 "submitted_by": "Test User 3",
             },
             [
@@ -4062,7 +4067,7 @@ def test_view_broadcast_message_page(
                 "Submitted by Test User 2 on 20 February at 8:20pm.",
                 "Returned by Test User on 20 February at 8:25pm.",
                 "Submitted by Test User 3 on 21 February at 9:21pm.",
-                "Rejected by Carol on 20 February at 8:40pm.",
+                "Rejected by Carol on 21 February at 9:21pm.",
             ],
         ),
     ),
@@ -4183,7 +4188,7 @@ def test_view_broadcast_message_shows_correct_highlighted_navigation(
             approved_at="2020-02-20T21:00:00.000000",
             finishes_at="2021-12-21T21:21:21.000000",
             cancelled_at="2021-01-01T01:01:01.000000",
-            updated_at="2021-01-01T01:01:01.000000",
+            rejected_at="2021-01-01T01:01:01.000000",
             created_at="2021-01-01T00:01:01.000000",
             status=status,
         ),

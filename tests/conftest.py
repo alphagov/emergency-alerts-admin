@@ -1374,7 +1374,6 @@ def set_config_values(app, dict):
 def webauthn_dev_server(notify_admin, mocker):
     overrides = {
         "HOST": "local",
-        "ADMIN_BASE_URL": "https://webauthn.io",
         "ADMIN_EXTERNAL_URL": "https://webauthn.io",
     }
 
@@ -2386,7 +2385,7 @@ def mock_get_broadcast_messages(
             partial_json(
                 id_=uuid4(),
                 status="rejected",
-                updated_at=(datetime.now(timezone.utc) - timedelta(hours=1)).isoformat(),
+                rejected_at=(datetime.now(timezone.utc) - timedelta(hours=1)).isoformat(),
             ),
         ]
 
