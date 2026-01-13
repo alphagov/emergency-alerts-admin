@@ -26,7 +26,7 @@
 {% endblock %}
 
 {% block backLink %}
-  {{ govukBackLink({ "href": back_link }) }}
+  {{ govukBackLink({ "href": back_link.replace('/edittemplate','') }) }}
 {% endblock %}
 
 {% if message.areas %}
@@ -86,13 +86,24 @@
     </div>
 
     {{ map(message.simple_polygons.estimated_area, message.simple_polygons_with_bleed.estimated_area, message.count_of_phones, message.count_of_phones_likely, is_custom_broadcast, label) }}
-    {{ govukButton({
-      "element": "a",
-      "text": "Save and continue",
-      "name": "continue",
-      "href": redirect_url,
-      "classes": "govuk-button"
-    }) }}
+
+    {% if message_type == "broadcast" %}
+      {{ govukButton({
+        "element": "a",
+        "text": "Save and continue",
+        "name": "continue",
+        "href": redirect_url,
+        "classes": "govuk-button"
+      }) }}
+    {% elif message_type == "templates" %}
+      {{ govukButton({
+        "element": "a",
+        "text": "Save template",
+        "name": "continue",
+        "href": redirect_url,
+        "classes": "govuk-button"
+      }) }}
+    {% endif %}
 
   {% else %}
     <p class="govuk-body">
