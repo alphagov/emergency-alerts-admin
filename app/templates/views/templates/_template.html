@@ -15,10 +15,17 @@
     <div class="bottom-gutter-2-3">
       <div class="govuk-grid-row">
         {% if template.template_type == 'broadcast' %}
-          {% if current_user.has_permissions('create_broadcasts') %}
+          {% if current_user.has_permissions('create_broadcasts') and not edit_mode %}
             <div class="govuk-grid-column-one-half">
               <a href="{{ url_for(".broadcast", service_id=current_service.id, template_id=template.id) }}" class="govuk-link govuk-link--inverse pill-separate-item">
-                Save and get ready to send
+                Use template to send alert
+              </a>
+            </div>
+          {% endif %}
+          {% if current_user.has_permissions('manage_templates') and not edit_mode %}
+            <div class="govuk-grid-column-one-half">
+              <a href="{{ url_for('.view_template', service_id=current_service.id, template_id=template.id) }}/edittemplate" class="govuk-link govuk-link--inverse pill-separate-item">
+                Edit this template
               </a>
             </div>
           {% endif %}
