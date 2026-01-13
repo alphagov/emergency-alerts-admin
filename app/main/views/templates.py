@@ -47,6 +47,26 @@ def view_template(service_id, template_id):
         template=template,
         message=template,
         template_folder_path=current_service.get_template_folder_path(template.folder),
+        edit_mode=False,
+    )
+
+
+@main.route("/services/<uuid:service_id>/templates/<uuid:template_id>/edittemplate")
+@user_has_permissions(allow_org_user=True)
+def edit_template(service_id, template_id):
+    template = Template.from_id(template_id=template_id, service_id=service_id)
+    template_folder = current_service.get_template_folder(template.folder)
+
+    user_has_template_permission = current_user.has_template_folder_permission(template_folder)
+
+    return render_template(
+        "views/templates/template.html",
+        formatted_template=get_template(template.reference, template.content),  # returns BroadcastPreviewTemplate
+        user_has_template_permission=user_has_template_permission,
+        template=template,
+        message=template,
+        template_folder_path=current_service.get_template_folder_path(template.folder),
+        edit_mode=True,
     )
 
 
