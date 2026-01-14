@@ -19,18 +19,21 @@
   {% include('views/broadcast/partials/drafts-table.html') %}
 
   {% if current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) %}
-    <div class="js-stick-at-bottom-when-scrolling">
+    <div class="js-stick-at-bottom-when-scrolling govuk-!-margin-top-0">
       {{ govukButton({
-        "element": "a",
+        "id": "select-all-checkboxes-button",
+        "element": "button",
         "text": "Select all",
-        "href":url_for(".select_draft_alerts", service_id=current_service.id),
         "classes": "govuk-button--secondary govuk-!-margin-right-3"
       }) }}
       {{ govukButton({
-        "element": "a",
-        "text": "Create new alert",
-        "href": url_for('.new_broadcast', service_id=current_service.id),
-        "classes": "govuk-button--secondary"
+        "id": "discard-alerts-button",
+        "element": "button",
+        "text": "Discard alerts",
+        "classes": "govuk-button--secondary",
+        "attributes": {
+          "data-csrf-token": csrf_token(),
+        }
       }) }}
     </div>
   {% endif %}

@@ -3,39 +3,37 @@
 
 {% set sorted_broadcasts = broadcasts|list|sort|reverse if reverse_chronological_sort else broadcasts|list %}
 
-<div class="ajax-block-container js-mark-focus-on-parent" data-classes-to-persist="js-child-has-focus">
-  <div class="govuk-form-group">
-    <fieldset class="govuk-fieldset">
-      <div class="govuk-hint">Select drafts to discard:</div>
-      <div class="govuk-checkboxes" data-module="govuk-checkboxes">
-        {% for item in sorted_broadcasts %}
-          <div class="keyline-block">
-            <div class="govuk-checkboxes__item template-list-item template-list-item-with-checkbox template-list-item-without-ancestors">
-                <input class="govuk-checkboxes__input" id="{{ item.id }}" name="alert" type="checkbox" value="{{ item.id }}">
-                <label class="govuk-label govuk-checkboxes__label template-list-item-label" for="{{ item.id }}">
-                  <span class="govuk-visually-hidden">
-                    {{ item.reference or item.template_name or "Untitled alert"}}
-                  </span>
-                </label>
-                <a class="file-list-filename-large govuk-link govuk-link--no-visited-state"
-                  href="{{ url_for(view_broadcast_endpoint, service_id=current_service.id, broadcast_message_id=item.id) }}">
+<div>
+  <fieldset class="govuk-fieldset">
+    <div class="govuk-hint">Select drafts to discard:</div>
+    <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+      {% for item in sorted_broadcasts %}
+        <div class="keyline-block">
+          <div class="govuk-checkboxes__item template-list-item template-list-item-with-checkbox template-list-item-without-ancestors">
+              <input class="govuk-checkboxes__input" id="{{ item.id }}" name="alert" type="checkbox" value="{{ item.id }}">
+              <label class="govuk-label govuk-checkboxes__label template-list-item-label" for="{{ item.id }}">
+                <span class="govuk-visually-hidden">
                   {{ item.reference or item.template_name or "Untitled alert"}}
-                </a>
-                <span id="{{ item.id }}-item-hint" class="govuk-hint govuk-checkboxes__hint template-list-item-hint">
-                  {{ item.content }}
                 </span>
-            </div>
+              </label>
+              <a class="file-list-filename-large govuk-link govuk-link--no-visited-state"
+                href="{{ url_for(view_broadcast_endpoint, service_id=current_service.id, broadcast_message_id=item.id) }}">
+                {{ item.reference or item.template_name or "Untitled alert"}}
+              </a>
+              <span id="{{ item.id }}-item-hint" class="govuk-hint govuk-checkboxes__hint template-list-item-hint">
+                {{ item.content }}
+              </span>
           </div>
-          {% if loop.last %}
-            <div class="keyline-block">
-            </div>
-          {% endif %}
-        {% else %}
-          <p class="table-empty-message keyline-block govuk-!-padding-top-4">
-            {{ empty_message }}
-          </p>
-        {% endfor %}
-      </div>
-    </fieldset>
-  </div>
+        </div>
+        {% if loop.last %}
+          <div class="keyline-block">
+          </div>
+        {% endif %}
+      {% else %}
+        <p class="table-empty-message keyline-block govuk-!-padding-top-4">
+          {{ empty_message }}
+        </p>
+      {% endfor %}
+    </div>
+  </fieldset>
 </div>

@@ -110,6 +110,8 @@ export default [
       paths.src + 'javascripts/sessionTimeout.js',
       paths.src + 'javascripts/exclusiveCheckbox.js',
       paths.src + 'javascripts/permissionFormSubmitButton.js',
+      paths.src + 'javascripts/selectAllCheckboxes.js',
+      paths.src + 'javascripts/discardDraftAlerts.js',
     ],
     output: {
       dir: paths.dist + 'javascripts/',

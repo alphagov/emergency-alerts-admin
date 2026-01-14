@@ -27,7 +27,6 @@ from app.main.forms import (
     ChooseDurationForm,
     ChooseExtraContentForm,
     ConfirmBroadcastForm,
-    DraftMessagesForm,
     NewBroadcastForm,
     RejectionReasonForm,
     ReturnForEditForm,
@@ -166,14 +165,14 @@ def new_broadcast(service_id):
 
 
 @main.route("/services/<uuid:service_id>/select-drafts", methods=["GET", "POST"])
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+@user_has_permissions("create_broadcasts")
 @service_has_permission("broadcast")
 def select_draft_alerts(service_id):
+    drafts = BroadcastMessages(service_id).with_status("draft")
+    print(drafts)
     return render_template(
         "views/broadcast/draft-broadcasts.html",
-        broadcasts=BroadcastMessages(service_id).with_status(
-            "draft",
-        ),
+        broadcasts=drafts,
         page_title="Draft alerts",
         empty_message="You do not have any draft alerts",
         view_broadcast_endpoint=".view_rejected_broadcast",
@@ -181,18 +180,16 @@ def select_draft_alerts(service_id):
     )
 
 
-@main.route("/services/<uuid:service_id>/drafts", methods=["GET", "POST"])
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+@main.route("/services/<uuid:service_id>/discard-drafts", methods=["POST"])
+@user_has_permissions("create_broadcasts")
 @service_has_permission("broadcast")
-def select_drafts(service_id):
-    form = DraftMessagesForm(
-        choices=BroadcastMessages(service_id).with_status("draft"),
-    )
-
-    return render_template(
-        "views/broadcast/drafts.html",
-        form=form,
-    )
+def discard_drafts(service_id):
+    data = request.get_json()
+    checked_ids = data.get("draft_alerts", [])
+    for id in checked_ids:
+        broadcast_message = BroadcastMessage.from_id(id, service_id=service_id)
+        broadcast_message.reject_broadcast()
+    return redirect(url_for(".select_draft_alerts", service_id=service_id))
 
 
 @main.route(

@@ -1637,16 +1637,6 @@ class ServiceBroadcastNetworkForm(StripWhitespaceForm):
         return f"live-{self.broadcast_channel}-{providers}"
 
 
-class DraftMessagesForm(StripWhitespaceForm):
-    drafts = GovukCheckboxesField("Select drafts to discard")
-
-    def __init__(self, choices, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.drafts.choices = choices
-        self.drafts.render_as_list = True
-        self.drafts.param_extensions = {"fieldset": {"legend": {"classes": "govuk-visually-hidden"}}}
-
-
 class ServiceBroadcastAccountForm(Form):
     account_type = StringField("Account type specifier")
     service_mode = ""
