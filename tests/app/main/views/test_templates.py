@@ -361,7 +361,7 @@ def test_should_show_page_for_one_template(client_request, fake_uuid, mock_get_t
 
     back_link = page.select_one(".govuk-back-link")
     assert back_link["href"] == url_for(
-        "main.view_template",
+        "main.edit_template",
         service_id=SERVICE_ONE_ID,
         template_id=template_id,
     )
@@ -554,6 +554,16 @@ def test_edit_broadcast_template(
 
     # The following assertions test that the expected content, for templateSummaryList component,
     # appears on the page
+    assert [(link.text.strip(), link["href"]) for link in page.select(".pill-separate-item")] == [
+        (
+            "Finish editing template",
+            url_for(
+                ".view_template",
+                service_id=SERVICE_ONE_ID,
+                template_id=fake_uuid,
+            ),
+        ),
+    ]
     assert (normalize_spaces(page.select_one(".heading-large").text)) == "Template"
 
     assert (
@@ -694,7 +704,7 @@ def test_should_redirect_when_saving_a_template(
         },
         _expected_status=302,
         _expected_redirect=url_for(
-            ".view_template",
+            ".edit_template",
             service_id=SERVICE_ONE_ID,
             template_id=fake_uuid,
         ),
