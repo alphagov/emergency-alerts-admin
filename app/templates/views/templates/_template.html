@@ -24,8 +24,15 @@
           {% endif %}
           {% if current_user.has_permissions('manage_templates') and not edit_mode %}
             <div class="govuk-grid-column-one-half">
-              <a href="{{ url_for('.view_template', service_id=current_service.id, template_id=template.id) }}/edittemplate" class="govuk-link govuk-link--inverse pill-separate-item">
+              <a href="{{ url_for('.edit_template', service_id=current_service.id, template_id=template.id) }}" class="govuk-link govuk-link--inverse pill-separate-item">
                 Edit this template
+              </a>
+            </div>
+          {% endif %}
+          {% if current_user.has_permissions('create_broadcasts') and edit_mode %}
+            <div class="govuk-grid-column-one-half">
+              <a href="{{ url_for(".view_template", service_id=current_service.id, template_id=template.id) }}" class="govuk-link govuk-link--inverse pill-separate-item">
+                Finish editing template
               </a>
             </div>
           {% endif %}
