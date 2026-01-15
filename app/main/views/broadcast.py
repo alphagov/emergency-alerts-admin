@@ -169,7 +169,6 @@ def new_broadcast(service_id):
 @service_has_permission("broadcast")
 def select_draft_alerts(service_id):
     drafts = BroadcastMessages(service_id).with_status("draft")
-    print(drafts)
     return render_template(
         "views/broadcast/draft-broadcasts.html",
         broadcasts=drafts,
