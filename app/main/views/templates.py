@@ -532,7 +532,7 @@ def edit_service_template(service_id, template_id):
             else:
                 raise e
         else:
-            return redirect(url_for(".view_template", service_id=service_id, template_id=template_id))
+            return redirect(url_for(".edit_template", service_id=service_id, template_id=template_id))
 
     if template.template_type not in current_service.available_template_types:
         return redirect(
@@ -549,7 +549,7 @@ def edit_service_template(service_id, template_id):
             "views/edit-{}-template.html".format(template.template_type),
             form=form,
             template=template,
-            back_link=url_for("main.view_template", service_id=service_id, template_id=template.id),
+            back_link=url_for("main.edit_template", service_id=service_id, template_id=template.id),
             template_folder_path=current_service.get_template_folder_path(template.folder),
         )
 
