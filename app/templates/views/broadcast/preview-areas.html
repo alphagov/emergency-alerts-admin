@@ -26,7 +26,7 @@
 {% endblock %}
 
 {% block backLink %}
-  {{ govukBackLink({ "href": back_link.replace('/edittemplate','') }) }}
+  {{ govukBackLink({ "href": back_link }) }}
 {% endblock %}
 
 {% if message.areas %}
@@ -98,9 +98,9 @@
     {% elif message_type == "templates" %}
       {{ govukButton({
         "element": "a",
-        "text": "Save template",
+        "text": "Save and continue",
         "name": "continue",
-        "href": redirect_url,
+        "href": url_for('.edit_template', service_id=current_service.id, template_id=message.id),
         "classes": "govuk-button"
       }) }}
     {% endif %}
