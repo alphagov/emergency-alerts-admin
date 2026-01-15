@@ -189,7 +189,7 @@ def discard_drafts(service_id):
     for id in checked_ids:
         broadcast_message = BroadcastMessage.from_id(id, service_id=service_id)
         broadcast_message.reject_broadcast()
-    return redirect(url_for(".select_draft_alerts", service_id=service_id))
+    return jsonify({"status": "success", "deleted_drafts": checked_ids}), 200
 
 
 @main.route(

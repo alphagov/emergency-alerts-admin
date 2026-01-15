@@ -21,9 +21,9 @@
                 },
                 body: JSON.stringify({ draft_alerts: checkedIds }),
             });
-            window.location.reload();
         }
-        btn.blur();
+        const newPath = window.location.pathname.replace('/select-drafts', '/current-alerts');
+        window.location.href = newPath;
       });
     }
   };
