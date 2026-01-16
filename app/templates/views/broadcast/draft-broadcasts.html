@@ -1,0 +1,37 @@
+{% from 'components/ajax-block.html' import ajax_block %}
+{% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
+{% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
+
+{% extends "withnav_template.html" %}
+
+{% block service_page_title %}
+  {{ page_title }}
+{% endblock %}
+
+{% block maincolumn_content %}
+
+  <h1 class="heading-medium">{{ page_title }}</h1>
+
+  {% include('views/broadcast/partials/drafts-table.html') %}
+
+  {% if current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) %}
+    <div class="js-stick-at-bottom-when-scrolling govuk-!-margin-top-0">
+      {{ govukButton({
+        "id": "select-all-checkboxes-button",
+        "element": "button",
+        "text": "Select all",
+        "classes": "govuk-button--secondary govuk-!-margin-right-3"
+      }) }}
+      {{ govukButton({
+        "id": "discard-alerts-button",
+        "element": "button",
+        "text": "Discard alerts",
+        "classes": "govuk-button--secondary",
+        "attributes": {
+          "data-csrf-token": csrf_token(),
+        }
+      }) }}
+    </div>
+  {% endif %}
+
+{% endblock %}
