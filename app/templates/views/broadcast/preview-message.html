@@ -84,9 +84,6 @@
     and (not current_service.live or current_user.id != returned_for_edit_by)
   ) %}
   {% call form_wrapper() %}
-    {# {% if can_submit_for_approval %}
-      {{ page_footer('Submit for approval') }}
-    {% endif %} #}
     {{ govukButton({
       "element": "a",
       "text": "Submit for approval",
