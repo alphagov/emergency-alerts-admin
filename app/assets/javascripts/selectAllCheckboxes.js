@@ -7,9 +7,9 @@
       btn.addEventListener("click", function () {
         const checkboxes = document.querySelectorAll(".govuk-checkboxes__input");
         if (checkboxes.length) {
-            checkboxes.forEach(function (checkbox) {
-               checkbox.checked = true;
-            });
+            for (const checkbox of checkboxes) {
+              checkbox.checked = true;
+            }
         }
         btn.blur();
       });

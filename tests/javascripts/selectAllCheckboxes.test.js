@@ -50,9 +50,9 @@ describe("Checkboxes", () => {
       document.getElementById("checkbox-4"),
     ];
     btn.click();
-    checkboxes.forEach((checkbox) => {
+    for (const checkbox of checkboxes) {
       expect(checkbox.checked).toBe(true);
-    });
+    }
   });
 
   test("should be checked when some are pre-checked and select all button is clicked", () => {
@@ -66,9 +66,9 @@ describe("Checkboxes", () => {
     checkboxes[1].checked = true;
     checkboxes[3].checked = true;
     btn.click();
-    checkboxes.forEach((checkbox) => {
+    for (const checkbox of checkboxes) {
       expect(checkbox.checked).toBe(true);
-    });
+    }
   });
 
   test("should allow unchecking after select all button is clicked", () => {
@@ -80,9 +80,9 @@ describe("Checkboxes", () => {
       document.getElementById("checkbox-4"),
     ];
     btn.click();
-    checkboxes.forEach((checkbox) => {
+    for (const checkbox of checkboxes) {
       expect(checkbox.checked).toBe(true);
-    });
+    }
     checkboxes[0].click();
     checkboxes[2].click();
     expect(checkboxes[0].checked).toBe(false);

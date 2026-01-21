@@ -16,20 +16,23 @@
 
   {% if current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) %}
     <div class="js-stick-at-bottom-when-scrolling govuk-!-margin-top-0">
+      {% set button_attrs = {"data-csrf-token": csrf_token()} %}
+      {% if not broadcasts %}
+        {% set _ = button_attrs.update({"disabled": "disabled"}) %}
+      {% endif %}
       {{ govukButton({
         "id": "select-all-checkboxes-button",
         "element": "button",
         "text": "Select all",
-        "classes": "govuk-button--secondary govuk-!-margin-right-3"
+        "classes": "govuk-button--secondary govuk-!-margin-right-3",
+        "attributes": button_attrs
       }) }}
       {{ govukButton({
         "id": "discard-alerts-button",
         "element": "button",
         "text": "Discard alerts",
         "classes": "govuk-button--secondary",
-        "attributes": {
-          "data-csrf-token": csrf_token(),
-        }
+        "attributes": button_attrs
       }) }}
     </div>
   {% endif %}

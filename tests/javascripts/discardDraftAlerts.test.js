@@ -59,9 +59,9 @@ describe("Discard drafts endpoint", () => {
       document.getElementById("checkbox-3"),
       document.getElementById("checkbox-4"),
     ];
-    checkboxes.forEach((checkbox) => {
+    for (const checkbox of checkboxes) {
       checkbox.checked = true;
-    });
+    }
     btn.click();
 
     expect(fetchSpy).toHaveBeenCalledTimes(1);
