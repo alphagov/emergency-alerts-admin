@@ -51,7 +51,7 @@ COPY --chown=easuser:easuser --from=build $DIR_ADMIN $DIR_ADMIN
 RUN echo "" > $DIR_ADMIN/environment.sh
 
 # Remove our .git folder, we don't need it once the build is complete
-RUN rm -rf $DIR_API/.git
+RUN rm -rf $DIR_ADMIN/.git
 
 COPY --chown=easuser:easuser scripts/start.sh /
 CMD bash /start.sh
