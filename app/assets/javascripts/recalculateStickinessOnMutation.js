@@ -8,12 +8,13 @@
     if (!targetElement)
       return;
 
-    const observer = new MutationObserver((mutations) => {
+    const observer = new MutationObserver(function (mutations) {
       mutations.forEach((mutation) => {
           mutation.removedNodes.forEach(() => {
               GOVUK.stickAtBottomWhenScrolling.recalculate();
           });
       });
+      return;
     });
 
     observer.observe(targetElement, {

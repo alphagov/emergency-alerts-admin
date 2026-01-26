@@ -8,21 +8,26 @@
         const checkboxes = document.querySelectorAll(
           'input[type="checkbox"]:checked'
         );
-        const checkedIds = Array.from(checkboxes).map(function (cb) { return cb.id });
+        const checkedIds = Array.from(checkboxes).map(function (cb) {
+          return cb.id;
+        });
         if (checkedIds.length) {
-            const service_id = window.location.pathname
-                .split("/")
-                .filter(Boolean)[1];
-            fetch(`/services/${service_id}/discard-drafts`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": btn.getAttribute("data-csrf-token"),
-                },
-                body: JSON.stringify({ draft_alerts: checkedIds }),
-            });
+          const service_id = window.location.pathname
+            .split("/")
+            .filter(Boolean)[1];
+          fetch(`/services/${service_id}/discard-drafts`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": btn.getAttribute("data-csrf-token"),
+            },
+            body: JSON.stringify({ draft_alerts: checkedIds }),
+          });
         }
-        const newPath = window.location.pathname.replace('/select-drafts', '/current-alerts');
+        const newPath = window.location.pathname.replace(
+          "/select-drafts",
+          "/current-alerts"
+        );
         window.location.href = newPath;
       });
     }
