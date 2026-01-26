@@ -1988,7 +1988,7 @@ class FloodWarningBulkAreasForm(StripWhitespaceForm):
         if not valid:
             # Form-level error message based on field's error code, returned if validation files
             error_messages = {
-                "missing_data": "Enter at least 1 Flood Warning TA Code",
+                "missing_data": "Enter at least 1 Flood Warning TA code",
                 "duplicates": "All Flood Warning TA codes must be unique",
                 "invalid": "Flood Warning TA code not found",
             }
