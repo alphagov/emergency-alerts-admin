@@ -22,6 +22,11 @@
               "X-CSRFToken": btn.getAttribute("data-csrf-token"),
             },
             body: JSON.stringify({ draft_alerts: checkedIds }),
+          })
+          .then((response) => {
+            if (!response.ok) {
+              throw Error(response.statusText);
+            }
           });
         }
         const newPath = window.location.pathname.replace(
