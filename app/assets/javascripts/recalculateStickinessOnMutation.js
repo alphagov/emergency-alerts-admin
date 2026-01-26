@@ -5,8 +5,9 @@
     const GOVUK = global.GOVUK;
     const targetElement = document.querySelector('.ajax-block-container');
 
-    if (!targetElement)
+    if (!targetElement) {
       return;
+    }
 
     const observer = new MutationObserver(function (mutations) {
       mutations.forEach((mutation) => {
