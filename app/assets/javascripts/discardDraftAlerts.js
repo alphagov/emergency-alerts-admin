@@ -8,7 +8,7 @@
         const checkboxes = document.querySelectorAll(
           'input[type="checkbox"]:checked'
         );
-        const checkedIds = Array.from(checkboxes).map((cb) => cb.id);
+        const checkedIds = Array.from(checkboxes).map(function (cb) { return cb.id });
         if (checkedIds.length) {
             const service_id = window.location.pathname
                 .split("/")
