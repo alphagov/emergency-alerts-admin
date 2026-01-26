@@ -41,10 +41,10 @@
 {% endblock %}
 
 {% set hint_html %}
-  <p class="govuk-body">You can add TA codes individually below, or you can <a class="govuk-link govuk-link--no-visited-state"
+  <p class="govuk-body">You can add TA codes individually below, or <a class="govuk-link govuk-link--no-visited-state"
     href="{{ url_for('.search_flood_warning_areas_as_a_list', service_id=current_service.id, message_id=message.id, message_type=message_type) }}">enter a list into one text box</a>.
     <br/>
-    When adding TA codes individually you can add more after adding the first.
+    When adding TA codes individually, you can add more after adding the first.
   </p>
 {% endset %}
 
@@ -60,7 +60,11 @@
       <div class="mapping-form">
         <div class="govuk-form-group">
           {{ form.flood_warning_area(param_extensions={
-              "hint":{"html": hint_html}
+              "hint":{"html": hint_html},
+              "label": {
+                  "classes": "govuk-label--s",
+                  "id": "page-header",
+              }
             }
           )}}
         </div>
