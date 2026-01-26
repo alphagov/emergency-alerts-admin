@@ -7,7 +7,7 @@
 {% from "views/broadcast/macros/area-map.html" import map %}
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
 {% from "govuk_frontend_jinja/components/input/macro.html" import govukInput %}
-{% from "components/error-summary.html" import errorSummary %}
+{% from "govuk_frontend_jinja/components/error-summary/macro.html" import govukErrorSummary %}
 {% from "components/page-footer.html" import sticky_page_footer %}
 
 {% block extra_stylesheets %}
@@ -41,17 +41,20 @@
 {% endblock %}
 
 {% set hint_html %}
-  <p class="govuk-body">You can have up to 25 TA codes in one emergency alert.</p>
+  <p class="govuk-body">Emergency alerts can be sent to up to 25 target areas.</p>
   <p class="govuk-body">
-    Your list of TA codes can be entered as one per new line or
-    by separating each TA Code from the next by a comma if
-    entered as single line.
+    Separate each TA code with a comma or write them on separate lines.
   </p>
 {% endset %}
 
 
 {% block maincolumn_content %}
-  {{ errorSummary(form) }}
+  {% if form.errors %}
+    {{ govukErrorSummary({
+        "titleText": "There is a problem",
+        "errorList": [{"href": "areas", "text": form.form_errors[0]}]
+    }) }}
+  {% endif %}
   {{ page_header(page_title, classes="heading-no-margin-top") }}
 
   {% call form_wrapper() %}
@@ -60,7 +63,7 @@
       <div class="govuk-form-group">
         {{ form.areas(param_extensions={
             "hint":{"html": hint_html}
-          }) }}
+        }) }}
       </div>
     </div>
   <div class="govuk-form-group">
