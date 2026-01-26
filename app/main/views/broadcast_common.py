@@ -2,11 +2,13 @@ from flask import flash, redirect, render_template, request, url_for
 from notifications_python_client.errors import HTTPError
 
 from app.broadcast_areas.models import CustomBroadcastAreas
+from app.formatters import split_text_by_comma_and_newline
 from app.main import main
 from app.main.forms import (
     BroadcastAreaForm,
     BroadcastAreaFormWithSelectAll,
     ChooseCoordinateTypeForm,
+    FloodWarningBulkAreasForm,
     FloodWarningForm,
     PostcodeForm,
     SearchByNameForm,
@@ -611,10 +613,10 @@ def search_flood_warning_areas(service_id, message_type, message_id=None):
     if form.validate_on_submit():
         area_id = f"Flood_Warning_Target_Areas-{form.flood_warning_area.data}"
         if area_id not in library.item_ids:
-            form.flood_warning_area.errors.append("Flood Warning TA Code not found")
+            form.flood_warning_area.errors.append("Flood Warning TA code not found")
             return render_search_flood_warning_areas_page()
         elif message and area_id in message.area_ids:
-            form.flood_warning_area.errors.append("Flood Warning TA Code already selected")
+            form.flood_warning_area.errors.append("Flood Warning TA code already selected")
             return render_search_flood_warning_areas_page()
         if message:
             message.add_areas(area_id)
@@ -627,6 +629,59 @@ def search_flood_warning_areas(service_id, message_type, message_id=None):
         form.flood_warning_area.data = ""  # clear the form field on page after area added
 
     return render_search_flood_warning_areas_page()
+
+
+@main.route(
+    "/services/<uuid:service_id>/<message_type>/<uuid:message_id>/libraries/flood_warning_areas_list/",
+    methods=["GET", "POST"],
+)
+@main.route(
+    "/services/<uuid:service_id>/<message_type>/libraries/flood_warning_areas_list/",
+    methods=["GET", "POST"],
+)
+@service_has_permission("broadcast")
+@user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
+def search_flood_warning_areas_as_a_list(service_id, message_type, message_id=None):
+    template_folder_id = request.args.get("template_folder_id")
+    Message = get_message_type(message_type)
+    message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
+    library = BroadcastMessage.libraries.get("Flood_Warning_Target_Areas")
+
+    form = FloodWarningBulkAreasForm(library_ids=library.item_ids, message_ids=message.area_ids if message else [])
+
+    if form.validate_on_submit():
+        ids = split_text_by_comma_and_newline(form.areas.data)
+        area_ids = [f"Flood_Warning_Target_Areas-{id}" for id in ids]
+        if message:
+            message.replace_areas([*area_ids])
+        else:
+            message = Message.create_from_area(
+                service_id=service_id, area_ids=[*area_ids], template_folder_id=template_folder_id
+            )
+        return redirect(
+            url_for(
+                ".search_flood_warning_areas",
+                service_id=service_id,
+                message_id=message.id,
+                message_type=message_type,
+            )
+        )
+
+    return render_template(
+        "views/broadcast/search-flood-warnings-list.html",
+        broadcast_message=message,
+        page_title="Enter Flood Warning Target Areas (TA) as a list",
+        back_link=url_for(
+            ".search_flood_warning_areas",
+            service_id=service_id,
+            message_id=message_id,
+            message_type=message_type,
+        ),
+        template_folder_id=template_folder_id,
+        message=message,
+        message_type=message_type,
+        form=form,
+    )
 
 
 @main.route("/services/<uuid:service_id>/<message_type>/<uuid:message_id>/remove/<area_slug>")
