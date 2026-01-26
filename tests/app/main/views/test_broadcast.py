@@ -26,6 +26,7 @@ from tests.app.broadcast_areas.custom_polygons import (
     CUMBRIA_FLOOD_WARNING_AREA,
     ENGLAND,
     HG3_2RL,
+    MULTIPLE_FLOOD_WARNING_AREAS,
     SKYE,
 )
 from tests.conftest import (
@@ -1369,6 +1370,53 @@ def test_search_flood_warning_areas_page(
     assert normalize_spaces(page.select(".govuk-button")[7].text) == "Save and continue to preview"
 
 
+def test_search_flood_warning_bulk_add_areas_page(
+    client_request,
+    service_one,
+    mock_get_draft_broadcast_message,
+    mock_update_broadcast_message,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
+):
+    service_one["permissions"] += ["broadcast"]
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            area_ids=["Flood_Warning_Target_Areas-011FWCN2M"],
+            areas={
+                "ids": ["Flood_Warning_Target_Areas-011FWCN2M"],
+                "names": ["Cumbria coast at Maryport harbour"],
+                "aggregate_names": ["Cumbria coast at Maryport harbour"],
+                "simple_polygons": CUMBRIA_FLOOD_WARNING_AREA,
+            },
+        ),
+    )
+    client_request.login(active_user_create_broadcasts_permission)
+
+    page = client_request.get(
+        ".search_flood_warning_areas_as_a_list",
+        service_id=SERVICE_ONE_ID,
+        message_id=fake_uuid,
+        message_type="broadcast",
+    )
+
+    assert normalize_spaces(page.select_one("h1").text) == "Enter Flood Warning Target Areas (TA) as a list"
+
+    assert [normalize_spaces(item.text) for item in page.select(".govuk-hint")] == [
+        "Emergency alerts can be sent to up to 25 target areas. "
+        "Separate each TA code with a comma or write them on separate lines."
+    ]
+    assert page.select_one("textarea")["id"] == "areas"
+    assert page.select_one("textarea")["rows"] == "10"
+    assert normalize_spaces(page.select(".govuk-button")[5].text) == "Add areas"
+
+
 @pytest.mark.parametrize(
     "polygons, expected_list_items",
     (
@@ -2275,6 +2323,100 @@ def test_add_flood_warning_area(
     assert actual_areas["simple_polygons"] == expected_areas["simple_polygons"]
 
 
+@pytest.mark.parametrize(
+    "delimiter",
+    ((","), ("\n")),
+)
+def test_add_flood_warning_areas_in_bulk_with_delimiters(
+    client_request,
+    service_one,
+    mock_get_draft_broadcast_message,
+    mock_update_broadcast_message,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
+    delimiter,
+):
+    service_one["permissions"] += ["broadcast"]
+    mock_get_broadcast_message = mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            area_ids=[],
+            areas={
+                "ids": [],
+                "names": [],
+                "simple_polygons": [],
+            },
+        ),
+    )
+    client_request.login(active_user_create_broadcasts_permission)
+
+    page = client_request.get(
+        ".search_flood_warning_areas_as_a_list",
+        service_id=SERVICE_ONE_ID,
+        message_id=fake_uuid,
+        message_type="broadcast",
+    )
+
+    assert normalize_spaces(page.select_one("h1").text) == "Enter Flood Warning Target Areas (TA) as a list"
+
+    areas = ["011FWCN2M", "031FWFSE440", "031FWFSE450"]
+    areas_as_string = delimiter.join(areas)
+
+    client_request.login(active_user_create_broadcasts_permission)
+    page = client_request.post(
+        ".search_flood_warning_areas_as_a_list",
+        service_id=SERVICE_ONE_ID,
+        message_id=fake_uuid,
+        message_type="broadcast",
+        _data={"areas": [areas_as_string]},
+        _follow_redirects=True,
+    )
+
+    assert normalize_spaces(page.select_one("h1").text) == "Choose Flood Warning Target Areas (TA)"
+    assert [normalize_spaces(item.text) for item in page.select("ul.area-list li.area-list-item")] == [
+        "011FWCN2M: Cumbria coast at Maryport harbour Remove Cumbria coast at Maryport harbour",
+        "031FWFSE440: River Severn at Hylton Road, Worcester Remove River Severn at Hylton Road, Worcester",
+        "031FWFSE450: River Severn in South Worcester Remove River Severn in South Worcester",
+    ]
+
+    assert mock_get_broadcast_message.call_count == 3
+
+    mock_update_broadcast_message_kwargs = mock_update_broadcast_message.call_args.kwargs
+    assert mock_update_broadcast_message_kwargs["service_id"] == SERVICE_ONE_ID
+    assert mock_update_broadcast_message_kwargs["broadcast_message_id"] == fake_uuid
+
+    actual_areas = mock_update_broadcast_message_kwargs["data"]["areas"]
+    expected_areas = {
+        "ids": [
+            "Flood_Warning_Target_Areas-011FWCN2M",
+            "Flood_Warning_Target_Areas-031FWFSE440",
+            "Flood_Warning_Target_Areas-031FWFSE450",
+        ],
+        "names": [
+            "Cumbria coast at Maryport harbour",
+            "River Severn at Hylton Road, Worcester",
+            "River Severn in South Worcester",
+        ],
+        "aggregate_names": [
+            "Cumbria coast at Maryport harbour",
+            "River Severn at Hylton Road, Worcester",
+            "River Severn in South Worcester",
+        ],
+        "simple_polygons": MULTIPLE_FLOOD_WARNING_AREAS,
+    }
+
+    assert sorted(actual_areas["ids"]) == sorted(expected_areas["ids"])
+    assert actual_areas["names"] == expected_areas["names"]
+    assert actual_areas["aggregate_names"] == expected_areas["aggregate_names"]
+    assert actual_areas["simple_polygons"] == expected_areas["simple_polygons"]
+
+
 def test_remove_flood_warning_area(
     client_request,
     service_one,
@@ -2365,10 +2507,7 @@ def test_error_if_flood_warning_code_invalid(
     client_request.login(active_user_create_broadcasts_permission)
 
     page = client_request.get(
-        ".search_flood_warning_areas",
-        service_id=SERVICE_ONE_ID,
-        message_id=fake_uuid,
-        message_type="broadcast",
+        ".search_flood_warning_areas", service_id=SERVICE_ONE_ID, message_id=fake_uuid, message_type="broadcast"
     )
 
     assert normalize_spaces(page.select_one("h1").text) == "Choose Flood Warning Target Areas (TA)"
@@ -2386,7 +2525,80 @@ def test_error_if_flood_warning_code_invalid(
 
     assert normalize_spaces(page.select_one("h1").text) == "Choose Flood Warning Target Areas (TA)"
     assert not page.select("ul.area-list li.area-list-item")
-    assert normalize_spaces(page.select_one(".govuk-error-message").text) == "Error: Flood Warning TA Code not found"
+    assert normalize_spaces(page.select_one(".govuk-error-message").text) == "Error: Flood Warning TA code not found"
+    assert not mock_update_broadcast_message.called
+
+
+@pytest.mark.parametrize(
+    "areas_input, expected_field_error, expected_form_error",
+    (
+        ([], "Error: This field is required", "There is a problem Enter at least 1 Flood Warning TA code"),
+        (
+            ["test"],
+            "Error: Flood Warning TA code 'test' not found",
+            "There is a problem Flood Warning TA code not found",
+        ),
+        (
+            ["test", "test"],
+            "Error: Flood Warning TA code 'test' not found",
+            "There is a problem Flood Warning TA code not found",
+        ),
+    ),
+)
+def test_error_if_flood_warning_code_bulk_input_invalid(
+    client_request,
+    service_one,
+    mock_get_draft_broadcast_message,
+    mock_update_broadcast_message,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
+    areas_input,
+    expected_field_error,
+    expected_form_error,
+):
+    service_one["permissions"] += ["broadcast"]
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            area_ids=[],
+            areas={
+                "ids": [],
+                "names": [],
+                "simple_polygons": [],
+            },
+        ),
+    )
+    client_request.login(active_user_create_broadcasts_permission)
+
+    page = client_request.get(
+        ".search_flood_warning_areas_as_a_list",
+        service_id=SERVICE_ONE_ID,
+        message_id=fake_uuid,
+        message_type="broadcast",
+    )
+
+    assert normalize_spaces(page.select_one("h1").text) == "Enter Flood Warning Target Areas (TA) as a list"
+
+    client_request.login(active_user_create_broadcasts_permission)
+    page = client_request.post(
+        ".search_flood_warning_areas_as_a_list",
+        service_id=SERVICE_ONE_ID,
+        message_id=fake_uuid,
+        message_type="broadcast",
+        _data={"areas": areas_input},
+        _follow_redirects=True,
+    )
+
+    assert normalize_spaces(page.select_one("h1").text) == "Enter Flood Warning Target Areas (TA) as a list"
+    assert not page.select("ul.area-list li.area-list-item")
+    assert normalize_spaces(page.select_one(".govuk-error-message").text) == expected_field_error
+    assert normalize_spaces(page.select_one(".govuk-error-summary").text) == (expected_form_error)
     assert not mock_update_broadcast_message.called
 
 
