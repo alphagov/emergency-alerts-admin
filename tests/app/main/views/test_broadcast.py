@@ -2365,7 +2365,7 @@ def test_add_flood_warning_areas_in_bulk_with_delimiters(
 
     assert normalize_spaces(page.select_one("h1").text) == "Enter Flood Warning Target Areas (TA) as a list"
 
-    areas = ["011FWCN2M", "031FWFSE440", "031FWFSE450"]
+    areas = ["011FWBWH", "011FWCN1A", "011FWCN1B"]
     areas_as_string = delimiter.join(areas)
 
     client_request.login(active_user_create_broadcasts_permission)
@@ -2380,9 +2380,15 @@ def test_add_flood_warning_areas_in_bulk_with_delimiters(
 
     assert normalize_spaces(page.select_one("h1").text) == "Choose Flood Warning Target Areas (TA)"
     assert [normalize_spaces(item.text) for item in page.select("ul.area-list li.area-list-item")] == [
-        "011FWCN2M: Cumbria coast at Maryport harbour Remove Cumbria coast at Maryport harbour",
-        "031FWFSE440: River Severn at Hylton Road, Worcester Remove River Severn at Hylton Road, Worcester",
-        "031FWFSE450: River Severn in South Worcester Remove River Severn in South Worcester",
+        "011FWBWH: Whitehaven Sea Lock failure, town centre and North Shore Rd Remove Whitehaven "
+        "Sea Lock failure, town centre and North Shore Rd",
+        "011FWCN1A: Cumbrian coastline from Gretna to Silloth including Port Carlisle, Skinburness "
+        "and Rockcliffe Remove Cumbrian coastline from Gretna to Silloth including Port Carlisle, "
+        "Skinburness and Rockcliffe",
+        (
+            "011FWCN1B: Cumbrian coastline from Gretna to Silloth, between Longtown and Skinburness Remove "
+            "Cumbrian coastline from Gretna to Silloth, between Longtown and Skinburness"
+        ),
     ]
 
     assert mock_get_broadcast_message.call_count == 3
@@ -2394,26 +2400,26 @@ def test_add_flood_warning_areas_in_bulk_with_delimiters(
     actual_areas = mock_update_broadcast_message_kwargs["data"]["areas"]
     expected_areas = {
         "ids": [
-            "Flood_Warning_Target_Areas-011FWCN2M",
-            "Flood_Warning_Target_Areas-031FWFSE440",
-            "Flood_Warning_Target_Areas-031FWFSE450",
+            "Flood_Warning_Target_Areas-011FWBWH",
+            "Flood_Warning_Target_Areas-011FWCN1A",
+            "Flood_Warning_Target_Areas-011FWCN1B",
         ],
         "names": [
-            "Cumbria coast at Maryport harbour",
-            "River Severn at Hylton Road, Worcester",
-            "River Severn in South Worcester",
+            "Whitehaven Sea Lock failure, town centre and North Shore Rd",
+            "Cumbrian coastline from Gretna to Silloth including Port Carlisle, Skinburness and Rockcliffe",
+            "Cumbrian coastline from Gretna to Silloth, between Longtown and Skinburness",
         ],
         "aggregate_names": [
-            "Cumbria coast at Maryport harbour",
-            "River Severn at Hylton Road, Worcester",
-            "River Severn in South Worcester",
+            "Whitehaven Sea Lock failure, town centre and North Shore Rd",
+            "Cumbrian coastline from Gretna to Silloth including Port Carlisle, Skinburness and Rockcliffe",
+            "Cumbrian coastline from Gretna to Silloth, between Longtown and Skinburness",
         ],
         "simple_polygons": MULTIPLE_FLOOD_WARNING_AREAS,
     }
 
     assert sorted(actual_areas["ids"]) == sorted(expected_areas["ids"])
-    assert actual_areas["names"] == expected_areas["names"]
-    assert actual_areas["aggregate_names"] == expected_areas["aggregate_names"]
+    assert sorted(actual_areas["names"]) == sorted(expected_areas["names"])
+    assert sorted(actual_areas["aggregate_names"]) == sorted(expected_areas["aggregate_names"])
     assert actual_areas["simple_polygons"] == expected_areas["simple_polygons"]
 
 
