@@ -50,6 +50,7 @@ from app.formatters import (
     format_auth_type,
     guess_name_from_email_address,
     parse_seconds_as_hours_and_minutes,
+    split_text_by_comma_and_newline,
 )
 from app.main.validators import (
     BroadcastLength,
@@ -518,6 +519,8 @@ class GovukTextareaField(GovukFrontendWidgetMixin, TextAreaField):
         if self.errors:
             error_message = {"text": self.errors[0]}
 
+        value = kwargs.get("value", self._value())
+
         params = {
             "name": self.name,
             "id": self.id,
@@ -525,9 +528,87 @@ class GovukTextareaField(GovukFrontendWidgetMixin, TextAreaField):
             "label": {"text": self.label.text, "classes": None, "isPageHeading": False},
             "hint": {"text": None},
             "errorMessage": error_message,
+            "value": value,
         }
 
         return params
+
+
+class GovukTextareaBulkField(GovukTextareaField):
+    def __init__(
+        self,
+        label,
+        *,
+        library_ids=None,
+        message_ids=None,
+        item,
+        area_id_parser,
+        **kwargs,
+    ):
+        # area IDs from the library to check against
+        self.library_ids = set(library_ids or [])
+
+        # area IDs from areas already added to the message, to check against
+        self.message_ids = set(message_ids or [])
+
+        # Function that translates area IDs from input into format that we store them as
+        self.area_id_parser = area_id_parser
+
+        # How we refer to a singular area i.e. Local Authority
+        self.item = item
+
+        validators = kwargs.pop("validators", [])
+
+        super().__init__(
+            label,
+            validators=validators,
+            param_extensions={
+                "classes": "govuk-!-width-two-thirds govuk-!-margin-bottom-0",
+                "rows": 10,
+                **kwargs.pop("param_extensions", {}),
+            },
+            **kwargs,
+        )
+
+    def _check_for_invalid_values(self, ids, area_ids):
+        if not self.library_ids:
+            return
+
+        # Comparing input areas with those in library
+        for id_, area_id in zip(ids, area_ids):
+            if area_id not in self.library_ids:
+                # error code specified determines form-level validation error message
+                self.error_code = "invalid"
+                self.errors.append(f"{self.item} '{id_}' not found")
+
+    def _check_ids_provided_are_unique(self, form, ids):
+        # Checks that area ID doesn't appear in the input more than once
+        checked_area_ids = set()
+        for id_ in ids:
+            if id_ in checked_area_ids:
+                # error code specified determines form-level validation error message
+                self.error_code = "duplicates"
+                self.errors.append(f"{self.item} '{id_}' currently appears in the list more than once")
+            checked_area_ids.add(id_)
+
+    def validate(self, form, extra_validators=None):
+        if not super().validate(form, extra_validators):
+            return False
+
+        # Checking input isn't empty
+        if not self.data:
+            # error code specified determines form-level validation error message
+            self.error_code = "missing_data"
+            self.errors.append("This field is required")
+
+        # Translates area IDs from input into format that we store them as, for comparison
+        ids, area_ids = self.area_id_parser(self)
+
+        # Custom validation methods
+        self._check_for_invalid_values(ids, area_ids)
+        self._check_ids_provided_are_unique(form, ids)
+
+        return not self.errors
 
 
 # based on work done by @richardjpope: https://github.com/richardjpope/recourse/blob/master/recourse/forms.py#L6
@@ -1877,12 +1958,45 @@ class ChooseCoordinateTypeForm(StripWhitespaceForm):
 class FloodWarningForm(StripWhitespaceForm):
     flood_warning_area = GovukSearchField(
         "Flood warning TA code",
-        param_extensions={
-            "hint": {"text": ("You can add more TA codes after adding the first.")},
-            "classes": "govuk-input govuk-!-width-full",
-        },
         validators=[DataRequired()],
     )
+
+
+class FloodWarningBulkAreasForm(StripWhitespaceForm):
+
+    def __init__(self, library_ids, message_ids, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.areas.library_ids = set(library_ids)
+        self.areas.message_ids = set(message_ids)
+        self.areas.area_id_parser = self._parse_ids
+        if not hasattr(self, "form_errors"):
+            self.form_errors = []
+
+    @staticmethod
+    def _parse_ids(field):
+        # Translates area IDs from input into format that Flood Warning
+        # area IDs are stored in db as i.e. "Flood_Warning_Target_Areas-area_id"
+        ids = split_text_by_comma_and_newline(field.data or "")
+        area_ids = [f"Flood_Warning_Target_Areas-{id_}" for id_ in ids]
+        return ids, area_ids
+
+    areas = GovukTextareaBulkField("", item="Flood Warning TA code", area_id_parser=_parse_ids)
+
+    def validate(self, extra_validators=None):
+        valid = super().validate(extra_validators)
+
+        if not valid:
+            # Form-level error message based on field's error code, returned if validation files
+            error_messages = {
+                "missing_data": "Enter at least 1 Flood Warning TA Code",
+                "duplicates": "All Flood Warning TA codes must be unique",
+                "invalid": "Flood Warning TA code not found",
+            }
+
+            if message := error_messages.get(self.areas.error_code):
+                self.form_errors = [message]
+
+        return not self.form_errors
 
 
 class RejectionReasonForm(StripWhitespaceForm):
