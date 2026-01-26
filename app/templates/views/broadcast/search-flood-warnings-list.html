@@ -1,0 +1,78 @@
+{% extends "without_sidenav_template.html" %}
+{% from "components/banner.html" import banner_wrapper %}
+{% from "components/form.html" import form_wrapper %}
+{% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
+{% from "components/page-header.html" import page_header %}
+{% from "components/page-footer.html" import page_footer %}
+{% from "views/broadcast/macros/area-map.html" import map %}
+{% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
+{% from "govuk_frontend_jinja/components/input/macro.html" import govukInput %}
+{% from "govuk_frontend_jinja/components/error-summary/macro.html" import govukErrorSummary %}
+{% from "components/page-footer.html" import sticky_page_footer %}
+
+{% block extra_stylesheets %}
+  {% include "views/broadcast/partials/area-map-stylesheets.html" %}
+{% endblock %}
+
+{% block extra_javascripts %}
+  {% include "views/broadcast/partials/area-map-javascripts.html" %}
+{% endblock %}
+
+{% if message.areas %}
+  {% if message.areas|length == 1 %}
+    {% set label = "Map of the United Kingdom, showing the area for "+message.areas[0].name %}
+  {% elif message.areas|length > 1 %}
+    {% set label = "Map of the United Kingdom, showing the areas for "+message.areas[:-1]|map(attribute='name')|join(', ')+' and '+message.areas[-1].name  %}
+  {% endif %}
+{% else %}
+  {% set label = "Map of the United Kingdom, showing no areas" %}
+{% endif %}
+
+{% block per_page_title %}
+  {{ page_title }} – {{ current_service.name }}
+{% endblock %}
+
+{% block service_page_title %}
+  {{ page_title }}
+{% endblock %}
+
+{% block backLink %}
+  {{ govukBackLink({ "href": back_link }) }}
+{% endblock %}
+
+{% set hint_html %}
+  <p class="govuk-body">Emergency alerts can be sent to up to 25 target areas.</p>
+  <p class="govuk-body">
+    Separate each TA code with a comma or write them on separate lines.
+  </p>
+{% endset %}
+
+
+{% block maincolumn_content %}
+  {% if form.errors %}
+    {{ govukErrorSummary({
+        "titleText": "There is a problem",
+        "errorList": [{"href": "areas", "text": form.form_errors[0]}]
+    }) }}
+  {% endif %}
+  {{ page_header(page_title, classes="heading-no-margin-top") }}
+
+  {% call form_wrapper() %}
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <div class="mapping-form">
+      <div class="govuk-form-group">
+        {{ form.areas(param_extensions={
+            "hint":{"html": hint_html}
+        }) }}
+      </div>
+    </div>
+  <div class="govuk-form-group">
+        {{ govukButton({
+        "text": "Add areas",
+        "classes": "govuk-button--secondary",
+        "name": "add_area_button"
+      }) }}
+  </div>
+  {% endcall %}
+
+{% endblock %}
