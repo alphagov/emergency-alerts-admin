@@ -1,10 +1,9 @@
 (function (window) {
   "use strict";
-
-  const addSelectAllCheckboxClickHandler = function () {
+  window.GOVUK.addSelectAllCheckboxClickHandler = () => {
     const btn = document.getElementById("select-all-checkboxes-button");
     if (btn) {
-      btn.addEventListener("click", function () {
+      btn.addEventListener("click", () => {
         const checkboxes = document.querySelectorAll(".govuk-checkboxes__input");
         if (checkboxes.length) {
             for (const checkbox of checkboxes) {
@@ -15,8 +14,5 @@
       });
     }
   };
-
-  addSelectAllCheckboxClickHandler();
-  window.GOVUK.addSelectAllCheckboxClickHandler =
-    addSelectAllCheckboxClickHandler;
+  window.GOVUK.addSelectAllCheckboxClickHandler();
 })(window);

@@ -1,16 +1,13 @@
 (function (window) {
   "use strict";
-
-  const addDiscardDraftsClickHandler = function () {
+  window.GOVUK.addDiscardDraftsClickHandler = () => {
     const btn = document.getElementById("discard-alerts-button");
     if (btn) {
-      btn.addEventListener("click", function () {
+      btn.addEventListener("click", (e) => {
         const checkboxes = document.querySelectorAll(
           'input[type="checkbox"]:checked'
         );
-        const checkedIds = Array.from(checkboxes).map(function (cb) {
-          return cb.id;
-        });
+        const checkedIds = Array.from(checkboxes).map((cb) => cb.id);
         if (checkedIds.length) {
           const service_id = window.location.pathname
             .split("/")
@@ -20,13 +17,12 @@
             headers: {
               "Content-Type": "application/json",
               "X-CSRFToken": btn.getAttribute("data-csrf-token"),
+              "Content-Security-Policy": "connect-src 'self';",
             },
             body: JSON.stringify({ draft_alerts: checkedIds }),
           })
-          .then((response) => {
-            if (!response.ok) {
-              throw Error(response.statusText);
-            }
+          .catch(error => {
+            console.error('Fetch error:', error);
           });
         }
         const newPath = window.location.pathname.replace(
@@ -37,7 +33,5 @@
       });
     }
   };
-
-  addDiscardDraftsClickHandler();
-  window.GOVUK.addDiscardDraftsClickHandler = addDiscardDraftsClickHandler;
+  window.GOVUK.addDiscardDraftsClickHandler();
 })(window);

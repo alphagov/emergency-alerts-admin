@@ -1,30 +1,21 @@
-(function (global) {
+(function (window) {
   "use strict";
-
-  const addRecalculateStickinessOnMutation = function () {
-    const GOVUK = global.GOVUK;
+  window.GOVUK.addRecalculateStickinessOnMutation = () => {
     const targetElement = document.querySelector('.ajax-block-container');
-
     if (!targetElement) {
       return;
     }
-
-    const observer = new MutationObserver(function (mutations) {
+    const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
           mutation.removedNodes.forEach(() => {
-              GOVUK.stickAtBottomWhenScrolling.recalculate();
+              window.GOVUK.stickAtBottomWhenScrolling.recalculate();
           });
       });
       return;
     });
-
     observer.observe(targetElement, {
       childList: true
     });
   };
-
-  addRecalculateStickinessOnMutation();
-  window.GOVUK.addRecalculateStickinessOnMutation =
-    addRecalculateStickinessOnMutation;
-
+  window.GOVUK.addRecalculateStickinessOnMutation();
 }(window));
