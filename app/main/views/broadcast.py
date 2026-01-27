@@ -164,6 +164,33 @@ def new_broadcast(service_id):
     )
 
 
+@main.route("/services/<uuid:service_id>/select-drafts", methods=["GET", "POST"])
+@user_has_permissions("create_broadcasts")
+@service_has_permission("broadcast")
+def select_draft_alerts(service_id):
+    drafts = BroadcastMessages(service_id).with_status("draft")
+    return render_template(
+        "views/broadcast/draft-broadcasts.html",
+        broadcasts=drafts,
+        page_title="Draft alerts",
+        empty_message="You do not have any draft alerts",
+        view_broadcast_endpoint=".view_rejected_broadcast",
+        reverse_chronological_sort=True,
+    )
+
+
+@main.route("/services/<uuid:service_id>/discard-drafts", methods=["POST"])
+@user_has_permissions("create_broadcasts")
+@service_has_permission("broadcast")
+def discard_drafts(service_id):
+    data = request.get_json()
+    checked_ids = data.get("draft_alerts", [])
+    for id in checked_ids:
+        broadcast_message = BroadcastMessage.from_id(id, service_id=service_id)
+        broadcast_message.reject_broadcast()
+    return jsonify({"status": "success", "deleted_drafts": checked_ids}), 200
+
+
 @main.route(
     "/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/choose-extra-content", methods=["GET", "POST"]
 )
@@ -762,7 +789,7 @@ def discard_broadcast_message(service_id, broadcast_message_id):
         flash(e.message)
         return render_current_alert_page(broadcast_message, back_link_url=_get_back_link_from_view_broadcast_endpoint())
 
-    if broadcast_message.status != "pending-approval":
+    if broadcast_message.status not in ["draft", "pending-approval"]:
         return redirect(
             url_for(
                 ".view_current_broadcast",

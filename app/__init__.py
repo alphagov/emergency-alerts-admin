@@ -321,7 +321,8 @@ def useful_headers_after_request(response: Response):
         (
             "default-src 'self' {asset_domain};"
             "report-to default;"
-            "script-src 'self' {asset_domain} *.google-analytics.com 'nonce-{content_nonce}' 'unsafe-eval';"
+            "script-src 'self' {asset_domain} *.google-analytics.com 'nonce-{content_nonce}' 'unsafe-eval' "
+            "'sha256-YX4iJw93x5SU0ple+RI+95HNdNBZSA60gR8a5v7HfOA=';"
             "style-src 'self' {asset_domain} 'nonce-{content_nonce}';"
             "connect-src 'self' *.google-analytics.com;"
             "object-src 'self';"

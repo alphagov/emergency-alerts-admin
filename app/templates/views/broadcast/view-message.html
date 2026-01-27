@@ -360,8 +360,20 @@
       service_id=current_service.id,
       broadcast_message_id=broadcast_message.id,
     ),
-    "classes": "govuk-button"
+    "classes": "govuk-button govuk-!-margin-right-3"
   }) }}
+  {% if broadcast_message.status in ["draft"] %}
+    {{ govukButton({
+        "element": "a",
+        "text": "Discard this alert",
+        "href":url_for(
+          ".discard_broadcast_message",
+          service_id=current_service.id,
+          broadcast_message_id=broadcast_message.id,
+        ),
+        "classes": "govuk-button govuk-button--warning"
+      }) }}
+  {% endif %}
 {% endif %}
 
 {% if broadcast_message.status in ["draft", "returned"] and broadcast_message_version_count > 1 %}
