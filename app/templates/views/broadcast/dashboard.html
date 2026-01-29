@@ -23,6 +23,12 @@
         "element": "a",
         "text": "Create new alert",
         "href": url_for('.new_broadcast', service_id=current_service.id),
+        "classes": "govuk-button--secondary govuk-!-margin-right-3"
+      }) }}
+      {{ govukButton({
+        "element": "a",
+        "text": "Manage draft alerts",
+        "href": url_for(".broadcast_dashboard_draft", service_id=current_service.id),
         "classes": "govuk-button--secondary"
       }) }}
     </div>

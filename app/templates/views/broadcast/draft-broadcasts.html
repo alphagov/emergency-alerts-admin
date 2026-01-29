@@ -1,0 +1,73 @@
+{% from "components/form.html" import form_wrapper %}
+{% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
+
+{% extends "withnav_template.html" %}
+
+{% block service_page_title %}
+  Draft alerts
+{% endblock %}
+
+{% block maincolumn_content %}
+  <form id="delete-drafts-form" method="post" action="{{ url_for('.delete_drafts', service_id=current_service.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <h1 class="heading-medium">Draft alerts</h1>
+
+    {% set sorted_broadcasts = broadcasts|list|sort|reverse if reverse_chronological_sort else broadcasts|list %}
+
+    <div class="ajax-block-container js-mark-focus-on-parent" data-classes-to-persist="js-child-has-focus">
+      <fieldset class="govuk-fieldset">
+        <div class="govuk-hint">Select drafts to delete:</div>
+        <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+          {% for item in sorted_broadcasts %}
+            <div class="keyline-block">
+              <div class="govuk-checkboxes__item template-list-item template-list-item-with-checkbox template-list-item-without-ancestors">
+                <input class="govuk-checkboxes__input" id="{{ item.id }}" name="checked_alerts" type="checkbox" value="{{ item.id }}" {% if check_all %}checked{% endif %}>
+                <label class="govuk-label govuk-checkboxes__label template-list-item-label" for="{{ item.id }}">
+                  <span class="govuk-visually-hidden">
+                    {{ item.reference or item.template_name or "Untitled alert"}}
+                  </span>
+                </label>
+                <div class="file-list file-list--sectioned govuk-!-margin-bottom-2">
+                  <h2>
+                    <a class="file-list-filename-large govuk-link govuk-link--no-visited-state"
+                      href="{{ url_for(view_broadcast_endpoint, service_id=current_service.id, broadcast_message_id=item.id) }}">
+                        {{ item.reference or item.template_name or "Untitled alert"}}
+                    </a>
+                  </h2>
+                  <span id="{{ item.id }}-item-hint" class="govuk-hint govuk-checkboxes__hint template-list-item-hint">
+                    {{ item.content }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            {% if loop.last %}
+                <div class="keyline-block">
+                </div>
+            {% endif %}
+          {% else %}
+            <p class="table-empty-message keyline-block govuk-!-padding-top-4">
+                {{ empty_message }}
+            </p>
+          {% endfor %}
+        </div>
+      </fieldset>
+    </div>
+
+    {% if current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) %}
+      <div class="js-stick-at-bottom-when-scrolling">
+        {{ govukButton({
+          "element": "a",
+          "text": "Select all",
+          "href": url_for('.select_all_drafts', service_id=current_service.id),
+          "classes": "govuk-button--secondary govuk-!-margin-right-3"
+        }) }}
+        {{ govukButton({
+          "element": "button",
+          "type": "submit",
+          "text": "Delete draft alerts",
+          "classes": "govuk-button--secondary"
+        }) }}
+      </div>
+    {% endif %}
+  </form>
+{% endblock %}
