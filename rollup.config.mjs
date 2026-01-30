@@ -111,6 +111,7 @@ export default [
       paths.src + 'javascripts/exclusiveCheckbox.js',
       paths.src + 'javascripts/permissionFormSubmitButton.js',
       paths.src + 'javascripts/recalculateStickinessOnMutation.js',
+      paths.src + 'javascripts/checkAllCheckboxes.js',
       paths.src + 'javascripts/clearCheckboxesOnShowAndLoad.js',
     ],
     output: {

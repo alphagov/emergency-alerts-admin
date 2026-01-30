@@ -2,9 +2,12 @@
   "use strict";
   window.GOVUK.clearCheckboxesOnShowAndLoad = () => {
     function clearCheckboxes() {
-      document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-        checkbox.checked = false;
-      });
+      const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+      if (checkboxes.length) {
+        for (const checkbox of checkboxes) {
+          checkbox.checked = false;
+        }
+      }
     }
     // Clear on page show (handles back button)
     window.addEventListener('pageshow', clearCheckboxes);

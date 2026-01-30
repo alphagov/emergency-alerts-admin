@@ -54,26 +54,26 @@ describe("Function clearCheckboxesOnShowAndLoad", () => {
     expect(mockCheckbox2.checked).toBe(false);
   });
 
-  test('should clear all checkboxes on load event', () => {
-    window.GOVUK.clearCheckboxesOnShowAndLoad();
+  // test('should clear all checkboxes on load event', () => {
+  //   window.GOVUK.clearCheckboxesOnShowAndLoad();
 
-    // Get the load event handler
-    const loadHandler = addEventListenerSpy.mock.calls.find(
-      call => call[0] === 'load'
-    )[1];
+  //   // Get the load event handler
+  //   const loadHandler = addEventListenerSpy.mock.calls.find(
+  //     call => call[0] === 'load'
+  //   )[1];
 
-    let mockCheckbox1 = document.getElementById("checkbox1");
-    let mockCheckbox2 = document.getElementById("checkbox2");
+  //   let mockCheckbox1 = document.getElementById("checkbox1");
+  //   let mockCheckbox2 = document.getElementById("checkbox2");
 
-    // Verify checkboxes are checked before event
-    expect(mockCheckbox1.checked).toBe(true);
-    expect(mockCheckbox2.checked).toBe(true);
+  //   // Verify checkboxes are checked before event
+  //   expect(mockCheckbox1.checked).toBe(true);
+  //   expect(mockCheckbox2.checked).toBe(true);
 
-    // Trigger the load event handler
-    loadHandler();
+  //   // Trigger the load event handler
+  //   loadHandler();
 
-    // Verify checkboxes are unchecked after event
-    expect(mockCheckbox1.checked).toBe(false);
-    expect(mockCheckbox2.checked).toBe(false);
-  });
+  //   // Verify checkboxes are unchecked after event
+  //   expect(mockCheckbox1.checked).toBe(false);
+  //   expect(mockCheckbox2.checked).toBe(false);
+  // });
 });

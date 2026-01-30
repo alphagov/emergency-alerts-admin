@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block maincolumn_content %}
-  <form id="delete-drafts-form" method="post" action="{{ url_for('.manage_drafts', service_id=current_service.id) }}">
+  <form id="delete-drafts-form" method="post" action="{{ url_for('.delete_draft_alerts', service_id=current_service.id) }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
     <h1 class="heading-medium">Draft alerts</h1>
 
@@ -21,7 +21,7 @@
           {% for item in sorted_broadcasts %}
             <div class="keyline-block">
               <div class="govuk-checkboxes__item template-list-item template-list-item-with-checkbox template-list-item-without-ancestors">
-                <input class="govuk-checkboxes__input" id="{{ item.id }}" name="checked_alerts" type="checkbox" value="{{ item.id }}" {% if check_all %}checked{% endif %}>
+                <input class="govuk-checkboxes__input" id="{{ item.id }}" name="checked_alerts" type="checkbox" value="{{ item.id }}">
                 <label class="govuk-label govuk-checkboxes__label template-list-item-label" for="{{ item.id }}">
                   <span class="govuk-visually-hidden">
                     {{ item.reference or item.template_name or "Untitled alert"}}
@@ -61,20 +61,15 @@
           {% set btn_attributes = "" %}
         {% endif %}
         {{ govukButton({
-          "element": "button",
-          "type": "submit",
+          "id": "check-all-checkboxes-button",
+          "type": "button",
           "text": "Select all",
-          "name": "action",
-          "value": "select-all",
           "classes": "govuk-button--secondary govuk-!-margin-right-3",
           "attributes": btn_attributes
         }) }}
         {{ govukButton({
-          "element": "button",
           "type": "submit",
           "text": "Delete draft alerts",
-          "name": "action",
-          "value": "delete-drafts",
           "classes": "govuk-button--secondary",
           "attributes": btn_attributes
         }) }}
