@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block maincolumn_content %}
-  <form id="delete-drafts-form" method="post" action="{{ url_for('.delete_drafts', service_id=current_service.id) }}">
+  <form id="delete-drafts-form" method="post" action="{{ url_for('.manage_drafts', service_id=current_service.id) }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
     <h1 class="heading-medium">Draft alerts</h1>
 
@@ -55,17 +55,28 @@
 
     {% if current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) %}
       <div class="js-stick-at-bottom-when-scrolling">
+        {% if not broadcasts %}
+          {% set btn_attributes = {"disabled": "disabled"} %}
+        {% else %}
+          {% set btn_attributes = "" %}
+        {% endif %}
         {{ govukButton({
-          "element": "a",
+          "element": "button",
+          "type": "submit",
           "text": "Select all",
-          "href": url_for('.select_all_drafts', service_id=current_service.id),
-          "classes": "govuk-button--secondary govuk-!-margin-right-3"
+          "name": "action",
+          "value": "select-all",
+          "classes": "govuk-button--secondary govuk-!-margin-right-3",
+          "attributes": btn_attributes
         }) }}
         {{ govukButton({
           "element": "button",
           "type": "submit",
           "text": "Delete draft alerts",
-          "classes": "govuk-button--secondary"
+          "name": "action",
+          "value": "delete-drafts",
+          "classes": "govuk-button--secondary",
+          "attributes": btn_attributes
         }) }}
       </div>
     {% endif %}

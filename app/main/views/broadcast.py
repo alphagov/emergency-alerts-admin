@@ -84,33 +84,65 @@ def broadcast_dashboard(service_id):
     )
 
 
-@main.route("/services/<uuid:service_id>/draft-alerts")
+@main.route("/services/<uuid:service_id>/draft-alerts/<string:check_all>")
 @user_has_permissions()
 @service_has_permission("broadcast")
-def broadcast_dashboard_draft(service_id):
+def broadcast_dashboard_draft(service_id, check_all="false"):
     return render_template(
         "views/broadcast/draft-broadcasts.html",
         broadcasts=BroadcastMessages(service_id).with_status(
             "draft",
         ),
-        check_all=False,
+        check_all=False if check_all == "false" else True,
         empty_message="You do not have any draft alerts",
         view_broadcast_endpoint=".view_current_broadcast",
         reverse_chronological_sort=True,
     )
 
 
+@main.route("/services/<uuid:service_id>/manage_drafts", methods=["POST"])
+def manage_drafts(service_id):
+    action = request.form.get("action")
+    if action == "select-all":
+        return redirect(
+            url_for(
+                ".broadcast_dashboard_draft",
+                service_id=current_service.id,
+                check_all="true",
+            )
+        )
+    elif action == "delete-drafts":
+        draft_ids = request.form.getlist("checked_alerts")
+        for id in draft_ids:
+            broadcast_message = BroadcastMessage.from_id(id, service_id=current_service.id)
+            broadcast_message.reject_broadcast()
+
+    return redirect(
+        url_for(
+            ".broadcast_dashboard",
+            service_id=current_service.id,
+        )
+    )
+
+
 @main.route("/services/<uuid:service_id>/select-alerts")
 def select_all_drafts(service_id):
-    return render_template(
-        "views/broadcast/draft-broadcasts.html",
-        broadcasts=BroadcastMessages(service_id).with_status(
-            "draft",
-        ),
-        check_all=True,
-        empty_message="You do not have any draft alerts",
-        view_broadcast_endpoint=".view_current_broadcast",
-        reverse_chronological_sort=True,
+    # return render_template(
+    #     "views/broadcast/draft-broadcasts.html",
+    #     broadcasts=BroadcastMessages(service_id).with_status(
+    #         "draft",
+    #     ),
+    #     check_all=True,
+    #     empty_message="You do not have any draft alerts",
+    #     view_broadcast_endpoint=".view_current_broadcast",
+    #     reverse_chronological_sort=True,
+    # )
+    return redirect(
+        url_for(
+            ".broadcast_dashboard_draft",
+            service_id=current_service.id,
+            check_all="true",
+        )
     )
 
 

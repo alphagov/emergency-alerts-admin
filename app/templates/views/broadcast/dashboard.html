@@ -28,7 +28,7 @@
       {{ govukButton({
         "element": "a",
         "text": "Manage draft alerts",
-        "href": url_for(".broadcast_dashboard_draft", service_id=current_service.id),
+        "href": url_for(".broadcast_dashboard_draft", service_id=current_service.id, check_all="false"),
         "classes": "govuk-button--secondary"
       }) }}
     </div>
