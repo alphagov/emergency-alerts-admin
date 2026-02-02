@@ -669,7 +669,7 @@ def search_flood_warning_areas_as_a_list(service_id, message_type, message_id=No
     message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
     library = BroadcastMessage.libraries.get("Flood_Warning_Target_Areas")
 
-    form = FloodWarningBulkAreasForm(library_ids=library.item_ids, message_ids=message.area_ids if message else [])
+    form = FloodWarningBulkAreasForm(library_ids=library.item_ids)
 
     if form.validate_on_submit():
         ids = split_text_by_comma_and_newline(form.areas.data)

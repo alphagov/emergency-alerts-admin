@@ -31,12 +31,12 @@ library_ids = [
     ),
 )
 def test_invalid_input_messages(post_data, expected_field_error, expected_form_error):
-    form = FloodWarningBulkAreasForm(library_ids=library_ids, message_ids=[], areas=post_data)
+    form = FloodWarningBulkAreasForm(library_ids=library_ids, areas=post_data)
     assert not form.validate()
     assert form.areas.errors == expected_field_error
     assert form.form_errors == expected_form_error
 
 
 def test_valid_input():
-    form = FloodWarningBulkAreasForm(library_ids=library_ids, message_ids=[], areas="011FWCN1A")
+    form = FloodWarningBulkAreasForm(library_ids=library_ids, areas="011FWCN1A")
     assert form.validate()

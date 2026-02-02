@@ -540,16 +540,12 @@ class GovukTextareaBulkField(GovukTextareaField):
         label,
         *,
         library_ids=None,
-        message_ids=None,
         item,
         area_id_parser,
         **kwargs,
     ):
         # area IDs from the library to check against
         self.library_ids = set(library_ids or [])
-
-        # area IDs from areas already added to the message, to check against
-        self.message_ids = set(message_ids or [])
 
         # Function that translates area IDs from input into format that we store them as
         self.area_id_parser = area_id_parser
@@ -1964,10 +1960,9 @@ class FloodWarningForm(StripWhitespaceForm):
 
 class FloodWarningBulkAreasForm(StripWhitespaceForm):
 
-    def __init__(self, library_ids, message_ids, *args, **kwargs):
+    def __init__(self, library_ids, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.areas.library_ids = set(library_ids)
-        self.areas.message_ids = set(message_ids)
         self.areas.area_id_parser = self._parse_ids
         if not hasattr(self, "form_errors"):
             self.form_errors = []
