@@ -361,7 +361,7 @@ def test_should_show_page_for_one_template(client_request, fake_uuid, mock_get_t
 
     back_link = page.select_one(".govuk-back-link")
     assert back_link["href"] == url_for(
-        "main.view_template",
+        "main.edit_template",
         service_id=SERVICE_ONE_ID,
         template_id=template_id,
     )
@@ -493,9 +493,72 @@ def test_view_broadcast_template(
     # appears on the page
     assert [(link.text.strip(), link["href"]) for link in page.select(".pill-separate-item")] == [
         (
-            "Save and get ready to send",
+            "Use template to send alert",
             url_for(
                 ".broadcast",
+                service_id=SERVICE_ONE_ID,
+                template_id=fake_uuid,
+            ),
+        ),
+        (
+            "Edit this template",
+            url_for(
+                ".edit_template",
+                service_id=SERVICE_ONE_ID,
+                template_id=fake_uuid,
+            ),
+        ),
+    ]
+    assert (normalize_spaces(page.select_one(".heading-large").text)) == "Template"
+
+    assert (
+        (normalize_spaces(page.select_one(".template-container").text))
+        == (normalize_spaces(page.select_one(".broadcast-message-wrapper").text))
+        == "Emergency alert This is a test"
+    )
+
+    assert [normalize_spaces(area.text) for area in page.select(".area-list-item.area-list-item--unremoveable")] == [
+        "England",
+        "Scotland",
+    ]
+
+    assert [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__key")] == [
+        "Reference",
+        "Template message",
+        "Area",
+    ]
+    assert [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__value")] == [
+        "Example template",
+        "Emergency alert This is a test",
+        "England Scotland Use the arrow keys to move the map. "
+        + "Use the buttons to zoom the map in or out View larger map",
+    ]
+
+
+def test_edit_broadcast_template(
+    client_request,
+    service_one,
+    mock_get_template_folders,
+    fake_uuid,
+    active_user_create_broadcasts_permission,
+    mock_get_template_from_id,
+):
+    active_user_create_broadcasts_permission["permissions"][SERVICE_ONE_ID].append("manage_templates")
+    client_request.login(active_user_create_broadcasts_permission)
+    page = client_request.get(
+        ".edit_template",
+        service_id=SERVICE_ONE_ID,
+        template_id=fake_uuid,
+        _test_page_title=False,
+    )
+
+    # The following assertions test that the expected content, for templateSummaryList component,
+    # appears on the page
+    assert [(link.text.strip(), link["href"]) for link in page.select(".pill-separate-item")] == [
+        (
+            "Finish editing template",
+            url_for(
+                ".view_template",
                 service_id=SERVICE_ONE_ID,
                 template_id=fake_uuid,
             ),
@@ -641,7 +704,7 @@ def test_should_redirect_when_saving_a_template(
         },
         _expected_status=302,
         _expected_redirect=url_for(
-            ".view_template",
+            ".edit_template",
             service_id=SERVICE_ONE_ID,
             template_id=fake_uuid,
         ),
@@ -1173,7 +1236,7 @@ def test_edit_content_redirects_to_write_template_page_and_updates_template(
 
 def test_add_area_to_template(client_request, fake_uuid, mock_get_template_with_no_area, mock_update_template):
     page = client_request.get(
-        "main.view_template",
+        "main.edit_template",
         service_id=SERVICE_ONE_ID,
         template_id=fake_uuid,
         _test_page_title=False,
@@ -1230,7 +1293,7 @@ def test_add_area_to_template(client_request, fake_uuid, mock_get_template_with_
 
 def test_remove_template_area(client_request, fake_uuid, mock_update_template, mock_get_template_with_area):
     page = client_request.get(
-        "main.view_template",
+        "main.edit_template",
         service_id=SERVICE_ONE_ID,
         template_id=fake_uuid,
         _test_page_title=False,

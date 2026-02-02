@@ -8,7 +8,6 @@
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
 {% from "govuk_frontend_jinja/components/input/macro.html" import govukInput %}
 {% from "components/error-summary.html" import errorSummary %}
-{% from "components/input-custom-error.html" import inputWithCustomError %}
 {% from "components/page-footer.html" import sticky_page_footer %}
 
 {% block extra_stylesheets %}
@@ -41,6 +40,13 @@
   {{ govukBackLink({ "href": back_link }) }}
 {% endblock %}
 
+{% set hint_html %}
+  <p class="govuk-body">You can add TA codes individually below, or <a class="govuk-link govuk-link--no-visited-state"
+    href="{{ url_for('.search_flood_warning_areas_as_a_list', service_id=current_service.id, message_id=message.id, message_type=message_type) }}">enter a list into one text box</a>.
+    <br/>
+    When adding TA codes individually, you can add more after adding the first.
+  </p>
+{% endset %}
 
 {% block maincolumn_content %}
   {% if bleed %}
@@ -53,7 +59,14 @@
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
       <div class="mapping-form">
         <div class="govuk-form-group">
-          {{ form.flood_warning_area() }}
+          {{ form.flood_warning_area(param_extensions={
+              "hint":{"html": hint_html},
+              "label": {
+                  "classes": "govuk-label--s",
+                  "id": "page-header",
+              }
+            }
+          )}}
         </div>
         <div class="govuk-form-group">
           {{ govukButton({
@@ -66,7 +79,7 @@
     {% endcall %}
 
   {% if message.areas %}
-    <p class="govuk-!-margin-right-2 govuk-!-margin-bottom-2">Areas selected</p>
+    <p class="govuk-!-margin-right-2 govuk-!-margin-bottom-2 govuk-!-font-weight-bold">Areas selected</p>
     <div>
       <ul class="area-list">
         {% for area in message.areas %}

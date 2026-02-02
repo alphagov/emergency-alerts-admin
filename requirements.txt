@@ -8,7 +8,7 @@ asgiref==3.10.0
     # via opentelemetry-instrumentation-asgi
 attrs==25.3.0
     # via flake8-bugbear
-aws-opentelemetry-distro==0.12.2
+aws-opentelemetry-distro==0.14.2
     # via -r requirements.in
 beautifulsoup4==4.11.1
     # via -r requirements.in
@@ -134,6 +134,7 @@ opentelemetry-api==1.33.1
     #   opentelemetry-instrumentation
     #   opentelemetry-instrumentation-aio-pika
     #   opentelemetry-instrumentation-aiohttp-client
+    #   opentelemetry-instrumentation-aiokafka
     #   opentelemetry-instrumentation-aiopg
     #   opentelemetry-instrumentation-asgi
     #   opentelemetry-instrumentation-asyncpg
@@ -198,6 +199,7 @@ opentelemetry-instrumentation==0.54b1
     #   opentelemetry-distro
     #   opentelemetry-instrumentation-aio-pika
     #   opentelemetry-instrumentation-aiohttp-client
+    #   opentelemetry-instrumentation-aiokafka
     #   opentelemetry-instrumentation-aiopg
     #   opentelemetry-instrumentation-asgi
     #   opentelemetry-instrumentation-asyncpg
@@ -242,6 +244,8 @@ opentelemetry-instrumentation==0.54b1
 opentelemetry-instrumentation-aio-pika==0.54b1
     # via aws-opentelemetry-distro
 opentelemetry-instrumentation-aiohttp-client==0.54b1
+    # via aws-opentelemetry-distro
+opentelemetry-instrumentation-aiokafka==0.54b1
     # via aws-opentelemetry-distro
 opentelemetry-instrumentation-aiopg==0.54b1
     # via aws-opentelemetry-distro
@@ -367,12 +371,13 @@ opentelemetry-sdk==1.33.1
     #   opentelemetry-processor-baggage
     #   opentelemetry-propagator-ot-trace
     #   opentelemetry-sdk-extension-aws
-opentelemetry-sdk-extension-aws==2.0.2
+opentelemetry-sdk-extension-aws==2.1.0
     # via aws-opentelemetry-distro
 opentelemetry-semantic-conventions==0.54b1
     # via
     #   opentelemetry-instrumentation
     #   opentelemetry-instrumentation-aiohttp-client
+    #   opentelemetry-instrumentation-aiokafka
     #   opentelemetry-instrumentation-asgi
     #   opentelemetry-instrumentation-asyncpg
     #   opentelemetry-instrumentation-aws-lambda
@@ -508,13 +513,13 @@ typing-extensions==4.15.0
     # via
     #   grpcio
     #   opentelemetry-sdk
-urllib3==2.6.2
+urllib3==2.6.3
     # via
     #   -r requirements.in
     #   botocore
     #   requests
     #   responses
-werkzeug==3.1.3
+werkzeug==3.1.5
     # via
     #   -r requirements.in
     #   flask

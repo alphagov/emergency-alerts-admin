@@ -3,7 +3,7 @@
 {% from "views/broadcast/macros/area-map.html" import map %}
 {% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
 
-{% macro templateSummaryList(template, areas, bleed_estimated_area, count_of_phones, count_of_phones_likely, is_custom_broadcast, formatted_template, current_user, is_editable) %}
+{% macro templateSummaryList(template, areas, bleed_estimated_area, count_of_phones, count_of_phones_likely, is_custom_broadcast, formatted_template, current_user, is_editable, edit_mode) %}
 
     <dialog id="enlarged-map-dialog" tabindex="-1" aria-modal="true" class="enlarged-map-dialog"
         role="dialog" aria-labelledby="enlarged-map-dialog-message">
@@ -26,7 +26,7 @@
         {% endset %}
     {% endif %}
 
-    {% if current_user.has_permissions('manage_templates') and is_editable %}
+    {% if current_user.has_permissions('manage_templates') and is_editable and edit_mode %}
         {% set display_action = True %}
 
         {% if template.reference %}
