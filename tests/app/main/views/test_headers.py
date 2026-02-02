@@ -41,8 +41,7 @@ def test_headers_non_ascii_characters_are_replaced(
     assert response.headers["Content-Security-Policy"] == (
         "default-src 'self' static.example.com;"
         "report-to default;"
-        "script-src 'self' static.example.com *.google-analytics.com 'nonce-{content_nonce}' 'unsafe-eval'"
-        "'sha256-YX4iJw93x5SU0ple+RI+95HNdNBZSA60gR8a5v7HfOA=';"
+        "script-src 'self' static.example.com *.google-analytics.com 'nonce-{content_nonce}' 'unsafe-eval';"
         "style-src 'self' static.example.com 'nonce-{content_nonce}';"
         "connect-src 'self' *.google-analytics.com;"
         "object-src 'self';"
