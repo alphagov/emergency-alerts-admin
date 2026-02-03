@@ -53,27 +53,25 @@
       </fieldset>
     </div>
 
-    {% if current_user.has_permissions('create_broadcasts', restrict_admin_usage=True) %}
-      <div class="js-stick-at-bottom-when-scrolling">
-        {% if not broadcasts %}
-          {% set btn_attributes = {"disabled": "disabled"} %}
-        {% else %}
-          {% set btn_attributes = "" %}
-        {% endif %}
-        {{ govukButton({
-          "id": "check-all-checkboxes-button",
-          "type": "button",
-          "text": "Select all",
-          "classes": "govuk-button--secondary govuk-!-margin-right-3",
-          "attributes": btn_attributes
-        }) }}
-        {{ govukButton({
-          "type": "submit",
-          "text": "Delete draft alerts",
-          "classes": "govuk-button--secondary",
-          "attributes": btn_attributes
-        }) }}
-      </div>
-    {% endif %}
+    <div class="js-stick-at-bottom-when-scrolling">
+      {% if not broadcasts %}
+        {% set btn_attributes = {"disabled": "disabled"} %}
+      {% else %}
+        {% set btn_attributes = "" %}
+      {% endif %}
+      {{ govukButton({
+        "id": "check-all-checkboxes-button",
+        "type": "button",
+        "text": "Select all",
+        "classes": "govuk-button--secondary govuk-!-margin-right-3",
+        "attributes": btn_attributes
+      }) }}
+      {{ govukButton({
+        "type": "submit",
+        "text": "Delete draft alerts",
+        "classes": "govuk-button--secondary",
+        "attributes": btn_attributes
+      }) }}
+    </div>
   </form>
 {% endblock %}
