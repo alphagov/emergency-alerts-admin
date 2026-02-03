@@ -144,6 +144,12 @@ sample_uuid = sample_uuid()
             405,
         ),
         (
+            ".view_previous_broadcast",
+            {"broadcast_message_id": sample_uuid},
+            403,
+            405,
+        ),
+        (
             ".get_broadcast_geojson",
             {"broadcast_message_id": sample_uuid},
             403,
