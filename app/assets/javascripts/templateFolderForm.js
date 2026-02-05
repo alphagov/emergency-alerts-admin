@@ -14,18 +14,31 @@
 
       this.$liveRegionCounter.before(this.nothingSelectedButtons);
       this.$liveRegionCounter.before(this.itemsSelectedButtons);
+      this.$liveRegionCounter.before(this.manageFoldersButtons);
+
+      this.$templateListUl = this.$form.find('#template-list-ul');
+      this.$templateListCheckboxes = this.$form.find('#template-list-checkboxes');
+
 
       // all the diff states that we want to show or hide
       this.states = [
         {
           key: 'nothing-selected-buttons',
           $el: this.$form.find('#nothing_selected'),
-          cancellable: false
+          cancellable: false,
+          managelink: true
+        },
+        {
+          key: 'manage-folders-buttons',
+          $el: this.$form.find('#manage_folders'),
+          cancellable: true,
+          managelink: false
         },
         {
           key: 'items-selected-buttons',
           $el: this.$form.find('#items_selected'),
-          cancellable: false
+          cancellable: false,
+          managelink: false
         },
         {
           key: 'move-to-existing-folder',
@@ -33,7 +46,8 @@
           cancellable: true,
           setFocus: () => $('#move_to_folder_radios').focus(),
           action: 'move to folder',
-          description: 'Press move to confirm or cancel to close'
+          description: 'Press move to confirm or cancel to close',
+          managelink: false
         },
         {
           key: 'move-to-new-folder',
@@ -41,7 +55,8 @@
           cancellable: true,
           setFocus: () => $('#move_to_new_folder_form').focus(),
           action: 'move to new folder',
-          description: 'Press add to new folder to confirm name or cancel to close'
+          description: 'Press add to new folder to confirm name or cancel to close',
+          managelink: false
         },
         {
           key: 'add-new-folder',
@@ -49,7 +64,8 @@
           cancellable: true,
           setFocus: () => $('#add_new_folder_form').focus(),
           action: 'new folder',
-          description: 'Press add new folder to confirm name or cancel to close'
+          description: 'Press add new folder to confirm name or cancel to close',
+          managelink: false
         },
         {
           key: 'add-new-template',
@@ -57,7 +73,8 @@
           cancellable: true,
           setFocus: () => $('#add_new_template_form').focus(),
           action: 'new template',
-          description: 'Press continue to confirm selection or cancel to close'
+          description: 'Press continue to confirm selection or cancel to close',
+          managelink: false
         }
       ];
 
@@ -130,7 +147,7 @@
     };
 
     this.addClearButton = function(state) {
-      let selector = 'button[value=add-new-template]';
+      let selector = 'button[value=manage-folders-buttons]';
       let $clear = this.makeButton('Clear', {
         'onclick': () => {
 
@@ -241,12 +258,12 @@
     this.templateFolderCheckboxChanged = function() {
       let numSelected = this.countSelectedCheckboxes();
 
-      if (this.currentState === 'nothing-selected-buttons' && numSelected.total !== 0) {
+      if (this.currentState === 'manage-folders-buttons' && numSelected.total !== 0) {
         // user has just selected first item
         this.currentState = 'items-selected-buttons';
       } else if (this.currentState === 'items-selected-buttons' && numSelected.total === 0) {
         // user has just deselected last item
-        this.currentState = 'nothing-selected-buttons';
+        this.currentState = 'manage-folders-buttons';
       }
 
       if (this.stateChanged()) {
@@ -285,6 +302,17 @@
         state => (state.key === this.currentState ? this.$liveRegionCounter.before(state.$el) : state.$el.detach())
       );
 
+      // Either display templates as ul list or checkbox list depending on mode
+      if (['manage-folders-buttons','items-selected-buttons'].indexOf(this.currentState) !== -1) {
+        this.$templateListUl.hide();
+        this.$templateListCheckboxes.show();
+      }
+      else
+      {
+        this.$templateListUl.show();
+        this.$templateListCheckboxes.hide();
+      }
+
       // use dialog mode for states which contain more than one form control
       if (['move-to-existing-folder', 'add-new-template'].indexOf(this.currentState) !== -1) {
         mode = 'dialog';
@@ -306,7 +334,19 @@
           <button type="button" class="govuk-button govuk-button--secondary govuk-!-margin-right-3 govuk-!-margin-bottom-1" value="add-new-template" ${!this.$singleNotificationChannel ? 'aria-expanded="false"' : ''}>
             New template
           </button>
-          <button type="button" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-1" value="add-new-folder" aria-expanded="false">New folder</button>
+          <button type="button" class="govuk-button govuk-button--secondary govuk-!-margin-right-3 govuk-!-margin-bottom-1" value="add-new-folder" aria-expanded="false">New folder</button>
+          <button type="button" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-1" value="manage-folders-buttons" aria-expanded="false">Manage folders and templates</button>
+        </div>
+      </div>
+    `).get(0);
+
+    this.manageFoldersButtons = $(`
+      <div id="manage_folders">
+        <div class="js-stick-at-bottom-when-scrolling">
+          <button type="button" disabled aria-disabled="true" class="govuk-button govuk-button--secondary govuk-!-margin-right-3 govuk-!-margin-bottom-1" value="move-to-existing-folder" aria-expanded="false">
+            Move<span class="govuk-visually-hidden"> selection to folder</span>
+          </button>
+          <button type="button" disabled aria-disabled="true" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-1" value="move-to-new-folder" aria-expanded="false">Add to new folder</button>
           <div class="checkbox-list-selected-counter">
             <span class="checkbox-list-selected-counter__count" aria-hidden="true">
               ${this.selectionStatus.default}
