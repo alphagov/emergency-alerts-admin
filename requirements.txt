@@ -442,7 +442,7 @@ pluggy==1.6.0
     # via pytest
 postcode-validator==0.0.4
     # via -r requirements.in
-protobuf==5.29.5
+protobuf==5.29.6
     # via
     #   googleapis-common-protos
     #   opentelemetry-proto
