@@ -84,6 +84,37 @@ def broadcast_dashboard(service_id):
     )
 
 
+@main.route("/services/<uuid:service_id>/draft-alerts")
+@user_has_permissions()
+@service_has_permission("broadcast")
+def broadcast_dashboard_drafts(service_id):
+    return render_template(
+        "views/broadcast/draft-broadcasts.html",
+        broadcasts=BroadcastMessages(service_id).with_status(
+            "draft",
+        ),
+        empty_message="You do not have any draft alerts",
+        view_broadcast_endpoint=".view_current_broadcast",
+        reverse_chronological_sort=True,
+    )
+
+
+@main.route("/services/<uuid:service_id>/delete-drafts", methods=["POST"])
+@user_has_permissions()
+@service_has_permission("broadcast")
+def delete_draft_alerts(service_id):
+    draft_ids = request.form.getlist("checked_alerts")
+    for id in draft_ids:
+        broadcast_message = BroadcastMessage.from_id(id, service_id=current_service.id)
+        broadcast_message.reject_broadcast()
+    return redirect(
+        url_for(
+            ".broadcast_dashboard",
+            service_id=current_service.id,
+        )
+    )
+
+
 @main.route("/services/<uuid:service_id>/past-alerts")
 @user_has_permissions()
 @service_has_permission("broadcast")
