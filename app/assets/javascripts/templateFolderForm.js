@@ -26,19 +26,16 @@
           key: 'nothing-selected-buttons',
           $el: this.$form.find('#nothing_selected'),
           cancellable: false,
-          managelink: true
         },
         {
           key: 'manage-folders-buttons',
           $el: this.$form.find('#manage_folders'),
           cancellable: true,
-          managelink: false
         },
         {
           key: 'items-selected-buttons',
           $el: this.$form.find('#items_selected'),
           cancellable: false,
-          managelink: false
         },
         {
           key: 'move-to-existing-folder',
@@ -47,7 +44,6 @@
           setFocus: () => $('#move_to_folder_radios').focus(),
           action: 'move to folder',
           description: 'Press move to confirm or cancel to close',
-          managelink: false
         },
         {
           key: 'move-to-new-folder',
@@ -56,7 +52,6 @@
           setFocus: () => $('#move_to_new_folder_form').focus(),
           action: 'move to new folder',
           description: 'Press add to new folder to confirm name or cancel to close',
-          managelink: false
         },
         {
           key: 'add-new-folder',
@@ -65,7 +60,6 @@
           setFocus: () => $('#add_new_folder_form').focus(),
           action: 'new folder',
           description: 'Press add new folder to confirm name or cancel to close',
-          managelink: false
         },
         {
           key: 'add-new-template',
@@ -74,13 +68,13 @@
           setFocus: () => $('#add_new_template_form').focus(),
           action: 'new template',
           description: 'Press continue to confirm selection or cancel to close',
-          managelink: false
         }
       ];
 
       // cancel/clear buttons only relevant if JS enabled, so
       this.states.filter(state => state.cancellable).forEach((x) => this.addCancelButton(x));
       this.states.filter(state => state.key === 'items-selected-buttons').forEach(x => this.addClearButton(x));
+      this.states.filter(state => state.key === 'nothing-selected-buttons').forEach(x => this.addManageFoldersButton(x));
 
       // make elements focusabled
       this.states.filter(state => state.setFocus).forEach(x => x.$el.attr('tabindex', '0'));
@@ -161,6 +155,22 @@
       });
 
       state.$el.find('.checkbox-list-selected-counter').append($clear);
+    };
+
+    this.addManageFoldersButton = function(state) {
+      let selector = 'button[value=add-new-folder]';
+      let $manageButton = this.makeButton('Manage folders and templates', {
+        'onclick': () => {
+          // uncheck all templates and folders
+          this.$form.find('input:checkbox').prop('checked', false);
+
+          // set the state we want to go to and re-render
+          this.currentState = 'manage-folders-buttons';
+          this.render();
+        }
+      });
+
+      state.$el.find(selector).after($manageButton);
     };
 
     this.makeButton = (text, opts) => {
@@ -335,7 +345,6 @@
             New template
           </button>
           <button type="button" class="govuk-button govuk-button--secondary govuk-!-margin-right-3 govuk-!-margin-bottom-1" value="add-new-folder" aria-expanded="false">New folder</button>
-          <button type="button" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-1" value="manage-folders-buttons" aria-expanded="false">Manage folders and templates</button>
         </div>
       </div>
     `).get(0);
