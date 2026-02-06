@@ -26,16 +26,19 @@
           key: 'nothing-selected-buttons',
           $el: this.$form.find('#nothing_selected'),
           cancellable: false,
+          manageMode: false,
         },
         {
           key: 'manage-folders-buttons',
           $el: this.$form.find('#manage_folders'),
           cancellable: true,
+          manageMode: true,
         },
         {
           key: 'items-selected-buttons',
           $el: this.$form.find('#items_selected'),
           cancellable: false,
+          manageMode: true,
         },
         {
           key: 'move-to-existing-folder',
@@ -44,6 +47,7 @@
           setFocus: () => $('#move_to_folder_radios').focus(),
           action: 'move to folder',
           description: 'Press move to confirm or cancel to close',
+          manageMode: true,
         },
         {
           key: 'move-to-new-folder',
@@ -52,6 +56,7 @@
           setFocus: () => $('#move_to_new_folder_form').focus(),
           action: 'move to new folder',
           description: 'Press add to new folder to confirm name or cancel to close',
+          manageMode: true,
         },
         {
           key: 'add-new-folder',
@@ -60,6 +65,7 @@
           setFocus: () => $('#add_new_folder_form').focus(),
           action: 'new folder',
           description: 'Press add new folder to confirm name or cancel to close',
+          manageMode: false,
         },
         {
           key: 'add-new-template',
@@ -68,6 +74,7 @@
           setFocus: () => $('#add_new_template_form').focus(),
           action: 'new template',
           description: 'Press continue to confirm selection or cancel to close',
+          manageMode: false,
         }
       ];
 
@@ -302,18 +309,10 @@
       return results;
     };
 
-    this.render = function() {
-      let mode = 'default';
-      let currentStateObj = this.states.filter(state => { return (state.key === this.currentState); })[0];
-      let scrollTop;
-
-      // detach everything, unless they are the currentState
-      this.states.forEach(
-        state => (state.key === this.currentState ? this.$liveRegionCounter.before(state.$el) : state.$el.detach())
-      );
-
-      // Either display templates as ul list or checkbox list depending on mode
-      if (['manage-folders-buttons','items-selected-buttons','move-to-existing-folder','move-to-new-folder'].indexOf(this.currentState) !== -1) {
+    this.switchManageMode = function( manageMode ) {
+      // Either display templates as ul list or checkbox list depending on mode,
+      // and set page header text.
+      if (manageMode) {
         this.$pageHeader.text('Manage templates and folders');
         this.$templateListUl.hide();
         this.$templateListCheckboxes.show();
@@ -324,6 +323,19 @@
         this.$templateListUl.show();
         this.$templateListCheckboxes.hide();
       }
+    }
+
+    this.render = function() {
+      let mode = 'default';
+      let currentStateObj = this.states.filter(state => { return (state.key === this.currentState); })[0];
+      let scrollTop;
+
+      // detach everything, unless they are the currentState
+      this.states.forEach(
+        state => (state.key === this.currentState ? this.$liveRegionCounter.before(state.$el) : state.$el.detach())
+      );
+
+      this.switchManageMode(currentStateObj.manageMode);
 
       // use dialog mode for states which contain more than one form control
       if (['move-to-existing-folder', 'add-new-template'].indexOf(this.currentState) !== -1) {
