@@ -148,8 +148,8 @@
           // uncheck all templates and folders
           this.$form.find('input:checkbox').prop('checked', false);
 
-          // go back to action buttons
-          this.selectActionButtons(selector);
+          // and re-render
+          this.templateFolderCheckboxChanged();
         },
         'nonvisualText': "selection"
       });
