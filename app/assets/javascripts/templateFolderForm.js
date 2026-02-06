@@ -18,7 +18,7 @@
 
       this.$templateListUl = this.$form.find('#template-list-ul');
       this.$templateListCheckboxes = this.$form.find('#template-list-checkboxes');
-
+      this.$pageHeader = $('#page-header');
 
       // all the diff states that we want to show or hide
       this.states = [
@@ -159,7 +159,7 @@
 
     this.addManageFoldersButton = function(state) {
       let selector = 'button[value=add-new-folder]';
-      let $manageButton = this.makeButton('Manage folders and templates', {
+      let $manageButton = this.makeButton('Manage templates and folders', {
         'onclick': () => {
           // uncheck all templates and folders
           this.$form.find('input:checkbox').prop('checked', false);
@@ -313,12 +313,14 @@
       );
 
       // Either display templates as ul list or checkbox list depending on mode
-      if (['manage-folders-buttons','items-selected-buttons'].indexOf(this.currentState) !== -1) {
+      if (['manage-folders-buttons','items-selected-buttons','move-to-existing-folder','move-to-new-folder'].indexOf(this.currentState) !== -1) {
+        this.$pageHeader.text('Manage templates and folders');
         this.$templateListUl.hide();
         this.$templateListCheckboxes.show();
       }
       else
       {
+        this.$pageHeader.text('Templates');
         this.$templateListUl.show();
         this.$templateListCheckboxes.hide();
       }
