@@ -2,7 +2,7 @@
   "use strict";
   window.GOVUK.clearCheckboxesOnShowAndLoad = () => {
     function clearCheckboxes() {
-      const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+      const checkboxes = document.querySelectorAll('input[type="checkbox"].clear-on-reload');
       if (checkboxes.length) {
         for (const checkbox of checkboxes) {
           checkbox.checked = false;
