@@ -21,7 +21,7 @@
           {% for item in sorted_broadcasts %}
             <div class="keyline-block">
               <div class="govuk-checkboxes__item template-list-item template-list-item-with-checkbox template-list-item-without-ancestors">
-                <input class="govuk-checkboxes__input" id="{{ item.id }}" name="checked_alerts" type="checkbox" value="{{ item.id }}">
+                <input class="govuk-checkboxes__input clear-on-reload" id="{{ item.id }}" name="checked_alerts" type="checkbox" value="{{ item.id }}">
                 <label class="govuk-label govuk-checkboxes__label template-list-item-label" for="{{ item.id }}">
                   <span class="govuk-visually-hidden">
                     {{ item.reference or item.template_name or "Untitled alert"}}
