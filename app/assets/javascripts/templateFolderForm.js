@@ -19,6 +19,7 @@
       this.$templateListUl = this.$form.find('#template-list-ul');
       this.$templateListCheckboxes = this.$form.find('#template-list-checkboxes');
       this.$pageHeader = $('#page-header');
+      this.$initManageMode = new URLSearchParams(window.location.search).get('manage');
 
       // all the diff states that we want to show or hide
       this.states = [
@@ -94,7 +95,15 @@
       // first off show the new template / new folder buttons
       this._lastState = this.$form.data('prev-state');
       if (this._lastState === undefined) {
-        this.selectActionButtons();
+        // DJ test
+        if (this.$initManageMode) {
+          this.currentState = 'manage-folders-buttons'
+          this.render();
+        }
+        else
+        {
+          this.selectActionButtons();
+        }
       } else {
         this.currentState = this._lastState;
         this.render();
