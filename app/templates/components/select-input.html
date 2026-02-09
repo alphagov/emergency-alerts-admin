@@ -95,13 +95,16 @@
   {% endif %}
 {% endmacro %}
 
-{% macro select_dropdown(label, options) %}
-  <label class="govuk-label" for="{{ label.id }}">
-    {{ label.text }}
-  </label>
-  <select class="govuk-select" id="{{ label.id }}" name="{{ label.id }}">
-    {% for option in options %}
-      <option value="{{ option.value }}">{{ option.text }}</option>
-    {% endfor %}
-  </select>
+
+{% macro select_dropdown(select) %}
+  <div>
+    <label class="govuk-label" for="{{ select.id }}">
+      {{ select.text }}
+    </label>
+    <select class="govuk-select" id="{{ select.id }}" name="{{ select.id }}">
+      {% for option in select.options %}
+        <option value="{{ option.value }}">{{ option.text }}</option>
+      {% endfor %}
+    </select>
+  </div>
 {% endmacro %}

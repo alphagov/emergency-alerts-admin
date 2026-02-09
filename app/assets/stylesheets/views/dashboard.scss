@@ -6,7 +6,6 @@
   > .heading-medium:first-of-type {
     margin-top: govuk-spacing(3);
   }
-
 }
 
 .keyline-block {
@@ -15,7 +14,6 @@
 }
 
 .spark-bar {
-
   @include govuk-font(16);
   box-sizing: border-box;
   display: block;
@@ -38,11 +36,9 @@
     margin: 2px 0 1px;
     transition: width 0.6s ease-in-out;
   }
-
 }
 
 .file-list {
-
   // for file-lists with section-like content and a single item
   &--sectioned {
     display: flex;
@@ -59,11 +55,9 @@
 
     & > .file-list-hint-large,
     & > .file-list-status {
-
       // This simulates a 50% column in a govuk grid on smaller screens
       // govuk grid columns go to 100% width on smaller screens
       width: 100%;
-
     }
 
     & > .file-list-status {
@@ -137,7 +131,6 @@
     -webkit-line-clamp: 2; // number of lines to show
     max-width: 60ch;
   }
-
 }
 
 // The focus state for sibling links overlaps the hint so the hint's text colour needs to adapt
@@ -145,11 +138,15 @@
   &.file-list-filename,
   &.file-list-filename-large {
     // override box-shadow to push underline down a bit
-    box-shadow: 0 -2px $govuk-focus-colour, 0 5px $govuk-focus-text-colour;
+    box-shadow:
+      0 -2px $govuk-focus-colour,
+      0 5px $govuk-focus-text-colour;
 
     // File-list items contained by keyline-blocks have more spacing at the top so adapt to cover it
     .keyline-block > .file-list & {
-      box-shadow: 0 -5px $govuk-focus-colour, 0 5px $govuk-focus-text-colour;
+      box-shadow:
+        0 -5px $govuk-focus-colour,
+        0 5px $govuk-focus-text-colour;
     }
   }
 
@@ -157,7 +154,6 @@
   & + .file-list-hint-large {
     color: $govuk-focus-text-colour;
   }
-
 }
 
 // Note: this selector should use the :has() pseudo-class in the future when it is supported
@@ -167,7 +163,6 @@
   & ~ .file-list-status {
     color: $govuk-focus-text-colour;
   }
-
 }
 
 .failure-highlight {
@@ -178,4 +173,10 @@
 .align-with-message-body {
   display: block;
   margin-top: govuk-spacing(5);
+}
+
+.filter-and-sort {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
 }
