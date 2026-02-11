@@ -2,16 +2,18 @@
 {% from "components/select-input.html" import select_dropdown %}
 {% from "govuk_frontend_jinja/components/tag/macro.html" import govukTag %}
 
-{% set sorted_broadcasts = broadcasts|list|sort|reverse if reverse_chronological_sort else broadcasts|list %}
+{# {% set sorted_broadcasts = broadcasts|list|sort|reverse if reverse_chronological_sort else broadcasts|list %} #}
 
 <div class="ajax-block-container js-mark-focus-on-parent" data-classes-to-persist="js-child-has-focus">
-  <div class="govuk-form-group filter-and-sort">
-    {% for select in selects %}
-      {{ select_dropdown(select) }}
-    {% endfor %}
-  </div>
+  {% if broadcasts %}
+    <div class="govuk-form-group filter-and-sort">
+      {% for select in selects %}
+        {{ select_dropdown(select) }}
+      {% endfor %}
+    </div>
+  {% endif %}
 
-  {% for item in sorted_broadcasts %}
+  {% for item in broadcasts %}
     <div class="keyline-block">
       <div class="file-list file-list--sectioned govuk-!-margin-bottom-2">
         <h2>

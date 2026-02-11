@@ -114,7 +114,7 @@ def broadcast_dashboard_drafts(service_id):
         ),
         empty_message="You do not have any draft alerts",
         view_broadcast_endpoint=".view_current_broadcast",
-        reverse_chronological_sort=True,
+        # reverse_chronological_sort=True,
     )
 
 
@@ -150,7 +150,7 @@ def broadcast_dashboard_previous(service_id):
         empty_message="You do not have any past alerts",
         view_broadcast_endpoint=".view_previous_broadcast",
         selects=selects,
-        reverse_chronological_sort=True,
+        # reverse_chronological_sort=True,
     )
 
 
@@ -170,7 +170,7 @@ def broadcast_dashboard_rejected(service_id):
         empty_message="You do not have any rejected alerts",
         view_broadcast_endpoint=".view_rejected_broadcast",
         selects=selects,
-        reverse_chronological_sort=True,
+        # reverse_chronological_sort=True,
     )
 
 
@@ -197,7 +197,7 @@ def get_broadcast_dashboard_partials(service_id, broadcasts):
             selects=selects,
             empty_message="You do not have any current alerts",
             view_broadcast_endpoint=".view_current_broadcast",
-            reverse_chronological_sort=False,  # Keep order that API returns - by status then alphabetically
+            # reverse_chronological_sort=False,  # Keep order that API returns - by status then alphabetically
         ),
     )
 
