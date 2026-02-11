@@ -40,12 +40,11 @@
         $label = $('<label class="file-upload-button-label error-message" for="file-upload-button">');
 
         // Span with sanitised text
-        $('<span class="govuk-visually-hidden">')
-          .text(buttonText + ' ')
-          .appendTo($label);
+        const $span = $('<span class="govuk-visually-hidden">');
+        $span.text(buttonText + ' ');
 
-        // fieldErrors text is already sanitised text from `.text()`
-        $label.append(this.$fieldErrors.eq(0).text());
+        $label.text(this.$fieldErrors.eq(0).text());
+        $label.prepend($span);
       }
 
       // Insert into DOM
