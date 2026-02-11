@@ -1103,12 +1103,10 @@ class ChooseExtraContentForm(StripWhitespaceForm):
         ],
         param_extensions={
             "fieldset": {"legend": {"classes": "govuk-visually-hidden"}},
-            "hint": {
-                "html": """<p class="govuk-body">This won't be sent to those receiving the alert,
+            "hint": {"html": """<p class="govuk-body">This won't be sent to those receiving the alert,
                 but will be displayed as part of the alert on <a class="govuk-link govuk-link--no-visited-state"
                 href="https://www.gov.uk/alerts">gov.uk/alerts</a>. </p>
-                <p class="govuk-body">Select one option.</p>"""
-            },
+                <p class="govuk-body">Select one option.</p>"""},
         },
         validators=[DataRequired(message="Select whether or not to add additional information to the alert")],
     )
@@ -1166,15 +1164,13 @@ class ChooseDurationForm(StripWhitespaceForm):
         if duration is None:
             if self.hours.data is None and self.minutes.data is None:
                 if channel in ["test", "operator"]:
-                    (hours, minutes) = parse_seconds_as_hours_and_minutes(
-                        Config.DEFAULT_DURATION_PERIODS.get("training")
-                    )
+                    hours, minutes = parse_seconds_as_hours_and_minutes(Config.DEFAULT_DURATION_PERIODS.get("training"))
                 else:
-                    (hours, minutes) = parse_seconds_as_hours_and_minutes(Config.DEFAULT_DURATION_PERIODS.get("live"))
+                    hours, minutes = parse_seconds_as_hours_and_minutes(Config.DEFAULT_DURATION_PERIODS.get("live"))
                 self.hours.data = hours
                 self.minutes.data = minutes
         elif self.hours.data is None and self.minutes.data is None:
-            (hours, minutes) = parse_seconds_as_hours_and_minutes(duration)
+            hours, minutes = parse_seconds_as_hours_and_minutes(duration)
             self.hours.data = hours
             self.minutes.data = minutes
 
