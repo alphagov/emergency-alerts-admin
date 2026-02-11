@@ -26,27 +26,38 @@
     // Add a button that passes a click to the input[type=file]
     this.addFakeButton = function () {
 
-      var buttonText = this.$field.data('buttonText');
-      var buttonHTMLStr = `
-        <button type="button" class="file-upload-button govuk-button govuk-!-margin-right-1" id="file-upload-button">
-          ${buttonText}
-        </button>`; // Styled as a submit button to raise prominence. The type shouldn't change.
+      const buttonText = this.$field.data('buttonText');
+
+      // Build the button element safely
+      const $button = $('<button type="button" class="file-upload-button govuk-button govuk-!-margin-right-1" id="file-upload-button">')// Styled as a submit button to raise prominence. The type shouldn't change.
+        .text(buttonText);
 
       // If errors with the upload, copy into a label above the button
       // Buttons don't need labels by default as the accessible name comes from their text but
       // errors need to be added to that.
+      let $label;
       if (this.$fieldErrors.length > 0) {
-        buttonHTMLStr = `
-          <label class="file-upload-button-label error-message" for="file-upload-button">
-            <span class="govuk-visually-hidden">${buttonText} </span>
-            ${this.$fieldErrors.eq(0).text()}
-          </label>
-          ${buttonHTMLStr}`;
+        $label = $('<label class="file-upload-button-label error-message" for="file-upload-button">');
+
+        // Span with sanitised text
+        $('<span class="govuk-visually-hidden">')
+          .text(buttonText + ' ')
+          .appendTo($label);
+
+        // fieldErrors text is already sanitised text from `.text()`
+        $label.append(this.$fieldErrors.eq(0).text());
       }
 
-      $(buttonHTMLStr)
-      .on('click', () => this.$field.click())
-      .insertAfter(this.$field);
+      // Insert into DOM
+      if ($label) {
+        $label.insertAfter(this.$field);
+        $button.insertAfter($label);
+      } else {
+        $button.insertAfter(this.$field);
+      }
+
+      // Wire up click handler
+      $button.on('click', () => this.$field.click());
 
     };
 
