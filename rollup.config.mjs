@@ -113,6 +113,7 @@ export default [
       paths.src + 'javascripts/recalculateStickinessOnMutation.js',
       paths.src + 'javascripts/checkAllCheckboxes.js',
       paths.src + 'javascripts/clearCheckboxesOnShowAndLoad.js',
+      paths.src + 'javascripts/selectSubmit.js',
     ],
     output: {
       dir: paths.dist + 'javascripts/',

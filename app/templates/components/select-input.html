@@ -96,14 +96,14 @@
 {% endmacro %}
 
 
-{% macro select_dropdown(select) %}
+{% macro select_dropdown(select, auto_submit=False) %}
   <div>
     <label class="govuk-label" for="{{ select.id }}">
       {{ select.text }}
     </label>
-    <select class="govuk-select" id="{{ select.id }}" name="{{ select.id }}">
+    <select class="govuk-select" id="{{ select.id }}" name="{{ select.id }}" {% if auto_submit %}data-auto-submit="true"{% endif %}>
       {% for option in select.options %}
-        <option value="{{ option.value }}">{{ option.text }}</option>
+        <option value="{{ option.value }}" {% if option.value == select.selected %}selected{% endif %}>{{ option.text }}</option>
       {% endfor %}
     </select>
   </div>
