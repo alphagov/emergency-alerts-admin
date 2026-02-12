@@ -10,11 +10,11 @@ attrs==25.3.0
     # via flake8-bugbear
 aws-opentelemetry-distro==0.14.2
     # via -r requirements.in
-beautifulsoup4==4.11.1
+beautifulsoup4==4.14.3
     # via -r requirements.in
-black==25.1.0
+black==26.1.0
     # via -r requirements.in
-blinker==1.7.0
+blinker==1.9.0
     # via
     #   -r requirements.in
     #   flask
@@ -52,39 +52,39 @@ docopt==0.6.2
     # via notifications-python-client
 execnet==2.1.1
     # via pytest-xdist
-fido2==1.2.0
+fido2==2.1.1
     # via -r requirements.in
-flake8==7.0.0
+flake8==7.3.0
     # via
     #   -r requirements.in
     #   flake8-bugbear
     #   flake8-print
-flake8-bugbear==22.10.27
+flake8-bugbear==25.11.29
     # via -r requirements.in
 flake8-print==5.0.0
     # via -r requirements.in
-flask==3.0.2
+flask==3.0.3
     # via
     #   -r requirements.in
     #   flask-login
     #   flask-wtf
 flask-login==0.6.3
     # via -r requirements.in
-flask-wtf==1.2.1
+flask-wtf==1.2.2
     # via -r requirements.in
-freezegun==1.2.2
+freezegun==1.5.5
     # via -r requirements.in
 googleapis-common-protos==1.72.0
     # via
     #   opentelemetry-exporter-otlp-proto-grpc
     #   opentelemetry-exporter-otlp-proto-http
-govuk-bank-holidays==0.15
+govuk-bank-holidays==0.18
     # via -r requirements.in
-govuk-frontend-jinja==3.3.0
+govuk-frontend-jinja==3.10.0
     # via -r requirements.in
 grpcio==1.76.0
     # via opentelemetry-exporter-otlp-proto-grpc
-humanize==4.4.0
+humanize==4.15.0
     # via -r requirements.in
 idna==3.10
     # via requests
@@ -92,9 +92,9 @@ importlib-metadata==8.6.1
     # via opentelemetry-api
 iniconfig==2.1.0
     # via pytest
-isort==5.12.0
+isort==7.0.0
     # via -r requirements.in
-itsdangerous==2.1.2
+itsdangerous==2.2.0
     # via
     #   -r requirements.in
     #   flask
@@ -109,7 +109,7 @@ jmespath==1.0.1
     # via
     #   boto3
     #   botocore
-markupsafe==2.1.5
+markupsafe==3.0.3
     # via
     #   -r requirements.in
     #   jinja2
@@ -117,11 +117,11 @@ markupsafe==2.1.5
     #   wtforms
 mccabe==0.7.0
     # via flake8
-moto==5.1.3
+moto==5.1.21
     # via -r requirements.in
 mypy-extensions==1.1.0
     # via black
-notifications-python-client==8.0.0
+notifications-python-client==10.0.1
     # via -r requirements.in
 numpy==2.3.3
     # via shapely
@@ -434,7 +434,7 @@ packaging==25.0
     #   opentelemetry-instrumentation-pika
     #   opentelemetry-instrumentation-sqlalchemy
     #   pytest
-pathspec==0.12.1
+pathspec==1.0.4
     # via black
 platformdirs==4.3.8
     # via black
@@ -450,27 +450,27 @@ psutil==7.1.3
     # via opentelemetry-instrumentation-system-metrics
 pwdpy==1.0.1
     # via -r requirements.in
-pycodestyle==2.11.1
+pycodestyle==2.14.0
     # via
     #   flake8
     #   flake8-print
 pycparser==2.22
     # via cffi
-pyflakes==3.2.0
+pyflakes==3.4.0
     # via flake8
 pygments==2.19.2
     # via pytest
 pyjwt==2.10.1
     # via notifications-python-client
-pyproj==3.6.1
+pyproj==3.7.2
     # via -r requirements.in
-pytest==9.0.1
+pytest==9.0.2
     # via
     #   -r requirements.in
     #   pytest-env
     #   pytest-mock
     #   pytest-xdist
-pytest-env==1.2.0
+pytest-env==1.3.2
     # via -r requirements.in
 pytest-mock==3.15.1
     # via -r requirements.in
@@ -481,7 +481,11 @@ python-dateutil==2.9.0.post0
     #   botocore
     #   freezegun
     #   moto
-pytz==2022.6
+python-dotenv==1.2.1
+    # via pytest-env
+pytokens==0.4.1
+    # via black
+pytz==2025.2
     # via -r requirements.in
 pyyaml==6.0.2
     # via responses
@@ -493,7 +497,7 @@ requests==2.32.4
     #   opentelemetry-exporter-otlp-proto-http
     #   requests-mock
     #   responses
-requests-mock==1.10.0
+requests-mock==1.12.1
     # via -r requirements.in
 responses==0.25.7
     # via moto
@@ -501,16 +505,15 @@ rtreelib==0.2.0
     # via -r requirements.in
 s3transfer==0.13.0
     # via boto3
-shapely==2.1.1
+shapely==2.1.2
     # via -r requirements.in
 six==1.17.0
-    # via
-    #   python-dateutil
-    #   requests-mock
+    # via python-dateutil
 soupsieve==2.7
     # via beautifulsoup4
 typing-extensions==4.15.0
     # via
+    #   beautifulsoup4
     #   grpcio
     #   opentelemetry-sdk
 urllib3==2.6.3
@@ -547,7 +550,7 @@ wrapt==1.17.3
     #   opentelemetry-instrumentation-sqlalchemy
     #   opentelemetry-instrumentation-urllib3
     #   opentelemetry-processor-baggage
-wtforms==3.1.2
+wtforms==3.2.1
     # via
     #   -r requirements.in
     #   flask-wtf
