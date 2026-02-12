@@ -2339,11 +2339,13 @@ def mock_get_broadcast_messages(
             partial_json(
                 id_=uuid4(),
                 status="draft",
+                created_at=(datetime.now(timezone.utc) - timedelta(hours=2)).isoformat(),
                 updated_at=(datetime.now(timezone.utc) - timedelta(hours=1, minutes=30)).isoformat(),
             ),
             partial_json(
                 id_=uuid4(),
                 status="pending-approval",
+                created_at=(datetime.now(timezone.utc) - timedelta(hours=1)).isoformat(),
                 updated_at=(datetime.now(timezone.utc) - timedelta(minutes=30)).isoformat(),
                 reference="Half an hour ago",
                 finishes_at=None,
@@ -2351,6 +2353,7 @@ def mock_get_broadcast_messages(
             partial_json(
                 id_=uuid4(),
                 status="pending-approval",
+                created_at=(datetime.now(timezone.utc) - timedelta(hours=2)).isoformat(),
                 updated_at=(datetime.now(timezone.utc) - timedelta(hours=1, minutes=30)).isoformat(),
                 reference="Hour and a half ago",
                 finishes_at=None,
@@ -2358,6 +2361,7 @@ def mock_get_broadcast_messages(
             partial_json(
                 id_=uuid4(),
                 status="broadcasting",
+                created_at=(datetime.now(timezone.utc) - timedelta(seconds=60)).isoformat(),
                 updated_at=(datetime.now(timezone.utc)).isoformat(),
                 starts_at=(datetime.now(timezone.utc)).isoformat(),
                 finishes_at=(datetime.now(timezone.utc) + timedelta(hours=24)).isoformat(),
@@ -2365,6 +2369,7 @@ def mock_get_broadcast_messages(
             partial_json(
                 id_=uuid4(),
                 status="broadcasting",
+                created_at=(datetime.now(timezone.utc) - timedelta(hours=2)).isoformat(),
                 updated_at=(datetime.now(timezone.utc) - timedelta(hours=1)).isoformat(),
                 starts_at=(datetime.now(timezone.utc) - timedelta(hours=1)).isoformat(),
                 finishes_at=(datetime.now(timezone.utc) + timedelta(hours=24)).isoformat(),
@@ -2372,12 +2377,14 @@ def mock_get_broadcast_messages(
             partial_json(
                 id_=uuid4(),
                 status="completed",
+                created_at=(datetime.now(timezone.utc) - timedelta(hours=13)).isoformat(),
                 starts_at=(datetime.now(timezone.utc) - timedelta(hours=12)).isoformat(),
                 finishes_at=(datetime.now(timezone.utc) - timedelta(hours=6)).isoformat(),
             ),
             partial_json(
                 id_=uuid4(),
                 status="cancelled",
+                created_at=(datetime.now(timezone.utc) - timedelta(days=2)).isoformat(),
                 starts_at=(datetime.now(timezone.utc) - timedelta(days=1)).isoformat(),
                 finishes_at=(datetime.now(timezone.utc) - timedelta(days=100)).isoformat(),
                 cancelled_at=(datetime.now(timezone.utc) - timedelta(days=10)).isoformat(),
@@ -2385,6 +2392,7 @@ def mock_get_broadcast_messages(
             partial_json(
                 id_=uuid4(),
                 status="rejected",
+                created_at=(datetime.now(timezone.utc) - timedelta(hours=2)).isoformat(),
                 rejected_at=(datetime.now(timezone.utc) - timedelta(hours=1)).isoformat(),
             ),
         ]
