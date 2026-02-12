@@ -58,17 +58,17 @@ from app.utils.datetime import fromisoformat_allow_z_tz
 from app.utils.user import user_has_any_permissions, user_has_permissions
 
 FILTER_TEXT = {
-    "draft": "Draft",
-    "pending-approval": "Pending Approval",
-    "broadcasting": "Broadcasting",
-    "returned": "Returned",
-    "completed": "Completed",
-    "cancelled": "Cancelled",
-    "rejected": "Rejected",
+    "draft": "Draft Alerts",
+    "pending-approval": "Alerts Pending Approval",
+    "broadcasting": "Broadcasting Alerts",
+    "returned": "Returned Alerts",
+    "completed": "Completed Alerts",
+    "cancelled": "Cancelled Alerts",
+    "rejected": "Rejected Alerts",
 }
 
 SORT_TEXT = {
-    "date-desc": "Date (newest first)",
+    "date-desc": "Date (most recent first)",
     "date-asc": "Date (oldest first)",
     "title-asc": "Title (A-Z)",
     "title-desc": "Title (Z-A)",
@@ -284,7 +284,7 @@ def _get_filter_options(broadcast_messages, filter=None, page="current-alerts"):
     statuses = list(set(msg.status for msg in broadcast_messages))
     filter_options = [{"value": status, "text": FILTER_TEXT[status]} for status in statuses]
     if len(filter_options) > 1:
-        filter_options.insert(0, {"value": "none", "text": "All"})
+        filter_options.insert(0, {"value": "none", "text": "All Alerts"})
     return {"id": f"{page}-filter", "text": "Show", "options": filter_options, "selected": filter}
 
 
