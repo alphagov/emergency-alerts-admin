@@ -98,7 +98,7 @@ def test_check_coordinates_valid_for_enclosed_polygons(first_coordinate, second_
     "coordinate_type, first_coordinate, second_coordinate, expected",
     [
         ("latitude_longitude", 54, -2, [-2.0, 54.0]),
-        ("easting_northing", 530111, 170000, [-0.1304314403905844, 51.41409803439686]),
+        ("easting_northing", 530111, 170000, [-0.13043144039058444, 51.414098034396865]),
     ],
 )
 def test_normalising_point(coordinate_type, first_coordinate, second_coordinate, expected):
