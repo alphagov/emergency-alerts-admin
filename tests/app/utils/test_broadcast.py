@@ -102,8 +102,10 @@ def test_check_coordinates_valid_for_enclosed_polygons(first_coordinate, second_
     ],
 )
 def test_normalising_point(coordinate_type, first_coordinate, second_coordinate, expected):
-    assert normalising_point(first_coordinate, second_coordinate, coordinate_type).x == expected[0]
-    assert normalising_point(first_coordinate, second_coordinate, coordinate_type).y == expected[1]
+    point = normalising_point(first_coordinate, second_coordinate, coordinate_type)
+    tolerance = 1e-14
+    assert abs(point.x - expected[0]) < tolerance
+    assert abs(point.y - expected[1]) < tolerance
 
 
 def test_extract_attributes_from_custom_area():
