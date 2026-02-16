@@ -52,7 +52,7 @@ docopt==0.6.2
     # via notifications-python-client
 execnet==2.1.1
     # via pytest-xdist
-fido2==2.1.1
+fido2==1.2.0
     # via -r requirements.in
 flake8==7.3.0
     # via
@@ -80,7 +80,7 @@ googleapis-common-protos==1.72.0
     #   opentelemetry-exporter-otlp-proto-http
 govuk-bank-holidays==0.18
     # via -r requirements.in
-govuk-frontend-jinja==3.10.0
+govuk-frontend-jinja==3.3.0
     # via -r requirements.in
 grpcio==1.76.0
     # via opentelemetry-exporter-otlp-proto-grpc
