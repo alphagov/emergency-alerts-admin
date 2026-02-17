@@ -605,7 +605,7 @@ def test_dashboard_redirects_to_broadcast_dashboard(
             ".broadcast_dashboard",
             service_id=SERVICE_ONE_ID,
         ),
-    ),
+    )
 
 
 def test_empty_broadcast_dashboard(
@@ -4076,7 +4076,7 @@ def test_start_broadcasting(
             service_id=SERVICE_ONE_ID,
             broadcast_message_id=fake_uuid,
         ),
-    ),
+    )
     mock_update_broadcast_message_status.assert_called_once_with(
         "pending-approval",
         service_id=SERVICE_ONE_ID,
