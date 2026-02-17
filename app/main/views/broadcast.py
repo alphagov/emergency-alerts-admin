@@ -1025,6 +1025,15 @@ def get_broadcast_unsigned_xml(service_id, broadcast_message_id, xml_type):
 
     areas: Collection[BaseBroadcastArea] = broadcast_message.areas
 
+    all_area_coordinates = []
+    for area in areas:
+        # An area in a broadcast_message can have multiple polygons (e.g. islands), so we need
+        # to process each one and add it to the 'general' set of areas in the 'event' as used
+        # by the XML logic.
+        coordinate_pairs = area.polygons.as_coordinate_pairs_lat_long
+        for coordinate_pair in coordinate_pairs:
+            all_area_coordinates.append({"polygon": coordinate_pair})
+
     event = {
         # In a signed CAP message the identifier refers to a BroadcastProviderMessage which is unique per MNO
         # We don't have such a thing here so we just use the overall BroadcastMessage
@@ -1035,15 +1044,7 @@ def get_broadcast_unsigned_xml(service_id, broadcast_message_id, xml_type):
         "headline": HEADLINE,
         "description": broadcast_message.content,
         "language": "en-GB" if is_cap_format else "English",
-        "areas": [
-            {
-                # as_coordinate_pairs_lat_long returns an extra surrounding list.
-                # We do not expect this to ever have multiple items in.
-                # (API doesn't need to do this when generating events as it doesn't use the Polygon classes)
-                "polygon": area.polygons.as_coordinate_pairs_lat_long[0],
-            }
-            for area in areas
-        ],
+        "areas": all_area_coordinates,
         "channel": current_service.broadcast_channel,
         # starts_at and finishes_at can be None if it's a draft/awaiting approval, so we just use now
         # sent and expires expect a string in 'CAP' format (see convert_utc_... method's description)
