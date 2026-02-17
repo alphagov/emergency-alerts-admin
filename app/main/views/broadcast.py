@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timedelta, timezone
+from operator import attrgetter
 from typing import Collection
 
 from emergency_alerts_utils.template import BroadcastPreviewTemplate
@@ -14,6 +15,7 @@ from flask import (
     redirect,
     render_template,
     request,
+    session,
     url_for,
 )
 from notifications_python_client.errors import HTTPError
@@ -55,6 +57,23 @@ from app.utils.broadcast import (
 from app.utils.datetime import fromisoformat_allow_z_tz
 from app.utils.user import user_has_any_permissions, user_has_permissions
 
+FILTER_TEXT = {
+    "draft": "Draft Alerts",
+    "pending-approval": "Alerts Pending Approval",
+    "broadcasting": "Broadcasting Alerts",
+    "returned": "Returned Alerts",
+    "completed": "Completed Alerts",
+    "cancelled": "Cancelled Alerts",
+    "rejected": "Rejected Alerts",
+}
+
+SORT_TEXT = {
+    "date-desc": "Date (most recent first)",
+    "date-asc": "Date (oldest first)",
+    "title-asc": "Title (A-Z)",
+    "title-desc": "Title (Z-A)",
+}
+
 
 @main.route("/services/<uuid:service_id>/broadcast-tour/<int:step_index>")
 @user_has_permissions()
@@ -74,13 +93,15 @@ def broadcast_tour_live(service_id, step_index):
     return render_template(f"views/broadcast/tour/live/{step_index}.html")
 
 
-@main.route("/services/<uuid:service_id>/current-alerts")
+@main.route("/services/<uuid:service_id>/current-alerts", methods=["GET", "POST"])
 @user_has_permissions()
 @service_has_permission("broadcast")
 def broadcast_dashboard(service_id):
+    _ = _persist_and_return_filter_and_sort_values("current-alerts")
+    partials = get_broadcast_dashboard_partials(current_service.id)
     return render_template(
         "views/broadcast/dashboard.html",
-        partials=get_broadcast_dashboard_partials(current_service.id),
+        partials=partials,
     )
 
 
@@ -88,14 +109,16 @@ def broadcast_dashboard(service_id):
 @user_has_permissions()
 @service_has_permission("broadcast")
 def broadcast_dashboard_drafts(service_id):
+    broadcast_messages = BroadcastMessages(service_id).with_status("draft")
+
+    # sort drafts in descending date order
+    sorted_broadcasts = sorted(broadcast_messages, key=attrgetter("created_at"), reverse=True)
+
     return render_template(
         "views/broadcast/draft-broadcasts.html",
-        broadcasts=BroadcastMessages(service_id).with_status(
-            "draft",
-        ),
+        broadcasts=sorted_broadcasts,
         empty_message="You do not have any draft alerts",
         view_broadcast_endpoint=".view_current_broadcast",
-        reverse_chronological_sort=True,
     )
 
 
@@ -115,36 +138,49 @@ def delete_draft_alerts(service_id):
     )
 
 
-@main.route("/services/<uuid:service_id>/past-alerts")
+@main.route("/services/<uuid:service_id>/past-alerts", methods=["GET", "POST"])
 @user_has_permissions()
 @service_has_permission("broadcast")
 def broadcast_dashboard_previous(service_id):
+    page = "past-alerts"
+    filter, sort = _persist_and_return_filter_and_sort_values(page)
+    broadcast_messages = BroadcastMessages(service_id).with_status("cancelled", "completed")
+    selects = [
+        _get_filter_options(broadcast_messages, filter, page=page),
+        _get_sort_options(sort, page=page),
+    ]
+    filtered_broadcasts = _filter_broadcasts(broadcast_messages, filter)
+    filtered_and_sorted_broadcasts = _sort_broadcasts(filtered_broadcasts, sort)
     return render_template(
         "views/broadcast/previous-broadcasts.html",
-        broadcasts=BroadcastMessages(service_id).with_status(
-            "cancelled",
-            "completed",
-        ),
+        broadcasts=filtered_and_sorted_broadcasts,
         page_title="Past alerts",
         empty_message="You do not have any past alerts",
         view_broadcast_endpoint=".view_previous_broadcast",
-        reverse_chronological_sort=True,
+        selects=selects,
     )
 
 
-@main.route("/services/<uuid:service_id>/rejected-alerts")
+@main.route("/services/<uuid:service_id>/rejected-alerts", methods=["GET", "POST"])
 @user_has_permissions()
 @service_has_permission("broadcast")
 def broadcast_dashboard_rejected(service_id):
+    page = "rejected-alerts"
+    filter, sort = _persist_and_return_filter_and_sort_values(page)
+    broadcast_messages = BroadcastMessages(service_id).with_status("rejected")
+    selects = [
+        _get_filter_options(broadcast_messages, filter, page=page),
+        _get_sort_options(sort, page=page),
+    ]
+    filtered_broadcasts = _filter_broadcasts(broadcast_messages, filter)
+    filtered_and_sorted_broadcasts = _sort_broadcasts(filtered_broadcasts, sort)
     return render_template(
         "views/broadcast/previous-broadcasts.html",
-        broadcasts=BroadcastMessages(service_id).with_status(
-            "rejected",
-        ),
+        broadcasts=filtered_and_sorted_broadcasts,
         page_title="Rejected alerts",
         empty_message="You do not have any rejected alerts",
         view_broadcast_endpoint=".view_rejected_broadcast",
-        reverse_chronological_sort=True,
+        selects=selects,
     )
 
 
@@ -156,16 +192,69 @@ def broadcast_dashboard_updates(service_id):
 
 
 def get_broadcast_dashboard_partials(service_id):
-    broadcast_messages = BroadcastMessages(service_id)
+    filter = session.get("current-alerts-filter") or "none"
+    sort = session.get("current-alerts-sort") or "date-desc"
+    broadcast_messages = BroadcastMessages(service_id).with_status(
+        "pending-approval", "broadcasting", "draft", "returned"
+    )
+    selects = [
+        _get_filter_options(broadcast_messages, filter),
+        _get_sort_options(sort),
+    ]
+    filtered_broadcasts = _filter_broadcasts(broadcast_messages, filter)
+    filtered_and_sorted_broadcasts = _sort_broadcasts(filtered_broadcasts, sort)
     return dict(
         current_broadcasts=render_template(
             "views/broadcast/partials/dashboard-table.html",
-            broadcasts=broadcast_messages.with_status("pending-approval", "broadcasting", "draft", "returned"),
+            broadcasts=filtered_and_sorted_broadcasts,
+            selects=selects,
             empty_message="You do not have any current alerts",
             view_broadcast_endpoint=".view_current_broadcast",
-            reverse_chronological_sort=False,  # Keep order that API returns - by status then alphabetically
+            action=url_for(".broadcast_dashboard", service_id=current_service.id),
         ),
     )
+
+
+def _persist_and_return_filter_and_sort_values(page):
+    filter = "none"
+    sort = "date-desc"
+    if request.method == "POST":
+        filter = request.form.get(f"{page}-filter") or "none"
+        sort = request.form.get(f"{page}-sort") or "date-desc"
+    session[f"{page}-filter"] = filter
+    session[f"{page}-sort"] = sort
+    return filter, sort
+
+
+def _get_filter_options(broadcast_messages, filter=None, page="current-alerts"):
+    statuses = list(set(msg.status for msg in broadcast_messages))
+    filter_options = [{"value": status, "text": FILTER_TEXT[status]} for status in statuses]
+    if len(filter_options) > 1:
+        filter_options.insert(0, {"value": "none", "text": "All Alerts"})
+    return {"id": f"{page}-filter", "text": "Show", "options": filter_options, "selected": filter}
+
+
+def _get_sort_options(sort=None, page="current-alerts"):
+    sort_values = sorted(SORT_TEXT.keys())
+    sort_options = [{"value": sort_val, "text": SORT_TEXT[sort_val]} for sort_val in sort_values]
+    return {"id": f"{page}-sort", "text": "Sort by", "options": sort_options, "selected": sort}
+
+
+def _filter_broadcasts(broadcasts, filter):
+    filtered_broadcasts = broadcasts
+    if filter != "none":
+        filtered_broadcasts = [msg for msg in broadcasts if msg.status == filter]
+    return filtered_broadcasts
+
+
+def _sort_broadcasts(broadcasts, sort):
+    sorted_broadcasts = broadcasts
+    sort_attr, direction = sort.split("-")
+    if sort_attr == "date":
+        sorted_broadcasts = sorted(broadcasts, key=attrgetter("created_at"), reverse=(direction == "desc"))
+    elif sort_attr == "title":
+        sorted_broadcasts = sorted(broadcasts, key=attrgetter("reference"), reverse=(direction == "desc"))
+    return sorted_broadcasts
 
 
 @main.route("/services/<uuid:service_id>/new-broadcast", methods=["GET", "POST"])

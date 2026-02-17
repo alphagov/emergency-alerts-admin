@@ -12,16 +12,14 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
     <h1 class="heading-medium">Draft alerts</h1>
 
-    {% set sorted_broadcasts = broadcasts|list|sort|reverse if reverse_chronological_sort else broadcasts|list %}
-
     <div class="ajax-block-container js-mark-focus-on-parent" data-classes-to-persist="js-child-has-focus">
       <fieldset class="govuk-fieldset">
         <div class="govuk-hint">Select drafts to delete:</div>
         <div class="govuk-checkboxes" data-module="govuk-checkboxes">
-          {% for item in sorted_broadcasts %}
+          {% for item in broadcasts %}
             <div class="keyline-block">
               <div class="govuk-checkboxes__item template-list-item template-list-item-with-checkbox template-list-item-without-ancestors">
-                <input class="govuk-checkboxes__input" id="{{ item.id }}" name="checked_alerts" type="checkbox" value="{{ item.id }}">
+                <input class="govuk-checkboxes__input clear-on-reload" id="{{ item.id }}" name="checked_alerts" type="checkbox" value="{{ item.id }}">
                 <label class="govuk-label govuk-checkboxes__label template-list-item-label" for="{{ item.id }}">
                   <span class="govuk-visually-hidden">
                     {{ item.reference or item.template_name or "Untitled alert"}}
