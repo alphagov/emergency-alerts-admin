@@ -235,7 +235,7 @@ def _get_filter_options(broadcast_messages, filter=None, page="current-alerts"):
 
 
 def _get_sort_options(sort=None, page="current-alerts"):
-    sort_values = ["date-asc", "date-desc", "title-asc", "title-desc"]
+    sort_values = sorted(SORT_TEXT.keys())
     sort_options = [{"value": sort_val, "text": SORT_TEXT[sort_val]} for sort_val in sort_values]
     return {"id": f"{page}-sort", "text": "Sort by", "options": sort_options, "selected": sort}
 
