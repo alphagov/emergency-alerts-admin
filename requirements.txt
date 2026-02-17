@@ -52,7 +52,7 @@ docopt==0.6.2
     # via notifications-python-client
 execnet==2.1.1
     # via pytest-xdist
-fido2==1.2.0
+fido2==2.1.1
     # via -r requirements.in
 flake8==7.3.0
     # via
@@ -63,7 +63,7 @@ flake8-bugbear==25.11.29
     # via -r requirements.in
 flake8-print==5.0.0
     # via -r requirements.in
-flask==3.0.3
+flask==3.1.2
     # via
     #   -r requirements.in
     #   flask-login
@@ -80,7 +80,7 @@ googleapis-common-protos==1.72.0
     #   opentelemetry-exporter-otlp-proto-http
 govuk-bank-holidays==0.18
     # via -r requirements.in
-govuk-frontend-jinja==3.3.0
+govuk-frontend-jinja==4.0.0
     # via -r requirements.in
 grpcio==1.76.0
     # via opentelemetry-exporter-otlp-proto-grpc
@@ -112,6 +112,7 @@ jmespath==1.0.1
 markupsafe==3.0.3
     # via
     #   -r requirements.in
+    #   flask
     #   jinja2
     #   werkzeug
     #   wtforms
@@ -470,7 +471,7 @@ pytest==9.0.2
     #   pytest-env
     #   pytest-mock
     #   pytest-xdist
-pytest-env==1.2.0
+pytest-env==1.4.0
     # via -r requirements.in
 pytest-mock==3.15.1
     # via -r requirements.in
@@ -481,6 +482,8 @@ python-dateutil==2.9.0.post0
     #   botocore
     #   freezegun
     #   moto
+python-dotenv==1.2.1
+    # via pytest-env
 pytokens==0.4.1
     # via black
 pytz==2025.2
