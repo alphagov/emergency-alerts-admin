@@ -269,7 +269,14 @@
       } else if (event.currentTarget.value === 'add-new-template' && this.$singleNotificationChannel) {
         window.location = "/services/" + this.$singleChannelService + "/templates/choose-template-fields";
       } else if (event.currentTarget.value === 'move-to-existing-folder') {
-        $(this).closest('form').attr('action','/templates/move-to').submit();
+        if (this.$singleNotificationChannel && this.$parentFolderID) {
+          endpoint = "/services/" + this.$singleChannelService + "/templates/folders/" + this.$parentFolderID + "/move-to";
+        } else if (this.$singleNotificationChannel) {
+          endpoint = "/services/" + this.$singleChannelService + "/templates/move-to";
+        }
+        $("form.sticky-scroll-area")
+          .attr("action", endpoint)
+          .submit();
       } else {
         if (this.stateChanged()) {
           this.render();
