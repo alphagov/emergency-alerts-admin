@@ -19,45 +19,34 @@
       this.$templateListUl = this.$form.find('#template-list-ul');
       this.$templateListCheckboxes = this.$form.find('#template-list-checkboxes');
       this.$pageHeader = $('#page-header');
-      this.$initManageMode = new URLSearchParams(window.location.search).get('manage');
+
+      if (window.location.href.endsWith('/templates'))
+      {
+        sessionStorage.setItem("manageMode", JSON.stringify(false));
+      }
 
       // all the diff states that we want to show or hide
       this.states = [
         {
           key: 'nothing-selected-buttons',
           $el: this.$form.find('#nothing_selected'),
-          cancellable: false,
-          manageMode: false,
         },
         {
           key: 'manage-folders-buttons',
           $el: this.$form.find('#manage_folders'),
-          cancellable: true,
-          manageMode: true,
+          backtoviewmode: true,
         },
         {
           key: 'items-selected-buttons',
           $el: this.$form.find('#items_selected'),
-          cancellable: false,
-          manageMode: true,
-        },
-        {
-          key: 'move-to-existing-folder',
-          $el: this.$form.find('#move_to_folder_radios'),
-          cancellable: true,
-          setFocus: () => $('#move_to_folder_radios').focus(),
-          action: 'move to folder',
-          description: 'Press move to confirm or cancel to close',
-          manageMode: true,
         },
         {
           key: 'move-to-new-folder',
           $el: this.$form.find('#move_to_new_folder_form'),
-          cancellable: true,
+          cancel_retain_selections: true,
           setFocus: () => $('#move_to_new_folder_form').focus(),
           action: 'move to new folder',
           description: 'Press add to new folder to confirm name or cancel to close',
-          manageMode: true,
         },
         {
           key: 'add-new-folder',
@@ -66,22 +55,21 @@
           setFocus: () => $('#add_new_folder_form').focus(),
           action: 'new folder',
           description: 'Press add new folder to confirm name or cancel to close',
-          manageMode: false,
         },
         {
           key: 'add-new-template',
           $el: this.$form.find('#add_new_template_form'),
-          cancellable: true,
           setFocus: () => $('#add_new_template_form').focus(),
           action: 'new template',
           description: 'Press continue to confirm selection or cancel to close',
-          manageMode: false,
         }
       ];
 
       // cancel/clear buttons only relevant if JS enabled, so
       this.states.filter(state => state.cancellable).forEach((x) => this.addCancelButton(x));
+      this.states.filter(state => state.cancel_retain_selections).forEach((x) => this.addCancelButtonRetain(x));
       this.states.filter(state => state.key === 'items-selected-buttons').forEach(x => this.addClearButton(x));
+      this.states.filter(state => state.backtoviewmode).forEach((x) => this.addBackToViewModeButton(x));
       this.states.filter(state => state.key === 'nothing-selected-buttons').forEach(x => this.addManageFoldersButton(x));
 
       // make elements focusabled
@@ -96,7 +84,7 @@
       this._lastState = this.$form.data('prev-state');
       if (this._lastState === undefined) {
         // DJ test
-        if (this.$initManageMode) {
+        if (JSON.parse(sessionStorage.getItem('manageMode'))) {
           this.currentState = 'manage-folders-buttons'
           this.render();
         }
@@ -156,6 +144,21 @@
       state.$el.find(selector).after($cancel);
     };
 
+    this.addCancelButtonRetain = function(state) {
+      let selector = `[value=${state.key}]`;
+      let $cancel = this.makeButton('Cancel', {
+        'onclick': () => {
+          // set the state we want to go to and re-render
+          this.currentState = 'items-selected-buttons';
+          this.render();
+        },
+        'cancelSelector': selector,
+        'nonvisualText': state.action
+      });
+
+      state.$el.find(selector).after($cancel);
+    };
+
     this.addClearButton = function(state) {
       let selector = 'button[value=manage-folders-buttons]';
       let $clear = this.makeButton('Clear', {
@@ -173,10 +176,32 @@
       state.$el.find('.checkbox-list-selected-counter').append($clear);
     };
 
+    this.addBackToViewModeButton = function(state) {
+      let selector = 'button[value=move-to-new-folder]';
+      let $manageButton = this.makeButton('Cancel', {
+        'onclick': () => {
+          // set managemode in sessionstorage
+          sessionStorage.setItem('manageMode', JSON.stringify(false))
+
+          // uncheck all templates and folders
+          this.$form.find('input:checkbox').prop('checked', false);
+
+          // set the state we want to go to and re-render
+          this.currentState = 'nothing-selected-buttons';
+          this.render();
+        }
+      });
+
+      state.$el.find(selector).after($manageButton);
+    };
+
     this.addManageFoldersButton = function(state) {
       let selector = 'button[value=add-new-folder]';
       let $manageButton = this.makeButton('Manage templates and folders', {
         'onclick': () => {
+          // set managemode in sessionstorage
+          sessionStorage.setItem('manageMode', JSON.stringify(true))
+
           // uncheck all templates and folders
           this.$form.find('input:checkbox').prop('checked', false);
 
@@ -243,6 +268,8 @@
         window.location = "/services/" + this.$singleChannelService + "/templates/folders/" + this.$parentFolderID + "/choose-template-fields";
       } else if (event.currentTarget.value === 'add-new-template' && this.$singleNotificationChannel) {
         window.location = "/services/" + this.$singleChannelService + "/templates/choose-template-fields";
+      } else if (event.currentTarget.value === 'move-to-existing-folder') {
+        $(this).closest('form').attr('action','/templates/move-to').submit();
       } else {
         if (this.stateChanged()) {
           this.render();
@@ -318,10 +345,10 @@
       return results;
     };
 
-    this.switchManageMode = function( manageMode ) {
+    this.setManageMode = function() {
       // Either display templates as ul list or checkbox list depending on mode,
       // and set page header text.
-      if (manageMode) {
+      if (JSON.parse(sessionStorage.getItem('manageMode'))) {
         this.$pageHeader.text('Manage templates and folders');
         this.$templateListUl.hide();
         this.$templateListCheckboxes.show();
@@ -344,7 +371,7 @@
         state => (state.key === this.currentState ? this.$liveRegionCounter.before(state.$el) : state.$el.detach())
       );
 
-      this.switchManageMode(currentStateObj.manageMode);
+      this.setManageMode();
 
       // use dialog mode for states which contain more than one form control
       if (['move-to-existing-folder', 'add-new-template'].indexOf(this.currentState) !== -1) {
@@ -378,7 +405,7 @@
           <button type="button" disabled aria-disabled="true" class="govuk-button govuk-button--secondary govuk-!-margin-right-3 govuk-!-margin-bottom-1" value="move-to-existing-folder" aria-expanded="false">
             Move<span class="govuk-visually-hidden"> selection to folder</span>
           </button>
-          <button type="button" disabled aria-disabled="true" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-1" value="move-to-new-folder" aria-expanded="false">Add to new folder</button>
+          <button type="button" disabled aria-disabled="true" class="govuk-button govuk-button--secondary govuk-!-margin-right-3 govuk-!-margin-bottom-1" value="move-to-new-folder" aria-expanded="false">Add to new folder</button>
           <div class="checkbox-list-selected-counter">
             <span class="checkbox-list-selected-counter__count" aria-hidden="true">
               ${this.selectionStatus.default}
@@ -394,7 +421,7 @@
           <button type="button" class="govuk-button govuk-button--secondary govuk-!-margin-right-3 govuk-!-margin-bottom-1" value="move-to-existing-folder" aria-expanded="false">
             Move<span class="govuk-visually-hidden"> selection to folder</span>
           </button>
-          <button type="button" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-1" value="move-to-new-folder" aria-expanded="false">Add to new folder</button>
+          <button type="button" class="govuk-button govuk-button--secondary govuk-!-margin-right-3 govuk-!-margin-bottom-1" value="move-to-new-folder" aria-expanded="false">Add to new folder</button>
           <div class="checkbox-list-selected-counter" aria-hidden="true">
             <span class="checkbox-list-selected-counter__count" aria-hidden="true">
               ${this.selectionStatus.selected(1)}
