@@ -24,8 +24,8 @@ from tests.app.broadcast_areas.custom_polygons import (
     BD1_1EE_3,
     BRISTOL,
     CUMBRIA_FLOOD_WARNING_AREA,
-    ENGLAND,
     HG3_2RL,
+    MULTIPLE_ENGLAND,
     MULTIPLE_FLOOD_WARNING_AREAS,
     SKYE,
 )
@@ -1345,7 +1345,7 @@ def test_search_flood_warning_areas_page(
                 "ids": ["Flood_Warning_Target_Areas-011FWCN2M"],
                 "names": ["Cumbria coast at Maryport harbour"],
                 "aggregate_names": ["Cumbria coast at Maryport harbour"],
-                "simple_polygons": CUMBRIA_FLOOD_WARNING_AREA,
+                "simple_polygons": [CUMBRIA_FLOOD_WARNING_AREA],
             },
         ),
     )
@@ -1399,7 +1399,7 @@ def test_search_flood_warning_bulk_add_areas_page(
                 "ids": ["Flood_Warning_Target_Areas-011FWCN2M"],
                 "names": ["Cumbria coast at Maryport harbour"],
                 "aggregate_names": ["Cumbria coast at Maryport harbour"],
-                "simple_polygons": CUMBRIA_FLOOD_WARNING_AREA,
+                "simple_polygons": [CUMBRIA_FLOOD_WARNING_AREA],
             },
         ),
     )
@@ -2320,7 +2320,7 @@ def test_add_flood_warning_area(
         "ids": ["Flood_Warning_Target_Areas-011FWCN2M"],
         "names": ["Cumbria coast at Maryport harbour"],
         "aggregate_names": ["Cumbria coast at Maryport harbour"],
-        "simple_polygons": CUMBRIA_FLOOD_WARNING_AREA,
+        "simple_polygons": [CUMBRIA_FLOOD_WARNING_AREA],
     }
 
     assert sorted(actual_areas["ids"]) == sorted(expected_areas["ids"])
@@ -2452,7 +2452,7 @@ def test_remove_flood_warning_area(
                 "ids": ["Flood_Warning_Target_Areas-011FWCN2M"],
                 "names": ["Cumbria coast at Maryport harbour"],
                 "aggregate_names": ["Cumbria coast at Maryport harbour"],
-                "simple_polygons": CUMBRIA_FLOOD_WARNING_AREA,
+                "simple_polygons": [CUMBRIA_FLOOD_WARNING_AREA],
             },
         ),
     )
@@ -3898,7 +3898,7 @@ def test_replace_custom_area(
                 "ids": ["ctry19-E92000001"],
                 "names": ["England"],
                 "aggregate_names": ["England"],
-                "simple_polygons": ENGLAND,
+                "simple_polygons": MULTIPLE_ENGLAND,
             }
         },
     )
@@ -3951,7 +3951,7 @@ def test_replace_custom_area_with_sub_area(
                 "ids": ["lad23-S12000033"],
                 "names": ["Aberdeen City"],
                 "aggregate_names": ["Aberdeen City"],
-                "simple_polygons": ABERDEEN_CITY,
+                "simple_polygons": [ABERDEEN_CITY],
             }
         },
     )
