@@ -1,9 +1,9 @@
 # Most of the items here are single polygons
-# This in the `simple_polygons` structure you must surround them with an extra array
-# (because an area can have multiple polygons)
+# Thus in the `simple_polygons` structure you must surround them with an extra array
+# (because an area could have multiple polygons)
 
 # Where a test item here has more than one polygon it should be clear in the name so a consumer
-# can easily tell a surrounding array is not required in use.
+# can easily tell a surrounding array is not required for use.
 
 BRISTOL = [
     [51.4371, -2.6216],
