@@ -6746,9 +6746,9 @@ def test_can_get_unsigned_cap_xml(
             reference="Test name",
             content="Test content",
             areas={
-                "ids": ["Bristol"],
-                "simple_polygons": [BRISTOL],
-                "names": ["Bristol"],
+                "ids": ["Bristol", "Skye"],
+                "simple_polygons": [BRISTOL, SKYE],
+                "names": ["Bristol", "Skye"],
             },
         ),
     )
@@ -6805,12 +6805,15 @@ def test_can_get_unsigned_cap_xml(
     assert xml_path(
         xml_response.text,
         "/cap:alert/cap:info/cap:area/cap:areaDesc//text()",
-    ) == ["area-1"]
+    ) == ["area-1", "area-2"]
 
     assert xml_path(
         xml_response.text,
         "/cap:alert/cap:info/cap:area/cap:polygon//text()",
-    ) == ["51.4371,-2.6216 51.4371,-2.575 51.4668,-2.575 51.4668,-2.6216 51.4371,-2.6216"]
+    ) == [
+        "51.4371,-2.6216 51.4371,-2.575 51.4668,-2.575 51.4668,-2.6216 51.4371,-2.6216",
+        "57.1004,-6.828 57.1004,-5.7733 57.7334,-5.7733 57.7334,-6.828 57.1004,-6.828",
+    ]
 
     assert xml_path(
         xml_response.text,
@@ -6855,9 +6858,9 @@ def test_can_get_unsigned_ibag_xml(
             reference="Test name",
             content="Test content",
             areas={
-                "ids": ["Bristol"],
-                "simple_polygons": [BRISTOL],
-                "names": ["Bristol"],
+                "ids": ["Bristol", "Skye"],
+                "simple_polygons": [BRISTOL, SKYE],
+                "names": ["Bristol", "Skye"],
             },
         ),
     )
@@ -6949,8 +6952,19 @@ def test_can_get_unsigned_ibag_xml(
         xml_response.text,
         "/ibag:IBAG_Alert_Attributes/ibag:IBAG_alert_info/ibag:IBAG_Alert_Area[1]/ibag:IBAG_polygon//text()",
         "ibag",
-        # TODO: Coordinate type?
     ) == ["51.4371,-2.6216 51.4371,-2.575 51.4668,-2.575 51.4668,-2.6216 51.4371,-2.6216"]
+
+    assert xml_path(
+        xml_response.text,
+        "/ibag:IBAG_Alert_Attributes/ibag:IBAG_alert_info/ibag:IBAG_Alert_Area[2]/ibag:IBAG_area_description//text()",
+        "ibag",
+    ) == ["area-2"]
+
+    assert xml_path(
+        xml_response.text,
+        "/ibag:IBAG_Alert_Attributes/ibag:IBAG_alert_info/ibag:IBAG_Alert_Area[2]/ibag:IBAG_polygon//text()",
+        "ibag",
+    ) == ["57.1004,-6.828 57.1004,-5.7733 57.7334,-5.7733 57.7334,-6.828 57.1004,-6.828"]
 
     assert xml_path(
         xml_response.text,
