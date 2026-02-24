@@ -1,0 +1,36 @@
+{% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
+{% from "govuk_frontend_jinja/components/breadcrumbs/macro.html" import govukBreadcrumbs %}
+{% from "components/folder-path.html" import folder_path, page_title_folder_path %}
+{% from "components/pill.html" import pill %}
+{% from "components/live-search.html" import live_search %}
+{% from "components/form.html" import form_wrapper %}
+{% from "components/page-header.html" import page_header %}
+{% from "components/page-footer.html" import page_footer %}
+
+{% extends "withnav_template.html" %}
+
+{% set page_title = 'Move a template or folder' %}
+
+{% block service_page_title %}
+  {{ page_title_folder_path(template_folder_path) }}
+{% endblock %}
+
+{% block backLink %}
+  {% if back_link.endswith('templates') %}
+    {{ govukBackLink({ "href": back_link + '/all' }) }}
+  {% else %}
+    {{ govukBackLink({ "href": back_link }) }}
+  {% endif %}
+{% endblock %}
+
+{% block maincolumn_content %}
+    {% if current_user.has_permissions('manage_templates') and user_has_template_folder_permission %}
+      {% call form_wrapper(
+          class='sticky-scroll-area',
+          module='template-folder-move-form',
+          data_kwargs={'prev-state': None}
+      ) %}
+        {% include 'views/templates/_move_to.html' %}
+      {% endcall %}
+    {% endif %}
+{% endblock %}
