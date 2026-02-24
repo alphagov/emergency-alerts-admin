@@ -227,7 +227,7 @@ def _persist_and_return_filter_and_sort_values(page):
 
 
 def _get_filter_options(broadcast_messages, filter=None, page="current-alerts"):
-    statuses = list(set(msg.status for msg in broadcast_messages))
+    statuses = sorted(list(set(msg.status for msg in broadcast_messages)))
     filter_options = [{"value": status, "text": FILTER_TEXT[status]} for status in statuses]
     if len(filter_options) > 1:
         filter_options.insert(0, {"value": "none", "text": "All Alerts"})
