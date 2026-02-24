@@ -85,7 +85,7 @@
       if (this._lastState === undefined) {
         // DJ test
         if (JSON.parse(sessionStorage.getItem('manageMode'))) {
-          this.currentState = 'manage-folders-buttons'
+          this.currentState = 'manage-folders-buttons';
           this.render();
         }
         else
@@ -160,7 +160,6 @@
     };
 
     this.addClearButton = function(state) {
-      let selector = 'button[value=manage-folders-buttons]';
       let $clear = this.makeButton('Clear', {
         'onclick': () => {
 
@@ -181,7 +180,7 @@
       let $manageButton = this.makeButton('Cancel', {
         'onclick': () => {
           // set managemode in sessionstorage
-          sessionStorage.setItem('manageMode', JSON.stringify(false))
+          sessionStorage.setItem('manageMode', JSON.stringify(false));
 
           // uncheck all templates and folders
           this.$form.find('input:checkbox').prop('checked', false);
@@ -200,7 +199,7 @@
       let $manageButton = this.makeButton('Manage templates and folders', {
         'onclick': () => {
           // set managemode in sessionstorage
-          sessionStorage.setItem('manageMode', JSON.stringify(true))
+          sessionStorage.setItem('manageMode', JSON.stringify(true));
 
           // uncheck all templates and folders
           this.$form.find('input:checkbox').prop('checked', false);
@@ -269,6 +268,7 @@
       } else if (event.currentTarget.value === 'add-new-template' && this.$singleNotificationChannel) {
         window.location = "/services/" + this.$singleChannelService + "/templates/choose-template-fields";
       } else if (event.currentTarget.value === 'move-to-existing-folder') {
+        let endpoint = "";
         if (this.$singleNotificationChannel && this.$parentFolderID) {
           endpoint = "/services/" + this.$singleChannelService + "/templates/folders/" + this.$parentFolderID + "/move-to";
         } else if (this.$singleNotificationChannel) {
@@ -366,7 +366,7 @@
         this.$templateListUl.show();
         this.$templateListCheckboxes.hide();
       }
-    }
+    };
 
     this.render = function() {
       let mode = 'default';

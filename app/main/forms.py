@@ -1584,7 +1584,9 @@ class TemplateFolderMoveForm(Form):
         ]
 
     move_to = NestedRadioField(
-        "Choose the location you want to move your template or folder to", default="", validators=[required_for_ops("move-to-existing-folder"), Optional()]
+        "Choose the location you want to move your template or folder to",
+        default="",
+        validators=[required_for_ops("move-to-existing-folder"), Optional()],
     )
 
     def validate(self, extra_validators=None):
@@ -1693,7 +1695,9 @@ class TemplateAndFoldersSelectionForm(Form):
     # this means '__NONE__' (self.ALL_TEMPLATES option) is selected when no form data has been submitted
     # set default to empty string so process_data method doesn't perform any transformation
     move_to = NestedRadioField(
-        "Choose the location you want to move your template or folder to", default="", validators=[required_for_ops("move-to-existing-folder"), Optional()]
+        "Choose the location you want to move your template or folder to",
+        default="",
+        validators=[required_for_ops("move-to-existing-folder"), Optional()],
     )
     add_new_folder_name = GovukTextInputField("Folder name", validators=[required_for_ops("add-new-folder")])
     move_to_new_folder_name = GovukTextInputField("Folder name", validators=[required_for_ops("move-to-new-folder")])

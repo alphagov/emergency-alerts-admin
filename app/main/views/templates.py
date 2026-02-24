@@ -1,9 +1,10 @@
+import json
 from functools import partial
 
 from flask import abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user
 from notifications_python_client.errors import HTTPError
-import json
+
 from app import (
     current_service,
     service_api_client,
@@ -18,8 +19,8 @@ from app.main.forms import (
     ChooseTemplateFieldsForm,
     SearchTemplatesForm,
     TemplateAndFoldersSelectionForm,
-    TemplateFolderMoveForm,
     TemplateFolderForm,
+    TemplateFolderMoveForm,
 )
 from app.models.broadcast_message import BroadcastMessage
 from app.models.template import Template
@@ -77,7 +78,7 @@ def edit_template(service_id, template_id):
 def move_template(service_id, template_folder_id=None):
 
     folders_to_move = json.dumps(request.form.getlist("templates_and_folders"))
-    if folders_to_move == '[]':
+    if folders_to_move == "[]":
         folders_to_move = request.form.get("template_folders_to_move")
 
     template_folder = current_service.get_template_folder(template_folder_id)
@@ -95,8 +96,8 @@ def move_template(service_id, template_folder_id=None):
         template_folders_to_move=folders_to_move,
     )
 
-    op = request.form.get('operation')
-    if (op == "move-to-existing-folder"):
+    op = request.form.get("operation")
+    if op == "move-to-existing-folder":
         if template_folder_move_form.validate_on_submit():
             if not current_user.has_permissions("manage_templates"):
                 abort(403)
@@ -107,7 +108,6 @@ def move_template(service_id, template_folder_id=None):
 
         if "templates_and_folders" in template_folder_move_form.errors:
             flash("Select at least one template or folder")
-
 
     return render_template(
         "views/templates/move_to.html",
@@ -124,8 +124,8 @@ def move_template(service_id, template_folder_id=None):
 
 def process_folder_move_form(form, current_folder_id):
     current_service.get_template_folder_with_user_permission_or_403(current_folder_id, current_user)
-    redir = request.url.replace("/move-to","")
-    if (redir.endswith("/templates")):
+    redir = request.url.replace("/move-to", "")
+    if redir.endswith("/templates"):
         redir = redir + "/all"
     move_to_id = form.move_to.data
     ids_to_move = json.loads(form.template_folders_to_move)

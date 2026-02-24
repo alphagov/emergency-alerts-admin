@@ -22,7 +22,7 @@
             .closest("li")
             .remove();
       });
-    }
+    };
 
 
     // Disable folder radio button at the current level
@@ -37,7 +37,7 @@
         $radio.prop("disabled", true);
         $radio.next("label").append(" <-- current location");
       }
-    }
+    };
 
 
     this.actionButtonClicked = function(event) {
