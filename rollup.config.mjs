@@ -99,6 +99,7 @@ export default [
       paths.src + 'javascripts/previewPane.js',
       paths.src + 'javascripts/colourPreview.js',
       paths.src + 'javascripts/templateFolderForm.js',
+      paths.src + 'javascripts/templateFolderMoveForm.js',
       paths.src + 'javascripts/addBrandingOptionsForm.js',
       paths.src + 'javascripts/collapsibleCheckboxes.js',
       paths.src + 'javascripts/registerSecurityKey.js',
