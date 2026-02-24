@@ -1557,6 +1557,45 @@ def required_for_ops(*operations):
     return validate
 
 
+class TemplateFolderMoveForm(Form):
+
+    ALL_TEMPLATES_FOLDER = {
+        "name": "Templates",
+        "id": RadioFieldWithNoneOption.NONE_OPTION_VALUE,
+    }
+
+    def __init__(
+        self,
+        current_folder_id,
+        all_template_folders,
+        template_folders_to_move,
+        *args,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+
+        self.current_folder_id = current_folder_id
+        self.all_template_folders = all_template_folders
+        self.template_folders_to_move = template_folders_to_move
+
+        self.move_to.all_template_folders = all_template_folders
+        self.move_to.choices = [
+            (item["id"], item["name"]) for item in ([self.ALL_TEMPLATES_FOLDER] + all_template_folders)
+        ]
+
+    move_to = NestedRadioField(
+        "Choose the location you want to move your template or folder to", default="", validators=[required_for_ops("move-to-existing-folder"), Optional()]
+    )
+
+    def validate(self, extra_validators=None):
+        self.op = request.form.get("operation")
+        self.is_move_op = self.op in {"move-to-existing-folder"}
+        if not (self.is_move_op):
+            return False
+
+        return super().validate(extra_validators)
+
+
 class TemplateAndFoldersSelectionForm(Form):
     """
     This form expects the form data to include an operation, based on which submit button is clicked.
@@ -1654,7 +1693,7 @@ class TemplateAndFoldersSelectionForm(Form):
     # this means '__NONE__' (self.ALL_TEMPLATES option) is selected when no form data has been submitted
     # set default to empty string so process_data method doesn't perform any transformation
     move_to = NestedRadioField(
-        "Choose a folder", default="", validators=[required_for_ops("move-to-existing-folder"), Optional()]
+        "Choose the location you want to move your template or folder to", default="", validators=[required_for_ops("move-to-existing-folder"), Optional()]
     )
     add_new_folder_name = GovukTextInputField("Folder name", validators=[required_for_ops("add-new-folder")])
     move_to_new_folder_name = GovukTextInputField("Folder name", validators=[required_for_ops("move-to-new-folder")])
