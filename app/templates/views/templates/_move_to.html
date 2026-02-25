@@ -1,40 +1,21 @@
 {% from "components/radios.html" import radios, radios_nested %}
 {% from "components/page-footer.html" import page_footer %}
 
-<div id="sticky_template_forms">
+<div id="move-to-list">
   <button name="operation" value="unknown" hidden></button>
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-  {% if templates_and_folders_form.move_to.choices and template_list.templates_to_show %}
-    <div id="move_to_folder_radios" class="sticky-template-form" role="region" aria-label="Choose the folder to move selected items to">
-      <div class="js-will-stick-at-bottom-when-scrolling">
-      {{ radios_nested(templates_and_folders_form.move_to, move_to_children, option_hints=option_hints) }}
-      </div>
-      <div class="js-will-stick-at-bottom-when-scrolling">
-      {{ page_footer('Move', button_name='operation', button_value='move-to-existing-folder', button_text_hidden_suffix=' selection to folder') }}
-      </div>
-    </div>
-    <div id="move_to_new_folder_form" class="sticky-template-form" role="region" aria-label="Enter name of the new folder to move selected items to">
-      <div class="js-will-stick-at-bottom-when-scrolling">
-        {{ templates_and_folders_form.move_to_new_folder_name(param_extensions={"classes": "govuk-!-width-full"}) }}
-        {{ page_footer('Add to new folder', button_name='operation', button_value='move-to-new-folder') }}
-      </div>
+  <input type="hidden" name="template_folders_to_move" value="{{ template_folder_move_form.template_folders_to_move }}" />
+  <input type="hidden" name="current_folder_id" value="{{ template_folder_move_form.current_folder_id }}" />
+  {% if template_folder_move_form.move_to.choices %}
+    <div id="move_to_folder_radios" role="region" aria-label="Choose the location you want to move your template or folder to">
+      {{ radios_nested(template_folder_move_form.move_to, move_to_children, option_hints=None) }}
     </div>
   {% endif %}
-  <div id="add_new_folder_form" class="sticky-template-form" role="region" aria-label="Enter name of the new folder">
-    <div class="js-will-stick-at-bottom-when-scrolling">
-      {{ templates_and_folders_form.add_new_folder_name(param_extensions={"classes": "govuk-!-width-full"}) }}
-      {{ page_footer('Add new folder', button_name='operation', button_value='add-new-folder') }}
-    </div>
-  </div>
-  <div id="add_new_template_form" class="sticky-template-form" role="region" aria-label="Choose template type" {% if single_notification_channel %}data-channel="{{single_notification_channel}}" data-service="{{current_service.id}}"{% endif %}>
-    <div class="js-will-stick-at-bottom-when-scrolling">
-    {{ radios(templates_and_folders_form.add_template_by_template_type) }}
-    </div>
-    <div class="js-will-stick-at-bottom-when-scrolling">
-    {{ page_footer('Continue', button_name='operation', button_value='add-new-template') }}
-    </div>
-  </div>
-  <div class="selection-counter govuk-visually-hidden" role="status" aria-live="polite">
-    Nothing selected
+</div>
+<div class="sticky_template_forms">
+  <div class="js-stick-at-bottom-when-scrolling">
+    <button value="move-to-existing-folder" type="submit" name="operation" class="govuk-button page-footer__button govuk-!-margin-right-3" data-module="govuk-button">
+      Move<span class="govuk-visually-hidden">  selection to folder</span>
+    </button>
   </div>
 </div>
