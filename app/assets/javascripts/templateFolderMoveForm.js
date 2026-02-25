@@ -5,10 +5,9 @@
 
     this.start = function(templateFolderMoveForm) {
       this.$form = $(templateFolderMoveForm);
-      this.$form.on('click', 'button.govuk-button--secondary', (event) => this.actionButtonClicked(event));
       this.removeFoldersFromList();
       this.disableCurrentLevelFolder();
-
+      this.addCancelButton();
     };
 
 
@@ -40,10 +39,28 @@
     };
 
 
-    this.actionButtonClicked = function(event) {
-      event.preventDefault();
-      this.currentState = $(event.currentTarget).val();
+    this.addCancelButton = function() {
+      let selector = `[value="move-to-existing-folder"]`;
+      let href = $(".govuk-back-link").attr("href");
+      let $cancel = this.makeButton('Cancel', {
+        'href': href,
+        'nonvisualText': 'move to operation'
+      });
 
+      this.$form.find(selector).after($cancel);
+    };
+
+
+    this.makeButton = (text, opts) => {
+      let $btn = $('<a href="' + opts.href + '"></a>')
+                    .html(text)
+                    .addClass('govuk-link govuk-link--no-visited-state js-cancel')
+                    .attr('tabindex', '0');
+
+        if (Object.prototype.hasOwnProperty.call(opts, 'nonvisualText')) {
+          $btn.append(`<span class="govuk-visually-hidden"> ${opts.nonvisualText}</span>`);
+        }
+        return $btn;
     };
 
 
