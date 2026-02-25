@@ -1,21 +1,19 @@
 {% from "components/radios.html" import radios, radios_nested %}
 {% from "components/page-footer.html" import page_footer %}
 
-{{ page_header(page_title, size='medium') }}
-
-<div id="sticky_template_forms">
+<div id="move-to-list">
   <button name="operation" value="unknown" hidden></button>
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
   <input type="hidden" name="template_folders_to_move" value="{{ template_folder_move_form.template_folders_to_move }}" />
   <input type="hidden" name="current_folder_id" value="{{ template_folder_move_form.current_folder_id }}" />
   {% if template_folder_move_form.move_to.choices %}
-    <div id="move_to_folder_radios" class="sticky-template-form" role="region" aria-label="Choose the folder to move selected items to">
-      <div class="js-will-stick-at-bottom-when-scrolling">
+    <div id="move_to_folder_radios" role="region" aria-label="Choose the location you want to move your template or folder to">
       {{ radios_nested(template_folder_move_form.move_to, move_to_children, option_hints=None) }}
-      </div>
-      <div class="js-will-stick-at-bottom-when-scrolling">
-      {{ page_footer('Move', button_name='operation', button_value='move-to-existing-folder', button_text_hidden_suffix=' selection to folder') }}
-      </div>
     </div>
   {% endif %}
+</div>
+<div class="sticky_template_forms">
+  <div class="js-stick-at-bottom-when-scrolling">
+    {{ page_footer('Move', button_name='operation', button_value='move-to-existing-folder', button_text_hidden_suffix=' selection to folder') }}
+  </div>
 </div>
