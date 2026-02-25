@@ -83,7 +83,6 @@
       // first off show the new template / new folder buttons
       this._lastState = this.$form.data('prev-state');
       if (this._lastState === undefined) {
-        // DJ test
         if (JSON.parse(sessionStorage.getItem('manageMode'))) {
           this.currentState = 'manage-folders-buttons';
           this.render();

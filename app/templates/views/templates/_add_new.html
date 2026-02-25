@@ -4,7 +4,7 @@
 <div id="sticky_template_forms">
   <button name="operation" value="unknown" hidden></button>
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-  {% if templates_and_folders_form.move_to.choices and template_list.templates_to_show %}
+  {% if template_list.templates_to_show %}
     <div id="move_to_new_folder_form" class="sticky-template-form" role="region" aria-label="Enter name of the new folder to move selected items to">
       <div class="js-will-stick-at-bottom-when-scrolling">
         {{ templates_and_folders_form.move_to_new_folder_name(param_extensions={"classes": "govuk-!-width-full"}) }}
