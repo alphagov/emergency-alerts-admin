@@ -2,7 +2,7 @@ import math
 
 from app.models.template import Template
 from tests import template_json
-from tests.app.broadcast_areas.custom_polygons import BD1_1EE, ENGLAND
+from tests.app.broadcast_areas.custom_polygons import BD1_1EE, MULTIPLE_ENGLAND
 from tests.conftest import SERVICE_ONE_ID
 
 
@@ -46,7 +46,7 @@ def test_create_template_from_area(mocker, fake_uuid, mock_create_template):
         service_id=SERVICE_ONE_ID,
         areas={
             "ids": ["ctry19-E92000001"],
-            "simple_polygons": ENGLAND,
+            "simple_polygons": MULTIPLE_ENGLAND,
             "names": ["England"],
             "aggregate_names": ["England"],
         },

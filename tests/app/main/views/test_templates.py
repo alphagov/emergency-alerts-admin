@@ -8,7 +8,7 @@ from freezegun import freeze_time
 
 from app.models.template import Template
 from tests import NotifyBeautifulSoup, template_json, validate_route_permission
-from tests.app.broadcast_areas.custom_polygons import ENGLAND
+from tests.app.broadcast_areas.custom_polygons import MULTIPLE_ENGLAND
 from tests.app.main.views.test_template_folders import PARENT_FOLDER_ID, _folder
 from tests.conftest import (
     SERVICE_ONE_ID,
@@ -1284,7 +1284,7 @@ def test_add_area_to_template(client_request, fake_uuid, mock_get_template_with_
                 "ids": ["ctry19-E92000001"],
                 "names": ["England"],
                 "aggregate_names": ["England"],
-                "simple_polygons": ENGLAND,
+                "simple_polygons": MULTIPLE_ENGLAND,
             }
         },
         service_id=SERVICE_ONE_ID,
