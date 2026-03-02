@@ -77,6 +77,9 @@ def edit_template(service_id, template_id):
 @user_has_permissions(allow_org_user=True)
 def move_template(service_id, template_folder_id=None):
 
+    if not current_user.has_permissions("manage_templates"):
+        abort(403)
+        
     folders_to_move = json.dumps(request.form.getlist("templates_and_folders"))
     if folders_to_move == "[]":
         folders_to_move = request.form.get("template_folders_to_move")
