@@ -323,7 +323,9 @@ def test_should_show_templates_folder_page(
         )
 
     all_page_items = page.select("#template-list-checkboxes .template-list-item")
-    all_page_items_styled_with_checkboxes = page.select("#template-list-checkboxes .template-list-item.govuk-checkboxes__item")
+    all_page_items_styled_with_checkboxes = page.select(
+        "#template-list-checkboxes .template-list-item.govuk-checkboxes__item"
+    )
 
     assert len(all_page_items) == len(all_page_items_styled_with_checkboxes)
 
@@ -336,7 +338,9 @@ def test_should_show_templates_folder_page(
     for index, expected_item in enumerate(expected_items):
         assert normalize_spaces(all_page_items[index].text) == expected_item
 
-    displayed_page_items = page.select("#template-list-checkboxes .template-list-item:not(.template-list-item-hidden-by-default)")
+    displayed_page_items = page.select(
+        "#template-list-checkboxes .template-list-item:not(.template-list-item-hidden-by-default)"
+    )
     assert len(displayed_page_items) == len(expected_displayed_items)
 
     for index, expected_item in enumerate(expected_displayed_items):
@@ -618,9 +622,7 @@ def test_get_manage_folder_page_no_permissions(
     )
 
 
-def test_move_folder_page(
-    client_request, active_user_with_permissions, service_one, mock_get_template_folders, mocker
-):
+def test_move_folder_page(client_request, active_user_with_permissions, service_one, mock_get_template_folders, mocker):
     FOLDER_TWO_ID = str(uuid.uuid4())
     FOLDER_ONE_TWO_ID = str(uuid.uuid4())
     mock_get_template_folders.return_value = [
@@ -678,11 +680,7 @@ def test_move_folder_page_404s(client_request, service_one, mock_get_template_fo
     )
 
 
-def test_move_folder_page_no_permissions(
-    client_request,
-    active_user_view_permissions,
-    mock_get_template_folders
-):
+def test_move_folder_page_no_permissions(client_request, active_user_view_permissions, mock_get_template_folders):
     client_request.login(active_user_view_permissions)
     client_request.post(
         "main.move_template",
@@ -1496,7 +1494,9 @@ def test_should_filter_templates_folder_page_based_on_user_permissions(
 
     page = client_request.get("main.choose_template", service_id=SERVICE_ONE_ID, _test_page_title=False, **extra_args)
 
-    displayed_page_items = page.select("#template-list-checkboxes .template-list-item:not(.template-list-item-hidden-by-default)")
+    displayed_page_items = page.select(
+        "#template-list-checkboxes .template-list-item:not(.template-list-item-hidden-by-default)"
+    )
     assert [
         [i.strip() for i in e.text.split("\n") if i.strip()] for e in displayed_page_items
     ] == expected_displayed_items
