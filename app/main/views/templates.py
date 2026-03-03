@@ -212,7 +212,6 @@ def choose_template(service_id, template_type="all", template_folder_id=None):
 def process_folder_management_form(form, current_folder_id):
     current_service.get_template_folder_with_user_permission_or_403(current_folder_id, current_user)
     new_folder_id = None
-    redir = request.url
 
     if form.is_add_template_op:
         return _add_template_by_type(
@@ -231,7 +230,7 @@ def process_folder_management_form(form, current_folder_id):
 
         current_service.move_to_folder(ids_to_move=form.templates_and_folders.data, move_to=move_to_id)
 
-    return redirect(redir)
+    return redirect(request.url)
 
 
 def get_template_nav_label(value):
