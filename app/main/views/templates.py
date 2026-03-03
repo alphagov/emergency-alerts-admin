@@ -105,7 +105,7 @@ def move_template(service_id, template_folder_id=None):
             if not current_user.has_permissions("manage_templates"):
                 abort(403)
             try:
-                return process_folder_move_form(template_folder_move_form, template_folder_id)
+                return process_folder_move_form(template_folder_move_form, template_folder_id, service_id)
             except HTTPError as e:
                 flash(e.message)
 
@@ -125,11 +125,13 @@ def move_template(service_id, template_folder_id=None):
     )
 
 
-def process_folder_move_form(form, current_folder_id):
+def process_folder_move_form(form, current_folder_id, service_id):
     current_service.get_template_folder_with_user_permission_or_403(current_folder_id, current_user)
-    redir = request.url.replace("/move-to", "")
+
+    redir = url_for("main.choose_template", service_id=service_id, template_folder_id=current_folder_id)
     if redir.endswith("/templates"):
         redir = redir + "/all"
+
     move_to_id = form.move_to.data
     ids_to_move = json.loads(form.template_folders_to_move)
 
