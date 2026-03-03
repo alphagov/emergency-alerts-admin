@@ -20,7 +20,7 @@
       this.$templateListCheckboxes = this.$form.find('#template-list-checkboxes');
       this.$pageHeader = $('#page-header');
 
-      if (window.location.href.endsWith('/templates'))
+      if (window.location.pathname.endsWith('/templates'))
       {
         sessionStorage.setItem("manageMode", JSON.stringify(false));
       }
@@ -35,6 +35,8 @@
           key: 'manage-folders-buttons',
           $el: this.$form.find('#manage_folders'),
           backtoviewmode: true,
+          setFocus: () => $('#nothing_selected').focus(),
+          action: 'manage folders',
         },
         {
           key: 'items-selected-buttons',
@@ -59,6 +61,7 @@
         {
           key: 'add-new-template',
           $el: this.$form.find('#add_new_template_form'),
+          cancellable: true,
           setFocus: () => $('#add_new_template_form').focus(),
           action: 'new template',
           description: 'Press continue to confirm selection or cancel to close',
@@ -150,6 +153,7 @@
           // set the state we want to go to and re-render
           this.currentState = 'items-selected-buttons';
           this.render();
+          document.querySelector("button[value=move-to-new-folder]").focus();
         },
         'cancelSelector': selector,
         'nonvisualText': state.action
@@ -157,6 +161,23 @@
 
       state.$el.find(selector).after($cancel);
     };
+
+
+    this.addCancelButtonRetainOld = function(state) {
+      let selector = `[value=${state.key}]`;
+      let $cancel = this.makeButton('Cancel', {
+        'onclick': () => {
+          // set the state we want to go to and re-render
+          this.currentState = 'items-selected-buttons';
+          this.render();
+        },
+        'cancelSelector': selector,
+        'nonvisualText': state.action
+      });
+
+      state.$el.find(selector).after($cancel);
+    };
+
 
     this.addClearButton = function(state) {
       let $clear = this.makeButton('Clear', {
@@ -187,7 +208,8 @@
           // set the state we want to go to and re-render
           this.currentState = 'nothing-selected-buttons';
           this.render();
-        }
+        },
+        'nonvisualText': state.action,
       });
 
       state.$el.find(selector).after($manageButton);
@@ -206,7 +228,8 @@
           // set the state we want to go to and re-render
           this.currentState = 'manage-folders-buttons';
           this.render();
-        }
+        },
+        'overrideclass': 'js-manage',
       });
 
       state.$el.find(selector).after($manageButton);
@@ -215,7 +238,7 @@
     this.makeButton = (text, opts) => {
       let $btn = $('<a href=""></a>')
                     .html(text)
-                    .addClass('govuk-link govuk-link--no-visited-state js-cancel')
+                    .addClass('govuk-link govuk-link--no-visited-state ' + (opts.overrideclass || ' js-cancel'))
                     // isn't set if cancelSelector is undefined
                     .data('target', opts.cancelSelector || undefined)
                     .attr('tabindex', '0')
@@ -401,6 +424,11 @@
             New template
           </button>
           <button type="button" class="govuk-button govuk-button--secondary govuk-!-margin-right-3 govuk-!-margin-bottom-1" value="add-new-folder" aria-expanded="false">New folder</button>
+          <div class="checkbox-list-selected-counter govuk-visually-hidden">
+             <span class="checkbox-list-selected-counter__count" aria-hidden="true">
+               ${this.selectionStatus.default}
+             </span>
+           </div>
         </div>
       </div>
     `).get(0);
