@@ -32,26 +32,6 @@ function setFixtures(hierarchy, newTemplateDataModules = "") {
   function controlsHTML(newTemplateDataModules) {
     return `<div id="sticky_template_forms">
               <button name="operation" value="unknown" hidden=""></button>
-              <div id="move_to_folder_radios" class="sticky-template-form" role="region" aria-label="Choose the folder to move selected items to">
-                <div class="js-will-stick-at-bottom-when-scrolling">
-                  <div class="form-group ">
-                    <fieldset id="move_to">
-                      <legend class="form-label">
-                        Choose a folder
-                      </legend>
-                      <div class="radios-nested">
-                        ${foldersCheckboxesHTML(hierarchy)}
-                      </div>
-                    </fieldset>
-                  </div>
-                </div>
-                <div class="js-will-stick-at-bottom-when-scrolling">
-                  <input type="hidden" name="csrf_token" value="ImY1NTNlMGY1N2VkMjE3M2VmMzJhYjA4NDZjNzAwOWI4MjQ4MmI0YmEi.Y2ulgg.bNsKybu2SPmQ5FB7Zb4A1et8oHw">
-                  <div class="page-footer">
-                    <button class="govuk-button page-footer__button" name="operation" value="move-to-existing-folder" data-module="govuk-button">Move</button>
-                  </div>
-                </div>
-              </div>
               <div id="move_to_new_folder_form" class="sticky-template-form" role="region" aria-label="Enter name of the new folder to move selected items to">
                 <div class="js-will-stick-at-bottom-when-scrolling">
                   <div class="govuk-form-group">
@@ -226,16 +206,18 @@ describe("TemplateFolderForm", () => {
     return formControls.querySelector("[role=status]");
   }
 
+  function switchToFolderManageMode() {
+    helpers.triggerEvent(
+          templateFolderForm.querySelector("#nothing_selected .govuk-link"),
+          "click"
+        );
+  }
+
   describe("Before the module starts", () => {
     // We need parts of the module to be made sticky, but by the module code,
     // not the sticky JS code that operates on the HTML at page load.
     // Because of this, they will need to be marked with classes
     test("the HTML for the module should contain placeholder classes on each part that needs to be sticky", () => {
-      expect(
-        templateFolderForm.querySelectorAll(
-          "#move_to_folder_radios > .js-will-stick-at-bottom-when-scrolling"
-        ).length
-      ).toEqual(2);
       expect(
         templateFolderForm.querySelector(
           "#move_to_new_folder_form > .js-will-stick-at-bottom-when-scrolling"
@@ -625,6 +607,100 @@ describe("TemplateFolderForm", () => {
     });
   });
 
+
+
+
+
+  describe("Click the Manage templates and folders link", () => {
+    let manageFolderLink;
+
+    beforeAll(() => {
+      // start module
+      window.GOVUK.notifyModules.start();
+
+      // reset sticky JS mocks called when the module starts
+      resetStickyMocks();
+
+      switchToFolderManageMode();
+    });
+
+    afterEach(() => resetStickyMocks());
+
+    test("should make the current controls sticky", () => {
+      // the class the sticky JS hooks into should be present
+      expect(
+        formControls.querySelector(
+          "#manage_folders .js-stick-at-bottom-when-scrolling"
+        )
+      ).not.toBeNull();
+
+      // .recalculate should have been called so the sticky JS picks up the controls
+      expect(
+        GOVUK.stickAtBottomWhenScrolling.recalculate.mock.calls.length
+      ).toEqual(1);
+
+      // mode should have been set to 'default' as the controls only have one part
+      expect(
+        GOVUK.stickAtBottomWhenScrolling.setMode.mock.calls.length
+      ).toEqual(1);
+      expect(
+        GOVUK.stickAtBottomWhenScrolling.setMode.mock.calls[0][0]
+      ).toEqual("default");
+    });
+
+    test("the buttons for moving to a new or existing folder are showing", () => {
+      expect(
+        formControls.querySelector("button[value=move-to-new-folder]")
+      ).not.toBeNull();
+      expect(
+        formControls.querySelector("button[value=move-to-existing-folder]")
+      ).not.toBeNull();
+      expect(
+        formControls
+          .querySelector("button[value=move-to-new-folder]")
+          .getAttribute("aria-expanded")
+      ).toEqual("false");
+      expect(
+        formControls
+          .querySelector("button[value=move-to-existing-folder]")
+          .getAttribute("aria-expanded")
+      ).toEqual("false");
+    });
+
+    test("cancel link is present", () => {
+        const cancelLink = formControls.querySelector(".js-cancel");
+
+        expect(cancelLink).not.toBeNull();
+        expect(
+          cancelLink.querySelector(".govuk-visually-hidden")
+        ).not.toBeNull();
+        expect(
+          cancelLink.querySelector(".govuk-visually-hidden").textContent.trim()
+        ).toEqual("manage folders");
+    });
+
+    describe("Clicking cancel exits manage template mode", () => {
+        let manageFolderLink;
+
+        beforeEach(() => {
+          helpers.triggerEvent(
+            formControls.querySelector(".js-cancel"),
+            "click"
+          );
+
+          manageFolderLink = [formControls.querySelector('.js-manage')]
+        });
+
+        test("manage folder link should be present again", () => {
+          expect(manageFolderLink).not.toBeNull();
+        });
+      });
+  });
+
+
+
+
+
   describe("When some templates/folders are selected", () => {
     let templateFolderCheckboxes;
 
@@ -635,6 +711,8 @@ describe("TemplateFolderForm", () => {
       templateFolderCheckboxes = getTemplateFolderCheckboxes();
 
       formControls = templateFolderForm.querySelector("#sticky_template_forms");
+
+      switchToFolderManageMode();
 
       // reset sticky JS mocks called when the module starts
       resetStickyMocks();
@@ -724,136 +802,6 @@ describe("TemplateFolderForm", () => {
 
       test("the content of the counter should reflect the selection", () => {
         expect(visibleCounterText).toEqual("1 template, 1 folder selected");
-      });
-    });
-
-    describe("Clicking the 'Move' button", () => {
-      beforeEach(() => {
-        // reset sticky JS mocks called when a selection was made
-        resetStickyMocks();
-
-        helpers.triggerEvent(
-          formControls.querySelector("[value=move-to-existing-folder]"),
-          "click"
-        );
-      });
-
-      describe("Should show a region", () => {
-        test("with an accessible role, name and description", () => {
-          let id, description;
-          const region = document.querySelector("#move_to_folder_radios");
-          expect(region.hasAttribute("role")).toBe(true);
-          expect(region.getAttribute("role")).toEqual("region");
-          expect(region.hasAttribute("aria-label")).toBe(true);
-          expect(region.getAttribute("aria-label")).toEqual(
-            "Choose the folder to move selected items to"
-          );
-          expect(region.hasAttribute("aria-describedby")).toBe(true);
-          id = region.getAttribute("aria-describedby");
-          description = document.getElementById(id);
-          expect(description).not.toBeNull();
-          expect(description.textContent.trim()).toEqual(
-            "Press move to confirm or cancel to close"
-          );
-        });
-
-        test("with radios for all the folders in the hierarchy", () => {
-          const foldersInHierarchy = [];
-
-          function getFolders(nodes) {
-            nodes.forEach((node) => {
-              if (node.type === "folder") {
-                foldersInHierarchy.push(node.label);
-                if (node.children.length) {
-                  getFolders(node.children);
-                }
-              }
-            });
-          }
-
-          getFolders(hierarchy);
-
-          const folderLabels = Array.from(
-            formControls.querySelectorAll("#move_to label")
-          ).filter((label) => label.textContent.trim() !== "Templates");
-
-          expect(folderLabels.map((label) => label.textContent.trim())).toEqual(
-            foldersInHierarchy
-          );
-
-          const radiosForLabels = folderLabels
-            .map((label) =>
-              formControls.querySelector(`#${label.getAttribute("for")}`)
-            )
-            .filter((radio) => radio !== null);
-
-          expect(radiosForLabels.length).toEqual(foldersInHierarchy.length);
-        });
-
-        test("with a 'Cancel' link", () => {
-          const cancelLink = formControls.querySelector(".js-cancel");
-
-          expect(cancelLink).not.toBeNull();
-          expect(
-            cancelLink.querySelector(".govuk-visually-hidden")
-          ).not.toBeNull();
-          expect(
-            cancelLink
-              .querySelector(".govuk-visually-hidden")
-              .textContent.trim()
-          ).toEqual("move to folder");
-        });
-
-        test("and focus it", () => {
-          expect(document.activeElement).toBe(
-            formControls.querySelector("#move_to_folder_radios")
-          );
-        });
-      });
-
-      test("should make the current controls sticky", () => {
-        // the classes the sticky JS hooks into should be present for both parts
-        expect(
-          formControls.querySelectorAll(
-            "#move_to_folder_radios .js-stick-at-bottom-when-scrolling"
-          ).length
-        ).toEqual(2);
-
-        // .recalculate should have been called so the sticky JS picks up the controls
-        expect(
-          GOVUK.stickAtBottomWhenScrolling.recalculate.mock.calls.length
-        ).toEqual(1);
-
-        // the mode should be set to 'dialog' so both parts can be sticky
-        expect(
-          GOVUK.stickAtBottomWhenScrolling.setMode.mock.calls.length
-        ).toEqual(1);
-        expect(
-          GOVUK.stickAtBottomWhenScrolling.setMode.mock.calls[0][0]
-        ).toEqual("dialog");
-      });
-
-      describe("When the 'Cancel' link is clicked after choosing to move a template or folder", () => {
-        let moveToFolderButton;
-
-        beforeEach(() => {
-          helpers.triggerEvent(
-            formControls.querySelector(".js-cancel"),
-            "click"
-          );
-
-          moveToFolderButton = formControls.querySelector(
-            "button[value=move-to-existing-folder]"
-          );
-        });
-
-        test("the controls should reset", () => {
-          expect(moveToFolderButton).not.toBeNull();
-        });
-
-        test("the control for moving to an existing folder should be focused", () => {
-          expect(document.activeElement).toBe(moveToFolderButton);
-        });
       });
     });
 
