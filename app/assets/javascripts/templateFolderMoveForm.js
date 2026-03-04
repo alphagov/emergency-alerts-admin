@@ -9,6 +9,8 @@
       this.disableCurrentLevelFolder();
       this.addCancelButton();
       this.activateStickyElements();
+      GOVUK.stickAtBottomWhenScrolling.setMode('default');
+      GOVUK.stickAtBottomWhenScrolling.recalculate();
     };
 
 
@@ -73,7 +75,6 @@
           .removeClass(oldClass)
           .addClass(newClass);
     };
-
   };
 
 })(window.GOVUK.NotifyModules);
