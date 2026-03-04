@@ -128,7 +128,7 @@ def move_template(service_id, template_folder_id=None):
 def process_folder_move_form(form, current_folder_id, service_id):
     current_service.get_template_folder_with_user_permission_or_403(current_folder_id, current_user)
 
-    redir = url_for("main.choose_template", service_id=service_id, template_folder_id=current_folder_id)
+    redir = url_for("main.choose_template", service_id=service_id, template_folder_id=current_folder_id, _external=True)
     if redir.endswith("/templates"):
         redir = redir + "/all"
 
