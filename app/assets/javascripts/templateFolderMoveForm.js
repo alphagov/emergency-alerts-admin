@@ -8,6 +8,7 @@
       this.removeFoldersFromList();
       this.disableCurrentLevelFolder();
       this.addCancelButton();
+      this.activateStickyElements();
     };
 
 
@@ -63,6 +64,15 @@
         return $btn;
     };
 
+    this.activateStickyElements = function() {
+      var oldClass = 'js-will-stick-at-bottom-when-scrolling';
+      var newClass = 'js-stick-at-bottom-when-scrolling';
+
+      this.$form.find('#sticky_template_forms')
+          .find('.' + oldClass)
+          .removeClass(oldClass)
+          .addClass(newClass);
+    };
 
   };
 
