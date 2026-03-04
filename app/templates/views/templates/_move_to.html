@@ -1,21 +1,22 @@
 {% from "components/radios.html" import radios, radios_nested %}
 {% from "components/page-footer.html" import page_footer %}
-
-<div id="move-to-list">
-  <button name="operation" value="unknown" hidden></button>
-  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-  <input type="hidden" name="template_folders_to_move" value="{{ template_folder_move_form.template_folders_to_move }}" />
-  <input type="hidden" name="current_folder_id" value="{{ template_folder_move_form.current_folder_id }}" />
+<div id="move-to-folders">
   {% if template_folder_move_form.move_to.choices %}
     <div id="move_to_folder_radios" role="region" aria-label="Choose the location you want to move your template or folder to">
       {{ radios_nested(template_folder_move_form.move_to, move_to_children, option_hints=None) }}
     </div>
   {% endif %}
 </div>
-<div class="sticky_template_forms">
-  <div class="js-stick-at-bottom-when-scrolling">
-    <button value="move-to-existing-folder" type="submit" name="operation" class="govuk-button page-footer__button govuk-!-margin-right-3" data-module="govuk-button">
-      Move<span class="govuk-visually-hidden">  selection to folder</span>
-    </button>
+<div id="sticky_template_forms">
+  <button name="operation" value="unknown" hidden></button>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+  <input type="hidden" name="template_folders_to_move" value="{{ template_folder_move_form.template_folders_to_move }}" />
+  <input type="hidden" name="current_folder_id" value="{{ template_folder_move_form.current_folder_id }}" />
+  <div id="move_folders">
+    <div class="js-stick-at-bottom-when-scrolling">
+      <button value="move-to-existing-folder" type="submit" name="operation" class="govuk-button page-footer__button govuk-!-margin-right-3" data-module="govuk-button">
+        Move<span class="govuk-visually-hidden">  selection to folder</span>
+      </button>
+    </div>
   </div>
 </div>
