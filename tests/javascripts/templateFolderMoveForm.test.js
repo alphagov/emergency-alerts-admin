@@ -1,7 +1,7 @@
 const helpers = require("./support/helpers");
 
-function setFixtures(hierarchy, newTemplateDataModules = "") {
-  const foldersCheckboxesHTML = (function (filter) {
+function setFixtures(hierarchy, current_folder_id = 'None', folders_to_move = null) {
+  const foldersCheckboxesHTML = (function (filter, offset = 0) {
     let count = 0;
 
     // use closure to give all calls access to count
@@ -12,28 +12,42 @@ function setFixtures(hierarchy, newTemplateDataModules = "") {
         .filter((node) => node.type === "folder")
         .forEach((node) => {
           result += `<li class="multiple-choice">
-                      <input id="node-${count}" name="move_to" type="radio" value="node-${count}">
-                      <label class="block-label" for="node-${count}">
+                      <input id="node-${count}-${offset}" name="move_to" type="radio" value="node-${count}-${offset}">
+                      <label class="block-label" for="node-${count}-${offset}">
                         ${node.label}
                       </label>
                       ${
                         node.children
-                          ? foldersCheckboxesHTML(node.children)
+                          ? foldersCheckboxesHTML(node.children, offset++)
                           : ""
                       }
                     </li>`;
           count++;
         });
-
       return `<ul>${result}</ul>`;
     };
   })();
 
-  function controlsHTML(newTemplateDataModules) {
+  function wrapRadios(radioList) {
+    // add parent 'Templates' hierarchy
+    radioList = `
+          <ul><li class="multiple-choice">
+          <input id="node-x" name="move_to" type="radio" value="__NONE__">
+          <label class="block-label" for="node-x">
+            Templates
+          </label>
+          ` + radioList + `
+          </li></ul>
+        `;
+    return radioList;
+  }
+
+  function controlsHTML() {
     return `<div id="sticky_template_forms">
               <button name="operation" value="unknown" hidden=""></button>
               <input type="hidden" name="csrf_token" value="ImY1NTNlMGY1N2VkMjE3M2VmMzJhYjA4NDZjNzAwOWI4MjQ4MmI0YmEi.Y2ulgg.bNsKybu2SPmQ5FB7Zb4A1et8oHw">
-              <input type="hidden" name="template_folders_to_move" value="[]">
+              <input type="hidden" name="template_folders_to_move" value="[${folders_to_move}]">
+              <input type="hidden" name="current_folder_id" value="${current_folder_id}">
               <div id="move_to_folder_radios" class="sticky-template-form" role="region" aria-label="Choose the location you want to move your template or folder to">
                 <div class="form-group ">
                   <fieldset id="move_to">
@@ -41,7 +55,7 @@ function setFixtures(hierarchy, newTemplateDataModules = "") {
                       Choose the location you want to move your template or folder to
                     </legend>
                     <div class="radios-nested">
-                      ${foldersCheckboxesHTML(hierarchy)}
+                      ${wrapRadios(foldersCheckboxesHTML(hierarchy))}
                     </div>
                   </fieldset>
                 </div>
@@ -54,7 +68,7 @@ function setFixtures(hierarchy, newTemplateDataModules = "") {
 
   document.body.innerHTML = `
     <form method="post" data-notify-module="template-folder-move-form">
-      ${controlsHTML(newTemplateDataModules)}
+      ${controlsHTML()}
     </form>`;
 }
 
@@ -125,12 +139,11 @@ describe("TemplateFolderMoveForm", () => {
   });
 
   beforeEach(() => {
-    setFixtures(hierarchy);
+    setFixtures(hierarchy, "None");
 
     templateFolderMoveForm = document.querySelector(
       "form[data-notify-module=template-folder-move-form]"
     );
-    console.log(templateFolderMoveForm.innerHTML);
   });
 
   afterEach(() => {
@@ -157,7 +170,6 @@ describe("TemplateFolderMoveForm", () => {
       window.GOVUK.notifyModules.start();
 
       formControls = templateFolderMoveForm.querySelector("#sticky_template_forms");
-      console.log(formControls.innerHTML);
     });
 
     afterEach(() => resetStickyMocks());
@@ -182,6 +194,7 @@ describe("TemplateFolderMoveForm", () => {
           .querySelector(".govuk-visually-hidden")
           .textContent.trim()
       ).toEqual("move to operation");
+      //TODO cancel link href should match back link href
     });
 
     test("should make the current controls sticky", () => {
@@ -191,12 +204,6 @@ describe("TemplateFolderMoveForm", () => {
             "#sticky_template_forms .js-stick-at-bottom-when-scrolling"
           )
         ).not.toBeNull();
-
-        console.log(
-           formControls.querySelector(
-            "#sticky_template_forms .js-stick-at-bottom-when-scrolling"
-          ).innerHTML
-        )
 
         // .recalculate should have been called so the sticky JS picks up the controls
         expect(
@@ -211,7 +218,88 @@ describe("TemplateFolderMoveForm", () => {
           GOVUK.stickAtBottomWhenScrolling.setMode.mock.calls[0][0]
         ).toEqual("default");
       });
+    });
 
+  describe("When folder list is displayed", () => {
+
+    afterEach(() => resetStickyMocks());
+
+    test("top level radio button is disabled with comment if current_folder_id is None", () => {
+
+      setFixtures(hierarchy, "None");
+
+      //initialise module
+      window.GOVUK.notifyModules.start();
+
+      templateFolderMoveForm = document.querySelector(
+        "form[data-notify-module=template-folder-move-form]"
+      );
+
+      expect(
+        templateFolderMoveForm.querySelector('#node-x')
+      ).not.toBeNull;
+      expect(
+        templateFolderMoveForm.querySelector('#node-x').getAttribute("disabled")
+      ).toEqual(""); //i.e. not null
+      expect(
+        templateFolderMoveForm.querySelector('label[for="node-x"]')
+      ).not.toBeNull;
+      expect(
+        templateFolderMoveForm.querySelector('label[for="node-x"]').textContent.trim()
+      ).toContain("Templates");
+      expect(
+        templateFolderMoveForm.querySelector('label[for="node-x"]').textContent.trim()
+      ).toContain("<-- current location");
+    });
+
+    test("radio button is disabled with comment if current_folder_id not None", () => {
+
+      setFixtures(hierarchy, "node-2-2");
+
+      //initialise module
+      window.GOVUK.notifyModules.start();
+
+      templateFolderMoveForm = document.querySelector(
+        "form[data-notify-module=template-folder-move-form]"
+      );
+
+      expect(
+        templateFolderMoveForm.querySelector('#node-2-2')
+      ).not.toBeNull;
+      expect(
+        templateFolderMoveForm.querySelector('#node-2-2').getAttribute("disabled")
+      ).toEqual(""); //i.e. not null
+      expect(
+        templateFolderMoveForm.querySelector('label[for="node-2-2"]')
+      ).not.toBeNull;
+      expect(
+        templateFolderMoveForm.querySelector('label[for="node-2-2"]').textContent.trim()
+      ).toContain("Folder 3");
+      expect(
+        templateFolderMoveForm.querySelector('label[for="node-2-2"]').textContent.trim()
+      ).toContain("<-- current location");
+    });
+
+    test("folder to be removed and any sub folders are removed from folder list", () => {
+      setFixtures(hierarchy, "None", "'node-0-0'" );
+
+      //initialise module
+      window.GOVUK.notifyModules.start();
+
+      templateFolderMoveForm = document.querySelector(
+        "form[data-notify-module=template-folder-move-form]"
+      );
+
+      expect(
+        templateFolderMoveForm.querySelector('#node-0-0')
+      ).toBeNull;
+      expect(
+        templateFolderMoveForm.querySelector('#node-0-1')
+      ).toBeNull;
+      expect(
+        templateFolderMoveForm.querySelector('#node-2-2')
+      ).not.toBeNull;
+    });
 
   });
 
