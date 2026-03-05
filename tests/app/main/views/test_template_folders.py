@@ -664,7 +664,6 @@ def test_move_folder_page(client_request, active_user_with_permissions, service_
         "folder_two",
     ]
     assert set(x["value"] for x in page.select("button[name=operation]")) == {
-        "unknown",
         "move-to-existing-folder",
     }
 

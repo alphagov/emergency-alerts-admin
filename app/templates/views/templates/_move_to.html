@@ -8,7 +8,6 @@
   {% endif %}
 </div>
 <div id="sticky_template_forms">
-  <button name="operation" value="unknown" hidden></button>
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
   <input type="hidden" name="template_folders_to_move" value="{{ template_folder_move_form.template_folders_to_move }}" />
   <input type="hidden" name="current_folder_id" value="{{ template_folder_move_form.current_folder_id }}" />
