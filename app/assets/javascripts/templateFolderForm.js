@@ -153,6 +153,7 @@
         'onclick': () => {
           // set the state we want to go to and re-render
           this.currentState = 'items-selected-buttons';
+          this._lastState = '';
           this.render();
           document.querySelector("button[value=move-to-new-folder]").focus();
         },
@@ -162,23 +163,6 @@
 
       state.$el.find(selector).after($cancel);
     };
-
-
-    this.addCancelButtonRetainOld = function(state) {
-      let selector = `[value=${state.key}]`;
-      let $cancel = this.makeButton('Cancel', {
-        'onclick': () => {
-          // set the state we want to go to and re-render
-          this.currentState = 'items-selected-buttons';
-          this.render();
-        },
-        'cancelSelector': selector,
-        'nonvisualText': state.action
-      });
-
-      state.$el.find(selector).after($cancel);
-    };
-
 
     this.addClearButton = function(state) {
       let $clear = this.makeButton('Clear', {
