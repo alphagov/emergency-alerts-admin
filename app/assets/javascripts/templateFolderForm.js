@@ -20,8 +20,9 @@
       this.$templateListCheckboxes = this.$form.find('#template-list-checkboxes');
       this.$pageHeader = $('#page-header');
 
-      if (window.location.pathname.endsWith('/templates'))
-      {
+      // Check whether we are in manage mode or not - if not set, then set it to false
+      let mode = sessionStorage.getItem("manageMode");
+      if (mode === null) {
         sessionStorage.setItem("manageMode", JSON.stringify(false));
       }
 

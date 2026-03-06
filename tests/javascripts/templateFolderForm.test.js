@@ -679,22 +679,6 @@ describe("TemplateFolderForm", () => {
         ).toEqual("manage folders");
     });
 
-    describe("Clicking cancel exits manage template mode", () => {
-        let manageFolderLink;
-
-        beforeEach(() => {
-          helpers.triggerEvent(
-            formControls.querySelector(".js-cancel"),
-            "click"
-          );
-
-          manageFolderLink = [formControls.querySelector('.js-manage')]
-        });
-
-        test("manage folder link should be present again", () => {
-          expect(manageFolderLink).not.toBeNull();
-        });
-      });
   });
 
 
@@ -711,8 +695,6 @@ describe("TemplateFolderForm", () => {
       templateFolderCheckboxes = getTemplateFolderCheckboxes();
 
       formControls = templateFolderForm.querySelector("#sticky_template_forms");
-
-      switchToFolderManageMode();
 
       // reset sticky JS mocks called when the module starts
       resetStickyMocks();
@@ -967,4 +949,22 @@ describe("TemplateFolderForm", () => {
       });
     });
   });
+
+  describe("Clicking cancel exits manage template mode", () => {
+    let manageFolderLink;
+
+    beforeEach(() => {
+      helpers.triggerEvent(
+        formControls.querySelector(".js-cancel"),
+        "click"
+      );
+
+      manageFolderLink = [formControls.querySelector('.js-manage')]
+    });
+
+    test("manage folder link should be present again", () => {
+      expect(manageFolderLink).not.toBeNull();
+    });
+  });
+
 });

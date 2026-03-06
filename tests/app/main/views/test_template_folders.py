@@ -1067,7 +1067,6 @@ def test_should_be_able_to_move_to_existing_folder(
         _expected_status=302,
         _expected_redirect=url_for(
             "main.choose_template",
-            template_type="all",
             service_id=SERVICE_ONE_ID,
             _external=True,
         ),
