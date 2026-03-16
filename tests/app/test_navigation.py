@@ -97,6 +97,7 @@ EXCLUDED_ENDPOINTS = tuple(
             "manage_org_users",
             "manage_template_folder",
             "manage_users",
+            "move_template",
             "new_broadcast",
             "new_password",
             "old_service_dashboard",
