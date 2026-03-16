@@ -9,7 +9,9 @@
 </div>
 <div id="sticky_template_forms">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-  <input type="hidden" name="template_folders_to_move" value="{{ template_folder_move_form.template_folders_to_move }}" />
+  {% for folder in template_folder_move_form.template_folders_to_move %}
+    <input type="hidden" name="template_folders_to_move" value="{{ folder }}">
+  {% endfor %}
   <input type="hidden" name="current_folder_id" value="{{ template_folder_move_form.current_folder_id }}" />
   <div id="move_folders">
     <div class="js-stick-at-bottom-when-scrolling">

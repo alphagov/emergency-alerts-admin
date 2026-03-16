@@ -16,9 +16,9 @@
 
     // Remove selected folders and their children from the list
     this.removeFoldersFromList = function() {
-      let raw = $("input[name='template_folders_to_move']").val();
-      raw = raw.replace(/'/g, '"');
-      let targetValues = JSON.parse(raw);
+      let targetValues = $("input[name='template_folders_to_move']")
+                          .map(function () { return this.value; })
+                          .get();
       targetValues.forEach(function (value) {
         $("input[type=radio][name=move_to][value='" + value + "']")
             .closest("li")

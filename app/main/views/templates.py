@@ -1,4 +1,3 @@
-import json
 from functools import partial
 
 from flask import abort, flash, jsonify, redirect, render_template, request, url_for
@@ -80,9 +79,9 @@ def move_template(service_id, template_folder_id=None):
     if not current_user.has_permissions("manage_templates"):
         abort(403)
 
-    folders_to_move = json.dumps(request.form.getlist("templates_and_folders"))
-    if folders_to_move == "[]":
-        folders_to_move = request.form.get("template_folders_to_move")
+    folders_to_move = request.form.getlist("templates_and_folders")
+    if len(folders_to_move) < 1:
+        folders_to_move = request.form.getlist("template_folders_to_move")
 
     template_folder = current_service.get_template_folder(template_folder_id)
     user_has_template_folder_permission = current_user.has_template_folder_permission(template_folder)
@@ -131,7 +130,7 @@ def process_folder_move_form(form, current_folder_id, service_id):
     redir = url_for("main.choose_template", service_id=service_id, template_folder_id=current_folder_id, _external=True)
 
     move_to_id = form.move_to.data
-    ids_to_move = json.loads(form.template_folders_to_move)
+    ids_to_move = form.template_folders_to_move
 
     current_service.move_to_folder(ids_to_move=ids_to_move, move_to=move_to_id)
 

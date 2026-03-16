@@ -46,7 +46,7 @@ function setFixtures(hierarchy, current_folder_id = 'None', folders_to_move = nu
     return `<div id="sticky_template_forms">
               <button name="operation" value="unknown" hidden=""></button>
               <input type="hidden" name="csrf_token" value="ImY1NTNlMGY1N2VkMjE3M2VmMzJhYjA4NDZjNzAwOWI4MjQ4MmI0YmEi.Y2ulgg.bNsKybu2SPmQ5FB7Zb4A1et8oHw">
-              <input type="hidden" name="template_folders_to_move" value="[${folders_to_move}]">
+              <input type="hidden" name="template_folders_to_move" value="${folders_to_move}">
               <input type="hidden" name="current_folder_id" value="${current_folder_id}">
               <div id="move_to_folder_radios" class="sticky-template-form" role="region" aria-label="Choose the location you want to move your template or folder to">
                 <div class="form-group ">
@@ -281,7 +281,7 @@ describe("TemplateFolderMoveForm", () => {
     });
 
     test("folder to be removed and any sub folders are removed from folder list", () => {
-      setFixtures(hierarchy, "None", "'node-0-0'" );
+      setFixtures(hierarchy, "None", "node-0-0" );
 
       //initialise module
       window.GOVUK.notifyModules.start();
