@@ -12,7 +12,7 @@ aws-opentelemetry-distro==0.14.2
     # via -r requirements.in
 beautifulsoup4==4.14.3
     # via -r requirements.in
-black==26.1.0
+black==26.3.1
     # via -r requirements.in
 blinker==1.9.0
     # via
