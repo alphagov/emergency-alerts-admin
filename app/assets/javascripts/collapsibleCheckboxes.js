@@ -119,8 +119,10 @@
   CollapsibleCheckboxes.prototype.getSelection = function() { return this.$checkboxes.filter(':checked').length; };
   CollapsibleCheckboxes.prototype.addHeadingHideLegend = function() {
     const headingLevel = this.$component.data('heading-level') || '2';
+    const headingLevelNum = parseInt(headingLevel, 10); // This implicitly sanitises the input from HTML
 
-    this.$heading = $(`<h${headingLevel} class="heading-small">${this.legendText}</h${headingLevel}>`);
+    this.$heading = $(`<h${headingLevelNum} class="heading-small">`);
+    this.$heading.text(this.legendText);
     this.$fieldset.before(this.$heading);
 
     this.$fieldset.find('legend').addClass('govuk-visually-hidden');

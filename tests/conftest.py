@@ -15,7 +15,7 @@ from notifications_python_client.errors import HTTPError
 from app import create_app, webauthn_server
 from app.models.broadcast_message import BroadcastMessage
 from app.models.template import Template
-from tests.app.broadcast_areas.custom_polygons import ENGLAND, HG3_2RL
+from tests.app.broadcast_areas.custom_polygons import HG3_2RL, MULTIPLE_ENGLAND
 
 from . import (
     NotifyBeautifulSoup,
@@ -254,7 +254,7 @@ def mock_get_template_with_area(mocker):
                 "ids": ["ctry19-E92000001"],
                 "names": ["England"],
                 "aggregate_names": ["England"],
-                "simple_polygons": ENGLAND,
+                "simple_polygons": MULTIPLE_ENGLAND,
             },
         )
         return {"data": template}
@@ -2339,11 +2339,13 @@ def mock_get_broadcast_messages(
             partial_json(
                 id_=uuid4(),
                 status="draft",
+                created_at=(datetime.now(timezone.utc) - timedelta(hours=2)).isoformat(),
                 updated_at=(datetime.now(timezone.utc) - timedelta(hours=1, minutes=30)).isoformat(),
             ),
             partial_json(
                 id_=uuid4(),
                 status="pending-approval",
+                created_at=(datetime.now(timezone.utc) - timedelta(hours=1)).isoformat(),
                 updated_at=(datetime.now(timezone.utc) - timedelta(minutes=30)).isoformat(),
                 reference="Half an hour ago",
                 finishes_at=None,
@@ -2351,6 +2353,7 @@ def mock_get_broadcast_messages(
             partial_json(
                 id_=uuid4(),
                 status="pending-approval",
+                created_at=(datetime.now(timezone.utc) - timedelta(hours=2)).isoformat(),
                 updated_at=(datetime.now(timezone.utc) - timedelta(hours=1, minutes=30)).isoformat(),
                 reference="Hour and a half ago",
                 finishes_at=None,
@@ -2358,6 +2361,7 @@ def mock_get_broadcast_messages(
             partial_json(
                 id_=uuid4(),
                 status="broadcasting",
+                created_at=(datetime.now(timezone.utc) - timedelta(seconds=60)).isoformat(),
                 updated_at=(datetime.now(timezone.utc)).isoformat(),
                 starts_at=(datetime.now(timezone.utc)).isoformat(),
                 finishes_at=(datetime.now(timezone.utc) + timedelta(hours=24)).isoformat(),
@@ -2365,6 +2369,7 @@ def mock_get_broadcast_messages(
             partial_json(
                 id_=uuid4(),
                 status="broadcasting",
+                created_at=(datetime.now(timezone.utc) - timedelta(hours=2)).isoformat(),
                 updated_at=(datetime.now(timezone.utc) - timedelta(hours=1)).isoformat(),
                 starts_at=(datetime.now(timezone.utc) - timedelta(hours=1)).isoformat(),
                 finishes_at=(datetime.now(timezone.utc) + timedelta(hours=24)).isoformat(),
@@ -2372,12 +2377,14 @@ def mock_get_broadcast_messages(
             partial_json(
                 id_=uuid4(),
                 status="completed",
+                created_at=(datetime.now(timezone.utc) - timedelta(hours=13)).isoformat(),
                 starts_at=(datetime.now(timezone.utc) - timedelta(hours=12)).isoformat(),
                 finishes_at=(datetime.now(timezone.utc) - timedelta(hours=6)).isoformat(),
             ),
             partial_json(
                 id_=uuid4(),
                 status="cancelled",
+                created_at=(datetime.now(timezone.utc) - timedelta(days=2)).isoformat(),
                 starts_at=(datetime.now(timezone.utc) - timedelta(days=1)).isoformat(),
                 finishes_at=(datetime.now(timezone.utc) - timedelta(days=100)).isoformat(),
                 cancelled_at=(datetime.now(timezone.utc) - timedelta(days=10)).isoformat(),
@@ -2385,6 +2392,7 @@ def mock_get_broadcast_messages(
             partial_json(
                 id_=uuid4(),
                 status="rejected",
+                created_at=(datetime.now(timezone.utc) - timedelta(hours=2)).isoformat(),
                 rejected_at=(datetime.now(timezone.utc) - timedelta(hours=1)).isoformat(),
             ),
         ]

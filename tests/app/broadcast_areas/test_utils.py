@@ -14,7 +14,7 @@ from tests.app.broadcast_areas.custom_polygons import (
     BURFORD,
     CHELTENHAM,
     CHELTENHAM_AND_GLOUCESTER,
-    ENGLAND,
+    MULTIPLE_ENGLAND,
     SANTA_A,
     SEVERN_ESTUARY,
     SKYE,
@@ -212,7 +212,7 @@ def test_aggregate_areas_for_custom_polygons(
                 "aggregate_names": ["England"],
                 "ids": ["ctry19-E92000001"],
                 "names": ["England"],
-                "simple_polygons": ENGLAND,
+                "simple_polygons": MULTIPLE_ENGLAND,
             },
         ),
         (
@@ -221,7 +221,7 @@ def test_aggregate_areas_for_custom_polygons(
                 "aggregate_names": ["Aberdeen City"],
                 "ids": ["lad23-S12000033"],
                 "names": ["Aberdeen City"],
-                "simple_polygons": ABERDEEN_CITY,
+                "simple_polygons": [ABERDEEN_CITY],
             },
         ),
         ([], {"aggregate_names": [], "ids": [], "names": [], "simple_polygons": []}),
@@ -236,8 +236,8 @@ def test_create_areas_dict(area_ids, expected_dict):
 @pytest.mark.parametrize(
     ("area_ids", "area_attribute", "expected_polygons"),
     [
-        (["ctry19-E92000001"], "simple_polygons", ENGLAND),
-        (["lad23-S12000033"], "simple_polygons", ABERDEEN_CITY),
+        (["ctry19-E92000001"], "simple_polygons", MULTIPLE_ENGLAND),
+        (["lad23-S12000033"], "simple_polygons", [ABERDEEN_CITY]),
         ([], "simple_polygons", []),
         (["nonexistent_area_id"], "simple_polygons", []),
     ],

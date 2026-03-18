@@ -112,7 +112,6 @@ class MainNavigation(Navigation):
             "reject_broadcast_message",
             "cancel_broadcast_message",
             "remove_custom_area",
-            "preview_areas",
             "view_broadcast_versions",
             "choose_extra_content",
             "add_extra_content",
@@ -189,7 +188,6 @@ class OrgNavigation(Navigation):
         "settings": {
             "archive_organisation",
             "edit_organisation_crown_status",
-            "edit_organisation_domains",
             "edit_organisation_domains",
             "edit_organisation_name",
             "edit_organisation_notes",

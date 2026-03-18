@@ -99,6 +99,7 @@ export default [
       paths.src + 'javascripts/previewPane.js',
       paths.src + 'javascripts/colourPreview.js',
       paths.src + 'javascripts/templateFolderForm.js',
+      paths.src + 'javascripts/templateFolderMoveForm.js',
       paths.src + 'javascripts/addBrandingOptionsForm.js',
       paths.src + 'javascripts/collapsibleCheckboxes.js',
       paths.src + 'javascripts/registerSecurityKey.js',
@@ -110,6 +111,10 @@ export default [
       paths.src + 'javascripts/sessionTimeout.js',
       paths.src + 'javascripts/exclusiveCheckbox.js',
       paths.src + 'javascripts/permissionFormSubmitButton.js',
+      paths.src + 'javascripts/recalculateStickinessOnMutation.js',
+      paths.src + 'javascripts/checkAllCheckboxes.js',
+      paths.src + 'javascripts/clearCheckboxesOnShowAndLoad.js',
+      paths.src + 'javascripts/selectSubmit.js',
     ],
     output: {
       dir: paths.dist + 'javascripts/',

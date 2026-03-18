@@ -322,8 +322,10 @@ def test_should_show_templates_folder_page(
             "main.choose_template", service_id=SERVICE_ONE_ID, **expected_parent_link_args[index]
         )
 
-    all_page_items = page.select(".template-list-item")
-    all_page_items_styled_with_checkboxes = page.select(".template-list-item.govuk-checkboxes__item")
+    all_page_items = page.select("#template-list-checkboxes .template-list-item")
+    all_page_items_styled_with_checkboxes = page.select(
+        "#template-list-checkboxes .template-list-item.govuk-checkboxes__item"
+    )
 
     assert len(all_page_items) == len(all_page_items_styled_with_checkboxes)
 
@@ -336,14 +338,16 @@ def test_should_show_templates_folder_page(
     for index, expected_item in enumerate(expected_items):
         assert normalize_spaces(all_page_items[index].text) == expected_item
 
-    displayed_page_items = page.select(".template-list-item:not(.template-list-item-hidden-by-default)")
+    displayed_page_items = page.select(
+        "#template-list-checkboxes .template-list-item:not(.template-list-item-hidden-by-default)"
+    )
     assert len(displayed_page_items) == len(expected_displayed_items)
 
     for index, expected_item in enumerate(expected_displayed_items):
         assert "/" not in expected_item
         assert normalize_spaces(displayed_page_items[index].text) == expected_item
 
-    all_searchable_text = page.select("#template-list .template-list-item .live-search-relevant")
+    all_searchable_text = page.select("#template-list-checkboxes .template-list-item .live-search-relevant")
     assert len(all_searchable_text) == len(expected_searchable_text)
 
     for index, expected_item in enumerate(expected_searchable_text):
@@ -385,7 +389,7 @@ def test_template_id_is_searchable_for_services_with_api_keys(
         normalize_spaces(item.text)
         for item in page.select(
             # Elements which the live search will filter by
-            ".template-list-item .live-search-relevant"
+            "li.template-list-item .live-search-relevant"
         )
     ] == [
         "folder one",
@@ -397,18 +401,18 @@ def test_template_id_is_searchable_for_services_with_api_keys(
         normalize_spaces(item.text)
         for item in page.select(
             # Elements the user will see when first loading the page
-            ".template-list-item:not(.template-list-item-hidden-by-default)"
+            "li.template-list-item:not(.template-list-item-hidden-by-default)"
         )
     ] == [
-        "folder one folder one 1 template",
-        f'template one {template_1["id"]} template one Broadcast template',
+        "folder one 1 template",
+        f'{template_1["id"]} template one Broadcast template',
     ]
 
     assert [
         normalize_spaces(item.text)
         for item in page.select(
             # Text which should be hidden from all users
-            r".template-list-item .govuk-\!-display-none"
+            r"li.template-list-item .govuk-\!-display-none"
         )
     ] == [
         template_2["id"],
@@ -616,6 +620,104 @@ def test_get_manage_folder_page_no_permissions(
         template_folder_id=PARENT_FOLDER_ID,
         _expected_status=403,
     )
+
+
+def test_move_folder_page(client_request, active_user_with_permissions, service_one, mock_get_template_folders, mocker):
+    FOLDER_TWO_ID = str(uuid.uuid4())
+    FOLDER_ONE_TWO_ID = str(uuid.uuid4())
+    mock_get_template_folders.return_value = [
+        _folder("folder_one", PARENT_FOLDER_ID, None),
+        _folder("folder_two", FOLDER_TWO_ID, None),
+        _folder("folder_one_one", CHILD_FOLDER_ID, PARENT_FOLDER_ID),
+        _folder("folder_one_two", FOLDER_ONE_TWO_ID, PARENT_FOLDER_ID),
+    ]
+    mocker.patch(
+        "app.models.user.Users.client_method",
+        return_value=[active_user_with_permissions],
+    )
+    page = client_request.post(
+        "main.move_template",
+        service_id=service_one["id"],
+        template_folder_id=None,
+        _data={},
+        _follow_redirects=True,
+    )
+    assert page.select_one("h1").text.strip() == "Move a template or folder"
+    assert normalize_spaces(page.select("button[name=operation]")) == "Move selection to folder"
+
+    radios = page.select("#move_to_folder_radios input[type=radio]")
+    radio_div = page.select_one("div#move_to_folder_radios")
+    assert radios == page.select("input[name=move_to]")
+
+    assert [x["value"] for x in radios] == [
+        ROOT_FOLDER_ID,
+        PARENT_FOLDER_ID,
+        CHILD_FOLDER_ID,
+        FOLDER_ONE_TWO_ID,
+        FOLDER_TWO_ID,
+    ]
+    assert [x.text.strip() for x in radio_div.select("label")] == [
+        "Templates",
+        "folder_one",
+        "folder_one_one",
+        "folder_one_two",
+        "folder_two",
+    ]
+    assert set(x["value"] for x in page.select("button[name=operation]")) == {
+        "move-to-existing-folder",
+    }
+
+
+def test_move_folder_page_404s(client_request, service_one, mock_get_template_folders):
+    client_request.post(
+        "main.move_template",
+        service_id=service_one["id"],
+        template_folder_id=str(uuid.uuid4()),
+        _data={},
+        _follow_redirects=True,
+        _expected_status=404,
+    )
+
+
+def test_move_folder_page_no_permissions(client_request, active_user_view_permissions, mock_get_template_folders):
+    client_request.login(active_user_view_permissions)
+    client_request.post(
+        "main.move_template",
+        service_id=SERVICE_ONE_ID,
+        template_folder_id=PARENT_FOLDER_ID,
+        _data={},
+        _follow_redirects=True,
+        _expected_status=403,
+    )
+
+
+def test_move_folder_shouldnt_select_a_folder_by_default(
+    client_request,
+    mocker,
+    service_one,
+    mock_get_templates,
+    mock_get_template_folders,
+    mock_get_no_api_keys,
+    fake_uuid,
+    active_user_with_permissions,
+):
+    client_request.login(active_user_with_permissions)
+
+    FOLDER_TWO_ID = str(uuid.uuid4())
+    mock_get_template_folders.return_value = [
+        _folder("folder_one", PARENT_FOLDER_ID, None),
+        _folder("folder_two", FOLDER_TWO_ID, None),
+    ]
+    page = client_request.post(
+        "main.move_template",
+        service_id=service_one["id"],
+        template_folder_id=None,
+        _data={},
+        _follow_redirects=True,
+    )
+
+    checked_radio = page.select("input[name=move_to][checked=checked]")
+    assert checked_radio == []
 
 
 @pytest.mark.parametrize(
@@ -939,82 +1041,6 @@ def test_should_not_show_radios_and_buttons_for_move_destination_if_incorrect_pe
     assert not page.select("button[name=operation]")
 
 
-def test_should_show_radios_and_buttons_for_move_destination_if_correct_permissions(
-    client_request,
-    mocker,
-    service_one,
-    mock_get_templates,
-    mock_get_template_folders,
-    mock_get_no_api_keys,
-    fake_uuid,
-    active_user_with_permissions,
-):
-    client_request.login(active_user_with_permissions)
-
-    FOLDER_TWO_ID = str(uuid.uuid4())
-    FOLDER_ONE_TWO_ID = str(uuid.uuid4())
-    mock_get_template_folders.return_value = [
-        _folder("folder_one", PARENT_FOLDER_ID, None),
-        _folder("folder_two", FOLDER_TWO_ID, None),
-        _folder("folder_one_one", CHILD_FOLDER_ID, PARENT_FOLDER_ID),
-        _folder("folder_one_two", FOLDER_ONE_TWO_ID, PARENT_FOLDER_ID),
-    ]
-    page = client_request.get(
-        "main.choose_template",
-        service_id=SERVICE_ONE_ID,
-    )
-    radios = page.select("#move_to_folder_radios input[type=radio]")
-    radio_div = page.select_one("div#move_to_folder_radios")
-    assert radios == page.select("input[name=move_to]")
-
-    assert [x["value"] for x in radios] == [
-        ROOT_FOLDER_ID,
-        PARENT_FOLDER_ID,
-        CHILD_FOLDER_ID,
-        FOLDER_ONE_TWO_ID,
-        FOLDER_TWO_ID,
-    ]
-    assert [x.text.strip() for x in radio_div.select("label")] == [
-        "Templates",
-        "folder_one",
-        "folder_one_one",
-        "folder_one_two",
-        "folder_two",
-    ]
-    assert set(x["value"] for x in page.select("button[name=operation]")) == {
-        "unknown",
-        "move-to-existing-folder",
-        "move-to-new-folder",
-        "add-new-folder",
-        "add-new-template",
-    }
-
-
-def test_move_to_shouldnt_select_a_folder_by_default(
-    client_request,
-    mocker,
-    service_one,
-    mock_get_templates,
-    mock_get_template_folders,
-    mock_get_no_api_keys,
-    fake_uuid,
-    active_user_with_permissions,
-):
-    client_request.login(active_user_with_permissions)
-
-    FOLDER_TWO_ID = str(uuid.uuid4())
-    mock_get_template_folders.return_value = [
-        _folder("folder_one", PARENT_FOLDER_ID, None),
-        _folder("folder_two", FOLDER_TWO_ID, None),
-    ]
-    page = client_request.get(
-        "main.choose_template",
-        service_id=SERVICE_ONE_ID,
-    )
-    checked_radio = page.select("input[name=move_to][checked=checked]")
-    assert checked_radio == []
-
-
 def test_should_be_able_to_move_to_existing_folder(
     client_request,
     service_one,
@@ -1028,7 +1054,7 @@ def test_should_be_able_to_move_to_existing_folder(
         _folder("folder_two", FOLDER_TWO_ID, None),
     ]
     client_request.post(
-        "main.choose_template",
+        "main.move_template",
         service_id=SERVICE_ONE_ID,
         _data={
             "operation": "move-to-existing-folder",
@@ -1078,7 +1104,7 @@ def test_should_not_be_able_to_move_to_existing_folder_if_dont_have_permission(
         _folder("folder_two", FOLDER_TWO_ID, None),
     ]
     client_request.post(
-        "main.choose_template",
+        "main.move_template",
         service_id=SERVICE_ONE_ID,
         _data={
             "operation": "move-to-existing-folder",
@@ -1091,54 +1117,6 @@ def test_should_not_be_able_to_move_to_existing_folder_if_dont_have_permission(
         _expected_status=expected_status,
     )
     assert mock_move_to_template_folder.called is expected_called
-
-
-def test_move_folder_form_shows_current_folder_hint_when_in_a_folder(
-    client_request,
-    service_one,
-    mock_get_templates,
-    mock_get_template_folders,
-    mock_get_no_api_keys,
-):
-    mock_get_template_folders.return_value = [
-        _folder("parent_folder", PARENT_FOLDER_ID, None),
-        _folder("child_folder", CHILD_FOLDER_ID, PARENT_FOLDER_ID),
-    ]
-    page = client_request.get(
-        "main.choose_template", service_id=SERVICE_ONE_ID, template_folder_id=PARENT_FOLDER_ID, _test_page_title=False
-    )
-
-    assert page.select(f'input[name=move_to][value="{PARENT_FOLDER_ID}"]')
-
-    move_form_labels = page.select("div#move_to_folder_radios label")
-
-    assert len(move_form_labels) == 3
-    assert normalize_spaces(move_form_labels[0].text) == "Templates"
-    assert normalize_spaces(move_form_labels[1].text) == "parent_folder current folder"
-    assert normalize_spaces(move_form_labels[2].text) == "child_folder"
-
-
-def test_move_folder_form_does_not_show_current_folder_hint_at_the_top_level(
-    client_request,
-    service_one,
-    mock_get_templates,
-    mock_get_template_folders,
-    mock_get_no_api_keys,
-):
-    mock_get_template_folders.return_value = [
-        _folder("parent_folder", PARENT_FOLDER_ID, None),
-        _folder("child_folder", CHILD_FOLDER_ID, PARENT_FOLDER_ID),
-    ]
-    page = client_request.get("main.choose_template", service_id=SERVICE_ONE_ID, _test_page_title=False)
-
-    assert page.select(f'input[name=move_to][value="{PARENT_FOLDER_ID}"]')
-
-    move_form_labels = page.select("div#move_to_folder_radios label")
-
-    assert len(move_form_labels) == 3
-    assert normalize_spaces(move_form_labels[0].text) == "Templates"
-    assert normalize_spaces(move_form_labels[1].text) == "parent_folder"
-    assert normalize_spaces(move_form_labels[2].text) == "child_folder"
 
 
 def test_should_be_able_to_move_a_sub_item(
@@ -1156,7 +1134,7 @@ def test_should_be_able_to_move_a_sub_item(
         _folder("folder_one_one_one", GRANDCHILD_FOLDER_ID, CHILD_FOLDER_ID),
     ]
     client_request.post(
-        "main.choose_template",
+        "main.move_template",
         service_id=SERVICE_ONE_ID,
         template_folder_id=PARENT_FOLDER_ID,
         _data={
@@ -1177,34 +1155,6 @@ def test_should_be_able_to_move_a_sub_item(
 @pytest.mark.parametrize(
     "data",
     [
-        # move to existing, but add new folder name given
-        {
-            "operation": "move-to-existing-folder",
-            "templates_and_folders": [],
-            "add_new_folder_name": "foo",
-            "move_to": PARENT_FOLDER_ID,
-        },
-        # move to existing, but move to new folder name given
-        {
-            "operation": "move-to-existing-folder",
-            "templates_and_folders": [TEMPLATE_ONE_ID],
-            "move_to_new_folder_name": "foo",
-            "move_to": PARENT_FOLDER_ID,
-        },
-        # move to existing, but no templates to move
-        {
-            "operation": "move-to-existing-folder",
-            "templates_and_folders": [],
-            "move_to_new_folder_name": "",
-            "move_to": PARENT_FOLDER_ID,
-        },
-        # move to new, but nothing selected to move
-        {
-            "operation": "move-to-new-folder",
-            "templates_and_folders": [],
-            "move_to_new_folder_name": "foo",
-            "move_to": None,
-        },
         # add a new template, but also select move destination
         {
             "operation": "add-new-template",
@@ -1242,7 +1192,7 @@ def test_no_action_if_user_fills_in_ambiguous_fields(
         _folder("folder_two", FOLDER_TWO_ID, None),
     ]
 
-    page = client_request.post(
+    page = client_request.get(
         "main.choose_template",
         service_id=SERVICE_ONE_ID,
         _data=data,
@@ -1259,12 +1209,6 @@ def test_no_action_if_user_fills_in_ambiguous_fields(
         "broadcast",
         "copy-existing",
     ] == [radio["value"] for radio in page.select("#add_new_template_form input[type=radio]")]
-
-    assert [
-        ROOT_FOLDER_ID,
-        FOLDER_TWO_ID,
-        PARENT_FOLDER_ID,
-    ] == [radio["value"] for radio in page.select("#move_to_folder_radios input[type=radio]")]
 
 
 def test_new_folder_is_created_if_only_new_folder_is_filled_out(
@@ -1365,22 +1309,9 @@ def test_radio_button_with_no_value_shows_custom_error_message(
             {"operation": "move-to-new-folder", "templates_and_folders": [], "move_to_new_folder_name": "foo"},
             "Select at least one template or folder",
         ),
-        (
-            {"operation": "move-to-existing-folder", "templates_and_folders": [], "move_to": PARENT_FOLDER_ID},
-            "Select at least one template or folder",
-        ),
-        # api error (eg moving folder to itself)
-        (
-            {
-                "operation": "move-to-existing-folder",
-                "templates_and_folders": [FOLDER_TWO_ID],
-                "move_to": FOLDER_TWO_ID,
-            },
-            "Some api error msg",
-        ),
     ],
 )
-def test_show_custom_error_message(
+def test_show_custom_error_message_list_page(
     client_request,
     service_one,
     mock_get_templates,
@@ -1406,6 +1337,48 @@ def test_show_custom_error_message(
     )
 
     assert page.select_one("div.banner-dangerous").text.strip() == error_msg
+
+
+@pytest.mark.parametrize(
+    "data, error_msg",
+    [
+        # nothing selected when moving
+        (
+            {
+                "operation": "move-to-existing-folder",
+                "templates_and_folders": [{}],
+                "current_folder_id": PARENT_FOLDER_ID,
+            },
+            "Select an option",
+        ),
+    ],
+)
+def test_show_custom_error_message_move_page(
+    client_request,
+    service_one,
+    mock_get_templates,
+    mock_get_template_folders,
+    mock_move_to_template_folder,
+    mock_create_template_folder,
+    mock_get_no_api_keys,
+    data,
+    error_msg,
+):
+    mock_get_template_folders.return_value = [
+        _folder("folder_one", PARENT_FOLDER_ID, None),
+        _folder("folder_two", FOLDER_TWO_ID, None),
+    ]
+    mock_move_to_template_folder.side_effect = HTTPError(message="Some api error msg")
+
+    page = client_request.post(
+        "main.move_template",
+        service_id=SERVICE_ONE_ID,
+        _data=data,
+        _expected_status=200,
+        _expected_redirect=None,
+    )
+
+    assert page.select_one(".error-message").text.strip() == error_msg
 
 
 @pytest.mark.parametrize(
@@ -1519,12 +1492,14 @@ def test_should_filter_templates_folder_page_based_on_user_permissions(
 
     page = client_request.get("main.choose_template", service_id=SERVICE_ONE_ID, _test_page_title=False, **extra_args)
 
-    displayed_page_items = page.select(".template-list-item:not(.template-list-item-hidden-by-default)")
+    displayed_page_items = page.select(
+        "#template-list-checkboxes .template-list-item:not(.template-list-item-hidden-by-default)"
+    )
     assert [
         [i.strip() for i in e.text.split("\n") if i.strip()] for e in displayed_page_items
     ] == expected_displayed_items
 
-    all_page_items = page.select(".template-list-item")
+    all_page_items = page.select("#template-list-checkboxes .template-list-item")
     assert [[i.strip() for i in e.text.split("\n") if i.strip()] for e in all_page_items] == expected_items
 
     if expected_empty_message:

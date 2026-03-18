@@ -13,16 +13,12 @@ def accept_invite(token):
     invited_user = InvitedUser.from_token(token)
 
     if not current_user.is_anonymous and current_user.email_address.lower() != invited_user.email_address.lower():
-        message = Markup(
-            """
+        message = Markup("""
             You’re signed in as {}.
             This invite is for another email address.
             <a href={} class="govuk-link govuk-link--no-visited-state">Sign out</a>
             and click the link again to accept this invite.
-            """.format(
-                current_user.email_address, url_for("main.sign_out")
-            )
-        )
+            """.format(current_user.email_address, url_for("main.sign_out")))
 
         flash(message=message)
 
@@ -85,16 +81,12 @@ def accept_org_invite(token):
     invited_org_user = InvitedOrgUser.from_token(token)
 
     if not current_user.is_anonymous and current_user.email_address.lower() != invited_org_user.email_address.lower():
-        message = Markup(
-            """
+        message = Markup("""
             You’re signed in as {}.
             This invite is for another email address.
             <a class="govuk-link govuk-link--no-visited-state" href={}>Sign out</a>
             and click the link again to accept this invite.
-            """.format(
-                current_user.email_address, url_for("main.sign_out")
-            )
-        )
+            """.format(current_user.email_address, url_for("main.sign_out")))
 
         flash(message=message)
 

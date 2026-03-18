@@ -1,135 +1,146 @@
 {% from "components/table.html" import list_table, field, right_aligned_field_heading, row_heading %}
+{% from "components/select-input.html" import select_dropdown %}
 {% from "govuk_frontend_jinja/components/tag/macro.html" import govukTag %}
-
-{% set sorted_broadcasts = broadcasts|list|sort|reverse if reverse_chronological_sort else broadcasts|list %}
+{% from "components/form.html" import form_wrapper %}
 
 <div class="ajax-block-container js-mark-focus-on-parent" data-classes-to-persist="js-child-has-focus">
-{% for item in sorted_broadcasts %}
-  <div class="keyline-block">
-    <div class="file-list file-list--sectioned govuk-!-margin-bottom-2">
-      <h2>
-        <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for(view_broadcast_endpoint, service_id=current_service.id, broadcast_message_id=item.id) }}">{{ item.reference or item.template_name or "Untitled alert"}}</a>
-      </h2>
-      {% if item.status != 'rejected' %}
-        <span class="file-list-hint-large govuk-!-margin-bottom-2">
-          {{ item.content }}
-        </span>
-      {% endif %}
-      {% if item.status == 'pending-approval' %}
-        <p class="govuk-body govuk-hint file-list-status">
-          Waiting for approval
-        </p>
-      {% elif item.status == 'rejected' %}
-        {% set rejection_time = item.rejected_at if item.rejected_at else item.updated_at %}
-        <p class="govuk-body live-broadcast file-list-status govuk-!-margin-top-2">
-          {{ govukTag ({
-            'text': 'rejected',
-            'classes': 'govuk-!-margin-right-1 govuk-!-margin-top-2 broadcast-tag'
-          }) }}
-          {{ rejection_time|format_datetime_human }}
-        </p>
-        <span class="file-list-hint-large govuk-!-margin-bottom-2">
-          {{ item.content }}
-        </span>
-      {% elif item.status == 'broadcasting' %}
-        <p class="govuk-body live-broadcast file-list-status">
-          {{ govukTag ({
-            'text': 'live',
-            'classes': 'govuk-!-margin-right-2 broadcast-tag'
-          }) }}
-          since {{ item.starts_at|format_datetime_relative }}
-        </p>
-      {% elif item.status == 'draft' %}
-        <p class="govuk-body live-broadcast file-list-status">
-          {{ govukTag ({
-            'text': 'draft',
-            'classes': 'govuk-!-margin-right-2 draft-tag'
-          }) }}
-        </p>
-      {% elif item.status == 'returned' %}
-        <p class="govuk-body live-broadcast file-list-status">
-          {{ govukTag ({
-            'text': 'returned',
-            'classes': 'govuk-!-margin-right-2 returned-tag'
-          }) }}
-        </p>
-      {% else %}
-        <p class="govuk-body govuk-hint file-list-status">
-          {{ item.starts_at|format_date_human|title }} at {{ item.starts_at|format_time }}
-        </p>
-      {% endif %}
-      {% if item.status not in ['rejected', 'draft'] %}
-        <div>
-          <p class="govuk-!-margin-right-2 area-list">Area: </p>
-          <ul class="area-list">
-            {% for area in item.areas %}
-              <li class="area-list-item area-list-item--unremoveable area-list-item--smaller">{{area.name}}</li>
-            {% endfor %}
-          </ul>
-          {% if item.duration|format_seconds_duration_as_time != "0 seconds" %}
-            <p class="govuk-!-margin-right-2 duration-preview">
-              <b class="govuk-!-font-weight-bold">Duration:</b> {{ item.duration|format_seconds_duration_as_time }}
-            </p>
-          {% endif %}
-        </div>
-      {% endif %}
-    </div>
-    <div>
-      {% if item.status == 'rejected' %}
-        {% set rejection_time = item.rejected_at if item.rejected_at else item.updated_at %}
-        <div class="govuk-!-margin-bottom-2">
-          <p class="govuk-!-margin-right-1 dashboard-table govuk-!-font-weight-bold">Broadcast: </p>
-          <p class="govuk-body dashboard-table">
-          {% if item.rejected_by_api_key_id or item.rejected_by %}
-            Rejected
-            {{ rejection_time|format_datetime_human }}
-            {% if item.rejected_by %}
-              by {{item.rejected_by}}.
-            {% elif item.rejected_by_api_key_id %}
-              by an API call.
-            {% endif %}
-          {% else %}
-            Rejected
-            {{ rejection_time|format_datetime_human }}.
-          {% endif %}
+  {% if broadcasts %}
+    {% call form_wrapper(method="POST", action=action) %}
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <div class="govuk-form-group filter-and-sort">
+        {% for select in selects %}
+          {{ select_dropdown(select, auto_submit=True) }}
+        {% endfor %}
+      </div>
+    {% endcall %}
+  {% endif %}
+
+  {% for item in broadcasts %}
+    <div class="keyline-block">
+      <div class="file-list file-list--sectioned govuk-!-margin-bottom-2">
+        <h2>
+          <a class="file-list-filename-large govuk-link govuk-link--no-visited-state" href="{{ url_for(view_broadcast_endpoint, service_id=current_service.id, broadcast_message_id=item.id) }}">{{ item.reference or item.template_name or "Untitled alert"}}</a>
+        </h2>
+        {% if item.status != 'rejected' %}
+          <span class="file-list-hint-large govuk-!-margin-bottom-2">
+            {{ item.content }}
+          </span>
+        {% endif %}
+        {% if item.status == 'pending-approval' %}
+          <p class="govuk-body govuk-hint file-list-status">
+            Waiting for approval
           </p>
-        </div>
-        {% if item.rejection_reason %}
-          <div class="govuk-!-margin-bottom-2 truncate-text">
-            <p class="govuk-!-margin-right-1 dashboard-table govuk-!-font-weight-bold">Reason: </p>
-            <p class="dashboard-table">
-              {{item.rejection_reason}}
-            </p>
+        {% elif item.status == 'rejected' %}
+          {% set rejection_time = item.rejected_at if item.rejected_at else item.updated_at %}
+          <p class="govuk-body live-broadcast file-list-status govuk-!-margin-top-2">
+            {{ govukTag ({
+              'text': 'rejected',
+              'classes': 'govuk-!-margin-right-1 govuk-!-margin-top-2 broadcast-tag'
+            }) }}
+            {{ rejection_time|format_datetime_human }}
+          </p>
+          <span class="file-list-hint-large govuk-!-margin-bottom-2">
+            {{ item.content }}
+          </span>
+        {% elif item.status == 'broadcasting' %}
+          <p class="govuk-body live-broadcast file-list-status">
+            {{ govukTag ({
+              'text': 'live',
+              'classes': 'govuk-!-margin-right-2 broadcast-tag'
+            }) }}
+            since {{ item.starts_at|format_datetime_relative }}
+          </p>
+        {% elif item.status == 'draft' %}
+          <p class="govuk-body live-broadcast file-list-status">
+            {{ govukTag ({
+              'text': 'draft',
+              'classes': 'govuk-!-margin-right-2 draft-tag'
+            }) }}
+          </p>
+        {% elif item.status == 'returned' %}
+          <p class="govuk-body live-broadcast file-list-status">
+            {{ govukTag ({
+              'text': 'returned',
+              'classes': 'govuk-!-margin-right-2 returned-tag'
+            }) }}
+          </p>
+        {% else %}
+          <p class="govuk-body govuk-hint file-list-status">
+            {{ item.starts_at|format_date_human|title }} at {{ item.starts_at|format_time }}
+          </p>
+        {% endif %}
+        {% if item.status not in ['rejected', 'draft'] %}
+          <div>
+            <p class="govuk-!-margin-right-2 area-list">Area: </p>
+            <ul class="area-list">
+              {% for area in item.areas %}
+                <li class="area-list-item area-list-item--unremoveable area-list-item--smaller">{{area.name}}</li>
+              {% endfor %}
+            </ul>
+            {% if item.duration|format_seconds_duration_as_time != "0 seconds" %}
+              <p class="govuk-!-margin-right-2 duration-preview">
+                <b class="govuk-!-font-weight-bold">Duration:</b> {{ item.duration|format_seconds_duration_as_time }}
+              </p>
+            {% endif %}
           </div>
         {% endif %}
-        <div class="govuk-!-margin-bottom-2">
-          <p class="govuk-!-margin-right-1 dashboard-table govuk-!-font-weight-bold">Created by: </p>
-          <p class="govuk-body dashboard-table">
-            {% if item.created_by %}
-              {{item.created_by}}.
+      </div>
+      <div>
+        {% if item.status == 'rejected' %}
+          {% set rejection_time = item.rejected_at if item.rejected_at else item.updated_at %}
+          <div class="govuk-!-margin-bottom-2">
+            <p class="govuk-!-margin-right-1 dashboard-table govuk-!-font-weight-bold">Broadcast: </p>
+            <p class="govuk-body dashboard-table">
+            {% if item.rejected_by_api_key_id or item.rejected_by %}
+              Rejected
+              {{ rejection_time|format_datetime_human }}
+              {% if item.rejected_by %}
+                by {{item.rejected_by}}.
+              {% elif item.rejected_by_api_key_id %}
+                by an API call.
+              {% endif %}
             {% else %}
-              an API call.
+              Rejected
+              {{ rejection_time|format_datetime_human }}.
             {% endif %}
-          </p>
-        </div>
-        <div>
-          <p class="govuk-!-margin-right-1 area-list govuk-!-font-weight-bold">Area: </p>
-          <ul class="area-list">
-            {% for area in item.areas %}
-              <li class="area-list-item area-list-item--unremoveable area-list-item--smaller">{{area.name}}</li>
-            {% endfor %}
-          </ul>
-        </div>
-      {% endif %}
+            </p>
+          </div>
+          {% if item.rejection_reason %}
+            <div class="govuk-!-margin-bottom-2 truncate-text">
+              <p class="govuk-!-margin-right-1 dashboard-table govuk-!-font-weight-bold">Reason: </p>
+              <p class="dashboard-table">
+                {{item.rejection_reason}}
+              </p>
+            </div>
+          {% endif %}
+          <div class="govuk-!-margin-bottom-2">
+            <p class="govuk-!-margin-right-1 dashboard-table govuk-!-font-weight-bold">Created by: </p>
+            <p class="govuk-body dashboard-table">
+              {% if item.created_by %}
+                {{item.created_by}}.
+              {% else %}
+                an API call.
+              {% endif %}
+            </p>
+          </div>
+          <div>
+            <p class="govuk-!-margin-right-1 area-list govuk-!-font-weight-bold">Area: </p>
+            <ul class="area-list">
+              {% for area in item.areas %}
+                <li class="area-list-item area-list-item--unremoveable area-list-item--smaller">{{area.name}}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+      </div>
     </div>
-  </div>
-  {% if loop.last %}
-    <div class="keyline-block">
-    </div>
-  {% endif %}
-{% else %}
-  <p class="table-empty-message keyline-block govuk-!-padding-top-4">
-    {{ empty_message }}
-  </p>
-{% endfor %}
+    {% if loop.last %}
+      <div class="keyline-block">
+      </div>
+    {% endif %}
+  {% else %}
+    <p class="table-empty-message keyline-block govuk-!-padding-top-4">
+      {{ empty_message }}
+    </p>
+  {% endfor %}
 </div>

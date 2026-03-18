@@ -21,27 +21,22 @@ class BroadcastAreasRepository(object):
 
     def create_tables(self):
         with self.conn() as conn:
-            conn.execute(
-                """
+            conn.execute("""
             CREATE TABLE broadcast_area_libraries (
                 id TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
                 name_singular TEXT NOT NULL,
                 is_group BOOLEAN NOT NULL
-            )"""
-            )
+            )""")
 
-            conn.execute(
-                """
+            conn.execute("""
             CREATE TABLE broadcast_area_library_groups (
                 id TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
                 broadcast_area_library_id TEXT NOT NULL
-            )"""
-            )
+            )""")
 
-            conn.execute(
-                """
+            conn.execute("""
             CREATE TABLE broadcast_areas (
                 id TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
@@ -54,32 +49,25 @@ class BroadcastAreasRepository(object):
 
                 FOREIGN KEY (broadcast_area_library_group_id)
                     REFERENCES broadcast_area_library_groups(id)
-            )"""
-            )
+            )""")
 
-            conn.execute(
-                """
+            conn.execute("""
             CREATE TABLE broadcast_area_polygons (
                 id TEXT PRIMARY KEY,
                 polygons TEXT NOT NULL,
                 simple_polygons TEXT NOT NULL,
                 utm_crs TEXT NOT NULL
-            )"""
-            )
+            )""")
 
-            conn.execute(
-                """
+            conn.execute("""
             CREATE INDEX broadcast_areas_broadcast_area_library_id
             ON broadcast_areas (broadcast_area_library_id);
-            """
-            )
+            """)
 
-            conn.execute(
-                """
+            conn.execute("""
             CREATE INDEX broadcast_areas_broadcast_area_library_group_id
             ON broadcast_areas (broadcast_area_library_group_id);
-            """
-            )
+            """)
 
     def delete_library_data(self):
         # delete everything except broadcast_area_polygons
@@ -138,9 +126,7 @@ class BroadcastAreasRepository(object):
         SELECT id, name, count_of_phones, broadcast_area_library_id
         FROM broadcast_areas
         WHERE id IN ({})
-        """.format(
-            ",".join("?" * len(area_ids))
-        )
+        """.format(",".join("?" * len(area_ids)))
 
         results = self.query(q, *area_ids)
 
@@ -154,9 +140,7 @@ class BroadcastAreasRepository(object):
         FROM broadcast_areas
         JOIN broadcast_area_polygons on broadcast_area_polygons.id = broadcast_areas.id
         WHERE broadcast_areas.id IN ({})
-        """.format(
-            ",".join("?" * len(area_ids))
-        )
+        """.format(",".join("?" * len(area_ids)))
 
         results = self.query(q, *area_ids)
 

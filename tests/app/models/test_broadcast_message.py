@@ -5,7 +5,7 @@ from app.models.broadcast_message import BroadcastMessage
 from tests import broadcast_message_json
 from tests.app.broadcast_areas.custom_polygons import (
     BD1_1EE_1,
-    ENGLAND,
+    MULTIPLE_ENGLAND,
     custom_essex_bleed_area,
 )
 
@@ -164,7 +164,7 @@ def test_create_from_area(mocker, service_one, fake_uuid, mock_create_broadcast_
         content="Test content",
         areas={
             "ids": ["ctry19-E92000001"],
-            "simple_polygons": ENGLAND,
+            "simple_polygons": MULTIPLE_ENGLAND,
             "names": ["England"],
             "aggregate_names": ["England"],
         },

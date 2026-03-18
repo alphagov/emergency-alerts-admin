@@ -8,7 +8,10 @@ from numbers import Number
 
 import humanize
 from emergency_alerts_utils.field import Field
-from emergency_alerts_utils.formatters import autolink_urls, make_quotes_smart
+from emergency_alerts_utils.formatters import (
+    autolink_urls,
+    make_quotes_smart,
+)
 from emergency_alerts_utils.formatters import nl2br as utils_nl2br
 from emergency_alerts_utils.formatters import (
     normalise_multiple_newlines,

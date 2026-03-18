@@ -285,7 +285,7 @@ def test_archive_user_does_not_create_event_if_user_client_raises_unexpected_exc
     mocker,
     mock_events,
 ):
-    with pytest.raises(Exception):
+    with pytest.raises(Exception, match="'dict' object has no attribute 'id'"):
         client_request.login(platform_admin_user)
         client_request.post(
             "main.archive_user",

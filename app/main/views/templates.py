@@ -19,6 +19,7 @@ from app.main.forms import (
     SearchTemplatesForm,
     TemplateAndFoldersSelectionForm,
     TemplateFolderForm,
+    TemplateFolderMoveForm,
 )
 from app.models.broadcast_message import BroadcastMessage
 from app.models.template import Template
@@ -68,6 +69,72 @@ def edit_template(service_id, template_id):
         template_folder_path=current_service.get_template_folder_path(template.folder),
         edit_mode=True,
     )
+
+
+@main.route("/services/<uuid:service_id>/templates/move-to", methods=["POST"])
+@main.route("/services/<uuid:service_id>/templates/folders/<uuid:template_folder_id>/move-to", methods=["POST"])
+@user_has_permissions(allow_org_user=True)
+def move_template(service_id, template_folder_id=None):
+
+    if not current_user.has_permissions("manage_templates"):
+        abort(403)
+
+    folders_to_move = request.form.getlist("templates_and_folders")
+    if len(folders_to_move) < 1:
+        folders_to_move = request.form.getlist("template_folders_to_move")
+
+    template_folder = current_service.get_template_folder(template_folder_id)
+    user_has_template_folder_permission = current_user.has_template_folder_permission(template_folder)
+
+    template_list = UserTemplateList(
+        service=current_service, template_type=None, template_folder_id=template_folder_id, user=current_user
+    )
+
+    all_template_folders = UserTemplateList(service=current_service, user=current_user).all_template_folders
+
+    template_folder_move_form = TemplateFolderMoveForm(
+        current_folder_id=template_folder_id,
+        all_template_folders=all_template_folders,
+        template_folders_to_move=folders_to_move,
+    )
+
+    op = request.form.get("operation")
+    if op == "move-to-existing-folder":
+        if template_folder_move_form.validate_on_submit():
+            if not current_user.has_permissions("manage_templates"):
+                abort(403)
+            try:
+                return process_folder_move_form(template_folder_move_form, template_folder_id, service_id)
+            except HTTPError as e:
+                flash(e.message)
+
+        if "templates_and_folders" in template_folder_move_form.errors:
+            flash("Select at least one template or folder")
+
+    return render_template(
+        "views/templates/move_to.html",
+        current_template_folder_id=template_folder_id,
+        template_folder_path=current_service.get_template_folder_path(template_folder_id),
+        template_list=template_list,
+        template_folder_move_form=template_folder_move_form,
+        move_to_children=template_folder_move_form.move_to.children(),
+        back_link=url_for("main.choose_template", service_id=service_id, template_folder_id=template_folder_id),
+        user_has_template_folder_permission=user_has_template_folder_permission,
+        option_hints=None,
+    )
+
+
+def process_folder_move_form(form, current_folder_id, service_id):
+    current_service.get_template_folder_with_user_permission_or_403(current_folder_id, current_user)
+
+    redir = url_for("main.choose_template", service_id=service_id, template_folder_id=current_folder_id, _external=True)
+
+    move_to_id = form.move_to.data
+    ids_to_move = form.template_folders_to_move
+
+    current_service.move_to_folder(ids_to_move=ids_to_move, move_to=move_to_id)
+
+    return redirect(redir)
 
 
 @main.route("/services/<uuid:service_id>/templates/all", methods=["GET", "POST"])
@@ -135,7 +202,6 @@ def choose_template(service_id, template_type="all", template_folder_id=None):
         template_type=template_type,
         search_form=SearchTemplatesForm(current_service.api_keys),
         templates_and_folders_form=templates_and_folders_form,
-        move_to_children=templates_and_folders_form.move_to.children(),
         user_has_template_folder_permission=user_has_template_folder_permission,
         single_notification_channel=single_notification_channel,
         option_hints=option_hints,

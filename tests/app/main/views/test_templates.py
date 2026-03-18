@@ -8,7 +8,7 @@ from freezegun import freeze_time
 
 from app.models.template import Template
 from tests import NotifyBeautifulSoup, template_json, validate_route_permission
-from tests.app.broadcast_areas.custom_polygons import ENGLAND
+from tests.app.broadcast_areas.custom_polygons import MULTIPLE_ENGLAND
 from tests.app.main.views.test_template_folders import PARENT_FOLDER_ID, _folder
 from tests.conftest import (
     SERVICE_ONE_ID,
@@ -185,7 +185,7 @@ def test_should_show_page_of_broadcast_templates(
             normalize_spaces(template.select_one(".govuk-link").text),
             normalize_spaces(template.select_one(".govuk-hint").text),
         )
-        for template in page.select(".template-list-item")
+        for template in page.select("li.template-list-item")
     ] == [
         (
             "A",
@@ -263,7 +263,7 @@ def test_should_show_live_search_if_list_of_templates_taller_than_screen(
     assert search["data-targets"] == "#template-list .template-list-item"
     assert normalize_spaces(search.select_one("label").text) == "Search and filter by name"
 
-    assert len(page.select(search["data-targets"])) == len(page.select("#template-list .govuk-label")) == 20
+    assert len(page.select(search["data-targets"])) == len(page.select("#template-list .template-list-item")) == 40
 
 
 def test_should_label_search_by_id_for_services_with_api_keys(
@@ -298,7 +298,7 @@ def test_should_show_live_search_if_service_has_lots_of_folders(
     )
 
     count_of_templates_and_folders = len(page.select("#template-list .govuk-label"))
-    count_of_folders = len(page.select(".template-list-folder:first-of-type"))
+    count_of_folders = len(page.select(".template-list-folder:first-of-type")) / 2
     count_of_templates = count_of_templates_and_folders - count_of_folders
 
     assert len(page.select(".live-search")) == 1
@@ -1284,7 +1284,7 @@ def test_add_area_to_template(client_request, fake_uuid, mock_get_template_with_
                 "ids": ["ctry19-E92000001"],
                 "names": ["England"],
                 "aggregate_names": ["England"],
-                "simple_polygons": ENGLAND,
+                "simple_polygons": MULTIPLE_ENGLAND,
             }
         },
         service_id=SERVICE_ONE_ID,

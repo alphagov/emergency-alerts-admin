@@ -764,9 +764,9 @@ class OnOffField(GovukRadiosField):
         ]
         super().__init__(
             label,
+            *args,
             choices=choices,
             thing=f"{choices[0][1].lower()} or {choices[1][1].lower()}",
-            *args,
             **kwargs,
         )
 
@@ -1103,12 +1103,10 @@ class ChooseExtraContentForm(StripWhitespaceForm):
         ],
         param_extensions={
             "fieldset": {"legend": {"classes": "govuk-visually-hidden"}},
-            "hint": {
-                "html": """<p class="govuk-body">This won't be sent to those receiving the alert,
+            "hint": {"html": """<p class="govuk-body">This won't be sent to those receiving the alert,
                 but will be displayed as part of the alert on <a class="govuk-link govuk-link--no-visited-state"
                 href="https://www.gov.uk/alerts">gov.uk/alerts</a>. </p>
-                <p class="govuk-body">Select one option.</p>"""
-            },
+                <p class="govuk-body">Select one option.</p>"""},
         },
         validators=[DataRequired(message="Select whether or not to add additional information to the alert")],
     )
@@ -1166,15 +1164,13 @@ class ChooseDurationForm(StripWhitespaceForm):
         if duration is None:
             if self.hours.data is None and self.minutes.data is None:
                 if channel in ["test", "operator"]:
-                    (hours, minutes) = parse_seconds_as_hours_and_minutes(
-                        Config.DEFAULT_DURATION_PERIODS.get("training")
-                    )
+                    hours, minutes = parse_seconds_as_hours_and_minutes(Config.DEFAULT_DURATION_PERIODS.get("training"))
                 else:
-                    (hours, minutes) = parse_seconds_as_hours_and_minutes(Config.DEFAULT_DURATION_PERIODS.get("live"))
+                    hours, minutes = parse_seconds_as_hours_and_minutes(Config.DEFAULT_DURATION_PERIODS.get("live"))
                 self.hours.data = hours
                 self.minutes.data = minutes
         elif self.hours.data is None and self.minutes.data is None:
-            (hours, minutes) = parse_seconds_as_hours_and_minutes(duration)
+            hours, minutes = parse_seconds_as_hours_and_minutes(duration)
             self.hours.data = hours
             self.minutes.data = minutes
 
@@ -1561,6 +1557,47 @@ def required_for_ops(*operations):
     return validate
 
 
+class TemplateFolderMoveForm(Form):
+
+    ALL_TEMPLATES_FOLDER = {
+        "name": "Templates",
+        "id": RadioFieldWithNoneOption.NONE_OPTION_VALUE,
+    }
+
+    def __init__(
+        self,
+        current_folder_id,
+        all_template_folders,
+        template_folders_to_move,
+        *args,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+
+        self.current_folder_id = current_folder_id
+        self.all_template_folders = all_template_folders
+        self.template_folders_to_move = template_folders_to_move
+
+        self.move_to.all_template_folders = all_template_folders
+        self.move_to.choices = [
+            (item["id"], item["name"]) for item in ([self.ALL_TEMPLATES_FOLDER] + all_template_folders)
+        ]
+
+    move_to = NestedRadioField(
+        "Choose the location you want to move your template or folder to",
+        default="",
+        validators=[required_for_ops("move-to-existing-folder"), Optional()],
+    )
+
+    def validate(self, extra_validators=None):
+        self.op = request.form.get("operation")
+        self.is_move_op = self.op in {"move-to-existing-folder"}
+        if not (self.is_move_op):
+            return False
+
+        return super().validate(extra_validators)
+
+
 class TemplateAndFoldersSelectionForm(Form):
     """
     This form expects the form data to include an operation, based on which submit button is clicked.
@@ -1570,18 +1607,11 @@ class TemplateAndFoldersSelectionForm(Form):
     * unknown
         currently not implemented, but in the future will try and work out if there are any obvious commands that can be
         assumed based on which fields are empty vs populated.
-    * move-to-existing-folder
-        must have data for templates_and_folders checkboxes, and move_to radios
     * move-to-new-folder
         must have data for move_to_new_folder_name, cannot have data for move_to_existing_folder_name
     * add-new-folder
         must have data for move_to_existing_folder_name, cannot have data for move_to_new_folder_name
     """
-
-    ALL_TEMPLATES_FOLDER = {
-        "name": "Templates",
-        "id": RadioFieldWithNoneOption.NONE_OPTION_VALUE,
-    }
 
     def __init__(
         self,
@@ -1600,11 +1630,6 @@ class TemplateAndFoldersSelectionForm(Form):
 
         self.op = None
         self.is_move_op = self.is_add_folder_op = self.is_add_template_op = False
-
-        self.move_to.all_template_folders = all_template_folders
-        self.move_to.choices = [
-            (item["id"], item["name"]) for item in ([self.ALL_TEMPLATES_FOLDER] + all_template_folders)
-        ]
 
         self.add_template_by_template_type.choices = list(
             filter(
@@ -1632,7 +1657,7 @@ class TemplateAndFoldersSelectionForm(Form):
     def validate(self, extra_validators=None):
         self.op = request.form.get("operation")
 
-        self.is_move_op = self.op in {"move-to-existing-folder", "move-to-new-folder"}
+        self.is_move_op = self.op in {"move-to-new-folder"}
         self.is_add_folder_op = self.op in {"add-new-folder", "move-to-new-folder"}
         self.is_add_template_op = self.op in {"add-new-template"}
 
@@ -1650,15 +1675,9 @@ class TemplateAndFoldersSelectionForm(Form):
 
     templates_and_folders = GovukCheckboxesField(
         "Choose templates or folders",
-        validators=[required_for_ops("move-to-new-folder", "move-to-existing-folder")],
+        validators=[required_for_ops("move-to-new-folder")],
         choices=[],  # added to keep order of arguments, added properly in __init__
         param_extensions={"fieldset": {"legend": {"classes": "govuk-visually-hidden"}}},
-    )
-    # if no default set, it is set to None, which process_data transforms to '__NONE__'
-    # this means '__NONE__' (self.ALL_TEMPLATES option) is selected when no form data has been submitted
-    # set default to empty string so process_data method doesn't perform any transformation
-    move_to = NestedRadioField(
-        "Choose a folder", default="", validators=[required_for_ops("move-to-existing-folder"), Optional()]
     )
     add_new_folder_name = GovukTextInputField("Folder name", validators=[required_for_ops("add-new-folder")])
     move_to_new_folder_name = GovukTextInputField("Folder name", validators=[required_for_ops("move-to-new-folder")])
