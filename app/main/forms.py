@@ -542,6 +542,7 @@ class GovukTextareaBulkField(GovukTextareaField):
         library_ids=None,
         item,
         area_id_parser,
+        check_spelling=False,
         **kwargs,
     ):
         # area IDs from the library to check against
@@ -549,6 +550,8 @@ class GovukTextareaBulkField(GovukTextareaField):
 
         # Function that translates area IDs from input into format that we store them as
         self.area_id_parser = area_id_parser
+
+        self.check_spelling = check_spelling
 
         # How we refer to a singular area i.e. Local Authority
         self.item = item
@@ -575,7 +578,10 @@ class GovukTextareaBulkField(GovukTextareaField):
             if area_id not in self.library_ids:
                 # error code specified determines form-level validation error message
                 self.error_code = "invalid"
-                self.errors.append(f"{self.item} '{id_}' not found")
+                if self.check_spelling:
+                    self.errors.append(f"{self.item} '{id_}' not found, please check spelling.")
+                else:
+                    self.errors.append(f"{self.item} '{id_}' not found")
 
     def _check_ids_provided_are_unique(self, form, ids):
         # Checks that area ID doesn't appear in the input more than once
@@ -1986,8 +1992,7 @@ class FloodWarningBulkAreasForm(StripWhitespaceForm):
         if not hasattr(self, "form_errors"):
             self.form_errors = []
 
-    @staticmethod
-    def _parse_ids(field):
+    def _parse_ids(self, field):
         # Translates area IDs from input into format that Flood Warning
         # area IDs are stored in db as i.e. "Flood_Warning_Target_Areas-area_id"
         ids = split_text_by_comma_and_newline(field.data or "")
@@ -2005,6 +2010,40 @@ class FloodWarningBulkAreasForm(StripWhitespaceForm):
                 "missing_data": "Enter at least 1 Flood Warning TA code",
                 "duplicates": "All Flood Warning TA codes must be unique",
                 "invalid": "Flood Warning TA code not found",
+            }
+
+            if message := error_messages.get(self.areas.error_code):
+                self.form_errors = [message]
+
+        return not self.form_errors
+
+
+class LocalAuthorityBulkAreasForm(StripWhitespaceForm):
+
+    def __init__(self, library_ids, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.areas.library_lookup_dict = library_ids
+        self.areas.library_ids = set(library_ids.values())
+        self.areas.area_id_parser = self._parse_ids
+        if not hasattr(self, "form_errors"):
+            self.form_errors = []
+
+    def _parse_ids(self, field):
+        ids = split_text_by_comma_and_newline(field.data or "")
+        area_ids = [self.areas.library_lookup_dict.get(name.lower()) for name in ids]
+        return ids, area_ids
+
+    areas = GovukTextareaBulkField("", item="Local authority", area_id_parser=_parse_ids, check_spelling=True)
+
+    def validate(self, extra_validators=None):
+        valid = super().validate(extra_validators)
+
+        if not valid:
+            # Form-level error message based on field's error code, returned if validation files
+            error_messages = {
+                "missing_data": "Enter at least 1 local authority",
+                "duplicates": "All local authorities must be unique",
+                "invalid": "Local authority not found",
             }
 
             if message := error_messages.get(self.areas.error_code):

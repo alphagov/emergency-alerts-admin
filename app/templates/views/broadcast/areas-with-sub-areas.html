@@ -15,6 +15,10 @@
 
   {{ page_header(page_title)}}
 
+  <p class="govuk-body">You can select local authorities individually below, or you can <a class="govuk-link govuk-link--no-visited-state"
+    href="{{ url_for('.search_local_authority_areas_as_a_list', service_id=current_service.id, message_id=message.id, message_type=message_type) }}">enter a list into one text box</a>.
+  </p>
+
   {{ live_search(
     target_selector='.file-list-item',
     show=show_search_form,
