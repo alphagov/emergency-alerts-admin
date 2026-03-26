@@ -186,6 +186,30 @@ class BroadcastAreasRepository(object):
 
         return [(row[0], row[1], row[2], row[3]) for row in results]
 
+    def get_all_area_ids_for_library(self, library_id):
+        # Countries don't have any children, so the above query wouldn't return anything.
+        q = """
+        SELECT id
+        FROM broadcast_areas
+        WHERE broadcast_area_library_id = ?
+        """
+
+        results = self.query(q, library_id)
+
+        return [row[0] for row in results]
+
+    def get_all_area_names_for_library(self, library_id):
+        # Countries don't have any children, so the above query wouldn't return anything.
+        q = """
+        SELECT id, name
+        FROM broadcast_areas
+        WHERE broadcast_area_library_id = ?
+        """
+
+        results = self.query(q, library_id)
+
+        return {row[1]: row[0] for row in results}
+
     def get_all_areas_for_group(self, group_id):
         q = """
         SELECT id, name, count_of_phones, broadcast_area_library_id
