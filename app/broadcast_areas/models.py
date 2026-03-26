@@ -241,9 +241,12 @@ class BroadcastAreaLibrary(SerialisedModelCollection, SortingAndEqualityMixin, G
         self.name_singular = name_singular
         self.is_group = bool(is_group)
         self.items = BroadcastAreasRepository().get_all_areas_for_library(self.id) if self.id != "postcodes" else []
-        self.item_ids = []
-        for item in self.items:
-            self.item_ids.append(item[0])
+        self.item_ids = (
+            BroadcastAreasRepository().get_all_area_ids_for_library(self.id) if self.id != "postcodes" else []
+        )
+        self.area_names_ids_lookup = (
+            BroadcastAreasRepository().get_all_area_names_for_library(self.id) if self.id != "postcodes" else []
+        )
 
     def get_examples(self):
         # we show up to four things. three areas, then either a fourth area if there are exactly four, or "and X more".
