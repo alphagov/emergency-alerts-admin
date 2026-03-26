@@ -10,6 +10,7 @@ from app.main.forms import (
     ChooseCoordinateTypeForm,
     FloodWarningBulkAreasForm,
     FloodWarningForm,
+    LocalAuthorityBulkAreasForm,
     PostcodeForm,
     SearchByNameForm,
 )
@@ -698,6 +699,61 @@ def search_flood_warning_areas_as_a_list(service_id, message_type, message_id=No
             service_id=service_id,
             message_id=message_id,
             message_type=message_type,
+        ),
+        template_folder_id=template_folder_id,
+        message=message,
+        message_type=message_type,
+        form=form,
+    )
+
+
+@main.route(
+    "/services/<uuid:service_id>/<message_type>/<uuid:message_id>/libraries/local_authority_areas_list/",
+    methods=["GET", "POST"],
+)
+@main.route(
+    "/services/<uuid:service_id>/<message_type>/libraries/local_authority_areas_list/",
+    methods=["GET", "POST"],
+)
+@service_has_permission("broadcast")
+@user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
+def search_local_authority_areas_as_a_list(service_id, message_type, message_id=None):
+    template_folder_id = request.args.get("template_folder_id")
+    Message = get_message_type(message_type)
+    message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
+    library = BroadcastMessage.libraries.get("wd23-lad23-ctyua23")
+
+    form = LocalAuthorityBulkAreasForm(library_ids=library.area_names_ids_lookup)
+
+    if form.validate_on_submit():
+        ids = split_text_by_comma_and_newline(form.areas.data)
+        area_ids = [library.area_names_ids_lookup.get(name) for name in ids]
+        if message:
+            message.replace_areas([*area_ids])
+        else:
+            message = Message.create_from_area(
+                service_id=service_id, area_ids=[*area_ids], template_folder_id=template_folder_id
+            )
+        return redirect(
+            url_for(
+                ".preview_areas",
+                service_id=service_id,
+                message_id=message.id,
+                message_type=message_type,
+                template_folder_id=template_folder_id,
+            )
+        )
+
+    return render_template(
+        "views/broadcast/search-local-authority-list.html",
+        broadcast_message=message,
+        page_title="Enter local authorities as a list",
+        back_link=url_for(
+            ".choose_area",
+            service_id=service_id,
+            message_id=message_id,
+            message_type=message_type,
+            library_slug="wd23-lad23-ctyua23",
         ),
         template_folder_id=template_folder_id,
         message=message,
