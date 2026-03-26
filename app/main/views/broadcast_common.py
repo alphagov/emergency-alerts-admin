@@ -727,7 +727,7 @@ def search_local_authority_areas_as_a_list(service_id, message_type, message_id=
 
     if form.validate_on_submit():
         ids = split_text_by_comma_and_newline(form.areas.data)
-        area_ids = [library.area_names_ids_lookup.get(name) for name in ids]
+        area_ids = [library.area_names_ids_lookup.get(name.lower()) for name in ids]
         if message:
             message.replace_areas([*area_ids])
         else:

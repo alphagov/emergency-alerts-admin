@@ -2030,7 +2030,7 @@ class LocalAuthorityBulkAreasForm(StripWhitespaceForm):
 
     def _parse_ids(self, field):
         ids = split_text_by_comma_and_newline(field.data or "")
-        area_ids = [self.areas.library_lookup_dict.get(name) for name in ids]
+        area_ids = [self.areas.library_lookup_dict.get(name.lower()) for name in ids]
         return ids, area_ids
 
     areas = GovukTextareaBulkField("", item="Local authority", area_id_parser=_parse_ids, check_spelling=True)
