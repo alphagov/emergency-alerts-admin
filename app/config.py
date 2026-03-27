@@ -120,6 +120,9 @@ class Hosted(Config):
     )
     TEMPLATE_PREVIEW_API_HOST = f"http://api.{TENANT}ecs.local:6013"
 
+    HTTPS_PROXY = os.environ.get("HTTPS_PROXY")
+    NO_PROXY = os.environ.get("NO_PROXY")
+
     DEBUG = False
     SESSION_COOKIE_SECURE = True
     SESSION_PROTECTION = "strong"
