@@ -51,6 +51,7 @@ from app.formatters import (
     guess_name_from_email_address,
     parse_seconds_as_hours_and_minutes,
     split_text_by_comma_and_newline,
+    split_text_by_newline,
 )
 from app.main.validators import (
     BroadcastLength,
@@ -2029,7 +2030,7 @@ class LocalAuthorityBulkAreasForm(StripWhitespaceForm):
             self.form_errors = []
 
     def _parse_ids(self, field):
-        ids = split_text_by_comma_and_newline(field.data or "")
+        ids = split_text_by_newline(field.data or "")
         area_ids = [self.areas.library_lookup_dict.get(name.lower()) for name in ids]
         return ids, area_ids
 
