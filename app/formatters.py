@@ -402,3 +402,7 @@ def text_area_formatting(value):
 
 def split_text_by_comma_and_newline(input):
     return [item.strip() for item in re.split(r"[,\n]+", input) if item.strip()]
+
+
+def split_text_by_newline(input):
+    return [item.strip() for item in re.split(r"[\n]+", input) if item.strip()]
