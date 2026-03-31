@@ -203,7 +203,8 @@ class BroadcastAreasRepository(object):
         q = """
         SELECT id, LOWER(name)
         FROM broadcast_areas
-        WHERE broadcast_area_library_id = ?
+        WHERE (broadcast_area_library_id = ?
+        AND id LIKE 'lad23-%')
         """
 
         results = self.query(q, library_id)
