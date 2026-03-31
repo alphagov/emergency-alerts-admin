@@ -2,7 +2,7 @@ from flask import flash, redirect, render_template, request, url_for
 from notifications_python_client.errors import HTTPError
 
 from app.broadcast_areas.models import CustomBroadcastAreas
-from app.formatters import split_text_by_comma_and_newline
+from app.formatters import split_text_by_comma_and_newline, split_text_by_newline
 from app.main import main
 from app.main.forms import (
     BroadcastAreaForm,
@@ -726,7 +726,7 @@ def search_local_authority_areas_as_a_list(service_id, message_type, message_id=
     form = LocalAuthorityBulkAreasForm(library_ids=library.area_names_ids_lookup)
 
     if form.validate_on_submit():
-        ids = split_text_by_comma_and_newline(form.areas.data)
+        ids = split_text_by_newline(form.areas.data)
         area_ids = [library.area_names_ids_lookup.get(name.lower()) for name in ids]
         if message:
             message.replace_areas([*area_ids])
