@@ -245,7 +245,7 @@ class BroadcastAreaLibrary(SerialisedModelCollection, SortingAndEqualityMixin, G
             BroadcastAreasRepository().get_all_area_ids_for_library(self.id) if self.id != "postcodes" else []
         )
         self.area_names_ids_lookup = (
-            BroadcastAreasRepository().get_all_area_names_for_library(self.id)
+            BroadcastAreasRepository().get_all_area_names_and_ids_for_library(self.id)
             if self.id == "wd23-lad23-ctyua23"
             else []  # Only necessary for Local Authorities
         )
