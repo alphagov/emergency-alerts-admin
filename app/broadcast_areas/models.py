@@ -241,9 +241,9 @@ class BroadcastAreaLibrary(SerialisedModelCollection, SortingAndEqualityMixin, G
         self.name_singular = name_singular
         self.is_group = bool(is_group)
         self.items = BroadcastAreasRepository().get_all_areas_for_library(self.id) if self.id != "postcodes" else []
-        self.item_ids = (
-            BroadcastAreasRepository().get_all_area_ids_for_library(self.id) if self.id != "postcodes" else []
-        )
+        self.item_ids = []
+        for item in self.items:
+            self.item_ids.append(item[0])
         self.area_names_ids_lookup = (
             # This attribute is only necessary for local authorities currently,
             # we need to be able to get the ID from LA name for LocalAuthorityBulkAreasForm

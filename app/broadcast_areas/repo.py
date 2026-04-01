@@ -186,18 +186,6 @@ class BroadcastAreasRepository(object):
 
         return [(row[0], row[1], row[2], row[3]) for row in results]
 
-    def get_all_area_ids_for_library(self, library_id):
-        # Countries don't have any children, so the above query wouldn't return anything.
-        q = """
-        SELECT id
-        FROM broadcast_areas
-        WHERE broadcast_area_library_id = ?
-        """
-
-        results = self.query(q, library_id)
-
-        return [row[0] for row in results]
-
     def get_all_area_names_and_ids_for_local_authorities(self):
         # Query returns only Local Authority areas and IDs (prefixed with `lad23-`),
         # from library storing Electoral Wards and Local Authorities ( has ID of `wd23-lad23-ctyua23`)
