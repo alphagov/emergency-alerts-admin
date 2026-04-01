@@ -247,8 +247,8 @@ class BroadcastAreaLibrary(SerialisedModelCollection, SortingAndEqualityMixin, G
         self.area_names_ids_lookup = (
             # This attribute is only necessary for local authorities currently,
             # we need to be able to get the ID from LA name for LocalAuthorityBulkAreasForm
-            BroadcastAreasRepository().get_all_area_names_and_ids_for_library(self.id)
-            if self.id == "wd23-lad23-ctyua23"  # Local Authorities library ID
+            BroadcastAreasRepository().get_all_area_names_and_ids_for_local_authorities()
+            if self.id == "wd23-lad23-ctyua23"  # ID for library storing Electoral Wards and Local Authorities
             else []
         )
 
