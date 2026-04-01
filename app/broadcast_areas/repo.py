@@ -199,7 +199,6 @@ class BroadcastAreasRepository(object):
         return [row[0] for row in results]
 
     def get_all_area_names_for_library(self, library_id):
-        # Countries don't have any children, so the above query wouldn't return anything.
         q = """
         SELECT id, LOWER(name)
         FROM broadcast_areas
