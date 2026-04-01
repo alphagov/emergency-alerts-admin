@@ -186,6 +186,20 @@ class BroadcastAreasRepository(object):
 
         return [(row[0], row[1], row[2], row[3]) for row in results]
 
+    def get_all_area_names_and_ids_for_local_authorities(self):
+        # Query returns only Local Authority areas and IDs (prefixed with `lad23-`),
+        # from library storing Electoral Wards and Local Authorities ( has ID of `wd23-lad23-ctyua23`)
+        q = """
+        SELECT id, LOWER(name)
+        FROM broadcast_areas
+        WHERE (broadcast_area_library_id = 'wd23-lad23-ctyua23'
+        AND id LIKE 'lad23-%')
+        """
+
+        results = self.query(q)
+
+        return {row[1]: row[0] for row in results}
+
     def get_all_areas_for_group(self, group_id):
         q = """
         SELECT id, name, count_of_phones, broadcast_area_library_id

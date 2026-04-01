@@ -134,6 +134,7 @@ EXCLUDED_ENDPOINTS = tuple(
             "search_postcodes",
             "search_flood_warning_areas",
             "search_flood_warning_areas_as_a_list",
+            "search_local_authority_areas_as_a_list",
             "security",
             "security_policy",
             "service_dashboard",

@@ -244,6 +244,13 @@ class BroadcastAreaLibrary(SerialisedModelCollection, SortingAndEqualityMixin, G
         self.item_ids = []
         for item in self.items:
             self.item_ids.append(item[0])
+        self.area_names_ids_lookup = (
+            # This attribute is only necessary for local authorities currently,
+            # we need to be able to get the ID from LA name for LocalAuthorityBulkAreasForm
+            BroadcastAreasRepository().get_all_area_names_and_ids_for_local_authorities()
+            if self.id == "wd23-lad23-ctyua23"  # ID for library storing Electoral Wards and Local Authorities
+            else []
+        )
 
     def get_examples(self):
         # we show up to four things. three areas, then either a fourth area if there are exactly four, or "and X more".
