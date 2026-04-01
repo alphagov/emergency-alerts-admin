@@ -245,9 +245,11 @@ class BroadcastAreaLibrary(SerialisedModelCollection, SortingAndEqualityMixin, G
             BroadcastAreasRepository().get_all_area_ids_for_library(self.id) if self.id != "postcodes" else []
         )
         self.area_names_ids_lookup = (
+            # This attribute is only necessary for local authorities currently,
+            # we need to be able to get the ID from LA name for LocalAuthorityBulkAreasForm
             BroadcastAreasRepository().get_all_area_names_and_ids_for_library(self.id)
-            if self.id == "wd23-lad23-ctyua23"
-            else []  # Only necessary for Local Authorities
+            if self.id == "wd23-lad23-ctyua23"  # Local Authorities library ID
+            else []
         )
 
     def get_examples(self):
