@@ -16,6 +16,9 @@ from app.utils.admin_action import (
 )
 from tests.conftest import SERVICE_ONE_ID, USER_ONE_ID, set_config
 
+# These tests concern the utils - except 'doing' things with AdminActions
+# See TestPlatformAdminActions in test_platform_admin for that
+
 
 @pytest.mark.parametrize(
     "existing_actions, proposed_action_obj, expect_invalidation",
