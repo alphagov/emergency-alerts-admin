@@ -58,7 +58,7 @@ def process_admin_action(action_obj):
             action_data["folder_permissions"],
         )
         flash("Sent invite to user " + action_data["email_address"], "default_with_tick")
-        return redirect(url_for(".manage_users", service_id=service_id))
+        return _redirect_manage_users_or_admin_action(service_id)
     elif action_type == ADMIN_EDIT_PERMISSIONS:
         user = User.from_id(action_data["user_id"])
         user.set_permissions(
@@ -68,7 +68,7 @@ def process_admin_action(action_obj):
             set_by_id=current_user.id,
         )
         flash("Updated permissions for " + user.email_address, "default_with_tick")
-        return redirect(url_for(".manage_users", service_id=service_id))
+        return _redirect_manage_users_or_admin_action(service_id)
     elif action_type == ADMIN_CREATE_API_KEY:
         service = Service.from_id(service_id)
         if service.trial_mode and action_data["key_type"] == KEY_TYPE_NORMAL:
@@ -76,7 +76,8 @@ def process_admin_action(action_obj):
         secret = api_key_api_client.create_api_key(
             service_id=service_id, key_name=action_data["key_name"], key_type=action_data["key_type"]
         )
-        # The template uses has_permissions and requires the service ID to be in the request args
+        # The template uses a parent tamplate that uses has_permissions and requires the service
+        # ID to be in the request args
         request.view_args["service_id"] = service_id
         return render_template(
             "views/api/keys/show.html",
@@ -333,3 +334,19 @@ def _is_out_of_office_hours():
     if now.weekday() in [5, 6]:  # Saturday/Sunday
         return True
     return False
+
+
+def _redirect_manage_users_or_admin_action(service_id: str):
+    """
+    If we're elevated then we'll be able to view manage_users of the service.
+    However, if we're not, and we approve the admin action, we can't redirect
+    to the manage users page as we'll run into a forbidden error unless we're
+    part of the service as a user already.
+    """
+
+    can_view_manage_users = current_user.platform_admin or current_user.belongs_to_service(service_id)
+
+    if can_view_manage_users:
+        return redirect(url_for(".manage_users", service_id=service_id))
+    else:
+        return redirect(url_for(".admin_actions"))
