@@ -240,17 +240,6 @@ class BroadcastAreaLibrary(SerialisedModelCollection, SortingAndEqualityMixin, G
         self.name = name
         self.name_singular = name_singular
         self.is_group = bool(is_group)
-        self.items = BroadcastAreasRepository().get_all_areas_for_library(self.id) if self.id != "postcodes" else []
-        self.item_ids = []
-        for item in self.items:
-            self.item_ids.append(item[0])
-        self.area_names_ids_lookup = (
-            # This attribute is only necessary for local authorities currently,
-            # we need to be able to get the ID from LA name for LocalAuthorityBulkAreasForm
-            BroadcastAreasRepository().get_all_area_names_and_ids_for_local_authorities()
-            if self.id == "wd23-lad23-ctyua23"  # ID for library storing Electoral Wards and Local Authorities
-            else []
-        )
 
     def get_examples(self):
         # we show up to four things. three areas, then either a fourth area if there are exactly four, or "and X more".
@@ -262,6 +251,26 @@ class BroadcastAreaLibrary(SerialisedModelCollection, SortingAndEqualityMixin, G
             areas_to_show = areas_to_show[:3] + [f"{count_of_areas_not_named} more…"]
 
         return formatted_list(areas_to_show, before_each="", after_each="")
+
+    @cached_property
+    def items(self):
+        return BroadcastAreasRepository().get_all_areas_for_library(self.id) if self.id != "postcodes" else []
+
+    @cached_property
+    def item_ids(self):
+        item_ids = []
+        item_ids.extend(item[0] for item in self.items)
+        return item_ids
+
+    @cached_property
+    def area_names_ids_lookup(self):
+        return (
+            # This attribute is only necessary for local authorities currently,
+            # we need to be able to get the ID from LA name for LocalAuthorityBulkAreasForm
+            BroadcastAreasRepository().get_all_area_names_and_ids_for_local_authorities()
+            if self.id == "wd23-lad23-ctyua23"  # ID for library storing Electoral Wards and Local Authorities
+            else []
+        )
 
 
 class BroadcastAreaLibraries(SerialisedModelCollection, GetItemByIdMixin):
