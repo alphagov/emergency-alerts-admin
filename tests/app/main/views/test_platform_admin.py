@@ -636,13 +636,20 @@ class TestPlatformAdminActions:
         clipboard = page.select_one(".copy-to-clipboard__value")
         assert "key-secret" in clipboard.text
 
+    @pytest.mark.parametrize("approver_is_platform_admin", [True, False])
     def test_approving_creates_user_invite(
         self,
         client_request,
         platform_admin_user,
         mock_admin_action_notification,
         mocker,
+        approver_is_platform_admin,
     ):
+        if not approver_is_platform_admin:
+            # User is platform admin capable only (not elevated)
+            # They can approve it, but likely don't have access to the service themselves
+            platform_admin_user["platform_admin_active"] = False
+
         action_or_creator_id = str(uuid.uuid4())
         mocker.patch(
             "app.admin_actions_api_client.get_admin_action_by_id",
@@ -674,7 +681,11 @@ class TestPlatformAdminActions:
             "main.review_admin_action",
             action_id=action_or_creator_id,
             new_status="approved",
-            _expected_redirect=url_for(".manage_users", service_id=SERVICE_ONE_ID),
+            _expected_redirect=(
+                url_for(".manage_users", service_id=SERVICE_ONE_ID)
+                if approver_is_platform_admin
+                else url_for(".admin_actions")
+            ),
         )
 
         mock_admin_action_notification.assert_called_once()
@@ -690,13 +701,20 @@ class TestPlatformAdminActions:
             [],
         )
 
+    @pytest.mark.parametrize("approver_is_platform_admin", [True, False])
     def test_approving_edits_user_permissions(
         self,
         client_request,
         platform_admin_user,
         mock_admin_action_notification,
         mocker,
+        approver_is_platform_admin,
     ):
+        if not approver_is_platform_admin:
+            # User is platform admin capable only (not elevated)
+            # They can approve it, but likely don't have access to the service themselves
+            platform_admin_user["platform_admin_active"] = False
+
         action_or_creator_id = str(uuid.uuid4())
         edited_user_id = str(uuid.uuid4())
 
@@ -735,7 +753,11 @@ class TestPlatformAdminActions:
             "main.review_admin_action",
             action_id=action_or_creator_id,
             new_status="approved",
-            _expected_redirect=url_for(".manage_users", service_id=SERVICE_ONE_ID),
+            _expected_redirect=(
+                url_for(".manage_users", service_id=SERVICE_ONE_ID)
+                if approver_is_platform_admin
+                else url_for(".admin_actions")
+            ),
         )
 
         mock_admin_action_notification.assert_called_once()
