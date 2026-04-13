@@ -465,7 +465,7 @@ pyjwt==2.10.1
     # via notifications-python-client
 pyproj==3.7.2
     # via -r requirements.in
-pytest==9.0.2
+pytest==9.0.3
     # via
     #   -r requirements.in
     #   pytest-env
