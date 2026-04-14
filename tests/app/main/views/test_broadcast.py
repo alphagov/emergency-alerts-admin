@@ -18,6 +18,7 @@ from tests import (
 )
 from tests.app.broadcast_areas.custom_polygons import (
     ABERDEEN_CITY,
+    ADUR,
     BD1_1EE,
     BD1_1EE_1,
     BD1_1EE_2,
@@ -1423,6 +1424,54 @@ def test_search_flood_warning_bulk_add_areas_page(
     assert normalize_spaces(page.select(".govuk-button")[5].text) == "Add areas"
 
 
+def test_search_local_authority_bulk_add_areas_page(
+    client_request,
+    service_one,
+    mock_get_draft_broadcast_message,
+    mock_update_broadcast_message,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
+):
+    service_one["permissions"] += ["broadcast"]
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            area_ids=["lad23-E07000225"],
+            areas={
+                "ids": [""],
+                "names": [""],
+                "aggregate_names": [""],
+                "simple_polygons": [],
+            },
+        ),
+    )
+    client_request.login(active_user_create_broadcasts_permission)
+
+    page = client_request.get(
+        ".search_local_authority_areas_as_a_list",
+        service_id=SERVICE_ONE_ID,
+        message_id=fake_uuid,
+        message_type="broadcast",
+    )
+
+    assert normalize_spaces(page.select_one("h1").text) == "Enter local authorities as a list"
+
+    assert [normalize_spaces(item.text) for item in page.select(".govuk-hint")] == [
+        "Enter your list of local authorities as a list into the text box. "
+        "You can have up to 25 local authorities as a list in one emergency alert. "
+        "Your list of local authorities can be entered as one per new line."
+    ]
+    assert page.select_one("textarea")["id"] == "areas"
+    assert page.select_one("textarea")["rows"] == "10"
+    assert normalize_spaces(page.select(".govuk-button")[5].text) == "Add local authorities"
+
+
 @pytest.mark.parametrize(
     "polygons, expected_list_items",
     (
@@ -2429,6 +2478,80 @@ def test_add_flood_warning_areas_in_bulk_with_delimiters(
     assert actual_areas["simple_polygons"] == expected_areas["simple_polygons"]
 
 
+def test_add_local_authority_areas_in_bulk_with_newline_delimiter(
+    client_request,
+    service_one,
+    mock_get_draft_broadcast_message,
+    mock_update_broadcast_message,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
+    mock_get_broadcast_message_versions,
+    mock_check_can_update_status,
+):
+    service_one["permissions"] += ["broadcast"]
+    mock_get_broadcast_message = mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            area_ids=[],
+            areas={
+                "ids": [],
+                "names": [],
+                "simple_polygons": [],
+            },
+        ),
+    )
+    client_request.login(active_user_create_broadcasts_permission)
+
+    page = client_request.get(
+        ".search_local_authority_areas_as_a_list",
+        service_id=SERVICE_ONE_ID,
+        message_id=fake_uuid,
+        message_type="broadcast",
+    )
+
+    assert normalize_spaces(page.select_one("h1").text) == "Enter local authorities as a list"
+
+    client_request.login(active_user_create_broadcasts_permission)
+    page = client_request.post(
+        ".search_local_authority_areas_as_a_list",
+        service_id=SERVICE_ONE_ID,
+        message_id=fake_uuid,
+        message_type="broadcast",
+        _data={"areas": ["Adur"]},
+        _follow_redirects=True,
+    )
+
+    assert normalize_spaces(page.select_one("h1").text) == "Confirm the area for the alert"
+    assert [normalize_spaces(item.text) for item in page.select("ul.area-list li.area-list-item")] == [
+        "Adur Remove Adur"
+    ]
+
+    assert mock_get_broadcast_message.call_count == 3
+
+    mock_update_broadcast_message_kwargs = mock_update_broadcast_message.call_args.kwargs
+    assert mock_update_broadcast_message_kwargs["service_id"] == SERVICE_ONE_ID
+    assert mock_update_broadcast_message_kwargs["broadcast_message_id"] == fake_uuid
+
+    actual_areas = mock_update_broadcast_message_kwargs["data"]["areas"]
+    expected_areas = {
+        "ids": ["lad23-E07000223"],
+        "names": ["Adur"],
+        "aggregate_names": ["Adur"],
+        "simple_polygons": [ADUR],
+    }
+
+    assert sorted(actual_areas["ids"]) == sorted(expected_areas["ids"])
+    assert sorted(actual_areas["names"]) == sorted(expected_areas["names"])
+    assert sorted(actual_areas["aggregate_names"]) == sorted(expected_areas["aggregate_names"])
+    assert actual_areas["simple_polygons"] == expected_areas["simple_polygons"]
+
+
 def test_remove_flood_warning_area(
     client_request,
     service_one,
@@ -2608,6 +2731,79 @@ def test_error_if_flood_warning_code_bulk_input_invalid(
     )
 
     assert normalize_spaces(page.select_one("h1").text) == "Enter Flood Warning Target Areas (TA) as a list"
+    assert not page.select("ul.area-list li.area-list-item")
+    assert normalize_spaces(page.select_one(".govuk-error-message").text) == expected_field_error
+    assert normalize_spaces(page.select_one(".govuk-error-summary").text) == (expected_form_error)
+    assert not mock_update_broadcast_message.called
+
+
+@pytest.mark.parametrize(
+    "areas_input, expected_field_error, expected_form_error",
+    (
+        ([], "Error: This field is required", "There is a problem Enter at least 1 local authority"),
+        (
+            ["test"],
+            "Error: Local authority 'test' not found",
+            "There is a problem Local authority not found",
+        ),
+        (
+            ["test", "test"],
+            "Error: Local authority 'test' not found",
+            "There is a problem Local authority not found",
+        ),
+    ),
+)
+def test_error_if_local_authority_bulk_input_invalid(
+    client_request,
+    service_one,
+    mock_get_draft_broadcast_message,
+    mock_update_broadcast_message,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
+    areas_input,
+    expected_field_error,
+    expected_form_error,
+):
+    service_one["permissions"] += ["broadcast"]
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            area_ids=[],
+            areas={
+                "ids": [],
+                "names": [],
+                "simple_polygons": [],
+            },
+        ),
+    )
+    client_request.login(active_user_create_broadcasts_permission)
+
+    page = client_request.get(
+        ".search_local_authority_areas_as_a_list",
+        service_id=SERVICE_ONE_ID,
+        message_id=fake_uuid,
+        message_type="broadcast",
+    )
+
+    assert normalize_spaces(page.select_one("h1").text) == "Enter local authorities as a list"
+
+    client_request.login(active_user_create_broadcasts_permission)
+    page = client_request.post(
+        ".search_local_authority_areas_as_a_list",
+        service_id=SERVICE_ONE_ID,
+        message_id=fake_uuid,
+        message_type="broadcast",
+        _data={"areas": areas_input},
+        _follow_redirects=True,
+    )
+
+    assert normalize_spaces(page.select_one("h1").text) == "Enter local authorities as a list"
     assert not page.select("ul.area-list li.area-list-item")
     assert normalize_spaces(page.select_one(".govuk-error-message").text) == expected_field_error
     assert normalize_spaces(page.select_one(".govuk-error-summary").text) == (expected_form_error)

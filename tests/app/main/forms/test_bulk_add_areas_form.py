@@ -1,6 +1,6 @@
 import pytest
 
-from app.main.forms import FloodWarningBulkAreasForm
+from app.main.forms import FloodWarningBulkAreasForm, LocalAuthorityBulkAreasForm
 
 library_ids = [
     "Flood_Warning_Target_Areas-011FWBWH",
@@ -8,6 +8,17 @@ library_ids = [
     "Flood_Warning_Target_Areas-011FWCN1B",
     "Flood_Warning_Target_Areas-011FWCN2A",
 ]
+
+library_areas_lookup_dict = {
+    "adur": "lad23-E07000223",
+    "arun": "lad23-E07000224",
+    "chichester": "lad23-E07000225",
+    "crawley": "lad23-E07000226",
+    "horsham": "lad23-E07000227",
+    "mid sussex": "lad23-E07000228",
+    "worthing": "lad23-E07000229",
+    "bromsgrove": "lad23-E07000234",
+}
 
 
 @pytest.mark.parametrize(
@@ -30,13 +41,50 @@ library_ids = [
         ),
     ),
 )
-def test_invalid_input_messages(post_data, expected_field_error, expected_form_error):
+def test_invalid_input_messages_for_flood_warning_areas_form(post_data, expected_field_error, expected_form_error):
     form = FloodWarningBulkAreasForm(library_ids=library_ids, areas=post_data)
     assert not form.validate()
     assert form.areas.errors == expected_field_error
     assert form.form_errors == expected_form_error
 
 
-def test_valid_input():
+def test_valid_input_for_flood_warning_areas_form():
     form = FloodWarningBulkAreasForm(library_ids=library_ids, areas="011FWCN1A")
+    assert form.validate()
+
+
+@pytest.mark.parametrize(
+    "post_data, expected_field_error, expected_form_error",
+    (
+        (
+            "",
+            ["This field is required"],
+            ["Enter at least 1 local authority"],
+        ),
+        (
+            "Adu\nAdur",
+            ["Local authority 'Adu' not found"],
+            ["Local authority not found"],
+        ),
+        (
+            "Adur\nAdur",
+            ["Local authority 'Adur' currently appears in the list more than once"],
+            ["All local authorities must be unique"],
+        ),
+        (
+            "Adu",
+            ["Local authority 'Adu' not found"],
+            ["Local authority not found"],
+        ),
+    ),
+)
+def test_invalid_input_messages_for_local_authority_areas_form(post_data, expected_field_error, expected_form_error):
+    form = LocalAuthorityBulkAreasForm(library_ids=library_areas_lookup_dict, areas=post_data)
+    assert not form.validate()
+    assert form.areas.errors == expected_field_error
+    assert form.form_errors == expected_form_error
+
+
+def test_valid_input_for_local_authority_areas_form():
+    form = LocalAuthorityBulkAreasForm(library_ids=library_areas_lookup_dict, areas="adur")
     assert form.validate()
