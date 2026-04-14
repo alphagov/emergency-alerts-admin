@@ -21,7 +21,7 @@ pytz==2026.1.post1
 rtreelib==0.2.0
 shapely==2.1.2
 urllib3==2.6.3
-Werkzeug==3.1.6
+Werkzeug==3.1.8
 wtforms==3.2.1
 
 # Packages for testing
