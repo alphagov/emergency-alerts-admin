@@ -2743,12 +2743,12 @@ def test_error_if_flood_warning_code_bulk_input_invalid(
         ([], "Error: This field is required", "There is a problem Enter at least 1 local authority"),
         (
             ["test"],
-            "Error: Local authority 'test' not found, please check spelling.",
+            "Error: Local authority 'test' not found",
             "There is a problem Local authority not found",
         ),
         (
             ["test", "test"],
-            "Error: Local authority 'test' not found, please check spelling.",
+            "Error: Local authority 'test' not found",
             "There is a problem Local authority not found",
         ),
     ),

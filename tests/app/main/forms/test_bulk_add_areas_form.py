@@ -63,7 +63,7 @@ def test_valid_input_for_flood_warning_areas_form():
         ),
         (
             "Adu\nAdur",
-            ["Local authority 'Adu' not found, please check spelling."],
+            ["Local authority 'Adu' not found"],
             ["Local authority not found"],
         ),
         (
@@ -73,7 +73,7 @@ def test_valid_input_for_flood_warning_areas_form():
         ),
         (
             "Adu",
-            ["Local authority 'Adu' not found, please check spelling."],
+            ["Local authority 'Adu' not found"],
             ["Local authority not found"],
         ),
     ),

@@ -543,7 +543,6 @@ class GovukTextareaBulkField(GovukTextareaField):
         library_ids=None,
         item,
         area_id_parser,
-        check_spelling=False,
         **kwargs,
     ):
         # area IDs from the library to check against
@@ -551,8 +550,6 @@ class GovukTextareaBulkField(GovukTextareaField):
 
         # Function that translates area IDs from input into format that we store them as
         self.area_id_parser = area_id_parser
-
-        self.check_spelling = check_spelling
 
         # How we refer to a singular area i.e. Local Authority
         self.item = item
@@ -579,10 +576,7 @@ class GovukTextareaBulkField(GovukTextareaField):
             if area_id not in self.library_ids:
                 # error code specified determines form-level validation error message
                 self.error_code = "invalid"
-                if self.check_spelling:
-                    self.errors.append(f"{self.item} '{id_}' not found, please check spelling.")
-                else:
-                    self.errors.append(f"{self.item} '{id_}' not found")
+                self.errors.append(f"{self.item} '{id_}' not found")
 
     def _check_ids_provided_are_unique(self, form, ids):
         # Checks that area ID doesn't appear in the input more than once
@@ -2034,7 +2028,7 @@ class LocalAuthorityBulkAreasForm(StripWhitespaceForm):
         area_ids = [self.areas.library_lookup_dict.get(name.lower()) for name in ids]
         return ids, area_ids
 
-    areas = GovukTextareaBulkField("", item="Local authority", area_id_parser=_parse_ids, check_spelling=True)
+    areas = GovukTextareaBulkField("", item="Local authority", area_id_parser=_parse_ids)
 
     def validate(self, extra_validators=None):
         valid = super().validate(extra_validators)
