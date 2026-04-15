@@ -9,16 +9,18 @@ updates:
       interval: "daily"
     open-pull-requests-limit: 10
     rebase-strategy: "auto"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
+          - version-update:semver-patch
     exclude-paths:
       # Dependabot fails completely as it contains a local path
       - requirements_local_utils.txt
     groups:
       pip-security:
         applies-to: security-updates
-        patterns:
-          - "*"
-      pip-updates:
-        applies-to: version-updates
         patterns:
           - "*"
 
@@ -28,12 +30,14 @@ updates:
       interval: "daily"
     open-pull-requests-limit: 10
     rebase-strategy: "auto"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
+          - version-update:semver-patch
     groups:
       npm-security:
         applies-to: security-updates
-        patterns:
-          - "*"
-      npm-updates:
-        applies-to: version-updates
         patterns:
           - "*"
