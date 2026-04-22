@@ -45,10 +45,10 @@
     <p class="area-list-key area-list-key--phone-estimate">
       {% if count_of_phones == 0 %}
         Unknown number of phones
-      {% elif count_of_phones == count_of_phones_likely %}
-        {{ count_of_phones|format_thousands }} phones estimated
+      {% elif count_of_phones_likely < 1000000 %}
+        Less than a million phones
       {% else %}
-        {{ count_of_phones|format_thousands }} to {{ count_of_phones_likely|format_thousands }} phones
+        More than a million phones
       {% endif %}
     </p>
 {% endif %}
