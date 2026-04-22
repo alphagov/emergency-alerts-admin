@@ -10,14 +10,14 @@ library_ids = [
 ]
 
 library_areas_lookup_dict = {
-    "adur": "lad23-E07000223",
-    "arun": "lad23-E07000224",
-    "chichester": "lad23-E07000225",
-    "crawley": "lad23-E07000226",
-    "horsham": "lad23-E07000227",
-    "mid sussex": "lad23-E07000228",
-    "worthing": "lad23-E07000229",
-    "bromsgrove": "lad23-E07000234",
+    "adur": "lad25-E07000223",
+    "arun": "lad25-E07000224",
+    "chichester": "lad25-E07000225",
+    "crawley": "lad25-E07000226",
+    "horsham": "lad25-E07000227",
+    "mid sussex": "lad25-E07000228",
+    "worthing": "lad25-E07000229",
+    "bromsgrove": "lad25-E07000234",
 }
 
 

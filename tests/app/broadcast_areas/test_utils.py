@@ -26,9 +26,9 @@ from tests.app.broadcast_areas.custom_polygons import (
     [
         (
             [
-                "wd23-E05009336",  # Whitechapel, Tower Hamlets (electoral ward)
-                "wd23-E05009372",  # Hackney Central, Hackney (electoral ward)
-                "wd23-E05009374",  # Hackney Wick, Hackney (electoral ward)
+                "wd25-E05009336",  # Whitechapel, Tower Hamlets (electoral ward)
+                "wd25-E05009372",  # Hackney Central, Hackney (electoral ward)
+                "wd25-E05009374",  # Hackney Wick, Hackney (electoral ward)
             ],
             [
                 "Hackney",  # in Greater London* (DB doesn't know this)
@@ -37,8 +37,8 @@ from tests.app.broadcast_areas.custom_polygons import (
         ),
         (
             [
-                "wd23-E05004294",  # Hester’s Way, Cheltenham (electoral ward)
-                "wd23-E05010981",  # Painswick & Upton, Stroud (electoral ward)
+                "wd25-E05004294",  # Hester’s Way, Cheltenham (electoral ward)
+                "wd25-E05010981",  # Painswick & Upton, Stroud (electoral ward)
             ],
             [
                 "Cheltenham",  # in Gloucestershire (upper tier authority)
@@ -47,8 +47,8 @@ from tests.app.broadcast_areas.custom_polygons import (
         ),
         (
             [
-                "wd23-E05004294",  # Hester’s Way, Cheltenham (electoral ward)
-                "wd23-E05009372",  # Hackney Central (electoral ward)
+                "wd25-E05004294",  # Hester’s Way, Cheltenham (electoral ward)
+                "wd25-E05009372",  # Hackney Central (electoral ward)
             ],
             [
                 "Cheltenham",  # in Gloucestershire (upper tier authority)
@@ -57,9 +57,9 @@ from tests.app.broadcast_areas.custom_polygons import (
         ),
         (
             [
-                "wd23-E05004294",  # Hester’s Way, Cheltenham (electoral ward)
-                "wd23-E05010981",  # Painswick & Upton, Stroud (electoral ward)
-                "wd23-E05009372",  # Hackney Central, Hackney (electoral ward)
+                "wd25-E05004294",  # Hester’s Way, Cheltenham (electoral ward)
+                "wd25-E05010981",  # Painswick & Upton, Stroud (electoral ward)
+                "wd25-E05009372",  # Hackney Central, Hackney (electoral ward)
             ],
             [
                 "Gloucestershire",  # upper tier authority
@@ -68,7 +68,7 @@ from tests.app.broadcast_areas.custom_polygons import (
         ),
         (
             [
-                "lad23-E07000037",  # High Peak (lower tier authority)
+                "lad25-E07000037",  # High Peak (lower tier authority)
             ],
             [
                 "High Peak",  # in Derbyshire (upper tier authority)
@@ -76,8 +76,8 @@ from tests.app.broadcast_areas.custom_polygons import (
         ),
         (
             [
-                "lad23-E07000037",  # High Peak (lower tier authority)
-                "lad23-E07000035",  # Derbyshire Dales (lower tier authority)
+                "lad25-E07000037",  # High Peak (lower tier authority)
+                "lad25-E07000035",  # Derbyshire Dales (lower tier authority)
             ],
             [
                 "Derbyshire Dales",  # in Derbyshire (upper tier authority)
@@ -86,9 +86,9 @@ from tests.app.broadcast_areas.custom_polygons import (
         ),
         (
             [
-                "lad23-E07000037",  # High Peak (lower tier authority)
-                "lad23-E07000035",  # Derbyshire Dales (lower tier authority)
-                "ctyua23-E10000028",  # Staffordshire (upper tier authority)
+                "lad25-E07000037",  # High Peak (lower tier authority)
+                "lad25-E07000035",  # Derbyshire Dales (lower tier authority)
+                "ctyua25-E10000028",  # Staffordshire (upper tier authority)
             ],
             [
                 "Derbyshire",  # upper tier authority
@@ -216,10 +216,10 @@ def test_aggregate_areas_for_custom_polygons(
             },
         ),
         (
-            ["lad23-S12000033"],
+            ["lad25-S12000033"],
             {
                 "aggregate_names": ["Aberdeen City"],
-                "ids": ["lad23-S12000033"],
+                "ids": ["lad25-S12000033"],
                 "names": ["Aberdeen City"],
                 "simple_polygons": [ABERDEEN_CITY],
             },
@@ -237,7 +237,7 @@ def test_create_areas_dict(area_ids, expected_dict):
     ("area_ids", "area_attribute", "expected_polygons"),
     [
         (["ctry19-E92000001"], "simple_polygons", MULTIPLE_ENGLAND),
-        (["lad23-S12000033"], "simple_polygons", [ABERDEEN_CITY]),
+        (["lad25-S12000033"], "simple_polygons", [ABERDEEN_CITY]),
         ([], "simple_polygons", []),
         (["nonexistent_area_id"], "simple_polygons", []),
     ],

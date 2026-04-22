@@ -85,11 +85,11 @@ class BroadcastArea(BaseBroadcastArea, SortingAndEqualityMixin):
 
     @cached_property
     def is_lower_tier_local_authority(self):
-        return self.id.startswith("lad23-") and self.parent
+        return self.id.startswith("lad25-") and self.parent
 
     @cached_property
     def is_electoral_ward(self):
-        return self.id.startswith("wd23-")
+        return self.id.startswith("wd25-")
 
     @cached_property
     def is_REPPIR_site(self):
@@ -268,7 +268,7 @@ class BroadcastAreaLibrary(SerialisedModelCollection, SortingAndEqualityMixin, G
             # This attribute is only necessary for local authorities currently,
             # we need to be able to get the ID from LA name for LocalAuthorityBulkAreasForm
             BroadcastAreasRepository().get_all_area_names_and_ids_for_local_authorities()
-            if self.id == "wd23-lad23-ctyua23"  # ID for library storing Electoral Wards and Local Authorities
+            if self.id == "wd25-lad25-ctyua25"  # ID for library storing Electoral Wards and Local Authorities
             else []
         )
 

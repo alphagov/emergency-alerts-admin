@@ -721,7 +721,7 @@ def search_local_authority_areas_as_a_list(service_id, message_type, message_id=
     template_folder_id = request.args.get("template_folder_id")
     Message = get_message_type(message_type)
     message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
-    library = BroadcastMessage.libraries.get("wd23-lad23-ctyua23")
+    library = BroadcastMessage.libraries.get("wd25-lad25-ctyua25")
 
     form = LocalAuthorityBulkAreasForm(library_ids=library.area_names_ids_lookup)
 
@@ -753,7 +753,7 @@ def search_local_authority_areas_as_a_list(service_id, message_type, message_id=
             service_id=service_id,
             message_id=message_id,
             message_type=message_type,
-            library_slug="wd23-lad23-ctyua23",
+            library_slug="wd25-lad25-ctyua25",
         ),
         template_folder_id=template_folder_id,
         message=message,

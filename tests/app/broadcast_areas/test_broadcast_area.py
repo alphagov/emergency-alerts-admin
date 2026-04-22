@@ -32,7 +32,7 @@ def test_loads_libraries():
         ),
         ("Flood_Warning_Target_Areas", "Flood Warning Target Areas", False),
         (
-            "wd23-lad23-ctyua23",
+            "wd25-lad25-ctyua25",
             "Local authorities",
             True,
         ),
@@ -72,7 +72,7 @@ def test_examples():
     countries = broadcast_area_libraries.get("ctry19").get_examples()
     assert countries == "England, Northern Ireland, Scotland and Wales"
 
-    wards = broadcast_area_libraries.get("wd23-lad23-ctyua23").get_examples()
+    wards = broadcast_area_libraries.get("wd25-lad25-ctyua25").get_examples()
     assert wards == "Aberdeen City, Aberdeenshire, Adur and 379 more…"
 
 
@@ -94,7 +94,7 @@ def test_get_names_of_areas():
     areas = broadcast_area_libraries.get_areas(
         [
             "ctry19-W92000004",
-            "lad23-W06000014",
+            "lad25-W06000014",
             "ctry19-E92000001",
         ]
     )
@@ -138,19 +138,19 @@ def test_lat_long_order():
 
 
 def test_includes_electoral_wards():
-    areas = broadcast_area_libraries.get_areas(["wd23-E05009289"])
+    areas = broadcast_area_libraries.get_areas(["wd25-E05009289"])
     assert len(areas) == 1
 
 
 def test_electoral_wards_are_groupable_cardiff():
-    areas = broadcast_area_libraries.get_areas(["lad23-W06000015"])
+    areas = broadcast_area_libraries.get_areas(["lad25-W06000015"])
     assert len(areas) == 1
     cardiff = areas[0]
     assert len(cardiff.sub_areas) == 28
 
 
 def test_electoral_wards_are_groupable_ealing():
-    areas = broadcast_area_libraries.get_areas(["lad23-E09000009"])
+    areas = broadcast_area_libraries.get_areas(["lad25-E09000009"])
     assert len(areas) == 1
     ealing = areas[0]
     assert len(ealing.sub_areas) == 24
@@ -188,31 +188,31 @@ def test_every_area_has_count_of_phones(library):
     "area_id, area_name, expected_count",
     (
         # Unitary authority
-        ("ctyua23-E10000014", "Hampshire", 1_006_824),
+        ("ctyua25-E10000014", "Hampshire", 1_006_824),
         # District
-        ("lad23-E07000087", "Fareham", 80_028),
+        ("lad25-E07000087", "Fareham", 80_028),
         # Ward
-        ("wd23-E05004516", "Fareham East", 5_383),
+        ("wd25-E05004516", "Fareham East", 5_383),
         # Unitary authority
-        ("lad23-E09000012", "Hackney", 208_390),
+        ("lad25-E09000012", "Hackney", 208_390),
         # Ward
-        ("wd23-E05009373", "Hackney Downs", 10_449),
+        ("wd25-E05009373", "Hackney Downs", 10_449),
         # Special case: ward with hard-coded population
-        ("wd23-E05011090", "Bryher", 76),
+        ("wd25-E05011090", "Bryher", 76),
         # Areas with missing data
-        ("lad23-E07000008", "Cambridge", 118_198),
-        ("lad23-E07000084", "Basingstoke and Deane", 137_302),
-        ("lad23-E07000118", "Chorley", 84_921),
-        ("lad23-E07000178", "Oxford", 130_069),
+        ("lad25-E07000008", "Cambridge", 118_198),
+        ("lad25-E07000084", "Basingstoke and Deane", 137_302),
+        ("lad25-E07000118", "Chorley", 84_921),
+        ("lad25-E07000178", "Oxford", 130_069),
         # In Scotland
-        ("lad23-S12000013", "Na h-Eileanan Siar", 18_430),
-        ("wd23-S13003135", "Barraigh agus Bhatarsaigh", 893),
+        ("lad25-S12000013", "Na h-Eileanan Siar", 18_430),
+        ("wd25-S13003135", "Barraigh agus Bhatarsaigh", 893),
         # In Wales
-        ("lad23-W06000021", "Monmouthshire", 64_997),
-        ("wd23-W05001785", "Mitchel Troy and Trellech United", 2_431),
+        ("lad25-W06000021", "Monmouthshire", 64_997),
+        ("wd25-W05001785", "Mitchel Troy and Trellech United", 2_431),
         # In Northern Ireland
-        ("lad23-N09000005", "Derry City and Strabane", 132_917),
-        ("wd23-N08000508", "City Walls", 3_129),
+        ("lad25-N09000005", "Derry City and Strabane", 132_917),
+        ("wd25-N08000508", "City Walls", 3_129),
     ),
 )
 def test_count_of_phones_for_all_levels(area_id, area_name, expected_count):
@@ -222,7 +222,7 @@ def test_count_of_phones_for_all_levels(area_id, area_name, expected_count):
 
 
 def test_city_of_london_counts_are_not_derived_from_population():
-    city_of_london = broadcast_area_libraries.get_areas(["lad23-E09000001"])[0]
+    city_of_london = broadcast_area_libraries.get_areas(["lad25-E09000001"])[0]
 
     assert city_of_london.name == "City of London"
     assert len(city_of_london.sub_areas) == len(CITY_OF_LONDON.WARDS) == 25
@@ -293,29 +293,29 @@ def test_estimate_number_of_smartphones_for_population(
     (
         (
             # Islington (most dense in UK)
-            "lad23-E09000019",
+            "lad25-E09000019",
             29_595,
         ),
         (
             # Cordwainer Ward (City of London)
             # This is higher than Islington because we inflate the
             # popualtion to account for daytime workers
-            "wd23-E05009300",
+            "wd25-E05009300",
             392_870,
         ),
         (
             # Crewe East
-            "wd23-E05008621",
+            "wd25-E05008621",
             3_500,
         ),
         (
             # Eden (Cumbria)
-            "wd23-E05005317",
+            "wd25-E05005317",
             303.4,
         ),
         (
             # Highland (least dense in UK)
-            "lad23-S12000017",
+            "lad25-S12000017",
             14.23,
         ),
     ),
@@ -335,28 +335,28 @@ def test_phone_density(
     (
         (
             # Islington (most dense in UK)
-            "lad23-E09000019",
+            "lad25-E09000019",
             500,
         ),
         (
             # Cordwainer Ward (City of London)
             # Special case because of inflated daytime population
-            "wd23-E05009300",
+            "wd25-E05009300",
             500,
         ),
         (
             # Crewe East
-            "wd23-E05008621",
+            "wd25-E05008621",
             1_471,
         ),
         (
             # Eden (Cumbria, least dense in England)
-            "wd23-E05005317",
+            "wd25-E05005317",
             2_799,
         ),
         (
             # Highland (least dense in UK)
-            "lad23-S12000017",
+            "lad25-S12000017",
             4_462,
         ),
         (
