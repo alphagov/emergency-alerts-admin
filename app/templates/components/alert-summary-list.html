@@ -94,12 +94,10 @@
         <p class="govuk-body">
             {% if count_of_phones == 0 %}
                 Unknown number of phones
-            {% elif count_of_phones_likely < 900000 %}
-                Less than 1 Million phones estimated
-            {% elif 900000 <= count_of_phones_likely < 1000000 %}
-                Just under 1 Million phones estimated
+            {% elif count_of_phones == count_of_phones_likely %}
+                {{ count_of_phones|format_thousands }} phones estimated
             {% else %}
-                More than 1 Million phones estimated
+                {{ count_of_phones|format_thousands }} to {{ count_of_phones_likely|format_thousands }} phones
             {% endif %}
         </p>
     {% endset %}
