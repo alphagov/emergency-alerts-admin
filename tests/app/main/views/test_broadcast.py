@@ -1171,7 +1171,7 @@ def test_broadcast_page(
             [
                 "An area of 2,000 square miles Will get the alert",
                 "An extra area of 500 square miles is Likely to get the alert",
-                "500,000 to 600,000 phones",
+                "600,000 to 700,000 phones",
             ],
         ),
         (
@@ -1184,32 +1184,6 @@ def test_broadcast_page(
                 "An area of 6,000 square miles Will get the alert",
                 "An extra area of 1,000 square miles is Likely to get the alert",
                 "1,000,000 phones estimated",
-            ],
-        ),
-        (
-            [
-                "pfa23-E23000035",
-            ],
-            [
-                "Devon & Cornwall Remove Devon & Cornwall",
-            ],
-            [
-                "An area of 4,000 square miles Will get the alert",
-                "An extra area of 800 square miles is Likely to get the alert",
-                "1,000,000 phones estimated",
-            ],
-        ),
-        (
-            [
-                "pfa23-LONDON",
-            ],
-            [
-                "London (Metropolitan & City of London) Remove London (Metropolitan & City of London)",
-            ],
-            [
-                "An area of 600 square miles Will get the alert",
-                "An extra area of 70 square miles is Likely to get the alert",
-                "6,000,000 phones estimated",
             ],
         ),
         (
@@ -1279,7 +1253,7 @@ def test_broadcast_page(
             [
                 "An area of 60 square miles Will get the alert",
                 "An extra area of 200 square miles is Likely to get the alert",
-                "3,000 to 70,000 phones",
+                "3,000 to 80,000 phones",
             ],
         ),
     ),
@@ -1491,7 +1465,7 @@ def test_search_local_authority_bulk_add_areas_page(
             [
                 "An area of 4 square miles Will get the alert",
                 "An extra area of 3 square miles is Likely to get the alert",
-                "70,000 to 100,000 phones",
+                "80,000 to 100,000 phones",
             ],
         ),
         (
@@ -1597,7 +1571,6 @@ def test_preview_areas_page_with_custom_polygons(
             [
                 "Countries",
                 "Local authorities",
-                "Police forces in England and Wales",
                 "REPPIR DEPZ sites",
                 "Test areas",
             ],
@@ -1612,21 +1585,17 @@ def test_preview_areas_page_with_custom_polygons(
             [
                 "Countries",
                 "Local authorities",
-                "Police forces in England and Wales",
                 "REPPIR DEPZ sites",
                 "Test areas",
             ],
         ),
         (
             [
-                "wd25-E05004299",  # Pitville, in Cheltenham, in Gloucestershire
-                "wd25-E05004290",  # Benhall and the Reddings, in Cheltenham, in Gloucestershire
                 "wd25-E05010951",  # Abbeymead, in Gloucester, in Gloucestershire
                 "wd25-S13003154",  # Shetland Central, in Shetland Isles
                 "lad25-E07000037",  # High Peak, a district in Derbyshire
             ],
             [
-                "Cheltenham",
                 "Derbyshire",
                 "Gloucester",
                 "Gloucestershire",
@@ -1634,7 +1603,6 @@ def test_preview_areas_page_with_custom_polygons(
                 # ---
                 "Countries",
                 "Local authorities",
-                "Police forces in England and Wales",
                 "REPPIR DEPZ sites",
                 "Test areas",
             ],
@@ -1691,7 +1659,6 @@ def test_choose_library_page(
                 "Countries",
                 "Flood Warning Target Areas (TA code)",
                 "Local authorities",
-                "Police forces in England and Wales",
                 "Postcode areas",
                 "REPPIR DEPZ sites",
                 "Test areas",
@@ -1704,7 +1671,6 @@ def test_choose_library_page(
                 "Countries",
                 "Flood Warning Target Areas (TA code)",
                 "Local authorities",
-                "Police forces in England and Wales",
                 "Postcode areas",
                 "REPPIR DEPZ sites",
                 "Test areas",
@@ -1717,7 +1683,6 @@ def test_choose_library_page(
                 "Countries",
                 "Flood Warning Target Areas (TA code)",
                 "Local authorities",
-                "Police forces in England and Wales",
                 "Postcode areas",
                 "REPPIR DEPZ sites",
                 "Test areas",
@@ -1782,7 +1747,7 @@ def test_suggested_area_has_correct_link(
             service_id=SERVICE_ONE_ID,
             status="draft",
             area_ids=[
-                "wd25-E05004299",  # Pitville, a ward of Cheltenham
+                "wd25-E05015715",  # Pitville, a ward of Cheltenham
             ],
         ),
     )
@@ -1815,7 +1780,6 @@ def test_suggested_area_has_correct_link(
             "Choose countries",
         ),
         ("wd25-lad25-ctyua25", "Choose a local authority"),
-        ("pfa23", "Choose police forces in England and Wales"),
         (
             "test",
             "Choose test areas",

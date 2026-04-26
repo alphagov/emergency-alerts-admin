@@ -37,11 +37,6 @@ def test_loads_libraries():
             True,
         ),
         (
-            "pfa23",
-            "Police forces in England and Wales",
-            False,
-        ),
-        (
             "postcodes",
             "Postcode areas",
             False,
@@ -160,12 +155,11 @@ def test_repository_has_all_libraries():
     repo = BroadcastAreasRepository()
     libraries = repo.get_libraries()
 
-    assert len(libraries) == 7
+    assert len(libraries) == 6
     assert [
         ("Flood Warning Target Areas", "Flood Warning Target Area"),
         ("REPPIR DEPZ sites", "REPPIR DEPZ site"),
         ("Countries", "country"),
-        ("Police forces in England and Wales", "police force"),
         ("Postcode areas", "postcode area"),
         ("Test areas", "test area"),
         ("Local authorities", "local authority"),
@@ -347,12 +341,12 @@ def test_phone_density(
         (
             # Crewe East
             "wd25-E05008621",
-            1_471,
+            1_432,
         ),
         (
-            # Eden (Cumbria, least dense in England)
-            "wd25-E05005317",
-            2_799,
+            # Ramsbottom
+            "wd25-E05014163",
+            1_902,
         ),
         (
             # Highland (least dense in UK)
@@ -372,7 +366,7 @@ def test_phone_density(
         (
             # No population data available
             "Flood_Warning_Target_Areas-011FWBWH",
-            1_644,
+            1_631,
         ),
     ),
 )
@@ -402,7 +396,7 @@ def test_estimated_bleed(area, expected_bleed_in_m):
                 "Stoke Bishop",
                 "Windmill Hill",
             ],
-            72_748,
+            76_312,
         ),
         (
             SKYE,
@@ -412,7 +406,7 @@ def test_estimated_bleed(area, expected_bleed_in_m):
                 "Na Hearadh",
                 "Wester Ross, Strathpeffer and Lochalsh",
             ],
-            6_939,
+            6_833,
         ),
     ),
 )

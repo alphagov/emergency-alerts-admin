@@ -43,7 +43,7 @@ def test_simple_polygons():
         # Because the areas are close to each other, the simplification
         # and unioning process results in a single polygon with fewer
         # total coordinates
-        [57],
+        [58],
     ]
 
 
@@ -116,8 +116,8 @@ def test_broadcast_message_bleed_phones_is_not_less_than_base_estimate(notify_ad
         ),
         (
             [
-                "lad23-E06000031",  # Peterborough (UTM zone 30N)
-                "lad23-E07000146",  # Kings Lyn and West Norfolk (UTM zone 31N)
+                "lad25-E06000031",  # Peterborough (UTM zone 30N)
+                "lad25-E07000146",  # Kings Lyn and West Norfolk (UTM zone 31N)
             ],
             [-0.5, 52.5, 0.8, 53.0],
         ),

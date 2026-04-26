@@ -37,7 +37,7 @@ from tests.app.broadcast_areas.custom_polygons import (
         ),
         (
             [
-                "wd25-E05004294",  # Hester’s Way, Cheltenham (electoral ward)
+                "wd25-E05015706",  # Benhall, the Reddings & Fiddler's Green, Cheltenham (electoral ward)
                 "wd25-E05010981",  # Painswick & Upton, Stroud (electoral ward)
             ],
             [
@@ -47,7 +47,7 @@ from tests.app.broadcast_areas.custom_polygons import (
         ),
         (
             [
-                "wd25-E05004294",  # Hester’s Way, Cheltenham (electoral ward)
+                "wd25-E05015706",  # Benhall, the Reddings & Fiddler's Green, Cheltenham (electoral ward)
                 "wd25-E05009372",  # Hackney Central (electoral ward)
             ],
             [
@@ -57,7 +57,7 @@ from tests.app.broadcast_areas.custom_polygons import (
         ),
         (
             [
-                "wd25-E05004294",  # Hester’s Way, Cheltenham (electoral ward)
+                "wd25-E05015706",  # Benhall, the Reddings & Fiddler's Green, Cheltenham (electoral ward)
                 "wd25-E05010981",  # Painswick & Upton, Stroud (electoral ward)
                 "wd25-E05009372",  # Hackney Central, Hackney (electoral ward)
             ],

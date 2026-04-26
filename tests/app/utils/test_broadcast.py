@@ -110,9 +110,9 @@ def test_normalising_point(coordinate_type, first_coordinate, second_coordinate,
 
 def test_extract_attributes_from_custom_area():
     expected_attributes = (
-        2627.25959347374,
+        2619.960499855824,
         3134370.3703178177,
-        41279574.21508839,
+        41113617.34057833,
         500,
         4000,
     )
