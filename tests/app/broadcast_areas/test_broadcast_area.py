@@ -188,28 +188,28 @@ def test_every_area_has_count_of_phones(library):
     "area_id, area_name, expected_count",
     (
         # Unitary authority
-        ("ctyua25-E10000014", "Hampshire", 1_006_824),
+        ("ctyua25-E10000014", "Hampshire", 1_026_721),
         # District
-        ("lad25-E07000087", "Fareham", 80_028),
+        ("lad25-E07000087", "Fareham", 80_279),
         # Ward
-        ("wd25-E05004516", "Fareham East", 5_383),
+        ("wd25-E05015666", "Fareham Town", 4_866),
         # Unitary authority
-        ("lad25-E09000012", "Hackney", 208_390),
+        ("lad25-E09000012", "Hackney", 213_043),
         # Ward
-        ("wd25-E05009373", "Hackney Downs", 10_449),
-        # Special case: ward with hard-coded population
-        ("wd25-E05011090", "Bryher", 76),
+        ("wd25-E05009373", "Hackney Downs", 10_550),
+        # Ward
+        ("wd25-E05011090", "Bryher", 177),
         # Areas with missing data
-        ("lad25-E07000008", "Cambridge", 118_198),
-        ("lad25-E07000084", "Basingstoke and Deane", 137_302),
-        ("lad25-E07000118", "Chorley", 84_921),
-        ("lad25-E07000178", "Oxford", 130_069),
+        ("lad25-E07000008", "Cambridge", 119_937),
+        ("lad25-E07000084", "Basingstoke and Deane", 140_824),
+        ("lad25-E07000118", "Chorley", 86_596),
+        ("lad25-E07000178", "Oxford", 132_068),
         # In Scotland
-        ("lad25-S12000013", "Na h-Eileanan Siar", 18_430),
-        ("wd25-S13003135", "Barraigh agus Bhatarsaigh", 893),
+        ("lad25-S12000013", "Na h-Eileanan Siar", 17_890),
+        ("wd25-S13003135", "Barraigh agus Bhatarsaigh", 883),
         # In Wales
-        ("lad25-W06000021", "Monmouthshire", 64_997),
-        ("wd25-W05001785", "Mitchel Troy and Trellech United", 2_431),
+        ("lad25-W06000021", "Monmouthshire", 65_576),
+        ("wd25-W05001785", "Mitchel Troy and Trellech United", 2_448),
         # In Northern Ireland
         ("lad25-N09000005", "Derry City and Strabane", 132_917),
         ("wd25-N08000508", "City Walls", 3_129),
