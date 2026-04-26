@@ -294,29 +294,29 @@ def test_estimate_number_of_smartphones_for_population(
         (
             # Islington (most dense in UK)
             "lad25-E09000019",
-            29_595,
+            29_970,
         ),
         (
             # Cordwainer Ward (City of London)
             # This is higher than Islington because we inflate the
             # popualtion to account for daytime workers
             "wd25-E05009300",
-            392_870,
+            392_753,
         ),
         (
             # Crewe East
             "wd25-E05008621",
-            3_500,
+            3_747,
         ),
         (
-            # Eden (Cumbria)
-            "wd25-E05005317",
-            303.4,
+            # Derringham (East Yorkshire)
+            "wd25-E05011530",
+            8762.18,
         ),
         (
             # Highland (least dense in UK)
             "lad25-S12000017",
-            14.23,
+            14.06,
         ),
     ),
 )
