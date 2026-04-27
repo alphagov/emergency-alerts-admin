@@ -461,7 +461,7 @@ pyflakes==3.4.0
     # via flake8
 pygments==2.19.2
     # via pytest
-pyjwt==2.10.1
+pyjwt==2.12.1
     # via notifications-python-client
 pyproj==3.7.2
     # via -r requirements.in
