@@ -177,11 +177,16 @@ class CustomBroadcastArea(BaseBroadcastArea):
 
     @cached_property
     def polygons(self):
-        return Polygons(
-            # Polygons in the DB are stored with the coordinate pair
-            # order flipped – this flips them back again
-            [[[lat, long] for long, lat in polygon] for polygon in self._polygons]
-        )
+        try:
+            return Polygons(
+                # Polygons in the DB are stored with the coordinate pair
+                # order flipped – this flips them back again
+                [[[lat, long] for long, lat in polygon] for polygon in self._polygons]
+            )
+        except Exception:
+            # If the polygons are malformed, return an empty Polygons object
+            # so the rest of the page can still render.
+            return Polygons([])
 
     simple_polygons = polygons
 
@@ -226,7 +231,10 @@ class CustomBroadcastAreas(SerialisedModelCollection):
         )
 
     def is_valid_area(self):
-        return all(Polygon(polygon).is_valid for polygon in self._polygons)
+        try:
+            return all(Polygon(polygon).is_valid for polygon in self._polygons)
+        except Exception:
+            return False
 
 
 class BroadcastAreaLibrary(SerialisedModelCollection, SortingAndEqualityMixin, GetItemByIdMixin):
