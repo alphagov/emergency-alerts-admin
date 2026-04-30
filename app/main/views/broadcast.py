@@ -623,6 +623,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
     areas = format_areas_list(broadcast_message.areas)
 
     if is_custom_broadcast and not broadcast_message.areas.is_valid_area():
+        # We only validate areas for CustomBroadcastAreas; pre-defined areas are assumed valid
         errors = [{"text": INVALID_AREA_ERROR_TEXT}]
         return render_preview_alert_page(broadcast_message, is_custom_broadcast, areas, errors)
 
@@ -664,6 +665,7 @@ def submit_broadcast_message(service_id, broadcast_message_id):
         return render_current_alert_page(broadcast_message, hide_stop_link=True, errors=errors)
 
     if type(broadcast_message.areas) is CustomBroadcastAreas and not broadcast_message.areas.is_valid_area():
+        # We only validate areas for CustomBroadcastAreas; pre-defined areas are assumed valid
         errors = [{"text": INVALID_AREA_ERROR_TEXT}]
         return render_current_alert_page(broadcast_message, hide_stop_link=True, errors=errors)
 
