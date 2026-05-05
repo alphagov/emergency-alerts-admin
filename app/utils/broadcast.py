@@ -7,6 +7,7 @@ from shapely.ops import unary_union
 
 from app import current_service
 from app.broadcast_areas.models import CustomBroadcastArea, CustomBroadcastAreas
+from app.config import BroadcastProvider
 from app.formatters import (
     format_mobile_networks,
     format_number_no_scientific,
@@ -374,8 +375,11 @@ def render_current_alert_page(
         errors = [{"text": INVALID_AREA_ERROR_TEXT}]
 
     broadcast_provider_statuses = broadcast_message.get_broadcast_provider_statuses()
+    # We use the static providers here as we always want a row for every MNO - but immediately after hitting broadcast
+    # it's unlikely the job(s) to send the alert have even been picked up yet to record a broadcast_event at all.
     broadcast_provider_status_rows = [
-        _get_mno_status_row(mno, broadcast_provider_statuses[mno]) for mno in broadcast_provider_statuses
+        _get_mno_status_row(mno.name, broadcast_provider_statuses.get(mno.name, {"alert": [], "cancel": []}))
+        for mno in BroadcastProvider.PROVIDERS
     ]
 
     return render_template(
@@ -608,18 +612,16 @@ def _get_choose_library_back_link(
 
 
 def _get_mno_status_row(mno, mno_statuses):
-    # This shouldn't occur as we'll only get MNO statuses for any MNOs with data and a cancel with
-    # an alert should be impossible, but we'll be defensive anyway if data is corrupted.
     alert_row_text = "No data"
-    if len(mno_statuses["alert"]) > 0:
-        latest_alert_status = mno_statuses["alert"][-1]
+    if len(mno_statuses.get("alert", [])) > 0:
+        latest_alert_status = mno_statuses.get("alert", [])[-1]
         alert_row_text = format_provider_status_with_human_time(
             latest_alert_status["status"], latest_alert_status["created_at"]
         )
 
     cancelled_row_text = "No data"
-    if len(mno_statuses["cancel"]) > 0:
-        latest_cancel_status = mno_statuses["cancel"][-1]
+    if len(mno_statuses.get("cancel", [])) > 0:
+        latest_cancel_status = mno_statuses.get("cancel", [])[-1]
         cancelled_row_text = format_provider_status_with_human_time(
             latest_cancel_status["status"], latest_cancel_status["created_at"]
         )
