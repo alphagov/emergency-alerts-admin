@@ -15,7 +15,7 @@ from app.broadcast_areas.utils import (
 from app.formatters import round_to_significant_figures
 from app.models import JSONModel
 
-ESTIMATED_AREA_OF_LARGEST_UK_COUNTY = broadcast_area_libraries.get_areas(["lad23-E06000065"])[  # North Yorkshire
+ESTIMATED_AREA_OF_LARGEST_UK_COUNTY = broadcast_area_libraries.get_areas(["lad25-E06000065"])[  # North Yorkshire
     0
 ].polygons.estimated_area
 

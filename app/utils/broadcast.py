@@ -365,6 +365,7 @@ def render_current_alert_page(
     errors=None,
 ):
     if type(broadcast_message.areas) is CustomBroadcastAreas and not broadcast_message.areas.is_valid_area():
+        # We only validate areas for CustomBroadcastAreas; pre-defined areas are assumed valid
         errors = [{"text": INVALID_AREA_ERROR_TEXT}]
 
     return render_template(

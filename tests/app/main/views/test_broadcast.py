@@ -1135,8 +1135,8 @@ def test_broadcast_page(
         ),
         (
             [
-                "wd23-E05014242",
-                "wd23-E05014243",
+                "wd25-E05014242",
+                "wd25-E05014243",
             ],
             [
                 "Penrith North Remove Penrith North",
@@ -1150,7 +1150,7 @@ def test_broadcast_page(
         ),
         (
             [
-                "lad23-E09000019",
+                "lad25-E09000019",
             ],
             [
                 "Islington Remove Islington",
@@ -1163,7 +1163,7 @@ def test_broadcast_page(
         ),
         (
             [
-                "ctyua23-E10000019",
+                "ctyua25-E10000019",
             ],
             [
                 "Lincolnshire Remove Lincolnshire",
@@ -1171,11 +1171,11 @@ def test_broadcast_page(
             [
                 "An area of 2,000 square miles Will get the alert",
                 "An extra area of 500 square miles is Likely to get the alert",
-                "500,000 to 600,000 phones",
+                "600,000 to 700,000 phones",
             ],
         ),
         (
-            ["ctyua23-E10000019", "lad23-E06000065"],
+            ["ctyua25-E10000019", "lad25-E06000065"],
             [
                 "Lincolnshire Remove Lincolnshire",
                 "North Yorkshire Remove North Yorkshire",
@@ -1184,32 +1184,6 @@ def test_broadcast_page(
                 "An area of 6,000 square miles Will get the alert",
                 "An extra area of 1,000 square miles is Likely to get the alert",
                 "1,000,000 phones estimated",
-            ],
-        ),
-        (
-            [
-                "pfa23-E23000035",
-            ],
-            [
-                "Devon & Cornwall Remove Devon & Cornwall",
-            ],
-            [
-                "An area of 4,000 square miles Will get the alert",
-                "An extra area of 800 square miles is Likely to get the alert",
-                "1,000,000 phones estimated",
-            ],
-        ),
-        (
-            [
-                "pfa23-LONDON",
-            ],
-            [
-                "London (Metropolitan & City of London) Remove London (Metropolitan & City of London)",
-            ],
-            [
-                "An area of 600 square miles Will get the alert",
-                "An extra area of 70 square miles is Likely to get the alert",
-                "6,000,000 phones estimated",
             ],
         ),
         (
@@ -1279,7 +1253,7 @@ def test_broadcast_page(
             [
                 "An area of 60 square miles Will get the alert",
                 "An extra area of 200 square miles is Likely to get the alert",
-                "3,000 to 70,000 phones",
+                "3,000 to 80,000 phones",
             ],
         ),
     ),
@@ -1442,7 +1416,7 @@ def test_search_local_authority_bulk_add_areas_page(
             created_by_id=fake_uuid,
             service_id=SERVICE_ONE_ID,
             status="draft",
-            area_ids=["lad23-E07000225"],
+            area_ids=["lad25-E07000225"],
             areas={
                 "ids": [""],
                 "names": [""],
@@ -1491,7 +1465,7 @@ def test_search_local_authority_bulk_add_areas_page(
             [
                 "An area of 4 square miles Will get the alert",
                 "An extra area of 3 square miles is Likely to get the alert",
-                "70,000 to 100,000 phones",
+                "80,000 to 100,000 phones",
             ],
         ),
         (
@@ -1597,7 +1571,6 @@ def test_preview_areas_page_with_custom_polygons(
             [
                 "Countries",
                 "Local authorities",
-                "Police forces in England and Wales",
                 "REPPIR DEPZ sites",
                 "Test areas",
             ],
@@ -1606,27 +1579,23 @@ def test_preview_areas_page_with_custom_polygons(
             [
                 # If you’ve chosen the whole of a county or unitary authority
                 # there’s no reason to  also pick districts of it
-                "ctyua23-E10000013",  # Gloucestershire, a county
-                "lad23-E06000052",  # Cornwall, a unitary authority
+                "ctyua25-E10000013",  # Gloucestershire, a county
+                "lad25-E06000052",  # Cornwall, a unitary authority
             ],
             [
                 "Countries",
                 "Local authorities",
-                "Police forces in England and Wales",
                 "REPPIR DEPZ sites",
                 "Test areas",
             ],
         ),
         (
             [
-                "wd23-E05004299",  # Pitville, in Cheltenham, in Gloucestershire
-                "wd23-E05004290",  # Benhall and the Reddings, in Cheltenham, in Gloucestershire
-                "wd23-E05010951",  # Abbeymead, in Gloucester, in Gloucestershire
-                "wd23-S13003154",  # Shetland Central, in Shetland Isles
-                "lad23-E07000037",  # High Peak, a district in Derbyshire
+                "wd25-E05010951",  # Abbeymead, in Gloucester, in Gloucestershire
+                "wd25-S13003154",  # Shetland Central, in Shetland Isles
+                "lad25-E07000037",  # High Peak, a district in Derbyshire
             ],
             [
-                "Cheltenham",
                 "Derbyshire",
                 "Gloucester",
                 "Gloucestershire",
@@ -1634,7 +1603,6 @@ def test_preview_areas_page_with_custom_polygons(
                 # ---
                 "Countries",
                 "Local authorities",
-                "Police forces in England and Wales",
                 "REPPIR DEPZ sites",
                 "Test areas",
             ],
@@ -1691,7 +1659,6 @@ def test_choose_library_page(
                 "Countries",
                 "Flood Warning Target Areas (TA code)",
                 "Local authorities",
-                "Police forces in England and Wales",
                 "Postcode areas",
                 "REPPIR DEPZ sites",
                 "Test areas",
@@ -1704,7 +1671,6 @@ def test_choose_library_page(
                 "Countries",
                 "Flood Warning Target Areas (TA code)",
                 "Local authorities",
-                "Police forces in England and Wales",
                 "Postcode areas",
                 "REPPIR DEPZ sites",
                 "Test areas",
@@ -1717,7 +1683,6 @@ def test_choose_library_page(
                 "Countries",
                 "Flood Warning Target Areas (TA code)",
                 "Local authorities",
-                "Police forces in England and Wales",
                 "Postcode areas",
                 "REPPIR DEPZ sites",
                 "Test areas",
@@ -1782,7 +1747,7 @@ def test_suggested_area_has_correct_link(
             service_id=SERVICE_ONE_ID,
             status="draft",
             area_ids=[
-                "wd23-E05004299",  # Pitville, a ward of Cheltenham
+                "wd25-E05015715",  # Pitville, a ward of Cheltenham
             ],
         ),
     )
@@ -1801,8 +1766,8 @@ def test_suggested_area_has_correct_link(
         "main.choose_sub_area",
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
-        library_slug="wd23-lad23-ctyua23",
-        area_slug="lad23-E07000078",
+        library_slug="wd25-lad25-ctyua25",
+        area_slug="lad25-E07000078",
         message_type="broadcast",
     )
 
@@ -1814,8 +1779,7 @@ def test_suggested_area_has_correct_link(
             "ctry19",
             "Choose countries",
         ),
-        ("wd23-lad23-ctyua23", "Choose a local authority"),
-        ("pfa23", "Choose police forces in England and Wales"),
+        ("wd25-lad25-ctyua25", "Choose a local authority"),
         (
             "test",
             "Choose test areas",
@@ -1890,7 +1854,7 @@ def test_choose_area_page_for_area_with_sub_areas(
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
         message_type="broadcast",
-        library_slug="wd23-lad23-ctyua23",
+        library_slug="wd25-lad25-ctyua25",
     )
     assert normalize_spaces(page.select_one("h1").text) == "Choose a local authority"
     live_search = page.select_one("[data-notify-module=live-search]")
@@ -1901,7 +1865,7 @@ def test_choose_area_page_for_area_with_sub_areas(
         "main.choose_sub_area",
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
-        library_slug="wd23-lad23-ctyua23",
+        library_slug="wd25-lad25-ctyua25",
         message_type="broadcast",
     )
     choices = [
@@ -1915,7 +1879,7 @@ def test_choose_area_page_for_area_with_sub_areas(
 
     # First item, somewhere in Scotland
     assert choices[0] == (
-        partial_url_for(area_slug="lad23-S12000033"),
+        partial_url_for(area_slug="lad25-S12000033"),
         "Aberdeen City",
     )
 
@@ -1924,25 +1888,25 @@ def test_choose_area_page_for_area_with_sub_areas(
     # Note: we don't populate prev_area_slug query param, so the back link will come here rather than to a county page,
     # even though ashford belongs to kent
     assert choices[12] == (
-        partial_url_for(area_slug="lad23-E07000200"),
+        partial_url_for(area_slug="lad25-E07000200"),
         "Babergh",
     )
 
     # Somewhere in Wales
     assert choices[219] == (
-        partial_url_for(area_slug="lad23-W06000022"),
+        partial_url_for(area_slug="lad25-W06000022"),
         "Newport",
     )
 
     # Somewhere in Northern Ireland
     assert choices[21] == (
-        partial_url_for(area_slug="lad23-N09000003"),
+        partial_url_for(area_slug="lad25-N09000003"),
         "Belfast",
     )
 
     # Last item on the page
     assert choices[-1] == (
-        partial_url_for(area_slug="lad23-E06000014"),
+        partial_url_for(area_slug="lad25-E06000014"),
         "York",
     )
 
@@ -1960,8 +1924,8 @@ def test_choose_sub_area_page_for_district_shows_checkboxes_for_wards(
         "main.choose_sub_area",
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
-        library_slug="wd23-lad23-ctyua23",
-        area_slug="lad23-S12000033",
+        library_slug="wd25-lad25-ctyua25",
+        area_slug="lad25-S12000033",
         message_type="broadcast",
     )
     assert normalize_spaces(page.select_one("h1").text) == "Choose an area of Aberdeen City"
@@ -1984,19 +1948,19 @@ def test_choose_sub_area_page_for_district_shows_checkboxes_for_wards(
     ]
     assert all_choices[:3] == [
         ("y", "All of Aberdeen City"),
-        ("wd23-S13002845", "Airyhall/Broomhill/Garthdee"),
-        ("wd23-S13002836", "Bridge of Don"),
+        ("wd25-S13002845", "Airyhall/Broomhill/Garthdee"),
+        ("wd25-S13002836", "Bridge of Don"),
     ]
     assert sub_choices[:3] == [
-        ("wd23-S13002845", "Airyhall/Broomhill/Garthdee"),
-        ("wd23-S13002836", "Bridge of Don"),
-        ("wd23-S13002835", "Dyce/Bucksburn/Danestone"),
+        ("wd25-S13002845", "Airyhall/Broomhill/Garthdee"),
+        ("wd25-S13002836", "Bridge of Don"),
+        ("wd25-S13002835", "Dyce/Bucksburn/Danestone"),
     ]
     assert (
         all_choices[-1:]
         == sub_choices[-1:]
         == [
-            ("wd23-S13002846", "Torry/Ferryhill"),
+            ("wd25-S13002846", "Torry/Ferryhill"),
         ]
     )
 
@@ -2004,7 +1968,7 @@ def test_choose_sub_area_page_for_district_shows_checkboxes_for_wards(
 @pytest.mark.parametrize(
     "prev_area_slug, expected_back_link_url, expected_back_link_extra_kwargs",
     [
-        ("ctyua23-E10000016", "main.choose_sub_area", {"area_slug": "ctyua23-E10000016"}),  # Kent
+        ("ctyua25-E10000016", "main.choose_sub_area", {"area_slug": "ctyua25-E10000016"}),  # Kent
         (None, ".choose_area", {}),
     ],
 )
@@ -2023,8 +1987,8 @@ def test_choose_sub_area_page_for_district_has_back_link(
         "main.choose_sub_area",
         service_id=SERVICE_ONE_ID,
         message_id=str(uuid.UUID(int=0)),
-        library_slug="wd23-lad23-ctyua23",
-        area_slug="lad23-E07000105",  # Ashford
+        library_slug="wd25-lad25-ctyua25",
+        area_slug="lad25-E07000105",  # Ashford
         message_type="broadcast",
         prev_area_slug=prev_area_slug,
     )
@@ -2034,7 +1998,7 @@ def test_choose_sub_area_page_for_district_has_back_link(
         expected_back_link_url,
         service_id=SERVICE_ONE_ID,
         message_id=str(uuid.UUID(int=0)),
-        library_slug="wd23-lad23-ctyua23",
+        library_slug="wd25-lad25-ctyua25",
         message_type="broadcast",
         **expected_back_link_extra_kwargs,
     )
@@ -2193,8 +2157,8 @@ def test_choose_sub_area_page_for_county_shows_links_for_districts(
         "main.choose_sub_area",
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
-        library_slug="wd23-lad23-ctyua23",
-        area_slug="ctyua23-E10000016",  # Kent
+        library_slug="wd25-lad25-ctyua25",
+        area_slug="ctyua25-E10000016",  # Kent
         message_type="broadcast",
     )
     assert normalize_spaces(page.select_one("h1").text) == "Choose an area of Kent"
@@ -2224,18 +2188,18 @@ def test_choose_sub_area_page_for_county_shows_links_for_districts(
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
         message_type="broadcast",
-        library_slug="wd23-lad23-ctyua23",
-        area_slug="lad23-E07000105",
-        prev_area_slug="ctyua23-E10000016",  # Kent
+        library_slug="wd25-lad25-ctyua25",
+        area_slug="lad25-E07000105",
+        prev_area_slug="ctyua25-E10000016",  # Kent
     )
     assert districts[0][1] == "Ashford"
     assert districts[-1][0] == url_for(
         "main.choose_sub_area",
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
-        library_slug="wd23-lad23-ctyua23",
-        area_slug="lad23-E07000116",
-        prev_area_slug="ctyua23-E10000016",  # Kent
+        library_slug="wd25-lad25-ctyua25",
+        area_slug="lad25-E07000116",
+        prev_area_slug="ctyua25-E10000016",  # Kent
         message_type="broadcast",
     )
     assert districts[-1][1] == "Tunbridge Wells"
@@ -2540,7 +2504,7 @@ def test_add_local_authority_areas_in_bulk_with_newline_delimiter(
 
     actual_areas = mock_update_broadcast_message_kwargs["data"]["areas"]
     expected_areas = {
-        "ids": ["lad23-E07000223"],
+        "ids": ["lad25-E07000223"],
         "names": ["Adur"],
         "aggregate_names": ["Adur"],
         "simple_polygons": [ADUR],
@@ -3778,18 +3742,18 @@ def test_valid_format_postcode_not_in_db_form_error(
     "post_data, expected_data",
     (
         (
-            {"select_all": "y", "areas": ["wd23-S13002845"]},
+            {"select_all": "y", "areas": ["wd25-S13002845"]},
             {
-                # wd23-S13002845 is ignored because the user chose ‘Select all…’
-                "ids": ["lad23-S12000033"],
+                # wd25-S13002845 is ignored because the user chose ‘Select all…’
+                "ids": ["lad25-S12000033"],
                 "names": ["Aberdeen City"],
                 "aggregate_names": ["Aberdeen City"],
             },
         ),
         (
-            {"areas": ["wd23-S13002845", "wd23-S13002836"]},
+            {"areas": ["wd25-S13002845", "wd25-S13002836"]},
             {
-                "ids": ["wd23-S13002845", "wd23-S13002836"],
+                "ids": ["wd25-S13002845", "wd25-S13002836"],
                 "names": ["Bridge of Don", "Airyhall/Broomhill/Garthdee"],
                 "aggregate_names": ["Aberdeen City"],
             },
@@ -3820,8 +3784,8 @@ def test_add_broadcast_sub_area_district_view(
         ".choose_sub_area",
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
-        library_slug="wd23-lad23-ctyua23",
-        area_slug="lad23-S12000033",
+        library_slug="wd25-lad25-ctyua25",
+        area_slug="lad25-S12000033",
         message_type="broadcast",
         _data=post_data,
     )
@@ -3862,7 +3826,7 @@ def test_add_broadcast_sub_area_county_view(
     polygon_class = namedtuple("polygon_class", ["as_coordinate_pairs_lat_long"])
     coordinates = [[50.1, 0.1], [50.2, 0.2], [50.3, 0.2]]
     polygons = polygon_class(as_coordinate_pairs_lat_long=coordinates)
-    areas = BroadcastAreaLibraries().get_areas(["ctry19-E92000001", "ctry19-S92000003", "ctyua23-E10000016"])
+    areas = BroadcastAreaLibraries().get_areas(["ctry19-E92000001", "ctry19-S92000003", "ctyua25-E10000016"])
     mock_get_polygons_from_areas = mocker.patch(
         "app.models.base_broadcast.get_polygons_from_areas", return_value=polygons
     )
@@ -3872,8 +3836,8 @@ def test_add_broadcast_sub_area_county_view(
         ".choose_sub_area",
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
-        library_slug="wd23-lad23-ctyua23",
-        area_slug="ctyua23-E10000016",  # Kent
+        library_slug="wd25-lad25-ctyua25",
+        area_slug="ctyua25-E10000016",  # Kent
         message_type="broadcast",
         _data={"select_all": "y"},
     )
@@ -3890,7 +3854,7 @@ def test_add_broadcast_sub_area_county_view(
             "ctry19-E92000001",
             "ctry19-S92000003",
         ]
-        + ["ctyua23-E10000016"],
+        + ["ctyua25-E10000016"],
         "names": ["England", "Scotland", "Kent"],
         "aggregate_names": ["England", "Kent", "Scotland"],
     }
@@ -4133,8 +4097,8 @@ def test_replace_custom_area_with_sub_area(
         ".choose_sub_area",
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
-        library_slug="wd23-lad23-ctyua23",
-        area_slug="lad23-S12000033",  # Aberdeen City
+        library_slug="wd25-lad25-ctyua25",
+        area_slug="lad25-S12000033",  # Aberdeen City
         message_type="broadcast",
         _data={"select_all": "y"},
     )
@@ -4144,7 +4108,7 @@ def test_replace_custom_area_with_sub_area(
         broadcast_message_id=fake_uuid,
         data={
             "areas": {
-                "ids": ["lad23-S12000033"],
+                "ids": ["lad25-S12000033"],
                 "names": ["Aberdeen City"],
                 "aggregate_names": ["Aberdeen City"],
                 "simple_polygons": [ABERDEEN_CITY],

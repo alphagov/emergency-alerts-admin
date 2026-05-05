@@ -85,11 +85,11 @@ class BroadcastArea(BaseBroadcastArea, SortingAndEqualityMixin):
 
     @cached_property
     def is_lower_tier_local_authority(self):
-        return self.id.startswith("lad23-") and self.parent
+        return self.id.startswith("lad25-") and self.parent
 
     @cached_property
     def is_electoral_ward(self):
-        return self.id.startswith("wd23-")
+        return self.id.startswith("wd25-")
 
     @cached_property
     def is_REPPIR_site(self):
@@ -177,11 +177,16 @@ class CustomBroadcastArea(BaseBroadcastArea):
 
     @cached_property
     def polygons(self):
-        return Polygons(
-            # Polygons in the DB are stored with the coordinate pair
-            # order flipped – this flips them back again
-            [[[lat, long] for long, lat in polygon] for polygon in self._polygons]
-        )
+        try:
+            return Polygons(
+                # Polygons in the DB are stored with the coordinate pair
+                # order flipped – this flips them back again
+                [[[lat, long] for long, lat in polygon] for polygon in self._polygons]
+            )
+        except Exception:
+            # If the polygons are malformed, return an empty Polygons object
+            # so the rest of the page can still render.
+            return Polygons([])
 
     simple_polygons = polygons
 
@@ -226,7 +231,10 @@ class CustomBroadcastAreas(SerialisedModelCollection):
         )
 
     def is_valid_area(self):
-        return all(Polygon(polygon).is_valid for polygon in self._polygons)
+        try:
+            return all(Polygon(polygon).is_valid for polygon in self._polygons)
+        except Exception:
+            return False
 
 
 class BroadcastAreaLibrary(SerialisedModelCollection, SortingAndEqualityMixin, GetItemByIdMixin):
@@ -268,7 +276,7 @@ class BroadcastAreaLibrary(SerialisedModelCollection, SortingAndEqualityMixin, G
             # This attribute is only necessary for local authorities currently,
             # we need to be able to get the ID from LA name for LocalAuthorityBulkAreasForm
             BroadcastAreasRepository().get_all_area_names_and_ids_for_local_authorities()
-            if self.id == "wd23-lad23-ctyua23"  # ID for library storing Electoral Wards and Local Authorities
+            if self.id == "wd25-lad25-ctyua25"  # ID for library storing Electoral Wards and Local Authorities
             else []
         )
 
