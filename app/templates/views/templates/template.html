@@ -23,16 +23,6 @@
 
 {% set breadcrumbs = [] %}
 
-{% if template.areas %}
-  {% if template.areas|length == 1 or is_custom_broadcast %}
-    {% set label = "Map of the United Kingdom, showing the area for "+template.areas[0].name %}
-  {% elif template.areas|length > 1 %}
-    {% set label = "Map of the United Kingdom, showing the areas for "+template.areas[:-1]|map(attribute='name')|join(', ')+' and '+template.areas[-1].name  %}
-  {% endif %}
-{% else %}
-  {% set label = "Map of the United Kingdom, showing no areas" %}
-{% endif %}
-
 {% if not show_redaction_message %}
   {% block additionalBeforeContent %}
     {% for folder in template_folder_path %}
