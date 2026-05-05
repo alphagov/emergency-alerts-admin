@@ -161,9 +161,9 @@ def format_date_human(date):
     return get_human_day(date)
 
 
-def format_datetime_human(date, date_prefix=""):
+def format_datetime_human(date, date_prefix="on"):
     return "{} at {}".format(
-        get_human_day(date, date_prefix="on"),
+        get_human_day(date, date_prefix=date_prefix),
         format_time(date),
     )
 
@@ -406,3 +406,17 @@ def split_text_by_comma_and_newline(input):
 
 def split_text_by_newline(input):
     return [item.strip() for item in re.split(r"[\n]+", input) if item.strip()]
+
+
+def format_provider_status_with_human_time(status, date):
+    status_mapping = {
+        "technical-failure": "Failed ",  # Unused as of writing
+        "sending": "Sending ",
+        "returned-ack": "Sent ",
+        "returned-error": "Failed ",
+    }
+
+    # Say "sending since"
+    date_prefix = "on" if not status == "sending" else "since"
+
+    return status_mapping.get(status, f"(Unknown status {status}) ") + format_datetime_human(date, date_prefix)

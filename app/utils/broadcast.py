@@ -7,7 +7,11 @@ from shapely.ops import unary_union
 
 from app import current_service
 from app.broadcast_areas.models import CustomBroadcastArea, CustomBroadcastAreas
-from app.formatters import format_number_no_scientific, round_to_significant_figures
+from app.formatters import (
+    format_number_no_scientific,
+    format_provider_status_with_human_time,
+    round_to_significant_figures,
+)
 from app.main.forms import (
     ConfirmBroadcastForm,
     EastingNorthingCoordinatesForm,
@@ -368,6 +372,11 @@ def render_current_alert_page(
         # We only validate areas for CustomBroadcastAreas; pre-defined areas are assumed valid
         errors = [{"text": INVALID_AREA_ERROR_TEXT}]
 
+    broadcast_provider_statuses = broadcast_message.get_broadcast_provider_statuses()
+    broadcast_provider_status_rows = [
+        _get_mno_status_row(mno, broadcast_provider_statuses[mno]) for mno in broadcast_provider_statuses
+    ]
+
     return render_template(
         "views/broadcast/view-message.html",
         broadcast_message=broadcast_message,
@@ -395,6 +404,7 @@ def render_current_alert_page(
         ),
         edit_reasons=broadcast_message.get_returned_for_edit_reasons(),
         returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
+        broadcast_provider_status_rows=broadcast_provider_status_rows,
         errors=errors,
         message=broadcast_message,  # Required parameter for map javascripts
     )
@@ -594,6 +604,26 @@ def _get_choose_library_back_link(
             )
         else:
             return request.referrer
+
+
+def _get_mno_status_row(mno, mno_statuses):
+    # This shouldn't occur as we'll only get MNO statuses for any MNOs with data and a cancel with
+    # an alert should be impossible, but we'll be defensive anyway if data is corrupted.
+    alert_row_text = "No data"
+    if len(mno_statuses["alert"]) > 0:
+        latest_alert_status = mno_statuses["alert"][-1]
+        alert_row_text = format_provider_status_with_human_time(
+            latest_alert_status["status"], latest_alert_status["created_at"]
+        )
+
+    cancelled_row_text = "No data"
+    if len(mno_statuses["cancel"]) > 0:
+        latest_cancel_status = mno_statuses["cancel"][-1]
+        cancelled_row_text = format_provider_status_with_human_time(
+            latest_cancel_status["status"], latest_cancel_status["created_at"]
+        )
+
+    return [{"text": mno}, {"text": alert_row_text}, {"text": cancelled_row_text}]
 
 
 def get_message_type(message_type):

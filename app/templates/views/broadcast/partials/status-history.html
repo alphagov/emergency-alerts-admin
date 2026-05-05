@@ -1,4 +1,6 @@
-{% macro broadcast_message_status_history(broadcast_message, edit_reasons) %}
+{% from "govuk_frontend_jinja/components/table/macro.html" import govukTable %}
+
+{% macro broadcast_message_status_history(broadcast_message, edit_reasons, broadcast_provider_status_rows) %}
         {% if broadcast_message.status == 'broadcasting' %}
             <p class="govuk-body govuk-!-margin-bottom-3">
                 Broadcasting stops {{ broadcast_message.finishes_at|format_datetime_human }}.
@@ -69,5 +71,22 @@
                 Finished broadcasting {{ broadcast_message.finishes_at|format_datetime_human }}.
             </p>
         {% endif %}
+
+        {{ govukTable({
+            "caption": "Broadcast Provider Statuses",
+            "firstCellIsHeader": true,
+            "head": [
+                {
+                    "text": "Provider"
+                },
+                {
+                    "text": "Alert",
+                },
+                {
+                    "text": "Cancellation",
+                }
+            ],
+            "rows": broadcast_provider_status_rows
+        }) }}
 
 {% endmacro %}
