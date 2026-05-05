@@ -8,6 +8,7 @@ from shapely.ops import unary_union
 from app import current_service
 from app.broadcast_areas.models import CustomBroadcastArea, CustomBroadcastAreas
 from app.formatters import (
+    format_mobile_networks,
     format_number_no_scientific,
     format_provider_status_with_human_time,
     round_to_significant_figures,
@@ -623,7 +624,8 @@ def _get_mno_status_row(mno, mno_statuses):
             latest_cancel_status["status"], latest_cancel_status["created_at"]
         )
 
-    return [{"text": mno}, {"text": alert_row_text}, {"text": cancelled_row_text}]
+    mno_capitalised = format_mobile_networks(mno)
+    return [{"text": mno_capitalised}, {"text": alert_row_text}, {"text": cancelled_row_text}]
 
 
 def get_message_type(message_type):
