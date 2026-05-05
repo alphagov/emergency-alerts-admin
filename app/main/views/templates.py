@@ -25,6 +25,7 @@ from app.models.broadcast_message import BroadcastMessage
 from app.models.template import Template
 from app.models.template_list import TemplateList, UserTemplateList, UserTemplateLists
 from app.utils import BROADCAST_TYPE
+from app.utils.broadcast import format_areas_list
 from app.utils.templates import get_template
 from app.utils.user import user_has_permissions
 
@@ -49,6 +50,8 @@ def view_template(service_id, template_id):
         message=template,
         template_folder_path=current_service.get_template_folder_path(template.folder),
         edit_mode=False,
+        is_custom_broadcast=type(template.areas) is CustomBroadcastAreas,
+        areas=format_areas_list(template.areas),
     )
 
 
@@ -68,6 +71,8 @@ def edit_template(service_id, template_id):
         message=template,
         template_folder_path=current_service.get_template_folder_path(template.folder),
         edit_mode=True,
+        is_custom_broadcast=type(template.areas) is CustomBroadcastAreas,
+        areas=format_areas_list(template.areas),
     )
 
 
@@ -692,6 +697,8 @@ def delete_service_template(service_id, template_id):
         template=template,
         message=template,
         template_folder_path=current_service.get_template_folder_path(template.folder),
+        is_custom_broadcast=type(template.areas) is CustomBroadcastAreas,
+        areas=format_areas_list(template.areas),
     )
 
 
