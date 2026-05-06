@@ -51,7 +51,7 @@ def format_datetime_normal(date):
 
 
 def format_datetime_short(date):
-    return "{} at {}".format(format_date_short(date), format_time(date))
+    return "{} at {}".format(format_date_short(date), format_time(date, include_seconds=True))
 
 
 def format_datetime_relative(date):
@@ -134,12 +134,13 @@ def get_human_day(time, date_prefix=""):
     ).strip()
 
 
-def format_time(date):
+def format_time(date, include_seconds=False):
+    format = "%-I:%M:%S%p" if include_seconds else "%-I:%M%p"
     return (
         {"12:00AM": "Midnight", "12:00PM": "Midday"}
         .get(
-            utc_string_to_aware_gmt_datetime(date).strftime("%-I:%M%p"),
-            utc_string_to_aware_gmt_datetime(date).strftime("%-I:%M%p"),
+            utc_string_to_aware_gmt_datetime(date).strftime(format),
+            utc_string_to_aware_gmt_datetime(date).strftime(format),
         )
         .lower()
     )
@@ -164,7 +165,7 @@ def format_date_human(date):
 def format_datetime_human(date, date_prefix="on"):
     return "{} at {}".format(
         get_human_day(date, date_prefix=date_prefix),
-        format_time(date),
+        format_time(date, include_seconds=True),
     )
 
 
