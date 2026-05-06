@@ -203,10 +203,26 @@ def get_broadcast_dashboard_partials(service_id):
     ]
     filtered_broadcasts = _filter_broadcasts(broadcast_messages, filter)
     filtered_and_sorted_broadcasts = _sort_broadcasts(filtered_broadcasts, sort)
+
+    failed_broadcast_ids = set()
+    # Loop through every broadcast message and find any which have a latest provider status for any
+    # MNO of `returned-error`
+    for broadcast_message in filtered_and_sorted_broadcasts:
+        provider_statuses = broadcast_message.get_broadcast_provider_statuses()
+
+        for mno in provider_statuses:
+            alert_statuses = provider_statuses[mno].get("alert", [])
+            if len(alert_statuses) > 0:
+                latest_alert_status = alert_statuses[-1]
+                if latest_alert_status["status"] == "returned-error":
+                    failed_broadcast_ids.add(broadcast_message.id)
+                    break
+
     return dict(
         current_broadcasts=render_template(
             "views/broadcast/partials/dashboard-table.html",
             broadcasts=filtered_and_sorted_broadcasts,
+            failed_broadcast_ids=failed_broadcast_ids,
             selects=selects,
             empty_message="You do not have any current alerts",
             view_broadcast_endpoint=".view_current_broadcast",
