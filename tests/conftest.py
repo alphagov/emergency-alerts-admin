@@ -2466,10 +2466,13 @@ def mock_get_latest_edit_reason(mocker):
 
 
 @pytest.fixture(scope="function")
-def mock_get_broadcast_message_provider_statuses(mocker):
+def mock_get_broadcast_message_provider_statuses(mocker, request):
+    return_value = getattr(request, "param", None)
+
     return mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_provider_statuses",
-        return_value={"ee": {"alert": [], "cancel": []}},
+        # Default to no real statuses (no failure)
+        return_value=return_value or {"ee": {"alert": [], "cancel": []}},
     )
 
 
