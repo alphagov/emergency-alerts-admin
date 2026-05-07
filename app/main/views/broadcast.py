@@ -152,9 +152,19 @@ def broadcast_dashboard_previous(service_id):
     ]
     filtered_broadcasts = _filter_broadcasts(broadcast_messages, filter)
     filtered_and_sorted_broadcasts = _sort_broadcasts(filtered_broadcasts, sort)
+
+    # Loop through every broadcast message and find any which have a latest provider status for any
+    # MNO of `returned-error`
+    failed_broadcast_ids = set()
+    for broadcast_message in filtered_and_sorted_broadcasts:
+        provider_statuses = broadcast_message.get_broadcast_provider_statuses()
+        if provider_statuses_contains_fail_to_send(provider_statuses):
+            failed_broadcast_ids.add(broadcast_message.id)
+
     return render_template(
         "views/broadcast/previous-broadcasts.html",
         broadcasts=filtered_and_sorted_broadcasts,
+        failed_broadcast_ids=failed_broadcast_ids,
         page_title="Past alerts",
         empty_message="You do not have any past alerts",
         view_broadcast_endpoint=".view_previous_broadcast",
