@@ -350,6 +350,7 @@ def test_view_broadcast_page_displays_error_if_area_invalid(
     mock_get_broadcast_message_versions,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
     mock_update_broadcast_message_status,
 ):
     mocker.patch(
@@ -637,6 +638,7 @@ def test_broadcast_dashboard(
     client_request,
     service_one,
     mock_get_broadcast_messages,
+    mock_get_broadcast_message_provider_statuses,
     user,
 ):
     service_one["permissions"] += ["broadcast"]
@@ -677,6 +679,7 @@ def test_broadcast_dashboard_does_not_have_button_if_user_does_not_have_permissi
     client_request,
     service_one,
     mock_get_broadcast_messages,
+    mock_get_broadcast_message_provider_statuses,
     endpoint,
     user,
 ):
@@ -702,6 +705,7 @@ def test_broadcast_dashboard_has_new_alert_button_if_user_has_permission_to_crea
     client_request,
     service_one,
     mock_get_broadcast_messages,
+    mock_get_broadcast_message_provider_statuses,
     active_user_create_broadcasts_permission,
     endpoint,
 ):
@@ -725,6 +729,7 @@ def test_broadcast_dashboard_json(
     client_request,
     service_one,
     mock_get_broadcast_messages,
+    mock_get_broadcast_message_provider_statuses,
 ):
     service_one["permissions"] += ["broadcast"]
 
@@ -783,6 +788,7 @@ def test_rejected_broadcasts_page(
     client_request,
     service_one,
     mock_get_broadcast_messages,
+    mock_get_broadcast_message_provider_statuses,
     user,
 ):
     service_one["permissions"] += ["broadcast"]
@@ -795,7 +801,7 @@ def test_rejected_broadcasts_page(
     assert normalize_spaces(page.select_one("main h1").text) == "Rejected alerts"
     assert len(page.select(".ajax-block-container")) == 1
     assert [normalize_spaces(row.text) for row in page.select(".ajax-block-container")[0].select(".file-list")] == [
-        "Example template rejected today at 1:20am This is a test",
+        "Example template rejected today at 1:20:00am This is a test",
     ]
 
 
@@ -4259,12 +4265,12 @@ def test_start_broadcasting(
             [
                 "live since 20 February at 8:20pm Stop sending",
                 "40,000,000 phones estimated",
-                "Broadcasting stops tomorrow at 11:23pm.",
-                "Created by Alice on 20 February at 10:20am.",
-                "Submitted by Test User 2 on 20 February at 8:20pm.",
-                "Returned by Test User on 20 February at 8:25pm.",
-                "Submitted by Test User 2 on 20 February at 9:00pm.",
-                "Approved by Bob on 20 February at 9:00pm.",
+                "Broadcasting stops tomorrow at 11:23:23pm.",
+                "Created by Alice on 20 February at 10:20:20am.",
+                "Submitted by Test User 2 on 20 February at 8:20:20pm.",
+                "Returned by Test User on 20 February at 8:25:20pm.",
+                "Submitted by Test User 2 on 20 February at 9:00:00pm.",
+                "Approved by Bob on 20 February at 9:00:00pm.",
             ],
         ),
         (
@@ -4274,12 +4280,12 @@ def test_start_broadcasting(
             [
                 "live since 20 February at 8:20pm Stop sending",
                 "40,000,000 phones estimated",
-                "Broadcasting stops tomorrow at 11:23pm.",
-                "Created from an API call on 20 February at 10:20am.",
-                "Submitted by Test User 2 on 20 February at 8:20pm.",
-                "Returned by Test User on 20 February at 8:25pm.",
-                "Submitted by Test User 2 on 20 February at 9:00pm.",
-                "Approved by Alice on 20 February at 9:00pm.",
+                "Broadcasting stops tomorrow at 11:23:23pm.",
+                "Created from an API call on 20 February at 10:20:20am.",
+                "Submitted by Test User 2 on 20 February at 8:20:20pm.",
+                "Returned by Test User on 20 February at 8:25:20pm.",
+                "Submitted by Test User 2 on 20 February at 9:00:00pm.",
+                "Approved by Alice on 20 February at 9:00:00pm.",
             ],
         ),
         (
@@ -4292,14 +4298,14 @@ def test_start_broadcasting(
                 "approved_by": "Bob",
             },
             [
-                "Sent on 20 February at 8:20pm.",
+                "Sent on 20 February at 8:20:20pm.",
                 "40,000,000 phones estimated",
-                "Created by Alice on 20 February at 10:20am.",
-                "Submitted by Test User 2 on 20 February at 8:20pm.",
-                "Returned by Test User on 20 February at 8:25pm.",
-                "Submitted by Test User 2 on 20 February at 9:00pm.",
-                "Approved by Bob on 20 February at 9:00pm.",
-                "Finished broadcasting today at 10:20pm.",
+                "Created by Alice on 20 February at 10:20:20am.",
+                "Submitted by Test User 2 on 20 February at 8:20:20pm.",
+                "Returned by Test User on 20 February at 8:25:20pm.",
+                "Submitted by Test User 2 on 20 February at 9:00:00pm.",
+                "Approved by Bob on 20 February at 9:00:00pm.",
+                "Finished broadcasting today at 10:20:20pm.",
             ],
         ),
         (
@@ -4311,14 +4317,14 @@ def test_start_broadcasting(
                 "approved_by": "Alice",
             },
             [
-                "Sent on 20 February at 8:20pm.",
+                "Sent on 20 February at 8:20:20pm.",
                 "40,000,000 phones estimated",
-                "Created from an API call on 20 February at 10:20am.",
-                "Submitted by Test User 2 on 20 February at 8:20pm.",
-                "Returned by Test User on 20 February at 8:25pm.",
-                "Submitted by Test User 2 on 20 February at 9:00pm.",
-                "Approved by Alice on 20 February at 9:00pm.",
-                "Finished broadcasting today at 10:20pm.",
+                "Created from an API call on 20 February at 10:20:20am.",
+                "Submitted by Test User 2 on 20 February at 8:20:20pm.",
+                "Returned by Test User on 20 February at 8:25:20pm.",
+                "Submitted by Test User 2 on 20 February at 9:00:00pm.",
+                "Approved by Alice on 20 February at 9:00:00pm.",
+                "Finished broadcasting today at 10:20:20pm.",
             ],
         ),
         (
@@ -4331,14 +4337,14 @@ def test_start_broadcasting(
                 "approved_by": "Bob",
             },
             [
-                "Sent on 20 February at 8:20pm.",
+                "Sent on 20 February at 8:20:20pm.",
                 "40,000,000 phones estimated",
-                "Created by Alice on 20 February at 10:20am.",
-                "Submitted by Test User 2 on 20 February at 8:20pm.",
-                "Returned by Test User on 20 February at 8:25pm.",
-                "Submitted by Test User 2 on 20 February at 9:00pm.",
-                "Approved by Bob on 20 February at 9:00pm.",
-                "Finished broadcasting yesterday at 9:21pm.",
+                "Created by Alice on 20 February at 10:20:20am.",
+                "Submitted by Test User 2 on 20 February at 8:20:20pm.",
+                "Returned by Test User on 20 February at 8:25:20pm.",
+                "Submitted by Test User 2 on 20 February at 9:00:00pm.",
+                "Approved by Bob on 20 February at 9:00:00pm.",
+                "Finished broadcasting yesterday at 9:21:21pm.",
             ],
         ),
         (
@@ -4353,14 +4359,14 @@ def test_start_broadcasting(
                 "cancelled_by": "Carol",
             },
             [
-                "Sent on 20 February at 8:20pm.",
+                "Sent on 20 February at 8:20:20pm.",
                 "40,000,000 phones estimated",
-                "Created by Alice on 20 February at 10:20am.",
-                "Submitted by Test User 2 on 20 February at 8:20pm.",
-                "Returned by Test User on 20 February at 8:25pm.",
-                "Submitted by Test User 2 on 20 February at 9:00pm.",
-                "Approved by Bob on 20 February at 9:00pm.",
-                "Stopped by Carol yesterday at 9:21pm.",
+                "Created by Alice on 20 February at 10:20:20am.",
+                "Submitted by Test User 2 on 20 February at 8:20:20pm.",
+                "Returned by Test User on 20 February at 8:25:20pm.",
+                "Submitted by Test User 2 on 20 February at 9:00:00pm.",
+                "Approved by Bob on 20 February at 9:00:00pm.",
+                "Stopped by Carol yesterday at 9:21:21pm.",
             ],
         ),
         (
@@ -4374,14 +4380,14 @@ def test_start_broadcasting(
                 "cancelled_by_id": None,
             },
             [
-                "Sent on 20 February at 8:20pm.",
+                "Sent on 20 February at 8:20:20pm.",
                 "40,000,000 phones estimated",
-                "Created by Alice on 20 February at 10:20am.",
-                "Submitted by Test User 2 on 20 February at 8:20pm.",
-                "Returned by Test User on 20 February at 8:25pm.",
-                "Submitted by Test User 2 on 20 February at 9:00pm.",
-                "Approved by Bob on 20 February at 9:00pm.",
-                "Stopped by an API call yesterday at 9:21pm.",
+                "Created by Alice on 20 February at 10:20:20am.",
+                "Submitted by Test User 2 on 20 February at 8:20:20pm.",
+                "Returned by Test User on 20 February at 8:25:20pm.",
+                "Submitted by Test User 2 on 20 February at 9:00:00pm.",
+                "Approved by Bob on 20 February at 9:00:00pm.",
+                "Stopped by an API call yesterday at 9:21:21pm.",
             ],
         ),
     ),
@@ -4400,6 +4406,7 @@ def test_view_broadcast_message_page(
     mock_get_broadcast_message_versions,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -4445,13 +4452,13 @@ def test_view_broadcast_message_page(
                 "submitted_by": "Test User 3",
             },
             [
-                "Rejected yesterday at 9:21pm by Carol.",
+                "Rejected yesterday at 9:21:21pm by Carol.",
                 "40,000,000 phones estimated",
-                "Created by Alice on 20 February at 7:20pm.",
-                "Submitted by Test User 2 on 20 February at 8:20pm.",
-                "Returned by Test User on 20 February at 8:25pm.",
-                "Submitted by Test User 3 on 21 February at 9:21pm.",
-                "Rejected by Carol on 21 February at 9:21pm.",
+                "Created by Alice on 20 February at 7:20:20pm.",
+                "Submitted by Test User 2 on 20 February at 8:20:20pm.",
+                "Returned by Test User on 20 February at 8:25:20pm.",
+                "Submitted by Test User 3 on 21 February at 9:21:21pm.",
+                "Rejected by Carol on 21 February at 9:21:21pm.",
             ],
         ),
     ),
@@ -4470,6 +4477,7 @@ def test_view_rejected_broadcast_message_page(
     mock_get_broadcast_message_versions,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -4559,6 +4567,7 @@ def test_view_broadcast_message_shows_correct_highlighted_navigation(
     mock_get_broadcast_message_versions,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -4605,6 +4614,7 @@ def test_view_pending_broadcast(
     mock_get_broadcast_message_versions,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
 ):
     broadcast_creator = create_active_user_create_broadcasts_permissions(with_unique_id=True)
     mocker.patch(
@@ -4713,6 +4723,7 @@ def test_view_pending_broadcast_without_template(
     mock_get_broadcast_message_versions,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
 ):
     broadcast_creator = create_active_user_create_broadcasts_permissions(with_unique_id=True)
     mocker.patch(
@@ -4758,6 +4769,7 @@ def test_view_pending_broadcast_from_api_call(
     mock_get_broadcast_message_versions,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -4820,6 +4832,7 @@ def test_checkbox_to_confirm_non_training_broadcasts(
     mock_get_broadcast_message_versions,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -4868,6 +4881,7 @@ def test_confirm_approve_non_training_broadcasts_errors_if_not_ticked(
     mock_check_can_update_status,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
 ):
     page = mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -4912,6 +4926,7 @@ def test_can_approve_own_broadcast_in_training_mode(
     mock_get_broadcast_message_versions,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -4973,6 +4988,7 @@ def test_can_approve_own_broadcast_if_service_is_live_and_user_didnt_submit_aler
     mock_get_broadcast_message_versions,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
 ):
     service_one["restricted"] = False
     mocker.patch(
@@ -5024,6 +5040,7 @@ def test_cannot_approve_own_broadcast_if_service_is_live_and_user_submitted_aler
     mock_get_broadcast_message_versions,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
 ):
     service_one["restricted"] = False
     mocker.patch(
@@ -5079,6 +5096,7 @@ def test_view_only_user_cant_approve_broadcast_created_by_someone_else(
     mock_get_broadcast_message_versions,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5120,6 +5138,7 @@ def test_view_only_user_cant_approve_broadcasts_they_created(
     mock_get_broadcast_message_versions,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5186,6 +5205,7 @@ def test_user_without_approve_permission_cant_approve_broadcast_created_by_someo
     mock_get_broadcast_message_versions,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
 ):
     current_user = create_active_user_create_broadcasts_permissions(with_unique_id=True)
     mocker.patch(
@@ -5232,6 +5252,7 @@ def test_user_without_approve_permission_cant_approve_broadcast_they_created(
     mock_get_broadcast_message_versions,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5495,6 +5516,7 @@ def test_reject_broadcast_displays_error_when_no_reason_provided(
     mock_check_can_update_status,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5545,6 +5567,7 @@ def test_return_broadcast_for_edit_displays_error_when_no_reason_provided(
     mock_check_can_update_status,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5594,6 +5617,7 @@ def test_can_return_broadcast_for_edit(
     mock_check_can_update_status,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5637,6 +5661,7 @@ def test_discard_broadcast(
     mock_get_broadcast_message_versions,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5685,6 +5710,7 @@ def test_cannot_reject_broadcast_if_transition_not_allowed(
     mock_check_can_update_status_returns_http_error,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5733,6 +5759,7 @@ def test_cannot_discard_broadcast_if_transition_not_allowed(
     mock_check_can_update_status_returns_http_error,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5925,6 +5952,7 @@ def test_cannot_submit_if_transition_not_allowed(
     mock_check_can_update_status_returns_http_error,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -6011,6 +6039,7 @@ def test_can_view_current_page_for_draft(
     mock_get_broadcast_message_versions,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
 ):
     service_one["permissions"] += ["broadcast"]
     client_request.get(
@@ -6064,6 +6093,7 @@ def test_cancel_broadcast(
     mock_check_can_update_status,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
 ):
     """
     users with 'create/approve_broadcasts' permissions and platform admins should be able to cancel broadcasts.
@@ -6114,6 +6144,7 @@ def test_cannot_cancel_broadcast_if_transition_not_allowed(
     mock_check_can_update_status_returns_http_error,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
 ):
     service_one["permissions"] += ["broadcast"]
 
@@ -6771,6 +6802,7 @@ def test_view_draft_broadcast_message_page(
     mock_get_broadcast_message_versions,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_message_provider_statuses,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",

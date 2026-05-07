@@ -2466,6 +2466,14 @@ def mock_get_latest_edit_reason(mocker):
 
 
 @pytest.fixture(scope="function")
+def mock_get_broadcast_message_provider_statuses(mocker):
+    return mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_provider_statuses",
+        return_value={"ee": {"alert": [], "cancel": []}},
+    )
+
+
+@pytest.fixture(scope="function")
 def mock_update_broadcast_message(
     mocker,
     fake_uuid,
