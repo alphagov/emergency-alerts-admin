@@ -374,20 +374,27 @@ def render_current_alert_page(
         # We only validate areas for CustomBroadcastAreas; pre-defined areas are assumed valid
         errors = [{"text": INVALID_AREA_ERROR_TEXT}]
 
-    broadcast_provider_statuses = broadcast_message.get_broadcast_provider_statuses()
-    broadcast_provider_contains_cancellation = provider_statuses_contains_cancellation_events(
-        broadcast_provider_statuses
-    )
-    # We loop the static providers here as we always want a row for every MNO - but immediately after hitting broadcast
-    # it's unlikely the job(s) to send the alert have even been picked up yet to record a broadcast_event at all.
-    broadcast_provider_status_rows = [
-        _get_mno_status_row(
-            mno.name,
-            broadcast_provider_statuses.get(mno.name, {"alert": [], "cancel": []}),
-            broadcast_provider_contains_cancellation,
+    broadcast_provider_status_rows = None
+    broadcast_provider_sending_failure = False
+
+    # Only query for alerts which have been sent
+    if broadcast_message.status in {"broadcasting", "completed", "cancelled"}:
+        broadcast_provider_statuses = broadcast_message.get_broadcast_provider_statuses()
+        broadcast_provider_contains_cancellation = provider_statuses_contains_cancellation_events(
+            broadcast_provider_statuses
         )
-        for mno in BroadcastProvider.PROVIDERS
-    ]
+        # We loop the static providers here as we always want a row for every MNO - but immediately after hitting
+        # broadcast it's unlikely the job(s) to send the alert have even been picked up yet to record a
+        # broadcast_event at all.
+        broadcast_provider_status_rows = [
+            _get_mno_status_row(
+                mno.name,
+                broadcast_provider_statuses.get(mno.name, {"alert": [], "cancel": []}),
+                broadcast_provider_contains_cancellation,
+            )
+            for mno in BroadcastProvider.PROVIDERS
+        ]
+        broadcast_provider_sending_failure = provider_statuses_contains_fail_to_send(broadcast_provider_statuses)
 
     return render_template(
         "views/broadcast/view-message.html",
@@ -417,7 +424,7 @@ def render_current_alert_page(
         edit_reasons=broadcast_message.get_returned_for_edit_reasons(),
         returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
         broadcast_provider_status_rows=broadcast_provider_status_rows,
-        broadcast_provider_sending_failure=provider_statuses_contains_fail_to_send(broadcast_provider_statuses),
+        broadcast_provider_sending_failure=broadcast_provider_sending_failure,
         errors=errors,
         message=broadcast_message,  # Required parameter for map javascripts
     )
