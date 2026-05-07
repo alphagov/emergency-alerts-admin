@@ -72,21 +72,24 @@
             </p>
         {% endif %}
 
-        {{ govukTable({
-            "caption": "Operator Statuses",
-            "firstCellIsHeader": true,
-            "head": [
-                {
-                    "text": "Operator"
-                },
-                {
-                    "text": "Alert Status",
-                },
-                {
-                    "text": "Cancellation Status",
-                }
-            ],
-            "rows": broadcast_provider_status_rows
-        }) }}
+        {% if broadcast_provider_status_rows %}
+            <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+            {{ govukTable({
+                "caption": "Operator Statuses",
+                "firstCellIsHeader": true,
+                "head": [
+                    {
+                        "text": "Operator"
+                    },
+                    {
+                        "text": "Alert Status",
+                    },
+                    {
+                        "text": "Cancellation Status",
+                    }
+                ],
+                "rows": broadcast_provider_status_rows
+            }) }}
+        {% endif %}
 
 {% endmacro %}
