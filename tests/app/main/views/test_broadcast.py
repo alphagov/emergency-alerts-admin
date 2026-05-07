@@ -44,6 +44,19 @@ from tests.utils import xml_path
 
 sample_uuid = sample_uuid()
 
+sending_failure_statuses = {
+    "ee": {
+        "alert": [
+            {"created_at": "2020-02-22T23:23:23.000000", "status": "sending"},
+            {
+                "created_at": "2020-02-22T23:23:23.000000",
+                "status": "returned-error",
+            },
+        ],
+        "cancel": [],
+    }
+}
+
 
 @pytest.mark.parametrize(
     "endpoint, extra_args, expected_get_status, expected_post_status",
@@ -633,12 +646,22 @@ def test_empty_broadcast_dashboard(
         create_active_user_create_broadcasts_permissions(),
     ],
 )
+@pytest.mark.parametrize(
+    "mock_get_broadcast_message_provider_statuses,has_sending_failure",
+    [
+        # For the second lot, pass
+        (None, False),
+        (sending_failure_statuses, True),
+    ],
+    indirect=["mock_get_broadcast_message_provider_statuses"],
+)
 @freeze_time("2020-02-20 02:20")
 def test_broadcast_dashboard(
     client_request,
     service_one,
     mock_get_broadcast_messages,
     mock_get_broadcast_message_provider_statuses,
+    has_sending_failure,
     user,
 ):
     service_one["permissions"] += ["broadcast"]
@@ -650,13 +673,22 @@ def test_broadcast_dashboard(
 
     assert len(page.select(".ajax-block-container")) == len(page.select("h1")) == 1
 
-    assert [normalize_spaces(row.text) for row in page.select(".ajax-block-container")[0].select(".file-list")] == [
-        "Example template This is a test live since today at 2:20am Area: England Scotland",
-        "Half an hour ago This is a test Waiting for approval Area: England Scotland",
-        "Example template This is a test draft",
-        "Hour and a half ago This is a test Waiting for approval Area: England Scotland",
-        "Example template This is a test live since today at 1:20am Area: England Scotland",
-    ]
+    if has_sending_failure:
+        assert [normalize_spaces(row.text) for row in page.select(".ajax-block-container")[0].select(".file-list")] == [
+            "Example template This is a test sending error live since today at 2:20am Area: England Scotland",
+            "Half an hour ago This is a test Waiting for approval Area: England Scotland",
+            "Example template This is a test draft",
+            "Hour and a half ago This is a test Waiting for approval Area: England Scotland",
+            "Example template This is a test sending error live since today at 1:20am Area: England Scotland",
+        ]
+    else:
+        assert [normalize_spaces(row.text) for row in page.select(".ajax-block-container")[0].select(".file-list")] == [
+            "Example template This is a test live since today at 2:20am Area: England Scotland",
+            "Half an hour ago This is a test Waiting for approval Area: England Scotland",
+            "Example template This is a test draft",
+            "Hour and a half ago This is a test Waiting for approval Area: England Scotland",
+            "Example template This is a test live since today at 1:20am Area: England Scotland",
+        ]
 
 
 @pytest.mark.parametrize(
@@ -754,11 +786,22 @@ def test_broadcast_dashboard_json(
         create_active_user_create_broadcasts_permissions(),
     ],
 )
+@pytest.mark.parametrize(
+    "mock_get_broadcast_message_provider_statuses,has_sending_failure",
+    [
+        # For the second lot, pass
+        (None, False),
+        (sending_failure_statuses, True),
+    ],
+    indirect=["mock_get_broadcast_message_provider_statuses"],
+)
 @freeze_time("2020-02-20 02:20")
 def test_previous_broadcasts_page(
     client_request,
     service_one,
     mock_get_broadcast_messages,
+    mock_get_broadcast_message_provider_statuses,
+    has_sending_failure,
     user,
 ):
     service_one["permissions"] += ["broadcast"]
@@ -770,10 +813,16 @@ def test_previous_broadcasts_page(
 
     assert normalize_spaces(page.select_one("main h1").text) == "Past alerts"
     assert len(page.select(".ajax-block-container")) == 1
-    assert [normalize_spaces(row.text) for row in page.select(".ajax-block-container")[0].select(".file-list")] == [
-        "Example template This is a test Yesterday at 2:20pm Area: England Scotland",
-        "Example template This is a test Yesterday at 2:20am Area: England Scotland",
-    ]
+    if has_sending_failure:
+        assert [normalize_spaces(row.text) for row in page.select(".ajax-block-container")[0].select(".file-list")] == [
+            "Example template This is a test sending error Yesterday at 2:20pm Area: England Scotland",
+            "Example template This is a test sending error Yesterday at 2:20am Area: England Scotland",
+        ]
+    else:
+        assert [normalize_spaces(row.text) for row in page.select(".ajax-block-container")[0].select(".file-list")] == [
+            "Example template This is a test Yesterday at 2:20pm Area: England Scotland",
+            "Example template This is a test Yesterday at 2:20am Area: England Scotland",
+        ]
 
 
 @pytest.mark.parametrize(
@@ -788,7 +837,6 @@ def test_rejected_broadcasts_page(
     client_request,
     service_one,
     mock_get_broadcast_messages,
-    mock_get_broadcast_message_provider_statuses,
     user,
 ):
     service_one["permissions"] += ["broadcast"]
@@ -4251,7 +4299,7 @@ def test_start_broadcasting(
 
 
 @pytest.mark.parametrize(
-    "endpoint, created_by_api, extra_fields, expected_paragraphs",
+    "endpoint, created_by_api, extra_fields, mock_get_broadcast_message_provider_statuses, expected_paragraphs",
     (
         (
             ".view_current_broadcast",
@@ -4262,6 +4310,7 @@ def test_start_broadcasting(
                 "created_by": "Alice",
                 "approved_by": "Bob",
             },
+            None,  # No sending failure
             [
                 "live since 20 February at 8:20pm Stop sending",
                 "40,000,000 phones estimated",
@@ -4275,8 +4324,30 @@ def test_start_broadcasting(
         ),
         (
             ".view_current_broadcast",
+            False,
+            {
+                "status": "broadcasting",
+                "finishes_at": "2020-02-23T23:23:23.000000",
+                "created_by": "Alice",
+                "approved_by": "Bob",
+            },
+            sending_failure_statuses,
+            [
+                "sending error live since 20 February at 8:20pm Stop sending",
+                "40,000,000 phones estimated",
+                "Broadcasting stops tomorrow at 11:23:23pm.",
+                "Created by Alice on 20 February at 10:20:20am.",
+                "Submitted by Test User 2 on 20 February at 8:20:20pm.",
+                "Returned by Test User on 20 February at 8:25:20pm.",
+                "Submitted by Test User 2 on 20 February at 9:00:00pm.",
+                "Approved by Bob on 20 February at 9:00:00pm.",
+            ],
+        ),
+        (
+            ".view_current_broadcast",
             True,
             {"status": "broadcasting", "finishes_at": "2020-02-23T23:23:23.000000", "approved_by": "Alice"},
+            None,  # No sending failure
             [
                 "live since 20 February at 8:20pm Stop sending",
                 "40,000,000 phones estimated",
@@ -4297,8 +4368,30 @@ def test_start_broadcasting(
                 "created_by": "Alice",
                 "approved_by": "Bob",
             },
+            None,  # No sending failure
             [
                 "Sent on 20 February at 8:20:20pm.",
+                "40,000,000 phones estimated",
+                "Created by Alice on 20 February at 10:20:20am.",
+                "Submitted by Test User 2 on 20 February at 8:20:20pm.",
+                "Returned by Test User on 20 February at 8:25:20pm.",
+                "Submitted by Test User 2 on 20 February at 9:00:00pm.",
+                "Approved by Bob on 20 February at 9:00:00pm.",
+                "Finished broadcasting today at 10:20:20pm.",
+            ],
+        ),
+        (
+            ".view_previous_broadcast",
+            False,
+            {
+                "status": "broadcasting",
+                "finishes_at": "2020-02-22T22:20:20.000000",  # 2 mins before now()
+                "created_by": "Alice",
+                "approved_by": "Bob",
+            },
+            sending_failure_statuses,
+            [
+                "sending error Sent on 20 February at 8:20:20pm.",
                 "40,000,000 phones estimated",
                 "Created by Alice on 20 February at 10:20:20am.",
                 "Submitted by Test User 2 on 20 February at 8:20:20pm.",
@@ -4316,6 +4409,7 @@ def test_start_broadcasting(
                 "finishes_at": "2020-02-22T22:20:20.000000",  # 2 mins before now()
                 "approved_by": "Alice",
             },
+            None,  # No sending failure
             [
                 "Sent on 20 February at 8:20:20pm.",
                 "40,000,000 phones estimated",
@@ -4336,6 +4430,7 @@ def test_start_broadcasting(
                 "created_by": "Alice",
                 "approved_by": "Bob",
             },
+            None,  # No sending failure
             [
                 "Sent on 20 February at 8:20:20pm.",
                 "40,000,000 phones estimated",
@@ -4358,6 +4453,7 @@ def test_start_broadcasting(
                 "approved_by": "Bob",
                 "cancelled_by": "Carol",
             },
+            None,  # No sending failure
             [
                 "Sent on 20 February at 8:20:20pm.",
                 "40,000,000 phones estimated",
@@ -4379,6 +4475,7 @@ def test_start_broadcasting(
                 "approved_by": "Bob",
                 "cancelled_by_id": None,
             },
+            None,  # No sending failure
             [
                 "Sent on 20 February at 8:20:20pm.",
                 "40,000,000 phones estimated",
@@ -4391,6 +4488,7 @@ def test_start_broadcasting(
             ],
         ),
     ),
+    indirect=["mock_get_broadcast_message_provider_statuses"],
 )
 @freeze_time("2020-02-22T22:22:22.000000")
 def test_view_broadcast_message_page(
@@ -4477,7 +4575,6 @@ def test_view_rejected_broadcast_message_page(
     mock_get_broadcast_message_versions,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
-    mock_get_broadcast_message_provider_statuses,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -4614,7 +4711,6 @@ def test_view_pending_broadcast(
     mock_get_broadcast_message_versions,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
-    mock_get_broadcast_message_provider_statuses,
 ):
     broadcast_creator = create_active_user_create_broadcasts_permissions(with_unique_id=True)
     mocker.patch(
