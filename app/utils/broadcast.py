@@ -410,6 +410,7 @@ def render_current_alert_page(
         edit_reasons=broadcast_message.get_returned_for_edit_reasons(),
         returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
         broadcast_provider_status_rows=broadcast_provider_status_rows,
+        sending_failure=_provider_statuses_contains_fail_to_send(broadcast_provider_statuses),
         errors=errors,
         message=broadcast_message,  # Required parameter for map javascripts
     )
@@ -554,6 +555,17 @@ def check_for_missing_fields(broadcast_message):
         )
         errors.append({"html": f"""<a href="{area_url}">Add alert area</a>"""})
     return errors
+
+
+def _provider_statuses_contains_fail_to_send(provider_statuses):
+    for mno in provider_statuses:
+        alert_statuses = provider_statuses[mno].get("alert", [])
+        if len(alert_statuses) > 0:
+            latest_alert_status = alert_statuses[-1]
+            if latest_alert_status["status"] == "returned-error":
+                return True
+
+    return False
 
 
 def _get_back_link_from_view_broadcast_endpoint():
