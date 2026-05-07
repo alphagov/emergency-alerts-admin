@@ -375,10 +375,17 @@ def render_current_alert_page(
         errors = [{"text": INVALID_AREA_ERROR_TEXT}]
 
     broadcast_provider_statuses = broadcast_message.get_broadcast_provider_statuses()
-    # We use the static providers here as we always want a row for every MNO - but immediately after hitting broadcast
+    broadcast_provider_contains_cancellation = provider_statuses_contains_cancellation_events(
+        broadcast_provider_statuses
+    )
+    # We loop the static providers here as we always want a row for every MNO - but immediately after hitting broadcast
     # it's unlikely the job(s) to send the alert have even been picked up yet to record a broadcast_event at all.
     broadcast_provider_status_rows = [
-        _get_mno_status_row(mno.name, broadcast_provider_statuses.get(mno.name, {"alert": [], "cancel": []}))
+        _get_mno_status_row(
+            mno.name,
+            broadcast_provider_statuses.get(mno.name, {"alert": [], "cancel": []}),
+            broadcast_provider_contains_cancellation,
+        )
         for mno in BroadcastProvider.PROVIDERS
     ]
 
@@ -410,7 +417,7 @@ def render_current_alert_page(
         edit_reasons=broadcast_message.get_returned_for_edit_reasons(),
         returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
         broadcast_provider_status_rows=broadcast_provider_status_rows,
-        sending_failure=_provider_statuses_contains_fail_to_send(broadcast_provider_statuses),
+        broadcast_provider_sending_failure=provider_statuses_contains_fail_to_send(broadcast_provider_statuses),
         errors=errors,
         message=broadcast_message,  # Required parameter for map javascripts
     )
@@ -557,13 +564,22 @@ def check_for_missing_fields(broadcast_message):
     return errors
 
 
-def _provider_statuses_contains_fail_to_send(provider_statuses):
+def provider_statuses_contains_fail_to_send(provider_statuses):
     for mno in provider_statuses:
         alert_statuses = provider_statuses[mno].get("alert", [])
         if len(alert_statuses) > 0:
             latest_alert_status = alert_statuses[-1]
             if latest_alert_status["status"] == "returned-error":
                 return True
+
+    return False
+
+
+def provider_statuses_contains_cancellation_events(provider_statuses):
+    for mno in provider_statuses:
+        cancel_statuses = provider_statuses[mno].get("cancel", [])
+        if len(cancel_statuses) > 0:
+            return True
 
     return False
 
@@ -623,23 +639,31 @@ def _get_choose_library_back_link(
             return request.referrer
 
 
-def _get_mno_status_row(mno, mno_statuses):
-    alert_row_text = "No data"
+def _get_mno_status_row(mno, mno_statuses, include_cancellation_status):
+    """
+    Get a row ready to pass to the govukTable macro.
+    MNO | Alert Status | Cancellation Status
+    """
+    alert_row_text = ""
     if len(mno_statuses.get("alert", [])) > 0:
         latest_alert_status = mno_statuses.get("alert", [])[-1]
         alert_row_text = format_provider_status_with_human_time(
             latest_alert_status["status"], latest_alert_status["created_at"]
         )
 
-    cancelled_row_text = "No data"
-    if len(mno_statuses.get("cancel", [])) > 0:
+    cancelled_row_text = ""
+    if include_cancellation_status and len(mno_statuses.get("cancel", [])) > 0:
         latest_cancel_status = mno_statuses.get("cancel", [])[-1]
         cancelled_row_text = format_provider_status_with_human_time(
             latest_cancel_status["status"], latest_cancel_status["created_at"]
         )
 
     mno_capitalised = format_mobile_networks(mno)
-    return [{"text": mno_capitalised}, {"text": alert_row_text}, {"text": cancelled_row_text}]
+    result = [{"text": mno_capitalised}, {"text": alert_row_text}]
+    if include_cancellation_status:
+        result.append({"text": cancelled_row_text})
+
+    return result
 
 
 def get_message_type(message_type):

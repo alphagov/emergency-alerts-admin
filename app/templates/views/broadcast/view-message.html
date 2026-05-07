@@ -316,7 +316,7 @@
   {% else %}
     {{ page_header(broadcast_message.reference or "Untitled alert") }}
 
-    {{broadcast_details(broadcast_message, current_service, sending_failure)}}
+    {{broadcast_details(broadcast_message, current_service, broadcast_provider_sending_failure)}}
   {% endif %}
 
    {#

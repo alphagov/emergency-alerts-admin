@@ -39,7 +39,6 @@ from app.utils import service_has_permission
 from app.utils.broadcast import (
     INVALID_AREA_ERROR_TEXT,
     _get_back_link_from_view_broadcast_endpoint,
-    _provider_statuses_contains_fail_to_send,
     check_for_missing_fields,
     format_areas_list,
     get_alert_redirect_url,
@@ -49,6 +48,7 @@ from app.utils.broadcast import (
     keep_alert_reference_button_clicked,
     overwrite_content_button_clicked,
     overwrite_reference_button_clicked,
+    provider_statuses_contains_fail_to_send,
     redirect_if_operator_service,
     render_current_alert_page,
     render_edit_alert_page,
@@ -210,7 +210,7 @@ def get_broadcast_dashboard_partials(service_id):
     failed_broadcast_ids = set()
     for broadcast_message in filtered_and_sorted_broadcasts:
         provider_statuses = broadcast_message.get_broadcast_provider_statuses()
-        if _provider_statuses_contains_fail_to_send(provider_statuses):
+        if provider_statuses_contains_fail_to_send(provider_statuses):
             failed_broadcast_ids.add(broadcast_message.id)
 
     return dict(
