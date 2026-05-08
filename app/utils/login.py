@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timezone
 from functools import wraps
 
@@ -54,13 +55,21 @@ def email_needs_revalidating(user):
     return not is_less_than_days_ago(user.email_access_validated_at, 90)
 
 
+# Werkzeug denies newlines in headers, but otherwise does no other filtering - so match that logic
+newline_regex = re.compile(r"[\r\n]")
+
+
 # see https://stackoverflow.com/questions/60532973/how-do-i-get-a-is-safe-url-function-to-use-with-flask-and-how-does-it-work  # noqa
 def is_safe_redirect_url(target):
     from urllib.parse import urljoin, urlparse
 
     host_url = urlparse(request.host_url)
     redirect_url = urlparse(urljoin(request.host_url, target))
-    return redirect_url.scheme in ("http", "https") and host_url.netloc == redirect_url.netloc
+    return (
+        redirect_url.scheme in ("http", "https")
+        and host_url.netloc == redirect_url.netloc
+        and newline_regex.search(target) is None
+    )
 
 
 def is_less_than_days_ago(date_from_db, number_of_days):
