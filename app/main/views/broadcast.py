@@ -219,6 +219,8 @@ def get_broadcast_dashboard_partials(service_id):
     # MNO of `returned-error`
     failed_broadcast_ids = set()
     for broadcast_message in filtered_and_sorted_broadcasts:
+        if broadcast_message.status != "broadcasting":
+            continue  # Skip requesting for something that's not sent
         provider_statuses = broadcast_message.get_broadcast_provider_statuses()
         if provider_statuses_contains_fail_to_send(provider_statuses):
             failed_broadcast_ids.add(broadcast_message.id)
