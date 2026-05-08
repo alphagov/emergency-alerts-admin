@@ -44,6 +44,38 @@ from tests.utils import xml_path
 
 sample_uuid = sample_uuid()
 
+sending_success_statuses = {
+    "ee": {
+        "alert": [
+            {"created_at": "2020-02-22T23:23:23.000000", "status": "sending"},
+            {
+                "created_at": "2020-02-22T23:23:23.000000",
+                "status": "returned-ack",
+            },
+        ],
+        "cancel": [],
+    }
+}
+
+sending_success_cancelled_statuses = {
+    "ee": {
+        "alert": [
+            {"created_at": "2020-02-22T23:23:23.000000", "status": "sending"},
+            {
+                "created_at": "2020-02-22T23:23:23.000000",
+                "status": "returned-ack",
+            },
+        ],
+        "cancel": [
+            {"created_at": "2020-02-22T23:24:24.000000", "status": "sending"},
+            {
+                "created_at": "2020-02-22T23:24:24.000000",
+                "status": "returned-ack",
+            },
+        ],
+    }
+}
+
 sending_failure_statuses = {
     "ee": {
         "alert": [
@@ -4299,7 +4331,8 @@ def test_start_broadcasting(
 
 
 @pytest.mark.parametrize(
-    "endpoint, created_by_api, extra_fields, mock_get_broadcast_message_provider_statuses, expected_paragraphs",
+    "endpoint, created_by_api, extra_fields, mock_get_broadcast_message_provider_statuses, "
+    + "operator_statuses_text, expected_paragraphs",
     (
         (
             ".view_current_broadcast",
@@ -4310,7 +4343,8 @@ def test_start_broadcasting(
                 "created_by": "Alice",
                 "approved_by": "Bob",
             },
-            None,  # No sending failure
+            sending_success_statuses,
+            "Operator Statuses Operator Alert Status EE Sent today at 11:23:23pm O2 Three Vodafone",
             [
                 "live since 20 February at 8:20pm Stop sending",
                 "40,000,000 phones estimated",
@@ -4332,6 +4366,7 @@ def test_start_broadcasting(
                 "approved_by": "Bob",
             },
             sending_failure_statuses,
+            "Operator Statuses Operator Alert Status EE Failed today at 11:23:23pm O2 Three Vodafone",
             [
                 "sending error live since 20 February at 8:20pm Stop sending",
                 "40,000,000 phones estimated",
@@ -4347,7 +4382,8 @@ def test_start_broadcasting(
             ".view_current_broadcast",
             True,
             {"status": "broadcasting", "finishes_at": "2020-02-23T23:23:23.000000", "approved_by": "Alice"},
-            None,  # No sending failure
+            sending_success_statuses,
+            "Operator Statuses Operator Alert Status EE Sent today at 11:23:23pm O2 Three Vodafone",
             [
                 "live since 20 February at 8:20pm Stop sending",
                 "40,000,000 phones estimated",
@@ -4368,7 +4404,8 @@ def test_start_broadcasting(
                 "created_by": "Alice",
                 "approved_by": "Bob",
             },
-            None,  # No sending failure
+            sending_success_statuses,
+            "Operator Statuses Operator Alert Status EE Sent today at 11:23:23pm O2 Three Vodafone",
             [
                 "Sent on 20 February at 8:20:20pm.",
                 "40,000,000 phones estimated",
@@ -4390,6 +4427,7 @@ def test_start_broadcasting(
                 "approved_by": "Bob",
             },
             sending_failure_statuses,
+            "Operator Statuses Operator Alert Status EE Failed today at 11:23:23pm O2 Three Vodafone",
             [
                 "sending error Sent on 20 February at 8:20:20pm.",
                 "40,000,000 phones estimated",
@@ -4409,7 +4447,8 @@ def test_start_broadcasting(
                 "finishes_at": "2020-02-22T22:20:20.000000",  # 2 mins before now()
                 "approved_by": "Alice",
             },
-            None,  # No sending failure
+            sending_success_statuses,
+            "Operator Statuses Operator Alert Status EE Sent today at 11:23:23pm O2 Three Vodafone",
             [
                 "Sent on 20 February at 8:20:20pm.",
                 "40,000,000 phones estimated",
@@ -4430,7 +4469,8 @@ def test_start_broadcasting(
                 "created_by": "Alice",
                 "approved_by": "Bob",
             },
-            None,  # No sending failure
+            sending_success_statuses,
+            "Operator Statuses Operator Alert Status EE Sent today at 11:23:23pm O2 Three Vodafone",
             [
                 "Sent on 20 February at 8:20:20pm.",
                 "40,000,000 phones estimated",
@@ -4453,7 +4493,9 @@ def test_start_broadcasting(
                 "approved_by": "Bob",
                 "cancelled_by": "Carol",
             },
-            None,  # No sending failure
+            sending_success_cancelled_statuses,
+            "Operator Statuses Operator Alert Status Cancellation Status EE Sent today at 11:23:23pm "
+            + "Sent today at 11:24:24pm O2 Three Vodafone",
             [
                 "Sent on 20 February at 8:20:20pm.",
                 "40,000,000 phones estimated",
@@ -4475,7 +4517,9 @@ def test_start_broadcasting(
                 "approved_by": "Bob",
                 "cancelled_by_id": None,
             },
-            None,  # No sending failure
+            sending_success_cancelled_statuses,
+            "Operator Statuses Operator Alert Status Cancellation Status EE Sent today at 11:23:23pm "
+            + "Sent today at 11:24:24pm O2 Three Vodafone",
             [
                 "Sent on 20 February at 8:20:20pm.",
                 "40,000,000 phones estimated",
@@ -4505,6 +4549,7 @@ def test_view_broadcast_message_page(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
+    operator_statuses_text,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -4533,6 +4578,8 @@ def test_view_broadcast_message_page(
     )
 
     assert [normalize_spaces(p.text) for p in page.select("main p.govuk-body")] == expected_paragraphs
+
+    assert normalize_spaces(page.select("table")[0].text) == operator_statuses_text
 
 
 @pytest.mark.parametrize(
@@ -4610,6 +4657,7 @@ def test_view_rejected_broadcast_message_page(
     )
 
     assert [normalize_spaces(p.text) for p in page.select("main p.govuk-body")] == expected_paragraphs
+    assert not page.select("table")  # No operator statuses table
 
 
 @pytest.mark.parametrize(
@@ -4756,6 +4804,7 @@ def test_view_pending_broadcast(
         "Reject alert"
     )
     assert not page.select(".banner input[type=checkbox]")
+    assert not page.select("table")  # No operator statuses table
 
     approval_form = page.select_one("form#approve")
     assert approval_form["method"] == "post"
