@@ -90,7 +90,8 @@ $notify-secondary-button-hover-colour: govuk-shade(govuk-colour("light-grey"), 1
 
 .govuk-tag.failed-sending-tag {
   @include govuk-tag-uppercase;
-  background-color: govuk-colour("orange");
+  background-color: govuk-colour("yellow");
+  color: black;
 }
 
 .govuk-tabs {
