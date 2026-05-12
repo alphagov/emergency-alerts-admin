@@ -16,6 +16,10 @@
   {% endif %}
 
   {% for item in broadcasts %}
+    {% set sending_error = govukTag ({
+        'text': 'sending error',
+        'classes': 'govuk-!-margin-right-2 failed-sending-tag'
+      }) if item.id in failed_broadcast_ids else "" %}
     <div class="keyline-block">
       <div class="file-list file-list--sectioned govuk-!-margin-bottom-2">
         <h2>
@@ -44,6 +48,7 @@
           </span>
         {% elif item.status == 'broadcasting' %}
           <p class="govuk-body live-broadcast file-list-status">
+            {{ sending_error }}
             {{ govukTag ({
               'text': 'live',
               'classes': 'govuk-!-margin-right-2 broadcast-tag'
@@ -66,6 +71,7 @@
           </p>
         {% else %}
           <p class="govuk-body govuk-hint file-list-status">
+            {{ sending_error }}
             {{ item.starts_at|format_date_human|title }} at {{ item.starts_at|format_time }}
           </p>
         {% endif %}
