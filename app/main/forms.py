@@ -1714,14 +1714,20 @@ class ServiceBroadcastNetworkForm(StripWhitespaceForm):
 
     networks = GovukCheckboxesFieldWithNetworkRequired(
         None,
-        choices=[("all", "All mobile networks")] + [(p.name, p.human_name) for p in BroadcastProvider.PROVIDERS],
+        choices=[
+            ("all", "All mobile networks"),
+            ("ee", "EE"),
+            ("o2", "O2"),
+            ("three", "Three"),
+            ("vodafone", "Vodafone"),
+        ],
         param_extensions={"hint": None, "fieldset": {"legend": {"classes": "govuk-visually-hidden"}}},
     )
 
     @property
     def account_type(self):
         if "all" in self.networks.data:
-            providers = "-".join([p.name for p in BroadcastProvider.PROVIDERS])
+            providers = "-".join(BroadcastProvider.PROVIDERS)
         else:
             providers = "-".join(self.networks.data)
 

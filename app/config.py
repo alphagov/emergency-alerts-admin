@@ -1,5 +1,4 @@
 import os
-from dataclasses import dataclass
 
 header_colors = {
     "local": "#FF8000",
@@ -10,18 +9,11 @@ header_colors = {
 }
 
 
-@dataclass
-class BroadcastProviderDefinition:
-    name: str
-    human_name: str
-
-
 class BroadcastProvider:
-    EE = BroadcastProviderDefinition("ee", "EE")
-    VODAFONE = BroadcastProviderDefinition("vodafone", "Vodafone")
-    THREE = BroadcastProviderDefinition("three", "Three")
-    O2 = BroadcastProviderDefinition("o2", "O2")
-
+    EE = "ee"
+    VODAFONE = "vodafone"
+    THREE = "three"
+    O2 = "o2"
     PROVIDERS = [EE, O2, THREE, VODAFONE]
 
 
