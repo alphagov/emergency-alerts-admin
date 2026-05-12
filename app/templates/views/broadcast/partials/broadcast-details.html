@@ -1,14 +1,8 @@
 {% from "govuk_frontend_jinja/components/tag/macro.html" import govukTag %}
 
-{% macro broadcast_details(broadcast_message, current_service, broadcast_provider_sending_failure=false) %}
+{% macro broadcast_details(broadcast_message, current_service) %}
 {% if broadcast_message.status == 'broadcasting' %}
 <p class="govuk-body govuk-!-margin-bottom-2 live-broadcast live-broadcast--left">
-  {% if broadcast_provider_sending_failure %}
-    {{ govukTag ({
-      'text': 'sending error',
-      'classes': 'govuk-!-margin-right-2 failed-sending-tag'
-    }) }}
-  {% endif %}
   {{ govukTag ({
     'text': 'live',
     'classes': 'govuk-!-margin-right-2 broadcast-tag'
@@ -42,12 +36,6 @@
 {% endif %}
 {% else %}
 <p class="govuk-body govuk-!-margin-bottom-4">
-  {% if broadcast_provider_sending_failure %}
-    {{ govukTag ({
-      'text': 'sending error',
-      'classes': 'govuk-!-margin-right-2 failed-sending-tag'
-    }) }}
-  {% endif %}
   Sent
   {{ broadcast_message.starts_at|format_datetime_human }}.
 </p>

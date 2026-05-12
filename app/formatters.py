@@ -51,7 +51,7 @@ def format_datetime_normal(date):
 
 
 def format_datetime_short(date):
-    return "{} at {}".format(format_date_short(date), format_time(date, include_seconds=True))
+    return "{} at {}".format(format_date_short(date), format_time(date))
 
 
 def format_datetime_relative(date):
@@ -134,13 +134,12 @@ def get_human_day(time, date_prefix=""):
     ).strip()
 
 
-def format_time(date, include_seconds=False):
-    format = "%-I:%M:%S%p" if include_seconds else "%-I:%M%p"
+def format_time(date):
     return (
         {"12:00AM": "Midnight", "12:00PM": "Midday"}
         .get(
-            utc_string_to_aware_gmt_datetime(date).strftime(format),
-            utc_string_to_aware_gmt_datetime(date).strftime(format),
+            utc_string_to_aware_gmt_datetime(date).strftime("%-I:%M%p"),
+            utc_string_to_aware_gmt_datetime(date).strftime("%-I:%M%p"),
         )
         .lower()
     )
@@ -162,10 +161,10 @@ def format_date_human(date):
     return get_human_day(date)
 
 
-def format_datetime_human(date, date_prefix="on"):
+def format_datetime_human(date, date_prefix=""):
     return "{} at {}".format(
-        get_human_day(date, date_prefix=date_prefix),
-        format_time(date, include_seconds=True),
+        get_human_day(date, date_prefix="on"),
+        format_time(date),
     )
 
 
@@ -332,11 +331,10 @@ def character_count(count):
 
 def format_mobile_networks(networks):
     if isinstance(networks, str):
-        networks = [networks]
+        return networks.capitalize()
 
     if not isinstance(networks, list):
         return None
-
     network_list = []
     for network in networks:
         if network in ("three", "vodafone", "o2"):
@@ -408,17 +406,3 @@ def split_text_by_comma_and_newline(input):
 
 def split_text_by_newline(input):
     return [item.strip() for item in re.split(r"[\n]+", input) if item.strip()]
-
-
-def format_provider_status_with_human_time(status, date):
-    status_mapping = {
-        "technical-failure": "Failed ",  # Unused as of writing
-        "sending": "Sending ",
-        "returned-ack": "Sent ",
-        "returned-error": "Failed ",
-    }
-
-    # Say "sending since"
-    date_prefix = "on" if not status == "sending" else "since"
-
-    return status_mapping.get(status, f"(Unknown status {status}) ") + format_datetime_human(date, date_prefix)
