@@ -1,6 +1,7 @@
 {% from "govuk_frontend_jinja/components/summary-list/macro.html" import govukSummaryList %}
 {% from "views/broadcast/macros/enlarged-map.html" import enlarged_map %}
 {% from "views/broadcast/macros/area-map.html" import map %}
+{% from "views/broadcast/macros/estimated-phones.html" import estimated_phone_count_content %}
 {% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
 
 
@@ -92,13 +93,7 @@
 
     {% set count_of_phones_html %}
         <p class="govuk-body">
-            {% if count_of_phones == 0 %}
-                Unknown number of phones
-            {% elif count_of_phones == count_of_phones_likely %}
-                {{ count_of_phones|format_thousands }} phones estimated
-            {% else %}
-                {{ count_of_phones|format_thousands }} to {{ count_of_phones_likely|format_thousands }} phones
-            {% endif %}
+            {{estimated_phone_count_content(count_of_phones, count_of_phones_likely)}}
         </p>
     {% endset %}
 
