@@ -1148,3 +1148,20 @@ def create_new_broadcast(service_id):
         broadcast_message=message,
         form=form,
     )
+
+
+@main.route(
+    "/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/send-alert-summary-email",
+    methods=["GET", "POST"],
+)
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+@service_has_permission("broadcast")
+def send_alert_summary_email(service_id, broadcast_message_id):
+    broadcast_message = BroadcastMessage.from_id(
+        broadcast_message_id,
+        service_id=current_service.id,
+    )
+
+    BroadcastMessage.send_alert_summary_email(broadcast_message_id=broadcast_message_id, service_id=current_service.id)
+
+    return render_current_alert_page(broadcast_message)
