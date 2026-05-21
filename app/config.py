@@ -104,6 +104,12 @@ class Config(object):
         "training": 14400,
     }  # Default alert duration for live services or training (i.e. test or operator services)
 
+    ESTIMATED_PHONE_COUNTS = {
+        "lower_bound": 900_000,
+        "upper_bound": 1_000_000,
+    }  # Thresholds used by the estimated_phone_count_content macro to decide which
+    # "estimated phones" message to show (Less than/Just under/More than 1 million phones)
+
 
 class Hosted(Config):
     HOST = "hosted"
