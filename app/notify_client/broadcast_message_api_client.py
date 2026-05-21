@@ -114,5 +114,18 @@ class BroadcastMessageAPIClient(AdminAPIClient):
             f"/service/{service_id}/broadcast-message-edit-reasons/{broadcast_message_id}/latest-edit-reason"
         )
 
+    def send_alert_summary_email(self, service_id, broadcast_message_id):
+        """
+        Send alert email summary to service contacts
+        """
+        try:
+            self.post(
+                f"/service/{service_id}/broadcast-message/{broadcast_message_id}/alert-summary-email",
+                data=None,
+            )
+        except HTTPError as e:
+            if e.status_code == 400:
+                raise e
+
 
 broadcast_message_api_client = BroadcastMessageAPIClient()
