@@ -292,6 +292,12 @@ class BroadcastMessage(BaseBroadcast):
         table for the broadcast_message_id"""
         return broadcast_message_api_client.get_latest_returned_for_edit_reason(self.service_id, self.id)
 
+    @classmethod
+    def send_alert_summary_email(cls, *, service_id, broadcast_message_id):
+        broadcast_message_api_client.send_alert_summary_email(
+            service_id=service_id, broadcast_message_id=broadcast_message_id
+        )
+
 
 class BroadcastMessages(ModelList):
     model = BroadcastMessage
