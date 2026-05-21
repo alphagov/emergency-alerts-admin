@@ -57,9 +57,13 @@
                 {{ broadcast_message.duration|format_seconds_duration_as_time }}
             </p>
         {% else %}
-            {% if  current_service.broadcast_channel in ["test", "operator"] %}
+            {% if  current_service.broadcast_channel == "test" %}
                 <p class="govuk-!-margin-right-2 duration-preview">
                     {{ config.get('DEFAULT_DURATION_PERIODS')["training"]|format_seconds_duration_as_time }}
+                </p>
+            {% elif current_service.broadcast_channel == "operator" %}
+                <p class="govuk-!-margin-right-2 duration-preview">
+                    {{ config.get('DEFAULT_DURATION_PERIODS')["operator"]|format_seconds_duration_as_time }}
                 </p>
             {% else %}
                 <p class="govuk-!-margin-right-2 duration-preview">

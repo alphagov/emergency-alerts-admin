@@ -1164,8 +1164,10 @@ class ChooseDurationForm(StripWhitespaceForm):
         self.channel = channel
         if duration is None:
             if self.hours.data is None and self.minutes.data is None:
-                if channel in ["test", "operator"]:
+                if channel == "test":
                     hours, minutes = parse_seconds_as_hours_and_minutes(Config.DEFAULT_DURATION_PERIODS.get("training"))
+                elif channel == "operator":
+                    hours, minutes = parse_seconds_as_hours_and_minutes(Config.DEFAULT_DURATION_PERIODS.get("operator"))
                 else:
                     hours, minutes = parse_seconds_as_hours_and_minutes(Config.DEFAULT_DURATION_PERIODS.get("live"))
                 self.hours.data = hours

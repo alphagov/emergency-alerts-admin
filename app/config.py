@@ -102,7 +102,8 @@ class Config(object):
     DEFAULT_DURATION_PERIODS = {
         "live": 81000,
         "training": 14400,
-    }  # Default alert duration for live services or training (i.e. test or operator services)
+        "operator": 900,
+    }  # Default alert durations for live, training or operator
 
 
 class Hosted(Config):
