@@ -252,6 +252,10 @@ class Service(JSONModel):
             Organisation.TYPE_NHS_LOCAL,
         }
 
+    @property
+    def contact_emails(self):
+        return self._dict["email_addresses"]
+
 
 class Services(SerialisedModelCollection):
     model = Service
