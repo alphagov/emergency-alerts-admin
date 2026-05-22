@@ -19,7 +19,7 @@
     {% set sending_error = govukTag ({
         'text': 'sending error',
         'classes': 'govuk-!-margin-right-2 failed-sending-tag'
-      }) if item.id in failed_broadcast_ids else "" %}
+      }) if item.sending_error else "" %}
     <div class="keyline-block">
       <div class="file-list file-list--sectioned govuk-!-margin-bottom-2">
         <h2>

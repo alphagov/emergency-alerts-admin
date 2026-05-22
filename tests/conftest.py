@@ -2324,16 +2324,22 @@ def mock_get_broadcast_message(mocker):
 
 
 @pytest.fixture(scope="function")
-def mock_get_broadcast_messages(
-    mocker,
-    fake_uuid,
-):
+def mock_get_broadcast_messages(mocker, fake_uuid, request):
+    mock_params = getattr(request, "param", {})
+    if mock_params is None:
+        mock_params = {}
+
     def _get(service_id):
+        partial_params = {
+            "service_id": service_id,
+            "template_id": fake_uuid,
+            "created_by_id": fake_uuid,
+            "sending_error": False,
+            **mock_params,
+        }
         partial_json = partial(
             broadcast_message_json,
-            service_id=service_id,
-            template_id=fake_uuid,
-            created_by_id=fake_uuid,
+            **partial_params,
         )
         return [
             partial_json(

@@ -375,7 +375,7 @@ def render_current_alert_page(
         errors = [{"text": INVALID_AREA_ERROR_TEXT}]
 
     broadcast_provider_status_rows = None
-    broadcast_provider_sending_failure = False
+    broadcast_provider_sending_error = False
 
     # Only query for alerts which have been sent
     if broadcast_message.status in {"broadcasting", "completed", "cancelled"}:
@@ -394,7 +394,7 @@ def render_current_alert_page(
             )
             for mno in BroadcastProvider.PROVIDERS
         ]
-        broadcast_provider_sending_failure = provider_statuses_contains_fail_to_send(broadcast_provider_statuses)
+        broadcast_provider_sending_error = provider_statuses_contains_fail_to_send(broadcast_provider_statuses)
 
     return render_template(
         "views/broadcast/view-message.html",
@@ -424,7 +424,7 @@ def render_current_alert_page(
         edit_reasons=broadcast_message.get_returned_for_edit_reasons(),
         returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
         broadcast_provider_status_rows=broadcast_provider_status_rows,
-        broadcast_provider_sending_failure=broadcast_provider_sending_failure,
+        broadcast_provider_sending_error=broadcast_provider_sending_error,
         errors=errors,
         message=broadcast_message,  # Required parameter for map javascripts
     )

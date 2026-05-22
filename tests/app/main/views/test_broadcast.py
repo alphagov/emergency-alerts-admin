@@ -679,21 +679,19 @@ def test_empty_broadcast_dashboard(
     ],
 )
 @pytest.mark.parametrize(
-    "mock_get_broadcast_message_provider_statuses,has_sending_failure",
+    "mock_get_broadcast_messages,has_sending_error",
     [
-        # For the second lot, pass
         (None, False),
-        (sending_failure_statuses, True),
+        ({"sending_error": True}, True),
     ],
-    indirect=["mock_get_broadcast_message_provider_statuses"],
+    indirect=["mock_get_broadcast_messages"],
 )
 @freeze_time("2020-02-20 02:20")
 def test_broadcast_dashboard(
     client_request,
     service_one,
     mock_get_broadcast_messages,
-    mock_get_broadcast_message_provider_statuses,
-    has_sending_failure,
+    has_sending_error,
     user,
 ):
     service_one["permissions"] += ["broadcast"]
@@ -705,7 +703,7 @@ def test_broadcast_dashboard(
 
     assert len(page.select(".ajax-block-container")) == len(page.select("h1")) == 1
 
-    if has_sending_failure:
+    if has_sending_error:
         assert [normalize_spaces(row.text) for row in page.select(".ajax-block-container")[0].select(".file-list")] == [
             "Example template This is a test sending error live since today at 2:20am Area: England Scotland",
             "Half an hour ago This is a test Waiting for approval Area: England Scotland",
@@ -818,22 +816,12 @@ def test_broadcast_dashboard_json(
         create_active_user_create_broadcasts_permissions(),
     ],
 )
-@pytest.mark.parametrize(
-    "mock_get_broadcast_message_provider_statuses,has_sending_failure",
-    [
-        # For the second lot, pass
-        (None, False),
-        (sending_failure_statuses, True),
-    ],
-    indirect=["mock_get_broadcast_message_provider_statuses"],
-)
 @freeze_time("2020-02-20 02:20")
 def test_previous_broadcasts_page(
     client_request,
     service_one,
     mock_get_broadcast_messages,
     mock_get_broadcast_message_provider_statuses,
-    has_sending_failure,
     user,
 ):
     service_one["permissions"] += ["broadcast"]
@@ -845,16 +833,10 @@ def test_previous_broadcasts_page(
 
     assert normalize_spaces(page.select_one("main h1").text) == "Past alerts"
     assert len(page.select(".ajax-block-container")) == 1
-    if has_sending_failure:
-        assert [normalize_spaces(row.text) for row in page.select(".ajax-block-container")[0].select(".file-list")] == [
-            "Example template This is a test sending error Yesterday at 2:20pm Area: England Scotland",
-            "Example template This is a test sending error Yesterday at 2:20am Area: England Scotland",
-        ]
-    else:
-        assert [normalize_spaces(row.text) for row in page.select(".ajax-block-container")[0].select(".file-list")] == [
-            "Example template This is a test Yesterday at 2:20pm Area: England Scotland",
-            "Example template This is a test Yesterday at 2:20am Area: England Scotland",
-        ]
+    assert [normalize_spaces(row.text) for row in page.select(".ajax-block-container")[0].select(".file-list")] == [
+        "Example template This is a test Yesterday at 2:20pm Area: England Scotland",
+        "Example template This is a test Yesterday at 2:20am Area: England Scotland",
+    ]
 
 
 @pytest.mark.parametrize(

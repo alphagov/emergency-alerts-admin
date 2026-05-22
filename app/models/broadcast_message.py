@@ -43,6 +43,7 @@ class BroadcastMessage(BaseBroadcast):
         "updated_by",
         "edit_reason",
         "extra_content",
+        "sending_error",
     }
 
     def __init__(self, _dict):
