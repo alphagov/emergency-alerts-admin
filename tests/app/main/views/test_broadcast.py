@@ -1198,7 +1198,7 @@ def test_broadcast_page(
             [
                 "An area of 100,000 square miles Will get the alert",
                 "An extra area of 6,000 square miles is Likely to get the alert",
-                "40,000,000 phones estimated",
+                "More than 1 million phones estimated",
             ],
         ),
         (
@@ -1213,7 +1213,7 @@ def test_broadcast_page(
             [
                 "An area of 10 square miles Will get the alert",
                 "An extra area of 30 square miles is Likely to get the alert",
-                "10,000 phones estimated",
+                "Less than 1 million phones estimated",
             ],
         ),
         (
@@ -1226,7 +1226,7 @@ def test_broadcast_page(
             [
                 "An area of 6 square miles Will get the alert",
                 "An extra area of 4 square miles is Likely to get the alert",
-                "200,000 to 500,000 phones",
+                "Less than 1 million phones estimated",
             ],
         ),
         (
@@ -1239,7 +1239,7 @@ def test_broadcast_page(
             [
                 "An area of 2,000 square miles Will get the alert",
                 "An extra area of 500 square miles is Likely to get the alert",
-                "600,000 to 700,000 phones",
+                "Less than 1 million phones estimated",
             ],
         ),
         (
@@ -1251,7 +1251,7 @@ def test_broadcast_page(
             [
                 "An area of 6,000 square miles Will get the alert",
                 "An extra area of 1,000 square miles is Likely to get the alert",
-                "1,000,000 phones estimated",
+                "More than 1 million phones estimated",
             ],
         ),
         (
@@ -1264,7 +1264,7 @@ def test_broadcast_page(
             [
                 "An area of 3 square miles Will get the alert",
                 "An extra area of 50 square miles is Likely to get the alert",
-                "10 to 200 phones",
+                "Less than 1 million phones estimated",
             ],
         ),
         (
@@ -1277,7 +1277,7 @@ def test_broadcast_page(
             [
                 "An area of 8 square miles Will get the alert",
                 "An extra area of 30 square miles is Likely to get the alert",
-                "4,000 to 10,000 phones",
+                "Less than 1 million phones estimated",
             ],
         ),
         (
@@ -1288,7 +1288,7 @@ def test_broadcast_page(
             [
                 "An area of 0 square miles Will get the alert",
                 "An extra area of 10 square miles is Likely to get the alert",
-                "80 to 3,000 phones",
+                "Less than 1 million phones estimated",
             ],
         ),
         (
@@ -1303,7 +1303,7 @@ def test_broadcast_page(
             [
                 "An area of 10 square miles Will get the alert",
                 "An extra area of 200 square miles is Likely to get the alert",
-                "200 to 20,000 phones",
+                "Less than 1 million phones estimated",
             ],
         ),
         (
@@ -1321,7 +1321,7 @@ def test_broadcast_page(
             [
                 "An area of 60 square miles Will get the alert",
                 "An extra area of 200 square miles is Likely to get the alert",
-                "3,000 to 80,000 phones",
+                "Less than 1 million phones estimated",
             ],
         ),
     ),
@@ -1411,7 +1411,7 @@ def test_search_flood_warning_areas_page(
     assert [normalize_spaces(item.text) for item in page.select(".area-list-key")] == [
         "An area of 0 square miles Will get the alert",
         "An extra area of 10 square miles is Likely to get the alert",
-        "80 to 3,000 phones",
+        "Less than 1 million phones estimated",
     ]
 
     assert normalize_spaces(page.select(".govuk-button")[5].text) == "Add area"
@@ -1533,7 +1533,7 @@ def test_search_local_authority_bulk_add_areas_page(
             [
                 "An area of 4 square miles Will get the alert",
                 "An extra area of 3 square miles is Likely to get the alert",
-                "80,000 to 100,000 phones",
+                "Less than 1 million phones estimated",
             ],
         ),
         (
@@ -1541,7 +1541,7 @@ def test_search_local_authority_bulk_add_areas_page(
             [
                 "An area of 2,000 square miles Will get the alert",
                 "An extra area of 600 square miles is Likely to get the alert",
-                "7,000 phones estimated",
+                "Less than 1 million phones estimated",
             ],
         ),
         (
@@ -1549,7 +1549,7 @@ def test_search_local_authority_bulk_add_areas_page(
             [
                 "An area of 1 square miles Will get the alert",
                 "An extra area of 3 square miles is Likely to get the alert",
-                "10,000 to 50,000 phones",
+                "Less than 1 million phones estimated",
             ],
         ),
         (
@@ -1557,7 +1557,7 @@ def test_search_local_authority_bulk_add_areas_page(
             [
                 "An area of 5 square miles Will get the alert",
                 "An extra area of 5 square miles is Likely to get the alert",
-                "50,000 to 100,000 phones",
+                "Less than 1 million phones estimated",
             ],
         ),
         (
@@ -1565,7 +1565,7 @@ def test_search_local_authority_bulk_add_areas_page(
             [
                 "An area of 10 square miles Will get the alert",
                 "An extra area of 7 square miles is Likely to get the alert",
-                "100,000 to 200,000 phones",
+                "Less than 1 million phones estimated",
             ],
         ),
         (
@@ -1573,7 +1573,7 @@ def test_search_local_authority_bulk_add_areas_page(
             [
                 "An area of 10 square miles Will get the alert",
                 "An extra area of 7 square miles is Likely to get the alert",
-                "100,000 to 200,000 phones",
+                "Less than 1 million phones estimated",
             ],
         ),
         (
@@ -1581,7 +1581,7 @@ def test_search_local_authority_bulk_add_areas_page(
             [
                 "An area of 30 square miles Will get the alert",
                 "An extra area of 60 square miles is Likely to get the alert",
-                "2,000 to 10,000 phones",
+                "Less than 1 million phones estimated",
             ],
         ),
     ),
@@ -4275,7 +4275,7 @@ def test_preview_broadcast_message_page(
         "England Scotland Use the arrow keys to move the map. "
         + "Use the buttons to zoom the map in or out View larger map",
         "22 hours, 30 minutes",
-        "40,000,000 phones estimated",
+        "More than 1 million phones estimated",
         "Download geoJSON Download CAP XML Download IBAG XML",
     ]
 
@@ -4329,7 +4329,7 @@ def test_start_broadcasting(
             "Operator Statuses Operator Alert Status EE Sent today at 11:23:23pm O2 Three Vodafone",
             [
                 "live since 20 February at 8:20pm Stop sending",
-                "40,000,000 phones estimated",
+                "More than 1 million phones estimated",
                 "Broadcasting stops tomorrow at 11:23:23pm.",
                 "Created by Alice on 20 February at 10:20:20am.",
                 "Submitted by Test User 2 on 20 February at 8:20:20pm.",
@@ -4351,7 +4351,7 @@ def test_start_broadcasting(
             "Operator Statuses Operator Alert Status EE Failed today at 11:23:23pm O2 Three Vodafone",
             [
                 "sending error live since 20 February at 8:20pm Stop sending",
-                "40,000,000 phones estimated",
+                "More than 1 million phones estimated",
                 "Broadcasting stops tomorrow at 11:23:23pm.",
                 "Created by Alice on 20 February at 10:20:20am.",
                 "Submitted by Test User 2 on 20 February at 8:20:20pm.",
@@ -4368,7 +4368,7 @@ def test_start_broadcasting(
             "Operator Statuses Operator Alert Status EE Sent today at 11:23:23pm O2 Three Vodafone",
             [
                 "live since 20 February at 8:20pm Stop sending",
-                "40,000,000 phones estimated",
+                "More than 1 million phones estimated",
                 "Broadcasting stops tomorrow at 11:23:23pm.",
                 "Created from an API call on 20 February at 10:20:20am.",
                 "Submitted by Test User 2 on 20 February at 8:20:20pm.",
@@ -4390,7 +4390,7 @@ def test_start_broadcasting(
             "Operator Statuses Operator Alert Status EE Sent today at 11:23:23pm O2 Three Vodafone",
             [
                 "Sent on 20 February at 8:20:20pm.",
-                "40,000,000 phones estimated",
+                "More than 1 million phones estimated",
                 "Created by Alice on 20 February at 10:20:20am.",
                 "Submitted by Test User 2 on 20 February at 8:20:20pm.",
                 "Returned by Test User on 20 February at 8:25:20pm.",
@@ -4412,7 +4412,7 @@ def test_start_broadcasting(
             "Operator Statuses Operator Alert Status EE Failed today at 11:23:23pm O2 Three Vodafone",
             [
                 "sending error Sent on 20 February at 8:20:20pm.",
-                "40,000,000 phones estimated",
+                "More than 1 million phones estimated",
                 "Created by Alice on 20 February at 10:20:20am.",
                 "Submitted by Test User 2 on 20 February at 8:20:20pm.",
                 "Returned by Test User on 20 February at 8:25:20pm.",
@@ -4433,7 +4433,7 @@ def test_start_broadcasting(
             "Operator Statuses Operator Alert Status EE Sent today at 11:23:23pm O2 Three Vodafone",
             [
                 "Sent on 20 February at 8:20:20pm.",
-                "40,000,000 phones estimated",
+                "More than 1 million phones estimated",
                 "Created from an API call on 20 February at 10:20:20am.",
                 "Submitted by Test User 2 on 20 February at 8:20:20pm.",
                 "Returned by Test User on 20 February at 8:25:20pm.",
@@ -4455,7 +4455,7 @@ def test_start_broadcasting(
             "Operator Statuses Operator Alert Status EE Sent today at 11:23:23pm O2 Three Vodafone",
             [
                 "Sent on 20 February at 8:20:20pm.",
-                "40,000,000 phones estimated",
+                "More than 1 million phones estimated",
                 "Created by Alice on 20 February at 10:20:20am.",
                 "Submitted by Test User 2 on 20 February at 8:20:20pm.",
                 "Returned by Test User on 20 February at 8:25:20pm.",
@@ -4480,7 +4480,7 @@ def test_start_broadcasting(
             + "Sent today at 11:24:24pm O2 Three Vodafone",
             [
                 "Sent on 20 February at 8:20:20pm.",
-                "40,000,000 phones estimated",
+                "More than 1 million phones estimated",
                 "Created by Alice on 20 February at 10:20:20am.",
                 "Submitted by Test User 2 on 20 February at 8:20:20pm.",
                 "Returned by Test User on 20 February at 8:25:20pm.",
@@ -4504,7 +4504,7 @@ def test_start_broadcasting(
             + "Sent today at 11:24:24pm O2 Three Vodafone",
             [
                 "Sent on 20 February at 8:20:20pm.",
-                "40,000,000 phones estimated",
+                "More than 1 million phones estimated",
                 "Created by Alice on 20 February at 10:20:20am.",
                 "Submitted by Test User 2 on 20 February at 8:20:20pm.",
                 "Returned by Test User on 20 February at 8:25:20pm.",
@@ -4580,7 +4580,7 @@ def test_view_broadcast_message_page(
             },
             [
                 "Rejected yesterday at 9:21:21pm by Carol.",
-                "40,000,000 phones estimated",
+                "More than 1 million phones estimated",
                 "Created by Alice on 20 February at 7:20:20pm.",
                 "Submitted by Test User 2 on 20 February at 8:20:20pm.",
                 "Returned by Test User on 20 February at 8:25:20pm.",
@@ -6974,7 +6974,7 @@ def test_view_draft_broadcast_message_page(
         "England Scotland Use the arrow keys to move the map. "
         + "Use the buttons to zoom the map in or out View larger map",
         "3 hours",
-        "40,000,000 phones estimated",
+        "More than 1 million phones estimated",
         "Download geoJSON Download CAP XML Download IBAG XML",
     ]
 

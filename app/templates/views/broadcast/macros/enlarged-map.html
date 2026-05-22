@@ -1,3 +1,4 @@
+{% from "views/broadcast/macros/estimated-phones.html" import estimated_phone_count_content %}
 {% macro enlarged_map(estimated_area, estimated_area_with_bleed, count_of_phones, count_of_phones_likely, is_custom_broadcast, areas) %}
 {% if is_custom_broadcast %}
   {% set area_color = "#0201FE" %}
@@ -43,13 +44,7 @@
       alert
     </p>
     <p class="area-list-key area-list-key--phone-estimate">
-      {% if count_of_phones == 0 %}
-        Unknown number of phones
-      {% elif count_of_phones == count_of_phones_likely %}
-        {{ count_of_phones|format_thousands }} phones estimated
-      {% else %}
-        {{ count_of_phones|format_thousands }} to {{ count_of_phones_likely|format_thousands }} phones
-      {% endif %}
+      {{estimated_phone_count_content(count_of_phones, count_of_phones_likely)}}
     </p>
 {% endif %}
 {% endmacro %}
