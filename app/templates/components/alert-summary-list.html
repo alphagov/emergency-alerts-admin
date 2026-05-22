@@ -257,36 +257,32 @@
         }
     ] %}
 
-    {% if current_service.contact_emails %}
-    {% set prealert_section_html %}
-        <p class="govuk-body">
-          Send to channel contacts:
-          {% for contact_email in current_service.contact_emails %}
-            <p>{{ contact_email.email_address }}</p>
-          {% endfor %}
-        </p>
-    {% endset %}
+    {% if current_service.contact_emails and display_action %}
+        {% set alert_summary_email_section_html %}
+            {% for contact_email in current_service.contact_emails %}
+                <p class="govuk-body">{{ contact_email.email_address }}</p>
+            {% endfor %}
+        {% endset %}
 
-    {% set summaryListItems = summaryListItems + [
-        {
-        'key': {
-            'text': "Pre Alert"
-        },
-        'value': {
-            'html': prealert_section_html
-        },
-        'actions': {
-            'items': [
+        {% set summaryListItems = summaryListItems + [
             {
-                'href': url_for(".send_alert_summary_email", service_id=current_service.id, broadcast_message_id=broadcast_message.id,),
-                'text': "Send summary email",
-                'visuallyHiddenText': "to channel contacts"
+            'key': {
+                'text': "Send summary email"
+            },
+            'value': {
+                'html': alert_summary_email_section_html
+            },
+            'actions': {
+                'items': [
+                {
+                    'href': url_for(".send_alert_summary_email", service_id=current_service.id, broadcast_message_id=broadcast_message.id,),
+                    'text': "Send",
+                    'visuallyHiddenText': "summary email to service contacts"
+                }
+                ]
+                }
             }
-            ]
-            }
-        }
-    ] %}
-
+        ] %}
     {% endif %}
 
 
