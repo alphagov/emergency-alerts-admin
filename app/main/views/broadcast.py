@@ -151,6 +151,7 @@ def broadcast_dashboard_previous(service_id):
     ]
     filtered_broadcasts = _filter_broadcasts(broadcast_messages, filter)
     filtered_and_sorted_broadcasts = _sort_broadcasts(filtered_broadcasts, sort)
+
     return render_template(
         "views/broadcast/previous-broadcasts.html",
         broadcasts=filtered_and_sorted_broadcasts,
@@ -203,6 +204,7 @@ def get_broadcast_dashboard_partials(service_id):
     ]
     filtered_broadcasts = _filter_broadcasts(broadcast_messages, filter)
     filtered_and_sorted_broadcasts = _sort_broadcasts(filtered_broadcasts, sort)
+
     return dict(
         current_broadcasts=render_template(
             "views/broadcast/partials/dashboard-table.html",

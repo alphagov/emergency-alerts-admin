@@ -43,6 +43,7 @@ class BroadcastMessage(BaseBroadcast):
         "updated_by",
         "edit_reason",
         "extra_content",
+        "sending_error",
     }
 
     def __init__(self, _dict):
@@ -291,6 +292,9 @@ class BroadcastMessage(BaseBroadcast):
         """Returns latest edit_reason record submitted to the broadcast_message_edit_reasons
         table for the broadcast_message_id"""
         return broadcast_message_api_client.get_latest_returned_for_edit_reason(self.service_id, self.id)
+
+    def get_broadcast_provider_statuses(self):
+        return broadcast_message_api_client.get_broadcast_provider_statuses(self.service_id, self.id)
 
 
 class BroadcastMessages(ModelList):

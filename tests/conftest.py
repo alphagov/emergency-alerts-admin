@@ -2324,16 +2324,22 @@ def mock_get_broadcast_message(mocker):
 
 
 @pytest.fixture(scope="function")
-def mock_get_broadcast_messages(
-    mocker,
-    fake_uuid,
-):
+def mock_get_broadcast_messages(mocker, fake_uuid, request):
+    mock_params = getattr(request, "param", {})
+    if mock_params is None:
+        mock_params = {}
+
     def _get(service_id):
+        partial_params = {
+            "service_id": service_id,
+            "template_id": fake_uuid,
+            "created_by_id": fake_uuid,
+            "sending_error": False,
+            **mock_params,
+        }
         partial_json = partial(
             broadcast_message_json,
-            service_id=service_id,
-            template_id=fake_uuid,
-            created_by_id=fake_uuid,
+            **partial_params,
         )
         return [
             partial_json(
@@ -2462,6 +2468,17 @@ def mock_get_latest_edit_reason(mocker):
         return_value=broadcast_message_edit_reason_partial(
             edit_reason="TESTING", created_at="2020-02-20T20:20:20.000000"
         ),
+    )
+
+
+@pytest.fixture(scope="function")
+def mock_get_broadcast_message_provider_statuses(mocker, request):
+    return_value = getattr(request, "param", None)
+
+    return mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_provider_statuses",
+        # Default to no real statuses (no failure)
+        return_value=return_value or {"ee": {"alert": [], "cancel": []}},
     )
 
 
