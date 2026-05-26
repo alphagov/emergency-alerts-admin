@@ -293,9 +293,14 @@ class BroadcastMessage(BaseBroadcast):
         return broadcast_message_api_client.get_latest_returned_for_edit_reason(self.service_id, self.id)
 
     @classmethod
-    def send_alert_summary_email(cls, *, service_id, broadcast_message_id):
+    def send_alert_summary_email(cls, *, service_id, broadcast_message_id, geojson, cap_xml, ibag_xml, count_of_phones):
         broadcast_message_api_client.send_alert_summary_email(
-            service_id=service_id, broadcast_message_id=broadcast_message_id
+            service_id=service_id,
+            broadcast_message_id=broadcast_message_id,
+            data=({"geojson": geojson} if geojson else {})
+            | ({"cap_xml": cap_xml} if cap_xml else {})
+            | ({"ibag_xml": ibag_xml} if ibag_xml else {})
+            | ({"count_of_phones": count_of_phones}),
         )
 
 
