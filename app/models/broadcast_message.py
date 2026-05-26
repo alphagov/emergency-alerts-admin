@@ -240,7 +240,7 @@ class BroadcastMessage(BaseBroadcast):
 
     def approve_broadcast(self, channel):
         if self.duration == 0 or self.duration is None:
-            if channel in {"test", "operator"}:
+            if channel in {"operator"}:
                 ttl = timedelta(hours=4, minutes=0)
             else:
                 ttl = timedelta(hours=22, minutes=30)
