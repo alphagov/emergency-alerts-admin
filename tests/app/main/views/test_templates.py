@@ -1215,7 +1215,10 @@ def test_edit_content_redirects_to_write_template_page_and_updates_template(
 
     assert [normalize_spaces(p.text) for p in page.select("label")] == [
         "Reference",
-        "Alert message",
+        (
+            "Alert message If you add special characters to the alert message "
+            "(for example letters with diacritics), the character limit will be reduced to 615."
+        ),
     ]
     assert normalize_spaces(page.select_one(".govuk-input")["value"]) == "Sample Template"
     assert normalize_spaces(page.select_one("textarea").text) == "Template <em>content</em> with & entity"

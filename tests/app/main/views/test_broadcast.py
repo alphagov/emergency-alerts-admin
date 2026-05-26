@@ -880,7 +880,10 @@ def test_write_new_broadcast_page(
     assert normalize_spaces(page.select_one("label[for=reference]").text) == "Reference"
     assert page.select_one("input[type=text]")["name"] == "reference"
 
-    assert normalize_spaces(page.select_one("label[for=content]").text) == "Alert message"
+    assert normalize_spaces(page.select_one("label[for=content]").text) == (
+        "Alert message If you add special characters to the alert message "
+        "(for example letters with diacritics), the character limit will be reduced to 615."
+    )
     assert page.select_one("textarea")["name"] == "content"
     assert page.select_one("textarea")["data-notify-module"] == "enhanced-textbox"
     assert page.select_one("textarea")["data-highlight-placeholders"] == "false"
@@ -6229,7 +6232,10 @@ def test_edit_broadcast_page(
     assert normalize_spaces(page.select_one("label[for=reference]").text) == "Reference"
     assert page.select_one("input[type=text]")["name"] == "reference"
 
-    assert normalize_spaces(page.select_one("label[for=content]").text) == "Alert message"
+    assert normalize_spaces(page.select_one("label[for=content]").text) == (
+        "Alert message If you add special characters to the alert message "
+        "(for example letters with diacritics), the character limit will be reduced to 615."
+    )
     assert normalize_spaces(page.select_one("textarea").text) == "This is a test for edit_broadcast"
     assert page.select_one("textarea")["name"] == "content"
     assert page.select_one("textarea")["data-notify-module"] == "enhanced-textbox"
