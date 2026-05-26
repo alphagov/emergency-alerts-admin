@@ -543,6 +543,7 @@ class GovukTextareaBulkField(GovukTextareaField):
         library_ids=None,
         item,
         area_id_parser,
+        maximum=25,
         **kwargs,
     ):
         # area IDs from the library to check against
@@ -553,6 +554,9 @@ class GovukTextareaBulkField(GovukTextareaField):
 
         # How we refer to a singular area i.e. Local Authority
         self.item = item
+
+        # Maximum number of areas allowed in the list
+        self.max = maximum
 
         validators = kwargs.pop("validators", [])
 
@@ -588,6 +592,11 @@ class GovukTextareaBulkField(GovukTextareaField):
                 self.errors.append(f"{self.item} '{id_}' currently appears in the list more than once")
             checked_area_ids.add(id_)
 
+    def _check_number_of_ids_less_than_maximum(self, form, ids):
+        if len(ids) > self.max:
+            self.error_code = "exceeds_limit"
+            self.errors.append(f"Maximum of {self.max} areas in an emergency alert")
+
     def validate(self, form, extra_validators=None):
         if not super().validate(form, extra_validators):
             return False
@@ -604,6 +613,7 @@ class GovukTextareaBulkField(GovukTextareaField):
         # Custom validation methods
         self._check_for_invalid_values(ids, area_ids)
         self._check_ids_provided_are_unique(form, ids)
+        self._check_number_of_ids_less_than_maximum(form, ids)
 
         return not self.errors
 
@@ -2007,6 +2017,7 @@ class FloodWarningBulkAreasForm(StripWhitespaceForm):
                 "missing_data": "Enter at least 1 Flood Warning TA code",
                 "duplicates": "All Flood Warning TA codes must be unique",
                 "invalid": "Flood Warning TA code not found",
+                "exceeds_limit": "Maximum of 25 TA codes in an emergency alert",
             }
 
             if message := error_messages.get(self.areas.error_code):
@@ -2041,6 +2052,7 @@ class LocalAuthorityBulkAreasForm(StripWhitespaceForm):
                 "missing_data": "Enter at least 1 local authority",
                 "duplicates": "All local authorities must be unique",
                 "invalid": "Local authority not found",
+                "exceeds_limit": "Maximum of 25 local authorities allowed as a list in one emergency alert",
             }
 
             if message := error_messages.get(self.areas.error_code):
