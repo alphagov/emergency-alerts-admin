@@ -1209,14 +1209,14 @@ class ChooseDurationForm(StripWhitespaceForm):
             self.minutes.errors.append("Duration must be at least 5 minutes")
             return False
 
-        if channel in ["test", "operator"]:
+        if channel in ["operator"]:
             if duration > timedelta(hours=4):
                 if hours > 4:
                     self.hours.errors.append("Duration must not be greater than 4 hours")
                 if hours == 4:
                     self.minutes.errors.append("Duration must not be greater than 4 hours")
                 return False
-        elif channel in ["government", "severe"]:
+        elif channel in ["government", "severe", "test"]:
             if duration > timedelta(hours=22, minutes=30):
                 if hours > 22:
                     self.hours.errors.append("Maximum duration is 22 hours, 30 minutes")
