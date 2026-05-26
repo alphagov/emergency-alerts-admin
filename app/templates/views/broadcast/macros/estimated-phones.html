@@ -1,0 +1,14 @@
+{% macro estimated_phone_count_content(count_of_phones, count_of_phones_likely) %}
+    {% set lower = config.ESTIMATED_PHONE_COUNTS["lower_bound"] %}
+    {% set upper = config.ESTIMATED_PHONE_COUNTS["upper_bound"] %}
+
+    {% if count_of_phones == 0 %}
+        Unknown number of phones
+    {% elif count_of_phones_likely < lower %}
+        Less than 1 million phones estimated
+    {% elif lower <= count_of_phones_likely < upper %}
+        Just under 1 million phones estimated
+    {% else %}
+        More than 1 million phones estimated
+    {% endif %}
+{% endmacro %}
