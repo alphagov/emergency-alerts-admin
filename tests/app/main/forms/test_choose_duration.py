@@ -3,6 +3,7 @@ from werkzeug.datastructures import MultiDict
 
 from app.main.forms import ChooseDurationForm
 
+
 @pytest.mark.parametrize(
     "channel, hours, minutes",
     (
@@ -14,8 +15,7 @@ from app.main.forms import ChooseDurationForm
 def test_choose_duration_has_default(channel, hours, minutes):
     # Form initialised with no data so uses defaults
     form = ChooseDurationForm(channel, duration=None, formdata={})
-    assert form.data == {'hours': hours, 'minutes': minutes}
-
+    assert form.data == {"hours": hours, "minutes": minutes}
 
 
 @pytest.mark.parametrize(
