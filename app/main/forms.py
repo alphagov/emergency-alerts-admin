@@ -2087,3 +2087,16 @@ class ChooseTemplateFieldsForm(StripWhitespaceForm):
         },
         validators=[DataRequired(message="Select which fields you'd like to use to populate template")],
     )
+
+
+class EmailSummaryForm(StripWhitespaceForm):
+    alert_message = HiddenField("alert_message")
+    additional_info = HiddenField("additional_info")
+    duration_minutes = HiddenField("duration_minutes")
+    channel = HiddenField("channel")
+    count_of_phones = HiddenField("count_of_phones")
+
+    extra_content = TextAreaField(
+        "",
+        validators=[DataRequired(message="Enter alert summary"), NoCommasInPlaceHolders()],
+    )
