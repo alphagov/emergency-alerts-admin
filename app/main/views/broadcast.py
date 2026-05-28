@@ -1,4 +1,5 @@
 import json
+import os
 from operator import attrgetter
 
 from emergency_alerts_utils.template import BroadcastPreviewTemplate
@@ -24,6 +25,7 @@ from app.main.forms import (
     ChooseDurationForm,
     ChooseExtraContentForm,
     ConfirmBroadcastForm,
+    EmailSummaryForm,
     NewBroadcastForm,
     RejectionReasonForm,
     ReturnForEditForm,
@@ -1086,28 +1088,56 @@ def create_new_broadcast(service_id):
 
 
 @main.route(
-    "/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/send-alert-summary-email",
+    "/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/alert-summary-email",
     methods=["GET", "POST"],
 )
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
-def send_alert_summary_email(service_id, broadcast_message_id):
+def alert_summary_email(service_id, broadcast_message_id):
     broadcast_message = BroadcastMessage.from_id(
         broadcast_message_id,
         service_id=current_service.id,
     )
 
-    geojson = generate_geojson(broadcast_message)
-    cap_xml = generate_unsigned_xml(broadcast_message, "cap")
-    ibag_xml = generate_unsigned_xml(broadcast_message, "ibag")
+    geojson = None
+    cap_xml = None
+    ibag_xml = None
 
-    BroadcastMessage.send_alert_summary_email(
-        broadcast_message_id=broadcast_message_id,
-        service_id=current_service.id,
-        geojson=geojson,
-        cap_xml=cap_xml,
-        ibag_xml=ibag_xml,
-        count_of_phones=broadcast_message.count_of_phones_likely,
+    form = EmailSummaryForm()
+    form.alert_message.data = broadcast_message.content
+    form.additional_info.data = broadcast_message.extra_content
+    form.duration_minutes.data = str(int(broadcast_message.duration // 60))
+    form.channel.data = current_service.broadcast_channel
+    form.count_of_phones.data = str(broadcast_message.estimated_count_of_phones)
+    form.extra_content.data = (
+        f"An alert is going to be sent from the '{current_service.name} - "
+        f"{os.environ.get('ENVIRONMENT')}' service with the following details. "
+        f"The broadcast channel will be '{current_service.broadcast_channel}'."
     )
 
-    return render_current_alert_page(broadcast_message)
+    # Grab any updated values, and the json/cap now
+    if request.method == "POST":
+        form.extra_content.data = request.form.get("extra_content")
+        form.count_of_phones.data = request.form.get("count_of_phones")
+        geojson = generate_geojson(broadcast_message)
+        cap_xml = generate_unsigned_xml(broadcast_message, "cap")
+        ibag_xml = generate_unsigned_xml(broadcast_message, "ibag")
+
+    if form.validate_on_submit():
+        BroadcastMessage.send_alert_summary_email(
+            broadcast_message_id=broadcast_message_id,
+            service_id=current_service.id,
+            geojson=geojson,
+            cap_xml=cap_xml,
+            ibag_xml=ibag_xml,
+            extra_content=form.extra_content.data,
+            count_of_phones=form.count_of_phones.data,
+        )
+        return render_current_alert_page(broadcast_message)
+
+    return render_template(
+        "views/broadcast/email-summary.html",
+        form=form,
+        broadcast_message=broadcast_message,
+        back_link=request.referrer,
+    )
