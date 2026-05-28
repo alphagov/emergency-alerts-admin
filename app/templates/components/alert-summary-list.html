@@ -275,7 +275,7 @@
             'actions': {
                 'items': [
                 {
-                    'href': url_for(".send_alert_summary_email", service_id=current_service.id, broadcast_message_id=broadcast_message.id,),
+                    'href': url_for(".alert_summary_email", service_id=current_service.id, broadcast_message_id=broadcast_message.id,),
                     'text': "Send",
                     'visuallyHiddenText': "summary email to service contacts"
                 }
