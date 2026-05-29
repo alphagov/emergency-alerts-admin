@@ -18,13 +18,13 @@ from tests import (
 )
 from tests.app.broadcast_areas.custom_polygons import (
     ABERDEEN_CITY,
-    ADUR,
     BD1_1EE,
     BD1_1EE_1,
     BD1_1EE_2,
     BD1_1EE_3,
     BRISTOL,
     CUMBRIA_FLOOD_WARNING_AREA,
+    DEVON_AND_ISLES_OF_SCILLY,
     HG3_2RL,
     MULTIPLE_ENGLAND,
     MULTIPLE_FLOOD_WARNING_AREAS,
@@ -2487,13 +2487,14 @@ def test_add_local_authority_areas_in_bulk_with_newline_delimiter(
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
         message_type="broadcast",
-        _data={"areas": ["Adur"]},
+        _data={"areas": ["Devon\nIsles of Scilly"]},
         _follow_redirects=True,
     )
 
     assert normalize_spaces(page.select_one("h1").text) == "Confirm the area for the alert"
     assert [normalize_spaces(item.text) for item in page.select("ul.area-list li.area-list-item")] == [
-        "Adur Remove Adur"
+        "Devon Remove Devon",
+        "Isles of Scilly Remove Isles of Scilly",
     ]
 
     assert mock_get_broadcast_message.call_count == 3
@@ -2504,10 +2505,10 @@ def test_add_local_authority_areas_in_bulk_with_newline_delimiter(
 
     actual_areas = mock_update_broadcast_message_kwargs["data"]["areas"]
     expected_areas = {
-        "ids": ["lad25-E07000223"],
-        "names": ["Adur"],
-        "aggregate_names": ["Adur"],
-        "simple_polygons": [ADUR],
+        "ids": ["ctyua25-E10000008", "lad25-E06000053"],
+        "names": ["Devon", "Isles of Scilly"],
+        "aggregate_names": ["Devon", "Isles of Scilly"],
+        "simple_polygons": DEVON_AND_ISLES_OF_SCILLY,
     }
 
     assert sorted(actual_areas["ids"]) == sorted(expected_areas["ids"])
