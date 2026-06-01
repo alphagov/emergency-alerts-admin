@@ -255,12 +255,10 @@ def test_archive_user_shows_error_message_if_user_cannot_be_archived(
                 status_code=400,
                 json={
                     "result": "error",
-                    "message": "User can’t be removed from a service - check all services have another "
-                    "team member with manage_settings",
+                    "message": "User can’t be archived - check all services the user belongs to have other active team members",
                 },
             ),
-            message="User can’t be removed from a service - check all services have another team member "
-            "with manage_settings",
+            message="User can’t be archived - check all services the user belongs to have other active team members",
         ),
     )
 
@@ -274,7 +272,7 @@ def test_archive_user_shows_error_message_if_user_cannot_be_archived(
     assert normalize_spaces(page.select_one("h1").text) == "Platform admin user"
     assert (
         normalize_spaces(page.select_one(".banner-dangerous").text)
-        == "User can’t be removed from a service - check all services have another team member with manage_settings"
+        == "User can’t be archived - check all services the user belongs to have other active team members"
     )
 
 

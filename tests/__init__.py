@@ -95,7 +95,6 @@ def user_json(
                 "view_activity",
                 "manage_users",
                 "manage_templates",
-                "manage_settings",
                 "manage_api_keys",
             ]
         }

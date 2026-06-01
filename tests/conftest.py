@@ -509,7 +509,6 @@ def platform_admin_user(fake_uuid):
             SERVICE_ONE_ID: [
                 "manage_users",
                 "manage_templates",
-                "manage_settings",
                 "manage_api_keys",
                 "view_activity",
             ]
@@ -583,7 +582,6 @@ def active_user_with_permission_to_two_services(fake_uuid):
     permissions = [
         "manage_users",
         "manage_templates",
-        "manage_settings",
         "manage_api_keys",
         "view_activity",
     ]
@@ -927,7 +925,7 @@ def sample_invite(mocker, service_one):
     from_user = service_one["users"][0]
     email_address = "invited_user@test.gov.uk"
     service_id = service_one["id"]
-    permissions = "view_activity,manage_settings,manage_users,manage_api_keys"
+    permissions = "view_activity,manage_users,manage_api_keys"
     created_at = str(datetime.now(timezone.utc))
     auth_type = "sms_auth"
     folder_permissions = []
@@ -1963,7 +1961,6 @@ def create_active_user_no_api_key_permission(with_unique_id=False):
         permissions={
             SERVICE_ONE_ID: [
                 "manage_templates",
-                "manage_settings",
                 "manage_users",
                 "view_activity",
             ]
@@ -2017,7 +2014,6 @@ def create_service_one_admin(**overrides):
             SERVICE_ONE_ID: [
                 "manage_users",
                 "manage_templates",
-                "manage_settings",
                 "manage_api_keys",
                 "view_activity",
             ]
