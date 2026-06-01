@@ -1,0 +1,79 @@
+{% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
+{% from "govuk_frontend_jinja/components/details/macro.html" import govukDetails %}
+{% from "components/page-header.html" import page_header %}
+{% from "components/page-footer.html" import page_footer %}
+{% from "components/form.html" import form_wrapper %}
+{% from "components/error-summary.html" import errorSummary %}
+{% from "components/textbox.html" import textbox %}
+{% from "views/broadcast/macros/estimated-phones.html" import estimated_phone_count_content %}
+
+{% extends "withnav_template.html" %}
+
+{% block service_page_title %}
+  Send summary email
+{% endblock %}
+
+{% block backLink %}
+    {{ govukBackLink({ "href": back_link }) }}
+{% endblock %}
+
+{% block maincolumn_content %}
+  {{ errorSummary(form) }}
+
+  {{ page_header('Send summary email')}}
+
+  {% call form_wrapper(class="govuk-!-margin-top-3") %}
+    <input type="hidden" name="count_of_phones" value="{{estimated_phone_count_content(form.count_of_phones.data|int, form.count_of_phones.data|int)}}" />
+    <div class="govuk-!-margin-top-2 govuk-!-margin-bottom-3">
+      <div>
+        <p class="govuk-body">
+          An email will be sent to the service email contacts with the following content.  The Alert Summary
+          text can be updated before sending if required.
+        </p>
+        <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+        <p class="govuk-body govuk-!-margin-bottom-0">
+          <b>Alert Summary</b>
+          {{ textbox(
+            form.extra_content,
+            highlight_placeholders=False,
+            autosize=True,
+            width='1-1',
+            rows=5,
+            extra_form_group_classes='govuk-!-margin-bottom-2',
+          ) }}
+        </p>
+        <p class="govuk-body">
+          <b>Alert Message</b><br>{{ form.alert_message.data }}
+        </p>
+        <p class="govuk-body">
+          <b>Phone Estimate</b><br>
+          {{estimated_phone_count_content(form.count_of_phones.data|int, form.count_of_phones.data|int)}}
+        </p>
+        <p class="govuk-body">
+            <b>Additional Info</b><br>{{ form.additional_info.data }}
+        </p>
+        <p class="govuk-body">
+          <b>Alert duration</b><br>{{ form.duration_minutes.data }} minutes
+        </p>
+        <p class="govuk-body">
+          <b>Attachments</b>
+          <ul class="govuk-list govuk-list--bullet">
+            <li>areas.geojson - areas covered by this alert, in geoJSON format</li>
+            <li>areas.cap.xml - areas covered by this alert, in CAP XML format</li>
+            <li>areas.ibag.xml - areas covered by this alert, in IBAG XML format</li>
+          </ul>
+        </p>
+
+        <p class="govuk-body">
+          If you require assistance, or wish to unsubscribe from future advance notice notifications please contact
+          the <a href="mailto:emergency-alerts-support@digital.cabinet-office.gov.uk" class="govuk-link">Emergency Alerts Support</a>
+          team.
+        </p>
+      </div>
+
+
+    </div>
+    {{ page_footer('Send Email', button_name='send') }}
+  {% endcall %}
+
+{% endblock %}
