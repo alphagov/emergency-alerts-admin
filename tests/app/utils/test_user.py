@@ -41,7 +41,7 @@ def test_permissions(
 ):
     request.view_args.update({"service_id": "foo"})
 
-    api_user_active["permissions"] = {"foo": ["manage_users", "manage_templates", "manage_settings"]}
+    api_user_active["permissions"] = {"foo": ["manage_users", "manage_templates"]}
     api_user_active["services"] = ["foo", "bar"]
 
     client_request.login(api_user_active)
@@ -149,7 +149,7 @@ def test_user_with_no_permissions_to_service_goes_to_templates(
     client_request,
     api_user_active,
 ):
-    api_user_active["permissions"] = {"foo": ["manage_users", "manage_templates", "manage_settings"]}
+    api_user_active["permissions"] = {"foo": ["manage_users", "manage_templates"]}
     api_user_active["services"] = ["foo", "bar"]
     client_request.login(api_user_active)
     request.view_args = {"service_id": "bar"}
