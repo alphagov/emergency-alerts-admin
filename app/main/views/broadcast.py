@@ -1106,9 +1106,9 @@ def alert_summary_email(service_id, broadcast_message_id):
     form = EmailSummaryForm()
     form.alert_message.data = broadcast_message.content
     form.additional_info.data = broadcast_message.extra_content
-    form.duration_minutes.data = str(int(broadcast_message.duration // 60))
+    form.duration.data = broadcast_message.duration
     form.channel.data = current_service.broadcast_channel
-    form.count_of_phones.data = str(broadcast_message.estimated_count_of_phones)
+    form.count_of_phones.data = str(broadcast_message.count_of_phones)
     form.extra_content.data = (
         f"An alert is going to be sent from the '{current_service.name} - "
         f"{os.environ.get('ENVIRONMENT')}' service with the following details. "
@@ -1119,6 +1119,7 @@ def alert_summary_email(service_id, broadcast_message_id):
     if request.method == "POST":
         form.extra_content.data = request.form.get("extra_content")
         form.count_of_phones.data = request.form.get("count_of_phones")
+        form.duration.data = request.form.get("duration")
         geojson = generate_geojson(broadcast_message)
         cap_xml = generate_unsigned_xml(broadcast_message, "cap")
         ibag_xml = generate_unsigned_xml(broadcast_message, "ibag")
@@ -1132,6 +1133,7 @@ def alert_summary_email(service_id, broadcast_message_id):
             ibag_xml=ibag_xml,
             extra_content=form.extra_content.data,
             count_of_phones=form.count_of_phones.data,
+            duration=form.duration.data,
         )
         return render_current_alert_page(broadcast_message)
 

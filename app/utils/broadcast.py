@@ -17,6 +17,7 @@ from app.broadcast_areas.models import (
     CustomBroadcastArea,
     CustomBroadcastAreas,
 )
+from app.config import Config
 from app.formatters import format_number_no_scientific, round_to_significant_figures
 from app.main.forms import (
     ConfirmBroadcastForm,
@@ -675,10 +676,21 @@ def generate_unsigned_xml(broadcast_message, xml_type):
             convert_utc_datetime_to_cap_standard_string(
                 fromisoformat_allow_z_tz(broadcast_message.finishes_at)
                 if broadcast_message.finishes_at
-                else datetime.now(timezone.utc) + timedelta(seconds=broadcast_message.broadcast_duration)
+                else datetime.now(timezone.utc)
+                + timedelta(seconds=_get_broadcast_duration(broadcast_message.broadcast_duration))
             )
         ),
     }
 
     cap_xml = generate_xml_body(event)
     return cap_xml
+
+
+def _get_broadcast_duration(broadcast_duration):
+    if broadcast_duration is not None:
+        return int(broadcast_duration)
+
+    if current_service.broadcast_channel in ["test", "operator"]:
+        return Config.DEFAULT_DURATION_PERIODS.get("training", 30)
+    else:
+        return Config.DEFAULT_DURATION_PERIODS.get("live", 1350)
