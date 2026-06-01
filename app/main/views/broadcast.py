@@ -1102,6 +1102,7 @@ def alert_summary_email(service_id, broadcast_message_id):
     geojson = None
     cap_xml = None
     ibag_xml = None
+    duration_display = None
 
     form = EmailSummaryForm()
     form.alert_message.data = broadcast_message.content
@@ -1119,7 +1120,7 @@ def alert_summary_email(service_id, broadcast_message_id):
     if request.method == "POST":
         form.extra_content.data = request.form.get("extra_content")
         form.count_of_phones.data = request.form.get("count_of_phones")
-        form.duration.data = request.form.get("duration")
+        duration_display = request.form.get("duration_display")
         geojson = generate_geojson(broadcast_message)
         cap_xml = generate_unsigned_xml(broadcast_message, "cap")
         ibag_xml = generate_unsigned_xml(broadcast_message, "ibag")
@@ -1133,7 +1134,7 @@ def alert_summary_email(service_id, broadcast_message_id):
             ibag_xml=ibag_xml,
             extra_content=form.extra_content.data,
             count_of_phones=form.count_of_phones.data,
-            duration=form.duration.data,
+            duration=duration_display,
         )
         return render_current_alert_page(broadcast_message)
 
