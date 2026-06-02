@@ -41,11 +41,8 @@ def archive_user(user_id):
         try:
             user_api_client.archive_user(user_id)
         except HTTPError as e:
-            if e.status_code == 400 and "manage_settings" in e.message:
-                flash(
-                    "User can’t be removed from a service - "
-                    "check all services have another team member with manage_settings"
-                )
+            if e.status_code == 400:
+                flash("User can’t be archived - check all services the user belongs to have other active team members")
                 return redirect(url_for("main.user_information", user_id=user_id))
 
         create_archive_user_event(

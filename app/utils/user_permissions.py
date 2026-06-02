@@ -2,7 +2,7 @@ from itertools import chain
 
 permission_mappings = {
     "manage_templates": ["manage_templates"],
-    "manage_service": ["manage_users", "manage_settings"],
+    "manage_service": ["manage_users"],
     "manage_api_keys": ["manage_api_keys"],
     "view_activity": ["view_activity"],
     "create_broadcasts": ["create_broadcasts", "reject_broadcasts", "cancel_broadcasts"],
