@@ -85,3 +85,13 @@ bump-utils:  # Bump emergency-alerts-utils package to latest version
 uninstall-packages:
 	python -m pip uninstall emergency-alerts-utils -y
 	python -m pip freeze | xargs python -m pip uninstall -y
+
+.PHONY: test-sqlite
+test-sqlite:
+	cd app/broadcast_areas; \
+	rm broadcast-areas-test.sqlite3 || true; \
+	touch broadcast-areas-test.sqlite3; \
+	${PYTHON_EXECUTABLE_PREFIX}python create-broadcast-areas-db.py --create-test-db; \
+	${PYTHON_EXECUTABLE_PREFIX}python create-flood-warning-areas.py --create-test-db; \
+	${PYTHON_EXECUTABLE_PREFIX}python create-postcode-areas-db.py --create-test-db; \
+	${PYTHON_EXECUTABLE_PREFIX}python create-reppir-areas-db.py --create-test-db

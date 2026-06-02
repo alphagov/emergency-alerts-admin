@@ -1,17 +1,29 @@
 #!/usr/bin/env python
 
+import argparse
 import json
-import sys
 from math import isclose
 from pathlib import Path
 
 import geojson
 from emergency_alerts_utils.formatters import formatted_list
 from emergency_alerts_utils.polygons import Polygons
-from repo import BroadcastAreasRepository
+from repo import BroadcastAreasRepository, get_test_db_allowlist
 from rtreelib import RTree
 from shapely import wkt
 from shapely.geometry import MultiPolygon, Polygon
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--keep-old-polygons", default=False, action="store_true")
+parser.add_argument("--create-test-db", default=False, action="store_true")
+args = parser.parse_args()
+
+print("keep_old_polygons: ", args.keep_old_polygons)
+print("create_test_db: ", args.create_test_db)
+
+allowlist_ids = None
+if args.create_test_db:
+    allowlist_ids = get_test_db_allowlist()
 
 source_files_path = Path(__file__).resolve().parent / "source_files"
 point_counts = []
@@ -97,7 +109,7 @@ def clean_up_invalid_polygons(polygons, indent="    "):
 
 
 def polygons_and_simplified_polygons(feature):
-    if keep_old_polygons:
+    if args.keep_old_polygons:
         # cheat and shortcut out
         return [], []
 
@@ -178,13 +190,10 @@ def add_test_areas():
                 0,
             ]
         )
-    repo.insert_broadcast_areas(areas_to_add, keep_old_polygons)
+    repo.insert_broadcast_areas(areas_to_add, args.keep_old_polygons, allowlist_ids=allowlist_ids)
 
 
-# cheeky global variable
-keep_old_polygons = sys.argv[1:] == ["--keep-old-polygons"]
-
-repo = BroadcastAreasRepository()
+repo = BroadcastAreasRepository(use_test_db=args.create_test_db)
 
 add_test_areas()
 

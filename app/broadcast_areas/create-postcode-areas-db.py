@@ -1,15 +1,28 @@
 #!/usr/bin/env python
 
+import argparse
 import os
 from pathlib import Path
 
 import geojson
 from emergency_alerts_utils.formatters import formatted_list
 from emergency_alerts_utils.polygons import Polygons
-from repo import BroadcastAreasRepository
+from repo import BroadcastAreasRepository, get_test_db_allowlist
 from rtreelib import RTree
 from shapely import wkt
 from shapely.geometry import MultiPolygon, Polygon
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--keep-old-polygons", default=False, action="store_true")
+parser.add_argument("--create-test-db", default=False, action="store_true")
+args = parser.parse_args()
+
+print("keep_old_polygons: ", args.keep_old_polygons)
+print("create_test_db: ", args.create_test_db)
+
+allowlist_ids = None
+if args.create_test_db:
+    allowlist_ids = get_test_db_allowlist()
 
 postcode_files_path = Path(__file__).resolve().parent / "postcode_areas"
 point_counts = []
@@ -22,7 +35,7 @@ rtree_index = RTree()
 # precision relative to the accuracy of a cell broadcast
 MAX_NUMBER_OF_POINTS_PER_POLYGON = 250
 
-repo = BroadcastAreasRepository()
+repo = BroadcastAreasRepository(use_test_db=args.create_test_db)
 
 
 def simplify_geometry(feature):
@@ -181,7 +194,7 @@ def add_postcode_areas(postcode_filepath):
                 ]
             )
 
-    repo.insert_broadcast_areas(areas_to_add, keep_old_polygons)
+    repo.insert_broadcast_areas(areas_to_add, args.keep_old_polygons, allowlist_ids=allowlist_ids)
 
 
 def check_postcode_library_exists():
@@ -194,8 +207,6 @@ def check_postcode_library_exists():
             is_group=False,
         )
 
-
-keep_old_polygons = False
 
 postcode_files = os.listdir(postcode_files_path)
 

@@ -1,0 +1,49 @@
+postcodes-BD1 1EE
+postcodes-AB10 1AL
+postcodes-AB10 1AN
+postcodes-AB10 1AP
+postcodes-AB10 1AS
+postcodes-AB10 1AU
+postcodes-AB10 1AW
+postcodes-AB10 1AB
+postcodes-AB10 1AF
+postcodes-AB10 1AG
+postcodes-AB10 1AH
+postcodes-AB10 1AQ
+postcodes-AB10 1AR
+postcodes-AB10 1AX
+test-santa-claus-village-rovaniemi-a
+test-santa-claus-village-rovaniemi-b
+test-santa-claus-village-rovaniemi-c
+test-santa-claus-village-rovaniemi-d
+ctry19-E92000001
+ctry19-N92000002
+ctry19-S92000003
+ctry19-W92000004
+REPPIR_DEPZ_sites-awe_aldermaston
+REPPIR_DEPZ_sites-clyde_naval_base_faslane
+REPPIR_DEPZ_sites-dounreay_and_vulcan
+REPPIR_DEPZ_sites-loch_goil
+REPPIR_DEPZ_sites-sizewell_b
+REPPIR_DEPZ_sites-loch_ewe
+REPPIR_DEPZ_sites-awe_burghfield
+REPPIR_DEPZ_sites-rolls_royce_raynesway
+REPPIR_DEPZ_sites-portland
+REPPIR_DEPZ_sites-heysham
+REPPIR_DEPZ_sites-torness
+REPPIR_DEPZ_sites-springfields
+REPPIR_DEPZ_sites-glen_mallan
+REPPIR_DEPZ_sites-capenhurst
+Flood_Warning_Target_Areas-011FWBWH
+Flood_Warning_Target_Areas-011FWCN1A
+Flood_Warning_Target_Areas-011FWCN1B
+Flood_Warning_Target_Areas-011FWCN2A
+Flood_Warning_Target_Areas-011FWCN2B
+Flood_Warning_Target_Areas-011FWCN2M
+Flood_Warning_Target_Areas-011FWCN3A
+Flood_Warning_Target_Areas-011FWCN3B
+Flood_Warning_Target_Areas-011FWCN4A
+Flood_Warning_Target_Areas-011FWCN4B
+wd25-*
+lad25-*
+ctyua25-*

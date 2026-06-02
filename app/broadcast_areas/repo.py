@@ -2,6 +2,7 @@ import json
 import os
 import pickle
 import sqlite3
+from fnmatch import fnmatch
 from pathlib import Path
 
 rtree_index_path = Path(__file__).parent / "rtree.pickle"
@@ -9,8 +10,12 @@ rtree_index = pickle.loads(rtree_index_path.read_bytes())
 
 
 class BroadcastAreasRepository(object):
-    def __init__(self):
-        database_name = "broadcast-areas.sqlite3" if not os.environ.get("IN_CICD") else "broadcast-areas-test.sqlite3"
+    def __init__(self, use_test_db=False):
+        database_name = (
+            "broadcast-areas.sqlite3"
+            if not (os.environ.get("IN_CICD") or use_test_db)
+            else "broadcast-areas-test.sqlite3"
+        )
         self.database = Path(__file__).resolve().parent / database_name
 
     def conn(self):
@@ -85,7 +90,7 @@ class BroadcastAreasRepository(object):
         with self.conn() as conn:
             conn.execute(q, (id, name, name_singular, is_group))
 
-    def insert_broadcast_areas(self, areas, keep_old_features):
+    def insert_broadcast_areas(self, areas, keep_old_features, allowlist_ids: list[str] = None):
         areas_q = """
         INSERT INTO broadcast_areas (
             id, name,
@@ -105,6 +110,10 @@ class BroadcastAreasRepository(object):
 
         with self.conn() as conn:
             for id, name, area_id, group, polygons, simple_polygons, utm_crs, count_of_phones in areas:
+                if allowlist_ids:
+                    if not any([fnmatch(id, allowlist_id) for allowlist_id in allowlist_ids]):
+                        continue
+
                 conn.execute(areas_q, (id, name, area_id, group, count_of_phones))
                 if not keep_old_features:
                     conn.execute(features_q, (id, json.dumps(polygons), json.dumps(simple_polygons), utm_crs))
@@ -253,3 +262,13 @@ class BroadcastAreasRepository(object):
         results = self.query(q, area_id)
 
         return json.loads(results[0][0]), results[0][1]
+
+
+def get_test_db_allowlist():
+    allowlist_ids = list()
+    allowlist_path = Path(__file__).resolve().parent / "test-db-allowlist.txt"
+    with open(allowlist_path) as allowlist:
+        for location_id in allowlist:
+            allowlist_ids.append(location_id.rstrip("\n"))
+
+    return allowlist_ids
