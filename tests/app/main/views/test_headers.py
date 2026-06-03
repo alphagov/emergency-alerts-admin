@@ -21,7 +21,7 @@ def test_owasp_useful_headers_set(
         "object-src 'self';"
         "font-src 'self' static.example.com data:;"
         "img-src "
-        "'self' static.example.com *.tile.openstreetmap.org *.google-analytics.com data:;"
+        "'self' static.example.com tile.openstreetmap.org *.google-analytics.com data:;"
     ).format(content_nonce=g.content_nonce)
     assert response.headers["Link"] == (
         "<https://static.example.com>; rel=dns-prefetch, " "<https://static.example.com>; rel=preconnect"
@@ -47,5 +47,5 @@ def test_headers_non_ascii_characters_are_replaced(
         "object-src 'self';"
         "font-src 'self' static.example.com data:;"
         "img-src "
-        "'self' static.example.com *.tile.openstreetmap.org *.google-analytics.com data:;"
+        "'self' static.example.com tile.openstreetmap.org *.google-analytics.com data:;"
     ).format(content_nonce=g.content_nonce)
