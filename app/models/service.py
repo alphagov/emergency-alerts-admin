@@ -253,8 +253,8 @@ class Service(JSONModel):
         }
 
     @property
-    def contact_emails(self):
-        return self._dict["email_addresses"]
+    def alert_notification_addresses(self):
+        return self._dict["alert_notification_addresses"]
 
 
 class Services(SerialisedModelCollection):
