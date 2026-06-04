@@ -114,6 +114,13 @@ class BroadcastMessageAPIClient(AdminAPIClient):
             f"/service/{service_id}/broadcast-message-edit-reasons/{broadcast_message_id}/latest-edit-reason"
         )
 
+    def get_broadcast_provider_statuses(self, service_id, broadcast_message_id):
+        """
+        Retrieve all the broadcast provider statuses relating to the broadcast message
+        (including both alert and cancel events)
+        """
+        return self.get(f"/service/{service_id}/broadcast-message/{broadcast_message_id}/provider-statuses")
+
     def send_alert_summary_email(self, service_id, broadcast_message_id, data):
         """
         Send alert email summary to service contacts

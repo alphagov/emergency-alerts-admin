@@ -88,6 +88,12 @@ $notify-secondary-button-hover-colour: govuk-shade(govuk-colour("light-grey"), 1
   background-color: govuk-colour("orange");
 }
 
+.govuk-tag.failed-sending-tag {
+  @include govuk-tag-uppercase;
+  background-color: govuk-colour("yellow");
+  color: govuk-colour("black");
+}
+
 .govuk-tabs {
   overflow-wrap: break-word;
 }

@@ -88,3 +88,12 @@ def test_invalid_input_messages_for_local_authority_areas_form(post_data, expect
 def test_valid_input_for_local_authority_areas_form():
     form = LocalAuthorityBulkAreasForm(library_ids=library_areas_lookup_dict, areas="adur")
     assert form.validate()
+
+
+def test_too_many_areas_input_for_local_authority_areas_form():
+    form = LocalAuthorityBulkAreasForm(
+        library_ids={f"test{i}": f"test{i}" for i in range(30)}, areas="\n".join([f"test{i}" for i in range(26)])
+    )
+    assert not form.validate()
+    assert form.areas.errors == ["Maximum of 25 areas in an emergency alert"]
+    assert form.form_errors == ["Maximum of 25 local authorities allowed as a list in one emergency alert"]

@@ -509,7 +509,6 @@ def platform_admin_user(fake_uuid):
             SERVICE_ONE_ID: [
                 "manage_users",
                 "manage_templates",
-                "manage_settings",
                 "manage_api_keys",
                 "view_activity",
             ]
@@ -583,7 +582,6 @@ def active_user_with_permission_to_two_services(fake_uuid):
     permissions = [
         "manage_users",
         "manage_templates",
-        "manage_settings",
         "manage_api_keys",
         "view_activity",
     ]
@@ -927,7 +925,7 @@ def sample_invite(mocker, service_one):
     from_user = service_one["users"][0]
     email_address = "invited_user@test.gov.uk"
     service_id = service_one["id"]
-    permissions = "view_activity,manage_settings,manage_users,manage_api_keys"
+    permissions = "view_activity,manage_users,manage_api_keys"
     created_at = str(datetime.now(timezone.utc))
     auth_type = "sms_auth"
     folder_permissions = []
@@ -1963,7 +1961,6 @@ def create_active_user_no_api_key_permission(with_unique_id=False):
         permissions={
             SERVICE_ONE_ID: [
                 "manage_templates",
-                "manage_settings",
                 "manage_users",
                 "view_activity",
             ]
@@ -2017,7 +2014,6 @@ def create_service_one_admin(**overrides):
             SERVICE_ONE_ID: [
                 "manage_users",
                 "manage_templates",
-                "manage_settings",
                 "manage_api_keys",
                 "view_activity",
             ]
@@ -2324,16 +2320,22 @@ def mock_get_broadcast_message(mocker):
 
 
 @pytest.fixture(scope="function")
-def mock_get_broadcast_messages(
-    mocker,
-    fake_uuid,
-):
+def mock_get_broadcast_messages(mocker, fake_uuid, request):
+    mock_params = getattr(request, "param", {})
+    if mock_params is None:
+        mock_params = {}
+
     def _get(service_id):
+        partial_params = {
+            "service_id": service_id,
+            "template_id": fake_uuid,
+            "created_by_id": fake_uuid,
+            "sending_error": False,
+            **mock_params,
+        }
         partial_json = partial(
             broadcast_message_json,
-            service_id=service_id,
-            template_id=fake_uuid,
-            created_by_id=fake_uuid,
+            **partial_params,
         )
         return [
             partial_json(
@@ -2462,6 +2464,17 @@ def mock_get_latest_edit_reason(mocker):
         return_value=broadcast_message_edit_reason_partial(
             edit_reason="TESTING", created_at="2020-02-20T20:20:20.000000"
         ),
+    )
+
+
+@pytest.fixture(scope="function")
+def mock_get_broadcast_message_provider_statuses(mocker, request):
+    return_value = getattr(request, "param", None)
+
+    return mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_provider_statuses",
+        # Default to no real statuses (no failure)
+        return_value=return_value or {"ee": {"alert": [], "cancel": []}},
     )
 
 

@@ -326,7 +326,7 @@ def useful_headers_after_request(response: Response):
             "connect-src 'self' *.google-analytics.com;"
             "object-src 'self';"
             "font-src 'self' {asset_domain} data:;"
-            "img-src 'self' {asset_domain} *.tile.openstreetmap.org *.google-analytics.com data:;".format(
+            "img-src 'self' {asset_domain} tile.openstreetmap.org *.google-analytics.com data:;".format(
                 asset_domain=current_app.config["ASSET_DOMAIN"], content_nonce=content_nonce
             )
         ),

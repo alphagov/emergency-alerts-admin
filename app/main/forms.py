@@ -543,6 +543,7 @@ class GovukTextareaBulkField(GovukTextareaField):
         library_ids=None,
         item,
         area_id_parser,
+        maximum=25,
         **kwargs,
     ):
         # area IDs from the library to check against
@@ -553,6 +554,9 @@ class GovukTextareaBulkField(GovukTextareaField):
 
         # How we refer to a singular area i.e. Local Authority
         self.item = item
+
+        # Maximum number of areas allowed in the list
+        self.max = maximum
 
         validators = kwargs.pop("validators", [])
 
@@ -588,6 +592,11 @@ class GovukTextareaBulkField(GovukTextareaField):
                 self.errors.append(f"{self.item} '{id_}' currently appears in the list more than once")
             checked_area_ids.add(id_)
 
+    def _check_number_of_ids_less_than_maximum(self, form, ids):
+        if len(ids) > self.max:
+            self.error_code = "exceeds_limit"
+            self.errors.append(f"Maximum of {self.max} areas in an emergency alert")
+
     def validate(self, form, extra_validators=None):
         if not super().validate(form, extra_validators):
             return False
@@ -604,6 +613,7 @@ class GovukTextareaBulkField(GovukTextareaField):
         # Custom validation methods
         self._check_for_invalid_values(ids, area_ids)
         self._check_ids_provided_are_unique(form, ids)
+        self._check_number_of_ids_less_than_maximum(form, ids)
 
         return not self.errors
 
@@ -1164,8 +1174,10 @@ class ChooseDurationForm(StripWhitespaceForm):
         self.channel = channel
         if duration is None:
             if self.hours.data is None and self.minutes.data is None:
-                if channel in ["test", "operator"]:
+                if channel == "test":
                     hours, minutes = parse_seconds_as_hours_and_minutes(Config.DEFAULT_DURATION_PERIODS.get("training"))
+                elif channel == "operator":
+                    hours, minutes = parse_seconds_as_hours_and_minutes(Config.DEFAULT_DURATION_PERIODS.get("operator"))
                 else:
                     hours, minutes = parse_seconds_as_hours_and_minutes(Config.DEFAULT_DURATION_PERIODS.get("live"))
                 self.hours.data = hours
@@ -1207,14 +1219,14 @@ class ChooseDurationForm(StripWhitespaceForm):
             self.minutes.errors.append("Duration must be at least 5 minutes")
             return False
 
-        if channel in ["test", "operator"]:
+        if channel in ["operator"]:
             if duration > timedelta(hours=4):
                 if hours > 4:
                     self.hours.errors.append("Duration must not be greater than 4 hours")
                 if hours == 4:
                     self.minutes.errors.append("Duration must not be greater than 4 hours")
                 return False
-        elif channel in ["government", "severe"]:
+        elif channel in ["government", "severe", "test"]:
             if duration > timedelta(hours=22, minutes=30):
                 if hours > 22:
                     self.hours.errors.append("Maximum duration is 22 hours, 30 minutes")
@@ -1714,20 +1726,14 @@ class ServiceBroadcastNetworkForm(StripWhitespaceForm):
 
     networks = GovukCheckboxesFieldWithNetworkRequired(
         None,
-        choices=[
-            ("all", "All mobile networks"),
-            ("ee", "EE"),
-            ("o2", "O2"),
-            ("three", "Three"),
-            ("vodafone", "Vodafone"),
-        ],
+        choices=[("all", "All mobile networks")] + [(p.name, p.human_name) for p in BroadcastProvider.PROVIDERS],
         param_extensions={"hint": None, "fieldset": {"legend": {"classes": "govuk-visually-hidden"}}},
     )
 
     @property
     def account_type(self):
         if "all" in self.networks.data:
-            providers = "-".join(BroadcastProvider.PROVIDERS)
+            providers = "-".join([p.name for p in BroadcastProvider.PROVIDERS])
         else:
             providers = "-".join(self.networks.data)
 
@@ -2005,6 +2011,7 @@ class FloodWarningBulkAreasForm(StripWhitespaceForm):
                 "missing_data": "Enter at least 1 Flood Warning TA code",
                 "duplicates": "All Flood Warning TA codes must be unique",
                 "invalid": "Flood Warning TA code not found",
+                "exceeds_limit": "Maximum of 25 TA codes in an emergency alert",
             }
 
             if message := error_messages.get(self.areas.error_code):
@@ -2039,6 +2046,7 @@ class LocalAuthorityBulkAreasForm(StripWhitespaceForm):
                 "missing_data": "Enter at least 1 local authority",
                 "duplicates": "All local authorities must be unique",
                 "invalid": "Local authority not found",
+                "exceeds_limit": "Maximum of 25 local authorities allowed as a list in one emergency alert",
             }
 
             if message := error_messages.get(self.areas.error_code):

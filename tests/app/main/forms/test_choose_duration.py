@@ -7,6 +7,20 @@ from app.main.forms import ChooseDurationForm
 @pytest.mark.parametrize(
     "channel, hours, minutes",
     (
+        ("severe", 22, 30),
+        ("test", 22, 30),
+        ("operator", 0, 15),
+    ),
+)
+def test_choose_duration_has_default(channel, hours, minutes):
+    # Form initialised with no data so uses defaults
+    form = ChooseDurationForm(channel, duration=None, formdata={})
+    assert form.data == {"hours": hours, "minutes": minutes}
+
+
+@pytest.mark.parametrize(
+    "channel, hours, minutes",
+    (
         ("severe", 1, 1),
         ("test", 1, 1),
         ("operator", 1, 1),
@@ -40,7 +54,9 @@ def test_choose_duration_no_duration_displays_error(channel):
     "channel, hours, minutes, expected_hours_error, expected_minutes_error",
     (
         ("severe", 22, 31, [], ["Maximum duration is 22 hours, 30 minutes"]),
-        ("test", 5, 0, ["Duration must not be greater than 4 hours"], []),
+        ("severe", 23, 29, ["Maximum duration is 22 hours, 30 minutes"], []),
+        ("test", 22, 32, [], ["Maximum duration is 22 hours, 30 minutes"]),
+        ("test", 23, 29, ["Maximum duration is 22 hours, 30 minutes"], []),
         ("operator", 4, 1, [], ["Duration must not be greater than 4 hours"]),
     ),
 )

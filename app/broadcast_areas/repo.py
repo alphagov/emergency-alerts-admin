@@ -187,13 +187,13 @@ class BroadcastAreasRepository(object):
         return [(row[0], row[1], row[2], row[3]) for row in results]
 
     def get_all_area_names_and_ids_for_local_authorities(self):
-        # Query returns only Local Authority areas and IDs (prefixed with `lad25-`),
+        # Query returns only Local Authority areas and IDs (prefixed with `lad25-` or 'ctyua25-'),
         # from library storing Electoral Wards and Local Authorities ( has ID of `wd25-lad25-ctyua25`)
         q = """
         SELECT id, LOWER(name)
         FROM broadcast_areas
         WHERE (broadcast_area_library_id = 'wd25-lad25-ctyua25'
-        AND id LIKE 'lad25-%')
+        AND id LIKE 'lad25-%' OR id LIKE 'ctyua25-%')
         """
 
         results = self.query(q)

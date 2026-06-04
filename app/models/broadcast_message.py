@@ -43,6 +43,7 @@ class BroadcastMessage(BaseBroadcast):
         "updated_by",
         "edit_reason",
         "extra_content",
+        "sending_error",
     }
 
     def __init__(self, _dict):
@@ -240,7 +241,7 @@ class BroadcastMessage(BaseBroadcast):
 
     def approve_broadcast(self, channel):
         if self.duration == 0 or self.duration is None:
-            if channel in {"test", "operator"}:
+            if channel in {"operator"}:
                 ttl = timedelta(hours=4, minutes=0)
             else:
                 ttl = timedelta(hours=22, minutes=30)
@@ -291,6 +292,9 @@ class BroadcastMessage(BaseBroadcast):
         """Returns latest edit_reason record submitted to the broadcast_message_edit_reasons
         table for the broadcast_message_id"""
         return broadcast_message_api_client.get_latest_returned_for_edit_reason(self.service_id, self.id)
+
+    def get_broadcast_provider_statuses(self):
+        return broadcast_message_api_client.get_broadcast_provider_statuses(self.service_id, self.id)
 
     @classmethod
     def send_alert_summary_email(

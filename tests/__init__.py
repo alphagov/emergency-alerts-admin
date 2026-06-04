@@ -95,7 +95,6 @@ def user_json(
                 "view_activity",
                 "manage_users",
                 "manage_templates",
-                "manage_settings",
                 "manage_api_keys",
             ]
         }
@@ -439,6 +438,7 @@ def broadcast_message_json(
     approved_at=None,
     rejected_at=None,
     extra_content=None,
+    sending_error=None,  # Only on listing
 ):
     return {
         "id": id_,
@@ -476,6 +476,7 @@ def broadcast_message_json(
         "submitted_at": submitted_at,
         "updated_by": updated_by,
         "extra_content": extra_content,
+        "sending_error": sending_error,
     }
 
 

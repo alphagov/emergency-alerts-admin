@@ -1,4 +1,5 @@
 import os
+from dataclasses import dataclass
 
 header_colors = {
     "local": "#FF8000",
@@ -9,11 +10,18 @@ header_colors = {
 }
 
 
+@dataclass
+class BroadcastProviderDefinition:
+    name: str
+    human_name: str
+
+
 class BroadcastProvider:
-    EE = "ee"
-    VODAFONE = "vodafone"
-    THREE = "three"
-    O2 = "o2"
+    EE = BroadcastProviderDefinition("ee", "EE")
+    VODAFONE = BroadcastProviderDefinition("vodafone", "Vodafone")
+    THREE = BroadcastProviderDefinition("three", "Three")
+    O2 = BroadcastProviderDefinition("o2", "O2")
+
     PROVIDERS = [EE, O2, THREE, VODAFONE]
 
 
@@ -101,8 +109,9 @@ class Config(object):
 
     DEFAULT_DURATION_PERIODS = {
         "live": 81000,
-        "training": 14400,
-    }  # Default alert duration for live services or training (i.e. test or operator services)
+        "training": 81000,
+        "operator": 900,
+    }  # Default alert durations for live, training or operator
 
     ESTIMATED_PHONE_COUNTS = {
         "lower_bound": 900_000,
