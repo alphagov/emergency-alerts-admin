@@ -56,3 +56,10 @@ jobs:
           set -eu
           make bootstrap-for-tests
           make test
+
+  functional-tests:
+    uses: alphagov/emergency-alerts-functional-tests/.github/workflows/run-functional-tests-pr.yml@spike/eas-3066-functional-tests-workflow
+    with:
+      pr-description: ${{ github.event.pull_request.body }}
+    secrets:
+      EAS_GITHUB_RUNNER_RO_TOKEN: ${{ secrets.EAS_GITHUB_RUNNER_RO_TOKEN }}
