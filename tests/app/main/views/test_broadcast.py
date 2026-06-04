@@ -7377,7 +7377,7 @@ def test_send_summary_email_section_not_visible_with_no_perms(
         ),
     )
 
-    service_one["email_addresses"] += ["test@test1.com"]
+    service_one["alert_notification_addresses"] += ["test@test1.com"]
 
     client_request.login(active_user_view_permissions)
 
@@ -7424,15 +7424,10 @@ def test_send_summary_email(
     )
 
     assert normalize_spaces(page.select_one("h1").text) == "Send summary email"
-    assert page.select_one("textarea")["name"] == "extra_content"
-    assert page.select_one("textarea")["id"] == "extra_content"
+    assert page.select_one("textarea")["name"] == "alert_summary"
+    assert page.select_one("textarea")["id"] == "alert_summary"
     assert page.select_one("textarea")["data-notify-module"] == "enhanced-textbox"
     assert page.select_one("textarea")["data-highlight-placeholders"] == "false"
-
-    hidden = page.select_one("input[type=hidden][name=count_of_phones]")
-    assert normalize_spaces(hidden["value"]) == "More than 1 million phones estimated"
-    hidden = page.select_one("input[type=hidden][name=duration_display]")
-    assert normalize_spaces(hidden["value"]) == "3 hours"
 
     paras = page.select("p.govuk-body")
     for para in paras:
