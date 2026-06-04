@@ -730,7 +730,7 @@ def approve_broadcast_message(service_id, broadcast_message_id):
     form = ConfirmBroadcastForm(
         service_is_live=current_service.live,
         channel=current_service.broadcast_channel,
-        max_phones=broadcast_message.count_of_phones_likely,
+        max_phones=broadcast_message.count_of_phones,
     )
 
     is_custom_broadcast = type(broadcast_message.areas) is CustomBroadcastAreas

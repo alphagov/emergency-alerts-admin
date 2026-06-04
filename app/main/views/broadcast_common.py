@@ -339,13 +339,12 @@ def search_postcodes(service_id, message_type, message_id=None):
     message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
     form = PostcodeForm()
     # Initialising variables here that may be assigned values, to be then passed into jinja template.
-    centroid, bleed, estimated_area, estimated_area_with_bleed, count_of_phones, count_of_phones_likely = (
+    centroid, bleed, estimated_area, estimated_area_with_bleed, count_of_phones = (
         None,
         None,
         None,
         None,
-        None,
-        None,
+        None
     )
 
     if all_fields_empty(request, form):
@@ -381,8 +380,7 @@ def search_postcodes(service_id, message_type, message_id=None):
                 bleed,
                 estimated_area,
                 estimated_area_with_bleed,
-                count_of_phones,
-                count_of_phones_likely,
+                count_of_phones
             ) = extract_attributes_from_custom_area(circle_polygon)
             id = create_postcode_area_slug(form)
             if continue_button_clicked(request):
@@ -421,7 +419,6 @@ def search_postcodes(service_id, message_type, message_id=None):
         estimated_area,
         estimated_area_with_bleed,
         count_of_phones,
-        count_of_phones_likely,
         message_type,
         template_folder_id,
     )
@@ -447,7 +444,6 @@ def search_coordinates(service_id, coordinate_type, message_type, message_id=Non
         estimated_area,
         estimated_area_with_bleed,
         count_of_phones,
-        count_of_phones_likely,
         marker,
     ) = (
         None,
@@ -513,7 +509,6 @@ def search_coordinates(service_id, coordinate_type, message_type, message_id=Non
                         estimated_area,
                         estimated_area_with_bleed,
                         count_of_phones,
-                        count_of_phones_likely,
                     ) = extract_attributes_from_custom_area(polygon)
         else:
             adding_invalid_coords_errors_to_form(coordinate_type, form)
@@ -552,7 +547,6 @@ def search_coordinates(service_id, coordinate_type, message_type, message_id=Non
         estimated_area,
         estimated_area_with_bleed,
         count_of_phones,
-        count_of_phones_likely,
         marker,
         message,
         form,

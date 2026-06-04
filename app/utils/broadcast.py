@@ -115,11 +115,7 @@ def extract_attributes_from_custom_area(polygons):
     estimated_area = custom_area.simple_polygons.estimated_area
     estimated_area_with_bleed = custom_area.simple_polygons_with_bleed.estimated_area
     count_of_phones = round_to_significant_figures(custom_area.count_of_phones, 1)
-    count_of_phones_likely = round_to_significant_figures(
-        CustomBroadcastArea.from_polygon_objects(custom_area.simple_polygons_with_bleed).count_of_phones,
-        1,
-    )
-    return bleed, estimated_area, estimated_area_with_bleed, count_of_phones, count_of_phones_likely
+    return bleed, estimated_area, estimated_area_with_bleed, count_of_phones
 
 
 def create_postcode_db_id(form):
@@ -206,7 +202,6 @@ def render_postcode_page(
     estimated_area,
     estimated_area_with_bleed,
     count_of_phones,
-    count_of_phones_likely,
     message_type,
     template_folder_id=None,
 ):
@@ -221,7 +216,6 @@ def render_postcode_page(
         estimated_area=estimated_area,
         estimated_area_with_bleed=estimated_area_with_bleed,
         count_of_phones=count_of_phones,
-        count_of_phones_likely=count_of_phones_likely,
         centroid=[centroid.y, centroid.x] if centroid else None,
         template_folder_id=template_folder_id,
     )
@@ -268,7 +262,6 @@ def render_coordinates_page(
     estimated_area,
     estimated_area_with_bleed,
     count_of_phones,
-    count_of_phones_likely,
     marker,
     message,
     form,
@@ -295,7 +288,6 @@ def render_coordinates_page(
         estimated_area=estimated_area,
         estimated_area_with_bleed=estimated_area_with_bleed,
         count_of_phones=count_of_phones,
-        count_of_phones_likely=count_of_phones_likely,
         centroid=marker,
     )
 
@@ -405,7 +397,7 @@ def render_current_alert_page(
             ConfirmBroadcastForm(
                 service_is_live=current_service.live,
                 channel=current_service.broadcast_channel,
-                max_phones=broadcast_message.count_of_phones_likely,
+                max_phones=broadcast_message.count_of_phones,
             )
             if confirm_broadcast_form is None
             else confirm_broadcast_form
