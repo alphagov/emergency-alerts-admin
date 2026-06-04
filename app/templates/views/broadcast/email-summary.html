@@ -5,20 +5,8 @@
 {% from "components/form.html" import form_wrapper %}
 {% from "components/error-summary.html" import errorSummary %}
 {% from "components/textbox.html" import textbox %}
-{% from "views/broadcast/macros/estimated-phones.html" import estimated_phone_count_content %}
 
 {% extends "withnav_template.html" %}
-
-{% set phone_count = estimated_phone_count_content(form.count_of_phones.data|int, form.count_of_phones.data|int) %}
-{% if form.duration.data %}
-    {% set duration = form.duration.data|format_seconds_duration_as_time %}
-{% else %}
-    {% if  current_service.broadcast_channel in ["test", "operator"] %}
-      {% set duration = config.get('DEFAULT_DURATION_PERIODS')["training"]|format_seconds_duration_as_time %}
-    {% else %}
-      {% set duration = config.get('DEFAULT_DURATION_PERIODS')["live"] |format_seconds_duration_as_time %}
-    {% endif %}
-{% endif %}
 
 {% block service_page_title %}
   Send summary email
@@ -33,8 +21,6 @@
   {{ page_header('Send summary email')}}
 
   {% call form_wrapper(class="govuk-!-margin-top-3") %}
-    <input type="hidden" name="count_of_phones" value="{{ phone_count }}" />
-    <input type="hidden" name="duration_display" value="{{ duration }}" />
     <div class="govuk-!-margin-top-2 govuk-!-margin-bottom-3">
       <div>
         <p class="govuk-body">
@@ -45,7 +31,7 @@
         <p class="govuk-body govuk-!-margin-bottom-0">
           <b>Alert Summary</b>
           {{ textbox(
-            form.extra_content,
+            form.alert_summary,
             highlight_placeholders=False,
             autosize=True,
             width='1-1',
@@ -54,16 +40,16 @@
           ) }}
         </p>
         <p class="govuk-body">
-          <b>Alert Message</b><br>{{ form.alert_message.data }}
+          <b>Alert Message</b><br>{{ broadcast_message.content }}
         </p>
         <p class="govuk-body">
-          <b>Phone Estimate</b><br>{{ phone_count }}
+          <b>Phone Estimate</b><br>{{ count_of_phones }}
         </p>
         <p class="govuk-body">
-            <b>Additional Info</b><br>{{ form.additional_info.data }}
+            <b>Additional Info</b><br>{{ broadcast_message.extra_content }}
         </p>
         <p class="govuk-body">
-          <b>Alert duration</b><br>{{ duration }}
+          <b>Alert duration</b><br>{{ duration_display }}
         </p>
         <p class="govuk-body">
           <b>Attachments</b>
