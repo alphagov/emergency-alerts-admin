@@ -121,10 +121,29 @@ class BroadcastMessageAPIClient(AdminAPIClient):
         """
         return self.get(f"/service/{service_id}/broadcast-message/{broadcast_message_id}/provider-statuses")
 
-    def send_alert_summary_email(self, service_id, broadcast_message_id, data):
+    def send_alert_summary_email(
+        self, service_id, broadcast_message_id, geojson, cap_xml, ibag_xml, alert_summary, count_of_phones, duration
+    ):
         """
         Send alert email summary to service contacts
         """
+        data = {}
+
+        if geojson:
+            data.update(geojson=geojson)
+        if cap_xml:
+            data.update(cap_xml=cap_xml)
+        if ibag_xml:
+            data.update(ibag_xml=ibag_xml)
+        if alert_summary:
+            data.update(alert_summary=alert_summary)
+        if count_of_phones:
+            data.update(count_of_phones=count_of_phones)
+        if duration:
+            data.update(duration=duration)
+
+        data = _attach_current_user(data)
+
         try:
             self.post(
                 f"/service/{service_id}/broadcast-message/{broadcast_message_id}/alert-summary-email",
