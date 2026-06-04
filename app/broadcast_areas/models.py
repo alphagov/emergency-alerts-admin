@@ -5,13 +5,13 @@ from emergency_alerts_utils.formatters import formatted_list
 from emergency_alerts_utils.polygons import Polygons
 from emergency_alerts_utils.serialised_model import SerialisedModelCollection
 from rtreelib import Rect
-from shapely import Polygon
+from shapely import MultiPolygon, Polygon
 from werkzeug.utils import cached_property
 
 from app.formatters import square_metres_to_square_miles
 from app.models import SortingAndEqualityMixin
+from app.notify_client.broadcast_message_api_client import broadcast_message_api_client
 
-from .populations import CITY_OF_LONDON
 from .repo import BroadcastAreasRepository, rtree_index
 
 
@@ -35,9 +35,19 @@ class BaseBroadcastArea(ABC):
         pass
 
     @property
-    @abstractmethod
+    def as_wkt_geometry(self):
+        polygons = []
+        for ring in self.simple_polygons.as_coordinate_pairs_long_lat:
+            polygons.append(Polygon(ring))
+        if len(polygons) == 1:
+            return polygons[0].wkt
+        return MultiPolygon(polygons).wkt
+
+    @cached_property
     def count_of_phones(self):
-        pass
+        return broadcast_message_api_client.get_count_of_phones(
+            self.as_wkt_geometry
+        )
 
     @cached_property
     def simple_polygons_with_bleed(self) -> Polygons:
@@ -118,29 +128,6 @@ class BroadcastArea(BaseBroadcastArea, SortingAndEqualityMixin):
     def sub_areas(self):
         return [BroadcastArea(row) for row in BroadcastAreasRepository().get_all_areas_for_group(self.id)]
 
-    @property
-    def count_of_phones(self):
-        if self.id.endswith(CITY_OF_LONDON.WARDS):
-            return CITY_OF_LONDON.DAYTIME_POPULATION * (
-                self.polygons.estimated_area / CITY_OF_LONDON.AREA_SQUARE_METRES
-            )
-        if self.sub_areas:
-            return sum(area.count_of_phones for area in self.sub_areas)
-        # TODO: remove the `or 0` once missing data is fixed, see
-        # https://www.pivotaltracker.com/story/show/174837293
-        return self._count_of_phones or self.estimated_count_of_phones or 0
-
-    @property
-    def estimated_count_of_phones(self):
-        total_estimated_phones = 0
-        for area in self.nearby_electoral_wards:
-            # Iterate through electoral wards that overlap with polygon bounds and calculate phone count
-            # using ratio of intersection and electoral ward's count of phones
-            intersection_ratio = area.simple_polygons.ratio_of_intersection_with(self.polygons)
-            estimated_phones = intersection_ratio * area.count_of_phones
-            total_estimated_phones += estimated_phones
-        return total_estimated_phones or 0
-
     @cached_property
     def ancestors(self):
         return list(self._ancestors_iterator)
@@ -205,16 +192,6 @@ class CustomBroadcastArea(BaseBroadcastArea):
             ),
             None,
         )
-
-    @cached_property
-    def count_of_phones(self):
-        try:
-            return sum(
-                area.simple_polygons.ratio_of_intersection_with(self.polygons) * area.count_of_phones
-                for area in self.nearby_electoral_wards
-            )
-        except Exception:
-            return 0
 
 
 class CustomBroadcastAreas(SerialisedModelCollection):
