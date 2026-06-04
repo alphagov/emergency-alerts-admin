@@ -298,8 +298,7 @@ class BroadcastMessage(BaseBroadcast):
 
     def get_count_of_phones(self, return_for_edit_reason):
         return broadcast_message_api_client.get_count_of_phones(
-            broadcast_message_id=self.id,
-            service_id=self.service_id
+            broadcast_message_id=self.id, service_id=self.service_id
         )
 
 

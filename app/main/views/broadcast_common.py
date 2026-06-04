@@ -339,13 +339,7 @@ def search_postcodes(service_id, message_type, message_id=None):
     message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
     form = PostcodeForm()
     # Initialising variables here that may be assigned values, to be then passed into jinja template.
-    centroid, bleed, estimated_area, estimated_area_with_bleed, count_of_phones = (
-        None,
-        None,
-        None,
-        None,
-        None
-    )
+    centroid, bleed, estimated_area, estimated_area_with_bleed, count_of_phones = (None, None, None, None, None)
 
     if all_fields_empty(request, form):
         """
@@ -376,12 +370,9 @@ def search_postcodes(service_id, message_type, message_id=None):
             then a dummy CustomBroadcastArea is created and used for the attributes that
             are required for the Leaflet map, key, number of phones to display etc.
             """
-            (
-                bleed,
-                estimated_area,
-                estimated_area_with_bleed,
-                count_of_phones
-            ) = extract_attributes_from_custom_area(circle_polygon)
+            bleed, estimated_area, estimated_area_with_bleed, count_of_phones = extract_attributes_from_custom_area(
+                circle_polygon
+            )
             id = create_postcode_area_slug(form)
             if continue_button_clicked(request):
                 """
