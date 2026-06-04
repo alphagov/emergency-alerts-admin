@@ -18,6 +18,8 @@ from notifications_python_client.errors import HTTPError
 
 from app import current_service
 from app.broadcast_areas.models import CustomBroadcastAreas
+from app.config import Config
+from app.formatters import format_estimated_phone_count, format_seconds_duration_as_time
 from app.main import main
 from app.main.forms import (
     AddExtraContentForm,
@@ -1104,15 +1106,19 @@ def alert_summary_email(service_id, broadcast_message_id):
     geojson = None
     cap_xml = None
     ibag_xml = None
-    duration_display = None
+
+    if broadcast_message.duration:
+        duration_display = format_seconds_duration_as_time(broadcast_message.duration)
+    else:
+        if current_service.broadcast_channel in ["test", "operator"]:
+            duration_display = format_seconds_duration_as_time(Config.DEFAULT_DURATION_PERIODS.get("training"))
+        else:
+            duration_display = format_seconds_duration_as_time(Config.DEFAULT_DURATION_PERIODS.get("live"))
+
+    count_of_phones = format_estimated_phone_count(broadcast_message.count_of_phones, broadcast_message.count_of_phones)
 
     form = EmailSummaryForm()
-    form.alert_message.data = broadcast_message.content
-    form.additional_info.data = broadcast_message.extra_content
-    form.duration.data = broadcast_message.duration
-    form.channel.data = current_service.broadcast_channel
-    form.count_of_phones.data = str(broadcast_message.count_of_phones)
-    form.extra_content.data = (
+    form.alert_summary.data = (
         f"An alert is going to be sent from the '{current_service.name} - "
         f"{os.environ.get('ENVIRONMENT')}' service with the following details. "
         f"The broadcast channel will be '{current_service.broadcast_channel}'."
@@ -1120,9 +1126,7 @@ def alert_summary_email(service_id, broadcast_message_id):
 
     # Grab any updated values, and the json/cap now
     if request.method == "POST":
-        form.extra_content.data = request.form.get("extra_content")
-        form.count_of_phones.data = request.form.get("count_of_phones")
-        duration_display = request.form.get("duration_display")
+        form.alert_summary.data = request.form.get("alert_summary")
         geojson = generate_geojson(broadcast_message)
         cap_xml = generate_unsigned_xml(broadcast_message, "cap")
         ibag_xml = generate_unsigned_xml(broadcast_message, "ibag")
@@ -1134,8 +1138,8 @@ def alert_summary_email(service_id, broadcast_message_id):
             geojson=geojson,
             cap_xml=cap_xml,
             ibag_xml=ibag_xml,
-            extra_content=form.extra_content.data,
-            count_of_phones=form.count_of_phones.data,
+            alert_summary=form.alert_summary.data,
+            count_of_phones=count_of_phones,
             duration=duration_display,
         )
         return render_current_alert_page(broadcast_message)
@@ -1145,4 +1149,6 @@ def alert_summary_email(service_id, broadcast_message_id):
         form=form,
         broadcast_message=broadcast_message,
         back_link=request.referrer,
+        duration_display=duration_display,
+        count_of_phones=count_of_phones,
     )
