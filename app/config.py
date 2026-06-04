@@ -116,7 +116,7 @@ class Config(object):
     ESTIMATED_PHONE_COUNTS = {
         "lower_bound": 900_000,
         "upper_bound": 1_000_000,
-    }  # Thresholds used by the estimated_phone_count_content macro to decide which
+    }  # Thresholds used by the format_estimated_phone_count formatter function to decide which
     # "estimated phones" message to show (Less than/Just under/More than 1 million phones)
 
 
