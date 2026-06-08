@@ -84,7 +84,7 @@ class BroadcastAreasRepository(object):
     def insert_broadcast_area_library(self, id, *, name, name_singular, is_group):
         q = """
         INSERT INTO broadcast_area_libraries (id, name, name_singular, is_group)
-        VALUES (?, ?, ?, ?)
+        VALUES (?, ?, ?, ?) ON CONFLICT(id) DO NOTHING
         """
 
         with self.conn() as conn:
@@ -97,7 +97,7 @@ class BroadcastAreasRepository(object):
             broadcast_area_library_id, broadcast_area_library_group_id,
             count_of_phones
         )
-        VALUES (?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?) ON CONFLICT(id) DO NOTHING
         """
 
         features_q = """
@@ -105,7 +105,7 @@ class BroadcastAreasRepository(object):
             id,
             polygons, simple_polygons, utm_crs
         )
-        VALUES (?, ?, ?, ?)
+        VALUES (?, ?, ?, ?) ON CONFLICT(id) DO NOTHING
         """
 
         with self.conn() as conn:
