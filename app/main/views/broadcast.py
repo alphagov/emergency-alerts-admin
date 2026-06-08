@@ -1115,7 +1115,7 @@ def alert_summary_email(service_id, broadcast_message_id):
         else:
             duration_display = format_seconds_duration_as_time(Config.DEFAULT_DURATION_PERIODS.get("live"))
 
-    count_of_phones = format_estimated_phone_count(broadcast_message.count_of_phones, broadcast_message.count_of_phones)
+    phone_estimate = format_estimated_phone_count(broadcast_message.count_of_phones, broadcast_message.count_of_phones)
 
     form = EmailSummaryForm()
     form.alert_summary.data = (
@@ -1139,7 +1139,7 @@ def alert_summary_email(service_id, broadcast_message_id):
             cap_xml=cap_xml,
             ibag_xml=ibag_xml,
             alert_summary=form.alert_summary.data,
-            count_of_phones=count_of_phones,
+            phone_estimate=phone_estimate,
             duration=duration_display,
         )
         return render_current_alert_page(broadcast_message)
@@ -1150,5 +1150,5 @@ def alert_summary_email(service_id, broadcast_message_id):
         broadcast_message=broadcast_message,
         back_link=request.referrer,
         duration_display=duration_display,
-        count_of_phones=count_of_phones,
+        phone_estimate=phone_estimate,
     )
