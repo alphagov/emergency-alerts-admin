@@ -33,6 +33,7 @@ def new_password(token):
         flash("The link in the email we sent you has expired. Enter your email address to resend.")
         return redirect(url_for(".forgot_password"))
 
+    current_app.logger.info("Token data: %s", token_data)
     email_address = json.loads(token_data)["email"]
     user = User.from_email_address(email_address)
     if user.password_changed_more_recently_than(json.loads(token_data)["created_at"]):
