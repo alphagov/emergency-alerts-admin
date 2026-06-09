@@ -59,7 +59,7 @@ jobs:
 
   functional-tests:
     name: Invoke Functional Tests
-    uses: alphagov/emergency-alerts-functional-tests/.github/workflows/run-functional-tests-pr.yml@spike/eas-3066-functional-tests-workflow
+    uses: alphagov/emergency-alerts-functional-tests/.github/workflows/run-functional-tests-pr.yml
     with:
       env-default: REPO_BRANCH_ADMIN=${{ github.head_ref }}
       pr-description: ${{ github.event.pull_request.body }}
