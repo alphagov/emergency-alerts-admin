@@ -45,7 +45,10 @@ class BaseBroadcastArea(ABC):
 
     @cached_property
     def count_of_phones(self):
-        return broadcast_message_api_client.get_count_of_phones(self.as_wkt_geometry)
+        if self.simple_polygons.estimated_area:
+            return broadcast_message_api_client.get_count_of_phones(self.as_wkt_geometry)
+        else:
+            return 0
 
     @cached_property
     def simple_polygons_with_bleed(self) -> Polygons:
