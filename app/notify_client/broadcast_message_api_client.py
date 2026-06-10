@@ -122,7 +122,7 @@ class BroadcastMessageAPIClient(AdminAPIClient):
         return self.get(f"/service/{service_id}/broadcast-message/{broadcast_message_id}/provider-statuses")
 
     def get_count_of_phones(self, area):
-        data = {"area": area}
+        data = {"areas": area}
         return self.post("/populations", data=data)
 
 
