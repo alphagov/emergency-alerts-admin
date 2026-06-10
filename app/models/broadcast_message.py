@@ -44,6 +44,7 @@ class BroadcastMessage(BaseBroadcast):
         "edit_reason",
         "extra_content",
         "sending_error",
+        "count_of_phones"
     }
 
     def __init__(self, _dict):
@@ -295,11 +296,6 @@ class BroadcastMessage(BaseBroadcast):
 
     def get_broadcast_provider_statuses(self):
         return broadcast_message_api_client.get_broadcast_provider_statuses(self.service_id, self.id)
-
-    def get_count_of_phones(self, return_for_edit_reason):
-        return broadcast_message_api_client.get_count_of_phones(
-            broadcast_message_id=self.id, service_id=self.service_id
-        )
 
 
 class BroadcastMessages(ModelList):
