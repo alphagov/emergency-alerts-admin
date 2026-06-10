@@ -674,8 +674,9 @@ def _get_content_count_error_and_message_for_template(template):
                         f"remaining."
                     ),
                     (
-                        f"The character limit is reduced from {format_thousands(template.MAX_CONTENT_COUNT_GSM)} to {format_thousands(template.MAX_CONTENT_COUNT_UCS2)} "
-                        f"because you have used the special character{'s' if len(template.non_gsm_characters) > 1 else ''} "
+                        f"The character limit is reduced from {format_thousands(template.MAX_CONTENT_COUNT_GSM)} "
+                        f"to {format_thousands(template.MAX_CONTENT_COUNT_UCS2)} because you have "
+                        f"used the special character{'s' if len(template.non_gsm_characters) > 1 else ''} "
                         f"{', '.join(template.non_gsm_characters)}. "
                         f"You can remove or change these characters to restore the original limit."
                     ),
