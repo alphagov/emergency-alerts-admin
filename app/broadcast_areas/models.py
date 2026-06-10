@@ -1,6 +1,7 @@
 import math
 from abc import ABC, abstractmethod
 
+from app.broadcast_areas.populations import CITY_OF_LONDON
 from emergency_alerts_utils.formatters import formatted_list
 from emergency_alerts_utils.polygons import Polygons
 from emergency_alerts_utils.serialised_model import SerialisedModelCollection
@@ -45,6 +46,10 @@ class BaseBroadcastArea(ABC):
 
     @cached_property
     def count_of_phones(self):
+        if self.id.endswith(CITY_OF_LONDON.WARDS):
+            return CITY_OF_LONDON.DAYTIME_POPULATION * (
+                self.polygons.estimated_area / CITY_OF_LONDON.AREA_SQUARE_METRES
+            )
         if self.simple_polygons.estimated_area:
             return broadcast_message_api_client.get_count_of_phones(self.as_wkt_geometry)
         else:
