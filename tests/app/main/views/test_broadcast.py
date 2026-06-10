@@ -7311,3 +7311,167 @@ def test_can_get_unsigned_ibag_xml(
         "/ibag:IBAG_Alert_Attributes/ibag:IBAG_alert_info/ibag:IBAG_certainty//text()",
         "ibag",
     ) == ["Likely"]
+
+
+def test_send_summary_email_section_not_visible_with_no_contacts(
+    mocker,
+    client_request,
+    service_one,
+    active_user_create_broadcasts_permission,
+    fake_uuid,
+    mock_get_broadcast_message_versions,
+    mock_get_broadcast_returned_for_edit_reasons,
+    mock_get_latest_edit_reason,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            approved_by_id=fake_uuid,
+            starts_at="2020-02-20T20:20:20.000000",
+            created_at="2020-02-20T20:20:20.000000",
+            content="Hello",
+            extra_content="Test Extra Content",
+            reference="Test Template Reference",
+            duration=10_800,
+        ),
+    )
+
+    client_request.login(active_user_create_broadcasts_permission)
+
+    page = client_request.get(
+        ".view_current_broadcast",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+    )
+
+    keys = [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__key")]
+    assert "Send summary email" not in keys
+
+
+def test_send_summary_email_section_not_visible_with_no_perms(
+    mocker,
+    client_request,
+    service_one,
+    active_user_view_permissions,
+    fake_uuid,
+    mock_get_broadcast_message_versions,
+    mock_get_broadcast_returned_for_edit_reasons,
+    mock_get_latest_edit_reason,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            created_at="2020-02-20T20:20:20.000000",
+            content="Hello",
+            extra_content="Test Extra Content",
+            reference="Test Template Reference",
+            duration=10_800,
+        ),
+    )
+
+    service_one["alert_notification_addresses"] += ["test@test1.com"]
+
+    client_request.login(active_user_view_permissions)
+
+    page = client_request.get(
+        ".view_current_broadcast",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+    )
+
+    keys = [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__key")]
+    assert "Send summary email" not in keys
+
+
+def test_send_summary_email(
+    mocker,
+    client_request,
+    service_one,
+    active_user_create_broadcasts_permission,
+    fake_uuid,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            approved_by_id=fake_uuid,
+            starts_at="2020-02-20T20:20:20.000000",
+            created_at="2020-02-20T20:20:20.000000",
+            content="Hello",
+            extra_content="Test Extra Content",
+            reference="Test Template Reference",
+            duration=10_800,
+        ),
+    )
+
+    client_request.login(active_user_create_broadcasts_permission)
+
+    page = client_request.get(
+        ".alert_summary_email",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+    )
+
+    assert normalize_spaces(page.select_one("h1").text) == "Send summary email"
+    assert page.select_one("textarea")["name"] == "alert_summary"
+    assert page.select_one("textarea")["id"] == "alert_summary"
+    assert page.select_one("textarea")["data-notify-module"] == "enhanced-textbox"
+    assert page.select_one("textarea")["data-highlight-placeholders"] == "false"
+
+    paras = page.select("p.govuk-body")
+    for para in paras:
+        if "Alert Message" in para.get_text():
+            assert "Hello" in para.get_text()
+        if "Phone Estimate" in para.get_text():
+            assert "More than 1 million phones estimated" in para.get_text()
+        if "Additional Info" in para.get_text():
+            assert "Test Extra Content" in para.get_text()
+        if "Alert duration" in para.get_text():
+            assert "3 hours" in para.get_text()
+
+    assert normalize_spaces(page.select(".govuk-button")[5].text) == "Send Email"
+
+
+def test_send_summary_email_no_perms(
+    mocker,
+    client_request,
+    service_one,
+    active_user_view_permissions,
+    fake_uuid,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            approved_by_id=fake_uuid,
+            starts_at="2020-02-20T20:20:20.000000",
+            created_at="2020-02-20T20:20:20.000000",
+            content="Hello",
+            extra_content="Test Extra Content",
+            reference="Test Template Reference",
+            duration=10_800,
+        ),
+    )
+
+    client_request.login(active_user_view_permissions)
+
+    client_request.get(
+        ".alert_summary_email",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        _expected_status=403,
+    )

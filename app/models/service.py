@@ -252,6 +252,10 @@ class Service(JSONModel):
             Organisation.TYPE_NHS_LOCAL,
         }
 
+    @property
+    def alert_notification_addresses(self):
+        return self._dict["alert_notification_addresses"]
+
 
 class Services(SerialisedModelCollection):
     model = Service
