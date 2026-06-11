@@ -2753,6 +2753,7 @@ def test_error_if_flood_warning_code_bulk_input_invalid(
     areas_input,
     expected_field_error,
     expected_form_error,
+    mock_get_count_of_phones,
 ):
     service_one["permissions"] += ["broadcast"]
     mocker.patch(
@@ -3500,6 +3501,7 @@ def test_latitude_longitude_coordinate_area_form_errors(
     active_user_create_broadcasts_permission,
     post_data,
     expected_error,
+    mock_get_count_of_phones,
 ):
     service_one["permissions"] += ["broadcast"]
     mock_get_broadcast_message = mocker.patch(
@@ -7387,6 +7389,7 @@ def test_send_summary_email_section_not_visible_with_no_contacts(
     mock_get_broadcast_message_versions,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_count_of_phones,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -7426,6 +7429,7 @@ def test_send_summary_email_section_not_visible_with_no_perms(
     mock_get_broadcast_message_versions,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_count_of_phones,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -7456,13 +7460,8 @@ def test_send_summary_email_section_not_visible_with_no_perms(
     assert "Send summary email" not in keys
 
 
-def test_send_summary_email(
-    mocker,
-    client_request,
-    service_one,
-    active_user_create_broadcasts_permission,
-    fake_uuid,
-):
+def test_send_summary_email(mocker, client_request, service_one, active_user_create_broadcasts_permission, fake_uuid):
+    mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
         return_value=broadcast_message_json(
