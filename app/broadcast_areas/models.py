@@ -1,7 +1,6 @@
 import math
 from abc import ABC, abstractmethod
 
-from app.broadcast_areas.populations import CITY_OF_LONDON
 from emergency_alerts_utils.formatters import formatted_list
 from emergency_alerts_utils.polygons import Polygons
 from emergency_alerts_utils.serialised_model import SerialisedModelCollection
@@ -9,6 +8,7 @@ from rtreelib import Rect
 from shapely import MultiPolygon, Polygon
 from werkzeug.utils import cached_property
 
+from app.broadcast_areas.populations import CITY_OF_LONDON
 from app.formatters import square_metres_to_square_miles
 from app.models import SortingAndEqualityMixin
 from app.notify_client.broadcast_message_api_client import broadcast_message_api_client
@@ -43,17 +43,6 @@ class BaseBroadcastArea(ABC):
         if len(polygons) == 1:
             return polygons[0].wkt
         return MultiPolygon(polygons).wkt
-
-    @cached_property
-    def count_of_phones(self):
-        if self.id.endswith(CITY_OF_LONDON.WARDS):
-            return CITY_OF_LONDON.DAYTIME_POPULATION * (
-                self.polygons.estimated_area / CITY_OF_LONDON.AREA_SQUARE_METRES
-            )
-        if self.simple_polygons.estimated_area:
-            return broadcast_message_api_client.get_count_of_phones(self.as_wkt_geometry)
-        else:
-            return 0
 
     @cached_property
     def simple_polygons_with_bleed(self) -> Polygons:
@@ -131,6 +120,17 @@ class BroadcastArea(BaseBroadcastArea, SortingAndEqualityMixin):
         return Polygons(simple_polygons, utm_crs=utm_crs).utm_polygons
 
     @cached_property
+    def count_of_phones(self):
+        if self.id and self.id.endswith(CITY_OF_LONDON.WARDS):
+            return CITY_OF_LONDON.DAYTIME_POPULATION * (
+                self.polygons.estimated_area / CITY_OF_LONDON.AREA_SQUARE_METRES
+            )
+        if self.simple_polygons.estimated_area:
+            return broadcast_message_api_client.get_count_of_phones(self.as_wkt_geometry)
+        else:
+            return 0
+
+    @cached_property
     def sub_areas(self):
         return [BroadcastArea(row) for row in BroadcastAreasRepository().get_all_areas_for_group(self.id)]
 
@@ -198,6 +198,13 @@ class CustomBroadcastArea(BaseBroadcastArea):
             ),
             None,
         )
+
+    @cached_property
+    def count_of_phones(self):
+        if self.simple_polygons.estimated_area:
+            return broadcast_message_api_client.get_count_of_phones(self.as_wkt_geometry)
+        else:
+            return 0
 
 
 class CustomBroadcastAreas(SerialisedModelCollection):
