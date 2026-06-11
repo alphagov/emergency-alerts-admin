@@ -86,7 +86,7 @@ grpcio==1.76.0
     # via opentelemetry-exporter-otlp-proto-grpc
 humanize==4.15.0
     # via -r requirements.in
-idna==3.10
+idna==3.15
     # via requests
 importlib-metadata==8.6.1
     # via opentelemetry-api
