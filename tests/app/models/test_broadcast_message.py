@@ -6,7 +6,6 @@ from tests import broadcast_message_json
 from tests.app.broadcast_areas.custom_polygons import (
     BD1_1EE_1,
     MULTIPLE_ENGLAND,
-    custom_essex_bleed_area,
 )
 
 
