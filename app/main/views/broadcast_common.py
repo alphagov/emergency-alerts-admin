@@ -443,7 +443,6 @@ def search_coordinates(service_id, coordinate_type, message_type, message_id=Non
         None,
         None,
         None,
-        None,
     )
     form = select_coordinate_form(coordinate_type)
 
