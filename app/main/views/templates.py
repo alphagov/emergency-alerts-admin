@@ -11,7 +11,7 @@ from app import (
     template_folder_api_client,
 )
 from app.broadcast_areas.models import CustomBroadcastAreas
-from app.formatters import character_count
+from app.formatters import character_count, format_thousands
 from app.main import main
 from app.main.forms import (
     BroadcastTemplateForm,
@@ -634,7 +634,7 @@ def count_content_length(service_id, template_type, field):
     if template_type != "broadcast":
         abort(404)
 
-    error, message = _get_content_count_error_and_message_for_template(
+    error, message, non_gsm_character_message = _get_content_count_error_and_message_for_template(
         get_template(
             content=request.form.get(str(field), ""),
         )
@@ -646,6 +646,7 @@ def count_content_length(service_id, template_type, field):
                 "partials/templates/content-count-message.html",
                 error=error,
                 message=message,
+                non_gsm_character_message=non_gsm_character_message,
             )
         }
     )
@@ -654,16 +655,34 @@ def count_content_length(service_id, template_type, field):
 def _get_content_count_error_and_message_for_template(template):
     if template.template_type == "broadcast":
         if template.content_too_long:
-            return True, (
-                f"You have "
-                f"{character_count(template.encoded_content_count - template.max_content_count)} "
-                f"too many"
+            return (
+                True,
+                (
+                    f"You have "
+                    f"{character_count(template.encoded_content_count - template.max_content_count)} "
+                    f"too many."
+                ),
+                None,
             )
         else:
-            return False, (
-                f"You have "
-                f"{character_count(template.max_content_count - template.encoded_content_count)} "
-                f"remaining"
+            return (
+                False,
+                (
+                    f"You have "
+                    f"{character_count(template.max_content_count - template.encoded_content_count)} "
+                    f"remaining."
+                ),
+                (
+                    (
+                        f"The character limit is reduced from {format_thousands(template.MAX_CONTENT_COUNT_GSM)} "
+                        f"to {format_thousands(template.MAX_CONTENT_COUNT_UCS2)} because you have "
+                        f"used the special character{'s' if len(template.non_gsm_characters) > 1 else ''} "
+                        f"{', '.join(template.non_gsm_characters)}. "
+                        f"You can remove or change these characters to restore the original limit."
+                    )
+                    if template.non_gsm_characters
+                    else None
+                ),
             )
 
 
