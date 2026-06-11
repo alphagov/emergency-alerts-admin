@@ -44,7 +44,7 @@
       alert
     </p>
     <p class="area-list-key area-list-key--phone-estimate">
-      {{estimated_phone_count_content(count_of_phones)}}
+      {{count_of_phones|format_estimated_phone_count(count_of_phones)}}
     </p>
 {% endif %}
 {% endmacro %}

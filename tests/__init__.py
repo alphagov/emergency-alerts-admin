@@ -166,6 +166,7 @@ def service_json(
     notes=None,
     broadcast_channel=None,
     allowed_broadcast_provider=None,
+    alert_notification_addresses=None,
 ):
     if users is None:
         users = []
@@ -175,6 +176,8 @@ def service_json(
         service_callback_api = []
     if inbound_api is None:
         inbound_api = []
+    if alert_notification_addresses is None:
+        alert_notification_addresses = []
     return {
         "id": id_,
         "name": name,
@@ -191,6 +194,7 @@ def service_json(
         "notes": notes,
         "broadcast_channel": broadcast_channel,
         "allowed_broadcast_provider": allowed_broadcast_provider,
+        "alert_notification_addresses": alert_notification_addresses,
     }
 
 

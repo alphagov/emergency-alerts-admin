@@ -297,6 +297,21 @@ class BroadcastMessage(BaseBroadcast):
     def get_broadcast_provider_statuses(self):
         return broadcast_message_api_client.get_broadcast_provider_statuses(self.service_id, self.id)
 
+    @classmethod
+    def send_alert_summary_email(
+        cls, *, service_id, broadcast_message_id, geojson, cap_xml, ibag_xml, alert_summary, phone_estimate, duration
+    ):
+        broadcast_message_api_client.send_alert_summary_email(
+            service_id=service_id,
+            broadcast_message_id=broadcast_message_id,
+            geojson=geojson,
+            cap_xml=cap_xml,
+            ibag_xml=ibag_xml,
+            alert_summary=alert_summary,
+            phone_estimate=phone_estimate,
+            duration=duration,
+        )
+
 
 class BroadcastMessages(ModelList):
     model = BroadcastMessage

@@ -1,7 +1,6 @@
 {% from "govuk_frontend_jinja/components/summary-list/macro.html" import govukSummaryList %}
 {% from "views/broadcast/macros/enlarged-map.html" import enlarged_map %}
 {% from "views/broadcast/macros/area-map.html" import map %}
-{% from "views/broadcast/macros/estimated-phones.html" import estimated_phone_count_content %}
 {% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
 
 
@@ -97,7 +96,7 @@
 
     {% set count_of_phones_html %}
         <p class="govuk-body">
-            {{estimated_phone_count_content(count_of_phones)}}
+            {{count_of_phones|format_estimated_phone_count(count_of_phones_likely)}}
         </p>
     {% endset %}
 
@@ -260,6 +259,35 @@
         },
         }
     ] %}
+
+    {% if current_service.alert_notification_addresses and display_action %}
+        {% set alert_summary_email_section_html %}
+            {% for contact_email in current_service.alert_notification_addresses %}
+                <p class="govuk-body">{{ contact_email.email_address }}</p>
+            {% endfor %}
+        {% endset %}
+
+        {% set summaryListItems = summaryListItems + [
+            {
+            'key': {
+                'text': "Send summary email"
+            },
+            'value': {
+                'html': alert_summary_email_section_html
+            },
+            'actions': {
+                'items': [
+                {
+                    'href': url_for(".alert_summary_email", service_id=current_service.id, broadcast_message_id=broadcast_message.id,),
+                    'text': "Send",
+                    'visuallyHiddenText': "summary email to service contacts"
+                }
+                ]
+                }
+            }
+        ] %}
+    {% endif %}
+
 
     {{ govukSummaryList({
     'rows': summaryListItems

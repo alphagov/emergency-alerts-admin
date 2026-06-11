@@ -1063,43 +1063,45 @@ def test_should_not_create_broadcast_template_with_placeholders(
         (
             "broadcast",
             "",
-            "You have 1,395 characters remaining",
+            "You have 1,395 characters remaining.",
             None,
         ),
         (
             "broadcast",
             "a",
-            "You have 1,394 characters remaining",
+            "You have 1,394 characters remaining.",
             None,
         ),
         (
             "broadcast",
             "a" * MAX_BROADCAST_CHAR_COUNT,
-            "You have 0 characters remaining",
+            "You have 0 characters remaining.",
             None,
         ),
         (
             "broadcast",
             "a" * (MAX_BROADCAST_CHAR_COUNT + 1),
-            "You have 1 character too many",
+            "You have 1 character too many.",
             "govuk-error-message",
         ),
         (
             "broadcast",
             "a" * (MAX_BROADCAST_CHAR_COUNT + 2),
-            "You have 2 characters too many",
+            "You have 2 characters too many.",
             "govuk-error-message",
         ),
         (
             "broadcast",
             "Ẅ" * 615,
-            "You have 0 characters remaining",
+            "You have 0 characters remaining. The character limit is reduced from 1,395 to 615 "
+            "because you have used the special character Ẅ. You can remove or change these characters"
+            " to restore the original limit.",
             None,
         ),
         (
             "broadcast",
             "Ẅ" * 616,
-            "You have 1 character too many",
+            "You have 1 character too many.",
             "govuk-error-message",
         ),
     ),

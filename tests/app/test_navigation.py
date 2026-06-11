@@ -24,6 +24,7 @@ EXCLUDED_ENDPOINTS = tuple(
             "add_service",
             "add_service_template",
             "admin_actions",
+            "alert_summary_email",
             "api_keys",
             "approve_broadcast_message",
             "archive_organisation",

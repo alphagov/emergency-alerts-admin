@@ -1,3 +1,7 @@
 <span {% if error %}class="govuk-error-message"{% endif %}>
   {{ message }}
+  <br>
+  {% if non_gsm_character_message %}
+    {{ non_gsm_character_message }}
+  {% endif %}
 </span>
