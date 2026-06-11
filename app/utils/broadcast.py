@@ -727,6 +727,14 @@ def generate_unsigned_xml(broadcast_message, xml_type):
         for coordinate_pair in coordinate_pairs:
             all_area_coordinates.append({"polygon": coordinate_pair})
 
+    # When in training mode default to 'test' channel if channel is not set.
+    # Prevents 500 error in utils.xml.common.validate_channel call later on.
+    # XML will never be sent in training mode, but this function is still called when
+    # downloading XML or sending summary emails.
+    channel = current_service.broadcast_channel
+    if channel is None and current_service.trial_mode:
+        channel = "test"
+
     event = {
         # In a signed CAP message the identifier refers to a BroadcastProviderMessage which is unique per MNO
         # We don't have such a thing here so we just use the overall BroadcastMessage
@@ -738,7 +746,7 @@ def generate_unsigned_xml(broadcast_message, xml_type):
         "description": broadcast_message.content,
         "language": "en-GB" if is_cap_format else "English",
         "areas": all_area_coordinates,
-        "channel": current_service.broadcast_channel,
+        "channel": channel,
         # starts_at and finishes_at can be None if it's a draft/awaiting approval, so we just use now
         # sent and expires expect a string in 'CAP' format (see convert_utc_... method's description)
         "sent": (
