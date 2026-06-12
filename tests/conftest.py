@@ -2628,3 +2628,8 @@ def webauthn_credential_2():
 @pytest.fixture
 def mock_admin_action_notification(mocker):
     return mocker.patch("app.utils.admin_action.send_notifications", return_value=None)
+
+
+@pytest.fixture
+def mock_get_count_of_phones(mocker):
+    return mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=100_000)

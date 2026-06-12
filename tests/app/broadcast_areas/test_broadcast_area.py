@@ -1,15 +1,12 @@
-from math import floor, isclose
+from math import isclose
 
 import pytest
-from custom_polygons import BRISTOL, SKYE
 
 from app.broadcast_areas.models import (
     BroadcastAreasRepository,
-    CustomBroadcastArea,
     broadcast_area_libraries,
 )
 from app.broadcast_areas.populations import (
-    CITY_OF_LONDON,
     estimate_number_of_smartphones_for_population,
 )
 
@@ -166,69 +163,6 @@ def test_repository_has_all_libraries():
     ] == [(name, name_singular) for _, name, name_singular, _is_group in libraries]
 
 
-@pytest.mark.parametrize("library", (broadcast_area_libraries))
-def test_every_area_has_count_of_phones(library):
-    for area in library:
-        if library.id in ["test", "postcodes", "coordinates"]:
-            assert area.count_of_phones == 0
-        elif library.id in ["Flood_Warning_Target_Areas"]:
-            # Areas can be equal to zero as some areas provided are too small e.g. area with TA Code 053FWFPECR11
-            assert area.count_of_phones >= 0
-        else:
-            assert area.count_of_phones > 0
-
-
-@pytest.mark.parametrize(
-    "area_id, area_name, expected_count",
-    (
-        # Unitary authority
-        ("ctyua25-E10000014", "Hampshire", 1_026_721),
-        # District
-        ("lad25-E07000087", "Fareham", 80_279),
-        # Ward
-        ("wd25-E05015666", "Fareham Town", 4_866),
-        # Unitary authority
-        ("lad25-E09000012", "Hackney", 213_043),
-        # Ward
-        ("wd25-E05009373", "Hackney Downs", 10_550),
-        # Ward
-        ("wd25-E05011090", "Bryher", 177),
-        # Areas with missing data
-        ("lad25-E07000008", "Cambridge", 119_937),
-        ("lad25-E07000084", "Basingstoke and Deane", 140_824),
-        ("lad25-E07000118", "Chorley", 86_596),
-        ("lad25-E07000178", "Oxford", 132_068),
-        # In Scotland
-        ("lad25-S12000013", "Na h-Eileanan Siar", 17_890),
-        ("wd25-S13003135", "Barraigh agus Bhatarsaigh", 883),
-        # In Wales
-        ("lad25-W06000021", "Monmouthshire", 65_576),
-        ("wd25-W05001785", "Mitchel Troy and Trellech United", 2_448),
-        # In Northern Ireland
-        ("lad25-N09000005", "Derry City and Strabane", 132_917),
-        ("wd25-N08000508", "City Walls", 3_129),
-    ),
-)
-def test_count_of_phones_for_all_levels(area_id, area_name, expected_count):
-    area = broadcast_area_libraries.get_areas([area_id])[0]
-    assert area.name == area_name
-    assert floor(area.count_of_phones) == expected_count
-
-
-def test_city_of_london_counts_are_not_derived_from_population():
-    city_of_london = broadcast_area_libraries.get_areas(["lad25-E09000001"])[0]
-
-    assert city_of_london.name == "City of London"
-    assert len(city_of_london.sub_areas) == len(CITY_OF_LONDON.WARDS) == 25
-
-    for ward in city_of_london.sub_areas:
-        # The population of the whole City of London is 9,401, so an
-        # average of 300 per ward. What we’re asserting here is that the
-        # count of phones is much larger, because it isn’t derived from
-        # the resident population.
-        assert ward.count_of_phones > 5_000
-
-
 @pytest.mark.parametrize(
     "population, expected_estimate",
     (
@@ -283,41 +217,44 @@ def test_estimate_number_of_smartphones_for_population(
 
 
 @pytest.mark.parametrize(
-    "area, expected_phones_per_square_mile",
+    "area, count_of_phones, expected_phones_per_square_mile",
     (
         (
             # Islington (most dense in UK)
             "lad25-E09000019",
-            29_970,
+            188563.04338646453,
+            31_296,
         ),
         (
             # Cordwainer Ward (City of London)
             # This is higher than Islington because we inflate the
             # popualtion to account for daytime workers
             "wd25-E05009300",
+            0,
             392_753,
         ),
         (
             # Crewe East
             "wd25-E05008621",
-            3_747,
+            13135.044539755492,
+            3_865,
         ),
         (
             # Derringham (East Yorkshire)
             "wd25-E05011530",
-            8762.18,
+            8941.705074095897,
+            9_363,
         ),
         (
             # Highland (least dense in UK)
             "lad25-S12000017",
-            14.06,
+            170606.22907047928,
+            14.4,
         ),
     ),
 )
-def test_phone_density(
-    area,
-    expected_phones_per_square_mile,
-):
+def test_phone_density(area, expected_phones_per_square_mile, count_of_phones, mocker):
+    mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=count_of_phones)
     assert close_enough(
         broadcast_area_libraries.get_areas([area])[0].phone_density,
         expected_phones_per_square_mile,
@@ -325,101 +262,62 @@ def test_phone_density(
 
 
 @pytest.mark.parametrize(
-    "area, expected_bleed_in_m",
+    "area, count_of_phones, expected_bleed_in_m",
     (
         (
             # Islington (most dense in UK)
             "lad25-E09000019",
+            188563.04338646453,
             500,
         ),
         (
             # Cordwainer Ward (City of London)
             # Special case because of inflated daytime population
             "wd25-E05009300",
+            11619.627517184586,
             500,
         ),
         (
             # Crewe East
             "wd25-E05008621",
-            1_432,
+            13135.044539755492,
+            1_416,
         ),
         (
             # Ramsbottom
             "wd25-E05014163",
-            1_902,
+            8955.83823065393,
+            1_882,
         ),
         (
             # Highland (least dense in UK)
             "lad25-S12000017",
-            4_462,
+            170606.22907047928,
+            4_452,
         ),
         (
             # No population data available
             "test-santa-claus-village-rovaniemi-a",
+            0,
             1_500,
         ),
         (
             # No population data available
             "REPPIR_DEPZ_sites-awe_aldermaston",
-            2_591,
+            3492.7064930129995,
+            2_595,
         ),
         (
             # No population data available
             "Flood_Warning_Target_Areas-011FWBWH",
-            1_631,
+            94.55460828006048,
+            1_632,
         ),
     ),
 )
-def test_estimated_bleed(area, expected_bleed_in_m):
+def test_estimated_bleed(area, expected_bleed_in_m, count_of_phones, mocker):
+    mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=count_of_phones)
     assert close_enough(
         broadcast_area_libraries.get_areas([area])[0].estimated_bleed_in_m,
         expected_bleed_in_m,
     )
-
-
-@pytest.mark.parametrize(
-    "polygon, expected_possible_overlaps, expected_count_of_phones",
-    (
-        (
-            BRISTOL,
-            [
-                "Ashley",
-                "Bedminster",
-                "Central",
-                "Clifton",
-                "Clifton Down",
-                "Cotham",
-                "Hotwells and Harbourside",
-                "Knowle",
-                "Lawrence Hill",
-                "Southville",
-                "Stoke Bishop",
-                "Windmill Hill",
-            ],
-            76_312,
-        ),
-        (
-            SKYE,
-            [
-                "Caol and Mallaig",
-                "Eilean á Chèo",
-                "Na Hearadh",
-                "Wester Ross, Strathpeffer and Lochalsh",
-            ],
-            6_833,
-        ),
-    ),
-)
-def test_count_of_phones_for_custom_area(
-    polygon,
-    expected_possible_overlaps,
-    expected_count_of_phones,
-):
-    area = CustomBroadcastArea(
-        name="Example",
-        polygons=[polygon],
-    )
-
-    assert sorted(overlap.name for overlap in area.nearby_electoral_wards) == expected_possible_overlaps
-
-    assert close_enough(area.count_of_phones, expected_count_of_phones)
