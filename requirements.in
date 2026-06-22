@@ -24,6 +24,10 @@ urllib3==2.7.0
 Werkzeug==3.1.8
 wtforms==3.2.1
 
+# For transitive dependency resolution using pip-tools only.
+# In container builds we use the sibling (base image) version.
+emergency-alerts-utils @ git+https://github.com/alphagov/emergency-alerts-utils.git
+
 # Packages for testing
 beautifulsoup4==4.14.3
 black==26.3.1
