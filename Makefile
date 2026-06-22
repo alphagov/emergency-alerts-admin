@@ -74,8 +74,11 @@ fix-imports: ## Fix imports using isort
 
 .PHONY: freeze-requirements
 freeze-requirements: ## create static requirements.txt
-	${PYTHON_EXECUTABLE_PREFIX}pip3 install --upgrade setuptools pip-tools
+	${PYTHON_EXECUTABLE_PREFIX}pip3 install pip-tools
 	${PYTHON_EXECUTABLE_PREFIX}pip-compile requirements.in
+	sed -i.orig 's/emergency-alerts-utils @/# Commented out for parent requirements.txt: emergency-alerts-utils @/' requirements.txt
+# Work around macOS having awkward sed that needs an original file
+	rm requirements.txt.orig || true
 
 .PHONY: bump-utils
 bump-utils:  # Bump emergency-alerts-utils package to latest version
