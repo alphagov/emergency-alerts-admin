@@ -52,7 +52,7 @@ def process_admin_action(action_obj):
         InvitedUser.create(
             action_obj["created_by"],
             service_id,
-            action_data["email_address"],
+            "",
             action_data["permissions"],
             action_data["login_authentication"],
             action_data["folder_permissions"],
