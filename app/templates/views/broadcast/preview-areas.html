@@ -49,7 +49,7 @@
       <ul class="area-list">
         {% for area in message.areas %}
           <li class="area-list-item">
-            {{area.name}}
+            {% if area.is_electoral_ward and area.parent %}{{ area.parent.name }} &gt; {% endif %}{{area.name}}
             {% if is_custom_broadcast %}
               <a class="area-list-item-remove govuk-button" data-module="govuk-button" role="button" href="{{ url_for('.remove_custom_area', service_id=current_service.id, message_id=message.id, area_slug=area.id or None, message_type=message_type) }}">
             {% else %}
