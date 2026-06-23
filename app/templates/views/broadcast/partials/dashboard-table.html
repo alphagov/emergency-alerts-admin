@@ -76,11 +76,13 @@
           </p>
         {% endif %}
         {% if item.status not in ['rejected', 'draft'] %}
-          <div>
+          <div class="area-list-section">
             <p class="govuk-!-margin-right-2 area-list">Area: </p>
             <ul class="area-list">
               {% for area in item.areas %}
-                <li class="area-list-item area-list-item--unremoveable area-list-item--smaller">{{area.name}}</li>
+                <li class="area-list-item area-list-item--unremoveable area-list-item--smaller">
+                  {% if area.is_electoral_ward and area.parent %}{{ area.parent.name }} &gt; {% endif %}{{area.name}}
+                </li>
               {% endfor %}
             </ul>
             {% if item.duration|format_seconds_duration_as_time != "0 seconds" %}
@@ -129,11 +131,13 @@
               {% endif %}
             </p>
           </div>
-          <div>
+          <div class="area-list-section">
             <p class="govuk-!-margin-right-1 area-list govuk-!-font-weight-bold">Area: </p>
             <ul class="area-list">
               {% for area in item.areas %}
-                <li class="area-list-item area-list-item--unremoveable area-list-item--smaller">{{area.name}}</li>
+                <li class="area-list-item area-list-item--unremoveable area-list-item--smaller">
++                  {% if area.is_electoral_ward and area.parent %}{{ area.parent.name }} &gt; {% endif %}{{area.name}}
++               </li>
               {% endfor %}
             </ul>
           </div>

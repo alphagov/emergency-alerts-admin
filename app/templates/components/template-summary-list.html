@@ -64,7 +64,7 @@
         <ul class="area-list">
         {% for area in template.areas %}
             <li class="area-list-item area-list-item--unremoveable">
-            {{area.name}}
+              {% if area.is_electoral_ward and area.parent %}{{ area.parent.name }} &gt; {% endif %}{{area.name}}
             </li>
         {% endfor %}
         </ul>
