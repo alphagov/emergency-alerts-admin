@@ -2,6 +2,7 @@
 {% from "components/select-input.html" import select_dropdown %}
 {% from "govuk_frontend_jinja/components/tag/macro.html" import govukTag %}
 {% from "components/form.html" import form_wrapper %}
+{% from "components/electoral-ward-descriptor.html" import electoral_ward_descriptor %}
 
 <div class="ajax-block-container js-mark-focus-on-parent" data-classes-to-persist="js-child-has-focus">
   {% if broadcasts %}
@@ -81,7 +82,7 @@
             <ul class="area-list">
               {% for area in item.areas %}
                 <li class="area-list-item area-list-item--unremoveable area-list-item--smaller">
-                  {% if area.is_electoral_ward and area.parent %}{{ area.parent.name }} &gt; {% endif %}{{area.name}}
+                  {{ electoral_ward_descriptor(area) }}
                 </li>
               {% endfor %}
             </ul>
@@ -136,7 +137,7 @@
             <ul class="area-list">
               {% for area in item.areas %}
                 <li class="area-list-item area-list-item--unremoveable area-list-item--smaller">
-                  {% if area.is_electoral_ward and area.parent %}{{ area.parent.name }} &gt; {% endif %}{{area.name}}
+                  {{ electoral_ward_descriptor(area) }}
                 </li>
               {% endfor %}
             </ul>
