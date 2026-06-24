@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import argparse
 import csv
 import pickle
 import sys
@@ -14,10 +15,23 @@ from populations import (
     MEDIAN_AGE_UK,
     estimate_number_of_smartphones_for_population,
 )
-from repo import BroadcastAreasRepository, rtree_index_path
+from repo import BroadcastAreasRepository, get_test_db_allowlist, rtree_index_path
 from rtreelib import Rect, RTree
 from shapely import wkt
 from shapely.geometry import MultiPolygon, Polygon
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--keep-old-polygons", default=False, action="store_true")
+parser.add_argument("--create-test-db", default=False, action="store_true")
+args = parser.parse_args()
+
+print("keep_old_polygons: ", args.keep_old_polygons)
+print("create_test_db: ", args.create_test_db)
+
+allowlist_ids = None
+if True or args.create_test_db:
+    allowlist_ids = get_test_db_allowlist()
+
 
 source_files_path = Path(__file__).resolve().parent / "source_files"
 point_counts = []
@@ -103,7 +117,7 @@ def clean_up_invalid_polygons(polygons, indent="    "):
 
 
 def polygons_and_simplified_polygons(feature):
-    if keep_old_polygons:
+    if args.keep_old_polygons:
         # cheat and shortcut out
         return [], [], []
 
@@ -254,7 +268,7 @@ def add_test_areas():
                 0,
             ]
         )
-    repo.insert_broadcast_areas(areas_to_add, keep_old_polygons)
+    repo.insert_broadcast_areas(areas_to_add, args.keep_old_polygons, allowlist_ids=allowlist_ids)
 
 
 def add_countries():
@@ -289,7 +303,7 @@ def add_countries():
             ]
         )
 
-    repo.insert_broadcast_areas(areas_to_add, keep_old_polygons)
+    repo.insert_broadcast_areas(areas_to_add, args.keep_old_polygons, allowlist_ids=allowlist_ids)
 
 
 def add_wards_local_authorities_and_counties():
@@ -339,7 +353,7 @@ def _add_electoral_wards(dataset_id):
         )
 
     rtree_index_path.open("wb").write(pickle.dumps(rtree_index))
-    repo.insert_broadcast_areas(areas_to_add, keep_old_polygons)
+    repo.insert_broadcast_areas(areas_to_add, args.keep_old_polygons, allowlist_ids=allowlist_ids)
 
 
 def _add_local_authorities(dataset_id):
@@ -369,7 +383,7 @@ def _add_local_authorities(dataset_id):
                 None,
             ]
         )
-    repo.insert_broadcast_areas(areas_to_add, keep_old_polygons)
+    repo.insert_broadcast_areas(areas_to_add, args.keep_old_polygons, allowlist_ids=allowlist_ids)
 
 
 # counties and unitary authorities
@@ -405,16 +419,12 @@ def _add_counties_and_unitary_authorities(dataset_id):
             ]
         )
 
-    repo.insert_broadcast_areas(areas_to_add, keep_old_polygons)
+    repo.insert_broadcast_areas(areas_to_add, args.keep_old_polygons, allowlist_ids=allowlist_ids)
 
 
-# cheeky global variable
-keep_old_polygons = sys.argv[1:] == ["--keep-old-polygons"]
-print("keep_old_polygons: ", keep_old_polygons)
+repo = BroadcastAreasRepository(use_test_db=args.create_test_db)
 
-repo = BroadcastAreasRepository()
-
-if keep_old_polygons:
+if args.keep_old_polygons:
     repo.delete_library_data()
 else:
     repo.delete_db()
