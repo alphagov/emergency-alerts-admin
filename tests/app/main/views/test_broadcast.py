@@ -1207,8 +1207,8 @@ def test_broadcast_page(
                 "wd25-E05014243",
             ],
             [
-                "Penrith North Remove Penrith North",
-                "Penrith South Remove Penrith South",
+                "Westmorland and Furness > Penrith North Remove Penrith North",
+                "Westmorland and Furness > Penrith South Remove Penrith South",
             ],
             [
                 "An area of 10 square miles Will get the alert",

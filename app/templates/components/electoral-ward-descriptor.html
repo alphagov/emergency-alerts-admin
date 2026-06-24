@@ -1,0 +1,3 @@
+{% macro electoral_ward_descriptor(area) %}
+  {% if area.is_electoral_ward and area.parent %}{{ area.parent.name }} &gt; {% endif %}{{area.name}}
+{%- endmacro %}
