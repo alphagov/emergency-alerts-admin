@@ -433,7 +433,7 @@ def test_edit_organisation_user_shows_the_delete_confirmation_banner(
     assert normalize_spaces(page.select_one("h1").text) == "Team members"
 
     banner = page.select_one(".banner-dangerous")
-    assert "Are you sure you want to remove Test User?" in normalize_spaces(banner.contents[0])
+    assert "Are you sure you want to remove Platform admin user?" in normalize_spaces(banner.contents[0])
     assert banner.form.attrs["action"] == url_for(
         "main.remove_user_from_organisation", org_id=ORGANISATION_ID, user_id=active_user_with_permissions["id"]
     )
