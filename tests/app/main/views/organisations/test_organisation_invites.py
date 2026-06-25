@@ -14,7 +14,9 @@ def test_invite_org_user(
     mocker,
     mock_get_organisation,
     sample_org_invite,
+    platform_admin_user,
 ):
+    client_request.login(platform_admin_user)
     mock_invite_org_user = mocker.patch(
         "app.org_invite_api_client.create_invite",
         return_value=sample_org_invite,
@@ -34,9 +36,11 @@ def test_invite_org_user_errors_when_same_email_as_inviter(
     mocker,
     mock_get_organisation,
     sample_org_invite,
+    platform_admin_user,
 ):
+    client_request.login(platform_admin_user)
     new_org_user_data = {
-        "email_address": "test@user.gov.uk",
+        "email_address": "platform@admin.gov.uk",
     }
 
     mock_invite_org_user = mocker.patch(
@@ -58,8 +62,10 @@ def test_cancel_invited_org_user_cancels_user_invitations(
     sample_org_invite,
     mock_get_organisation,
     mock_get_users_for_organisation,
+    platform_admin_user,
     mocker,
 ):
+    client_request.login(platform_admin_user)
     mock_cancel = mocker.patch("app.org_invite_api_client.cancel_invited_user")
     mocker.patch("app.org_invite_api_client.get_invited_user_for_org", return_value=sample_org_invite)
 

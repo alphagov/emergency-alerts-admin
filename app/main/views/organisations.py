@@ -90,7 +90,7 @@ def manage_org_users(org_id):
 
 
 @main.route("/organisations/<uuid:org_id>/users/invite", methods=["GET", "POST"])
-@user_has_permissions()
+@user_is_platform_admin()
 def invite_org_user(org_id):
     form = InviteOrgUserForm(inviter_email_address=current_user.email_address)
     if form.validate_on_submit():
@@ -104,7 +104,7 @@ def invite_org_user(org_id):
 
 
 @main.route("/organisations/<uuid:org_id>/users/<uuid:user_id>", methods=["GET"])
-@user_has_permissions()
+@user_is_platform_admin()
 def edit_organisation_user(org_id, user_id):
     # The only action that can be done to an org user is to remove them from the org.
     # This endpoint is used to get the ID of the user to delete without passing it as a
@@ -120,7 +120,7 @@ def edit_organisation_user(org_id, user_id):
 
 
 @main.route("/organisations/<uuid:org_id>/users/<uuid:user_id>/delete", methods=["POST"])
-@user_has_permissions()
+@user_is_platform_admin()
 def remove_user_from_organisation(org_id, user_id):
     organisations_client.remove_user_from_organisation(org_id, user_id)
 
@@ -128,7 +128,7 @@ def remove_user_from_organisation(org_id, user_id):
 
 
 @main.route("/organisations/<uuid:org_id>/cancel-invited-user/<uuid:invited_user_id>", methods=["GET"])
-@user_has_permissions()
+@user_is_platform_admin()
 def cancel_invited_org_user(org_id, invited_user_id):
     org_invite_api_client.cancel_invited_user(org_id=org_id, invited_user_id=invited_user_id)
 
