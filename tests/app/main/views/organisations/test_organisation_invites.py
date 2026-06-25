@@ -31,29 +31,20 @@ def test_invite_org_user(
     )
 
 
-def test_invite_org_user_errors_when_same_email_as_inviter(
+def test_non_platform_admin_cannot_invite_org_user(
     client_request,
     mocker,
     mock_get_organisation,
     sample_org_invite,
-    platform_admin_user,
 ):
-    client_request.login(platform_admin_user)
-    new_org_user_data = {
-        "email_address": "platform@admin.gov.uk",
-    }
-
-    mock_invite_org_user = mocker.patch(
-        "app.org_invite_api_client.create_invite",
-        return_value=sample_org_invite,
+    """
+    A non-platform-admin user who attempts to access the invite route should
+    receive a 403 Forbidden, since org user management is restricted to
+    platform admins.
+    """
+    client_request.post(
+        ".invite_org_user", org_id=ORGANISATION_ID, _data={"email_address": "test@user.gov.uk"}, _expected_status=403
     )
-
-    page = client_request.post(
-        ".invite_org_user", org_id=ORGANISATION_ID, _data=new_org_user_data, _follow_redirects=True
-    )
-
-    assert mock_invite_org_user.called is False
-    assert "You cannot send an invitation to yourself" in normalize_spaces(page.select_one(".govuk-error-message").text)
 
 
 def test_cancel_invited_org_user_cancels_user_invitations(
