@@ -108,14 +108,9 @@ def test_normalising_point(coordinate_type, first_coordinate, second_coordinate,
     assert abs(point.y - expected[1]) < tolerance
 
 
-def test_extract_attributes_from_custom_area():
-    expected_attributes = (
-        2619.960499855824,
-        3134370.3703178177,
-        41113617.34057833,
-        500,
-        4000,
-    )
+def test_extract_attributes_from_custom_area(mocker):
+    mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=532.9616584301732)
+    expected_attributes = (2595.052063919321, 3134370.3703178177, 40549799.4256841, 500)
     assert extract_attributes_from_custom_area(custom_craven_area) == pytest.approx(expected_attributes, 1e-12)
 
 

@@ -4,13 +4,13 @@
 {% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
 {% from "components/electoral-ward-descriptor.html" import electoral_ward_descriptor %}
 
-{% macro templateSummaryList(template, areas, bleed_estimated_area, count_of_phones, count_of_phones_likely, is_custom_broadcast, formatted_template, current_user, is_editable, edit_mode) %}
+{% macro templateSummaryList(template, areas, bleed_estimated_area, count_of_phones, is_custom_broadcast, formatted_template, current_user, is_editable, edit_mode) %}
 
     <dialog id="enlarged-map-dialog" tabindex="-1" aria-modal="true" class="enlarged-map-dialog"
         role="dialog" aria-labelledby="enlarged-map-dialog-message">
         <div class="enlarged-map-dialog-content">
             <h2 id="enlarged-map-dialog-message" class="govuk-visually-hidden screenreader-content" aria-live="assertive">Larger version of the map.</h2>
-            {{enlarged_map(estimated_area, bleed_estimated_area, count_of_phones, count_of_phones_likely, is_custom_broadcast, label)}}
+            {{enlarged_map(estimated_area, bleed_estimated_area, count_of_phones, is_custom_broadcast, label)}}
             {{ govukButton({
                 "text": "Close enlarged map",
                 "classes": "govuk-button",
@@ -59,7 +59,7 @@
         {% endif %}
     {% endif %}
 
-    {% set map_html = map(estimated_area, bleed_estimated_area, count_of_phones, count_of_phones_likely, is_custom_broadcast, label)%}
+    {% set map_html = map(estimated_area, bleed_estimated_area, count_of_phones, is_custom_broadcast, label)%}
 
     {% set areas_html %}
         <ul class="area-list">

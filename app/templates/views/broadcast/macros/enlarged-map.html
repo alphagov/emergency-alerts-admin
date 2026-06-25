@@ -1,4 +1,4 @@
-{% macro enlarged_map(estimated_area, estimated_area_with_bleed, count_of_phones, count_of_phones_likely, is_custom_broadcast, areas) %}
+{% macro enlarged_map(estimated_area, estimated_area_with_bleed, count_of_phones, is_custom_broadcast, areas) %}
 {% if is_custom_broadcast %}
   {% set area_color = "#0201FE" %}
   {% set bleed_color = "#0201FE" %}
@@ -43,7 +43,7 @@
       alert
     </p>
     <p class="area-list-key area-list-key--phone-estimate">
-      {{count_of_phones|format_estimated_phone_count(count_of_phones_likely)}}
+      {{count_of_phones|format_estimated_phone_count}}
     </p>
 {% endif %}
 {% endmacro %}
