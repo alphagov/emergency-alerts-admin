@@ -8,6 +8,9 @@
   destructive=False,
   secondary_link=False,
   secondary_link_text=None,
+  secondary_link_destructive=False,
+  secondary_link_button=False,
+  secondary_link_button_name="secondary",
   delete_link=False,
   delete_link_text="delete",
   centered_button=False,
@@ -16,7 +19,7 @@
   classes="",
   button_attributes={}
 ) %}
-  <div class="page-footer {{ classes }}">
+  <div class="page-footer govuk-button-group {{ classes }}">
     {% if button_text %}
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
 
@@ -50,8 +53,12 @@
         <a class="govuk-link govuk-link--destructive" href="{{ delete_link }}">{{ delete_link_text }}</a>
       </span>
     {% endif %}
-    {% if secondary_link and secondary_link_text %}
-      <a class="govuk-link govuk-link--no-visited-state page-footer-secondary-link" href="{{ secondary_link }}">{{ secondary_link_text }}</a>
+    {% if (secondary_link or secondary_link_button) and secondary_link_text %}
+      {% if secondary_link_button %}
+        <button class="govuk-button {% if secondary_link_destructive %}govuk-button--warning{% else %}govuk-button--secondary{% endif %} page-footer-secondary-link" name="{{ secondary_link_button_name }}">{{ secondary_link_text }}</button>
+      {% else%}
+        <a class="govuk-link govuk-link--no-visited-state page-footer-secondary-link" href="{{ secondary_link }}">{{ secondary_link_text }}</a>
+      {% endif %}
     {% endif %}
 
   </div>

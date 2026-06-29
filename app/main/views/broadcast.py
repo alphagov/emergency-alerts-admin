@@ -331,6 +331,19 @@ def add_extra_content(service_id, broadcast_message_id):
         # When the page loads initially, the fields are populated with alerts current data
         form = AddExtraContentForm(extra_content=broadcast_message.extra_content)
         form.initial_extra_content.data = broadcast_message.extra_content
+    elif request.method == "POST" and request.form.get("remove-extra-content") is not None:
+        """
+        The user clicked the secondary button to remove the content. Do that and redirect back to the
+        alert page.
+        """
+        broadcast_message.remove_extra_content(service_id=current_service.id, broadcast_message_id=broadcast_message.id)
+        return redirect(
+            url_for(
+                ".view_current_broadcast",
+                service_id=current_service.id,
+                broadcast_message_id=broadcast_message.id,
+            )
+        )
     elif request.method == "POST" and request.form.get("overwrite-extra-content") is not None:
         """
         When the button to overwrite the current additional information data is clicked, the overwrite field is set
@@ -397,26 +410,6 @@ def add_extra_content(service_id, broadcast_message_id):
         form.extra_content.data = broadcast_message.extra_content
 
     return render_template("views/broadcast/add-extra-content.html", broadcast_message=broadcast_message, form=form)
-
-
-@main.route(
-    "/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/remove-extra-content", methods=["GET", "POST"]
-)
-@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
-@service_has_permission("broadcast")
-def remove_extra_content(service_id, broadcast_message_id):
-    broadcast_message = BroadcastMessage.from_id(
-        broadcast_message_id,
-        service_id=current_service.id,
-    )
-    broadcast_message.remove_extra_content(service_id=current_service.id, broadcast_message_id=broadcast_message.id)
-    return redirect(
-        url_for(
-            ".view_current_broadcast",
-            service_id=current_service.id,
-            broadcast_message_id=broadcast_message.id,
-        )
-    )
 
 
 @main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/edit", methods=["GET", "POST"])
