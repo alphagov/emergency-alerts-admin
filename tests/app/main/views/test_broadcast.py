@@ -6899,7 +6899,9 @@ def test_add_extra_content_secondary_removes_extra_content(
             "initial_extra_content": "Test Extra Content",
             "remove-extra-content": "anything",
         },
-        _follow_redirects=True,
+        _expected_redirect=url_for(
+            ".view_current_broadcast", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid
+        ),
     )
 
     mock_update_broadcast_message.assert_called_once_with(
