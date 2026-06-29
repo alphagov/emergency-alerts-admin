@@ -24,6 +24,8 @@ from emergency_alerts_utils.timezones import utc_string_to_aware_gmt_datetime
 from emergency_alerts_utils.validation import InvalidPhoneError, validate_phone_number
 from markupsafe import Markup
 
+from app.config import Config
+
 
 def convert_to_boolean(value):
     if isinstance(value, str):
@@ -422,3 +424,16 @@ def format_provider_status_with_human_time(status, date):
     date_prefix = "on" if not status == "sending" else "since"
 
     return status_mapping.get(status, f"(Unknown status {status}) ") + format_datetime_human(date, date_prefix)
+
+
+def format_estimated_phone_count(count_of_phones):
+    lower = Config.ESTIMATED_PHONE_COUNTS.get("lower_bound")
+    upper = Config.ESTIMATED_PHONE_COUNTS.get("upper_bound")
+    if count_of_phones == 0:
+        return "Unknown number of phones"
+    elif count_of_phones < lower:
+        return "Less than 1 million phones estimated"
+    elif lower <= count_of_phones < upper:
+        return "Just under 1 million phones estimated"
+    else:
+        return "More than 1 million phones estimated"

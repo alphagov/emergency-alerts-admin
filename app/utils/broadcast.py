@@ -1,4 +1,10 @@
+from datetime import datetime, timedelta, timezone
+from typing import Collection
+
 import pyproj
+from emergency_alerts_utils.xml.broadcast import generate_xml_body
+from emergency_alerts_utils.xml.cap import convert_utc_datetime_to_cap_standard_string
+from emergency_alerts_utils.xml.common import HEADLINE
 from flask import redirect, render_template, request, url_for
 from postcode_validator.uk.uk_postcode_validator import UKPostcode
 from shapely import Point
@@ -6,8 +12,12 @@ from shapely.geometry import MultiPolygon, Polygon
 from shapely.ops import unary_union
 
 from app import current_service
-from app.broadcast_areas.models import CustomBroadcastArea, CustomBroadcastAreas
-from app.config import BroadcastProvider
+from app.broadcast_areas.models import (
+    BaseBroadcastArea,
+    CustomBroadcastArea,
+    CustomBroadcastAreas,
+)
+from app.config import BroadcastProvider, Config
 from app.formatters import (
     format_mobile_networks,
     format_number_no_scientific,
@@ -24,6 +34,7 @@ from app.main.forms import (
 )
 from app.models.broadcast_message import BroadcastMessage
 from app.models.template import Template
+from app.utils.datetime import fromisoformat_allow_z_tz
 
 INVALID_AREA_ERROR_TEXT = (
     "The area used is invalid and the alert cannot be sent. If the alert "
@@ -115,11 +126,7 @@ def extract_attributes_from_custom_area(polygons):
     estimated_area = custom_area.simple_polygons.estimated_area
     estimated_area_with_bleed = custom_area.simple_polygons_with_bleed.estimated_area
     count_of_phones = round_to_significant_figures(custom_area.count_of_phones, 1)
-    count_of_phones_likely = round_to_significant_figures(
-        CustomBroadcastArea.from_polygon_objects(custom_area.simple_polygons_with_bleed).count_of_phones,
-        1,
-    )
-    return bleed, estimated_area, estimated_area_with_bleed, count_of_phones, count_of_phones_likely
+    return bleed, estimated_area, estimated_area_with_bleed, count_of_phones
 
 
 def create_postcode_db_id(form):
@@ -206,7 +213,6 @@ def render_postcode_page(
     estimated_area,
     estimated_area_with_bleed,
     count_of_phones,
-    count_of_phones_likely,
     message_type,
     template_folder_id=None,
 ):
@@ -221,7 +227,6 @@ def render_postcode_page(
         estimated_area=estimated_area,
         estimated_area_with_bleed=estimated_area_with_bleed,
         count_of_phones=count_of_phones,
-        count_of_phones_likely=count_of_phones_likely,
         centroid=[centroid.y, centroid.x] if centroid else None,
         template_folder_id=template_folder_id,
     )
@@ -268,7 +273,6 @@ def render_coordinates_page(
     estimated_area,
     estimated_area_with_bleed,
     count_of_phones,
-    count_of_phones_likely,
     marker,
     message,
     form,
@@ -295,7 +299,6 @@ def render_coordinates_page(
         estimated_area=estimated_area,
         estimated_area_with_bleed=estimated_area_with_bleed,
         count_of_phones=count_of_phones,
-        count_of_phones_likely=count_of_phones_likely,
         centroid=marker,
     )
 
@@ -405,7 +408,7 @@ def render_current_alert_page(
             ConfirmBroadcastForm(
                 service_is_live=current_service.live,
                 channel=current_service.broadcast_channel,
-                max_phones=broadcast_message.count_of_phones_likely,
+                max_phones=broadcast_message.count_of_phones,
             )
             if confirm_broadcast_form is None
             else confirm_broadcast_form
@@ -678,3 +681,92 @@ def get_message_type(message_type):
         "broadcast": BroadcastMessage,
         "templates": Template,
     }[message_type]
+
+
+def generate_geojson(broadcast_message):
+    areas: Collection[BaseBroadcastArea] = broadcast_message.areas
+    geojson = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Polygon",
+                    # geoJSON spec uses WGS84: https://datatracker.ietf.org/doc/html/rfc7946#section-4
+                    "coordinates": area.polygons.as_wgs84_coordinates,
+                },
+                "properties": {"name": area.__dict__.get("name")},
+            }
+            for area in areas
+        ],
+    }
+    return geojson
+
+
+def generate_unsigned_xml(broadcast_message, xml_type):
+    is_cap_format = True
+    if xml_type == "ibag":
+        is_cap_format = False
+
+    areas: Collection[BaseBroadcastArea] = broadcast_message.areas
+
+    all_area_coordinates = []
+    for area in areas:
+        # An area in a broadcast_message can have multiple polygons (e.g. islands), so we need
+        # to process each one and add it to the 'general' set of areas in the 'event' as used
+        # by the XML logic.
+        coordinate_pairs = area.polygons.as_coordinate_pairs_lat_long
+        for coordinate_pair in coordinate_pairs:
+            all_area_coordinates.append({"polygon": coordinate_pair})
+
+    # When in training mode default to 'test' channel if channel is not set.
+    # Prevents 500 error in utils.xml.common.validate_channel call later on.
+    # XML will never be sent in training mode, but this function is still called when
+    # downloading XML or sending summary emails.
+    channel = current_service.broadcast_channel
+    if channel is None and current_service.trial_mode:
+        channel = "test"
+
+    event = {
+        # In a signed CAP message the identifier refers to a BroadcastProviderMessage which is unique per MNO
+        # We don't have such a thing here so we just use the overall BroadcastMessage
+        "identifier": broadcast_message.id,
+        "message_type": "alert",
+        "message_format": "cap" if is_cap_format else "ibag",
+        "message_number": "00000001",  # Only relevant for IBAG, and is made up here
+        "headline": HEADLINE,
+        "description": broadcast_message.content,
+        "language": "en-GB" if is_cap_format else "English",
+        "areas": all_area_coordinates,
+        "channel": channel,
+        # starts_at and finishes_at can be None if it's a draft/awaiting approval, so we just use now
+        # sent and expires expect a string in 'CAP' format (see convert_utc_... method's description)
+        "sent": (
+            convert_utc_datetime_to_cap_standard_string(
+                fromisoformat_allow_z_tz(broadcast_message.starts_at)
+                if broadcast_message.starts_at
+                else datetime.now(timezone.utc)
+            )
+        ),
+        "expires": (
+            convert_utc_datetime_to_cap_standard_string(
+                fromisoformat_allow_z_tz(broadcast_message.finishes_at)
+                if broadcast_message.finishes_at
+                else datetime.now(timezone.utc)
+                + timedelta(seconds=_get_broadcast_duration(broadcast_message.broadcast_duration))
+            )
+        ),
+    }
+
+    cap_xml = generate_xml_body(event)
+    return cap_xml
+
+
+def _get_broadcast_duration(broadcast_duration):
+    if broadcast_duration is not None:
+        return int(broadcast_duration)
+
+    if current_service.broadcast_channel in ["test", "operator"]:
+        return Config.DEFAULT_DURATION_PERIODS.get("training", 30)
+    else:
+        return Config.DEFAULT_DURATION_PERIODS.get("live", 1350)

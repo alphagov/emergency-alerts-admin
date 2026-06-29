@@ -59,9 +59,10 @@ def test_services_pages_that_org_users_are_allowed_to_see(
     endpoint,
     extra_args,
 ):
+    mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=5000)
     api_user_active["services"] = user_services
     api_user_active["organisations"] = user_organisations
-    api_user_active["permissions"] = {service_id: ["manage_users", "manage_settings"] for service_id in user_services}
+    api_user_active["permissions"] = {service_id: ["manage_users"] for service_id in user_services}
     service = service_json(
         name="SERVICE WITH ORG",
         id_=SERVICE_ONE_ID,

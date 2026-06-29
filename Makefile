@@ -15,7 +15,11 @@ PYTHON_EXECUTABLE_PREFIX := $(shell test -d "$${VIRTUALENV_ROOT}" && echo "$${VI
 
 ## DEVELOPMENT
 .PHONY: bootstrap
-bootstrap: generate-version-file ## Set up everything to run the app
+bootstrap: generate-version-file
+# In container builds we use a sibling utils from the base image, not a specific ref from git.
+	sed -i.orig 's/emergency-alerts-utils @/# DO NOT COMMIT: Commented out for parent requirements.txt: emergency-alerts-utils @/' requirements.txt
+# Work around macOS having awkward sed that creates/requires an original file
+	rm requirements.txt.orig || true
 	${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements_local_utils.txt
 	npm ci --no-audit
 	npm run build
@@ -24,7 +28,7 @@ bootstrap: generate-version-file ## Set up everything to run the app
 
 .PHONY: bootstrap-for-tests
 bootstrap-for-tests: generate-version-file ## Set up everything to run the tests
-	${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements_github_utils.txt
+	${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements.txt
 	npm ci --no-audit
 	npm run build
 
@@ -74,7 +78,7 @@ fix-imports: ## Fix imports using isort
 
 .PHONY: freeze-requirements
 freeze-requirements: ## create static requirements.txt
-	${PYTHON_EXECUTABLE_PREFIX}pip3 install --upgrade setuptools pip-tools
+	${PYTHON_EXECUTABLE_PREFIX}pip3 install pip-tools
 	${PYTHON_EXECUTABLE_PREFIX}pip-compile requirements.in
 
 .PHONY: bump-utils

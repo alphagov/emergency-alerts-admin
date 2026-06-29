@@ -18,13 +18,13 @@ from tests import (
 )
 from tests.app.broadcast_areas.custom_polygons import (
     ABERDEEN_CITY,
-    ADUR,
     BD1_1EE,
     BD1_1EE_1,
     BD1_1EE_2,
     BD1_1EE_3,
     BRISTOL,
     CUMBRIA_FLOOD_WARNING_AREA,
+    DEVON_AND_ISLES_OF_SCILLY,
     HG3_2RL,
     MULTIPLE_ENGLAND,
     MULTIPLE_FLOOD_WARNING_AREAS,
@@ -1184,7 +1184,7 @@ def test_broadcast_page(
 
 
 @pytest.mark.parametrize(
-    "areas_selected, areas_listed, estimates",
+    "areas_selected, areas_listed, count_of_phones, estimates",
     (
         (
             [
@@ -1195,9 +1195,10 @@ def test_broadcast_page(
                 "England Remove England",
                 "Scotland Remove Scotland",
             ],
+            46_909_327,
             [
                 "An area of 100,000 square miles Will get the alert",
-                "An extra area of 6,000 square miles is Likely to get the alert",
+                "An extra area of 4,000 square miles is Likely to get the alert",
                 "More than 1 million phones estimated",
             ],
         ),
@@ -1207,12 +1208,13 @@ def test_broadcast_page(
                 "wd25-E05014243",
             ],
             [
-                "Penrith North Remove Penrith North",
-                "Penrith South Remove Penrith South",
+                "Westmorland and Furness > Penrith North Remove Penrith North",
+                "Westmorland and Furness > Penrith South Remove Penrith South",
             ],
+            13_123,
             [
                 "An area of 10 square miles Will get the alert",
-                "An extra area of 30 square miles is Likely to get the alert",
+                "An extra area of 20 square miles is Likely to get the alert",
                 "Less than 1 million phones estimated",
             ],
         ),
@@ -1223,6 +1225,7 @@ def test_broadcast_page(
             [
                 "Islington Remove Islington",
             ],
+            188_563,
             [
                 "An area of 6 square miles Will get the alert",
                 "An extra area of 4 square miles is Likely to get the alert",
@@ -1236,6 +1239,7 @@ def test_broadcast_page(
             [
                 "Lincolnshire Remove Lincolnshire",
             ],
+            569_308,
             [
                 "An area of 2,000 square miles Will get the alert",
                 "An extra area of 500 square miles is Likely to get the alert",
@@ -1248,6 +1252,7 @@ def test_broadcast_page(
                 "Lincolnshire Remove Lincolnshire",
                 "North Yorkshire Remove North Yorkshire",
             ],
+            1_048_461,
             [
                 "An area of 6,000 square miles Will get the alert",
                 "An extra area of 1,000 square miles is Likely to get the alert",
@@ -1261,6 +1266,7 @@ def test_broadcast_page(
             [
                 "Loch Ewe Remove Loch Ewe",
             ],
+            8.7,
             [
                 "An area of 3 square miles Will get the alert",
                 "An extra area of 50 square miles is Likely to get the alert",
@@ -1274,6 +1280,7 @@ def test_broadcast_page(
             [
                 "AWE Aldermaston Remove AWE Aldermaston",
             ],
+            3_492,
             [
                 "An area of 8 square miles Will get the alert",
                 "An extra area of 30 square miles is Likely to get the alert",
@@ -1285,6 +1292,7 @@ def test_broadcast_page(
                 "Flood_Warning_Target_Areas-011FWCN2M",
             ],
             ["Cumbria coast at Maryport harbour Remove Cumbria coast at Maryport harbour"],
+            42,
             [
                 "An area of 0 square miles Will get the alert",
                 "An extra area of 10 square miles is Likely to get the alert",
@@ -1300,6 +1308,7 @@ def test_broadcast_page(
                 "to Haverigg Remove Cumbrian coastline from St Bees Head to Haverigg, along "
                 "the coast from North Head to Haverigg",
             ],
+            126,
             [
                 "An area of 10 square miles Will get the alert",
                 "An extra area of 200 square miles is Likely to get the alert",
@@ -1318,6 +1327,7 @@ def test_broadcast_page(
                 "Bridge, Foxfield, Dunnerholme Remove Cumbrian "
                 "coastline at Duddon estuary, at Haverigg to Duddon Bridge, Foxfield, Dunnerholme",
             ],
+            2_400,
             [
                 "An area of 60 square miles Will get the alert",
                 "An extra area of 200 square miles is Likely to get the alert",
@@ -1333,11 +1343,13 @@ def test_preview_areas_page(
     fake_uuid,
     areas_selected,
     areas_listed,
+    count_of_phones,
     estimates,
     active_user_create_broadcasts_permission,
     mock_get_broadcast_message_versions,
     mock_check_can_update_status,
 ):
+    mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=count_of_phones)
     service_one["permissions"] += ["broadcast"]
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -1374,6 +1386,7 @@ def test_search_flood_warning_areas_page(
     mocker,
     active_user_create_broadcasts_permission,
 ):
+    mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=42.74975272772588)
     service_one["permissions"] += ["broadcast"]
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -1427,6 +1440,7 @@ def test_search_flood_warning_bulk_add_areas_page(
     fake_uuid,
     mocker,
     active_user_create_broadcasts_permission,
+    mock_get_count_of_phones,
 ):
     service_one["permissions"] += ["broadcast"]
     mocker.patch(
@@ -1515,13 +1529,14 @@ def test_search_local_authority_bulk_add_areas_page(
 
 
 @pytest.mark.parametrize(
-    "polygons, expected_list_items",
+    "polygons, count_of_phones, expected_list_items",
     (
         (
             [
                 [[1, 2], [3, 4], [5, 6]],
                 [[7, 8], [9, 10], [11, 12]],
             ],
+            0,
             [
                 "An area of 800 square miles Will get the alert",
                 "An extra area of 2,000 square miles is Likely to get the alert",
@@ -1530,6 +1545,7 @@ def test_search_local_authority_bulk_add_areas_page(
         ),
         (
             [BRISTOL],
+            393465.26791524055,
             [
                 "An area of 4 square miles Will get the alert",
                 "An extra area of 3 square miles is Likely to get the alert",
@@ -1538,6 +1554,7 @@ def test_search_local_authority_bulk_add_areas_page(
         ),
         (
             [SKYE],
+            7030.187134868168,
             [
                 "An area of 2,000 square miles Will get the alert",
                 "An extra area of 600 square miles is Likely to get the alert",
@@ -1546,6 +1563,7 @@ def test_search_local_authority_bulk_add_areas_page(
         ),
         (
             [BD1_1EE_1],
+            12913.63647166792,
             [
                 "An area of 1 square miles Will get the alert",
                 "An extra area of 3 square miles is Likely to get the alert",
@@ -1554,6 +1572,7 @@ def test_search_local_authority_bulk_add_areas_page(
         ),
         (
             [BD1_1EE_2],
+            55951.76130384487,
             [
                 "An area of 5 square miles Will get the alert",
                 "An extra area of 5 square miles is Likely to get the alert",
@@ -1562,6 +1581,7 @@ def test_search_local_authority_bulk_add_areas_page(
         ),
         (
             [BD1_1EE_3],
+            126071.33758423096,
             [
                 "An area of 10 square miles Will get the alert",
                 "An extra area of 7 square miles is Likely to get the alert",
@@ -1570,6 +1590,7 @@ def test_search_local_authority_bulk_add_areas_page(
         ),
         (
             [BD1_1EE],
+            124278.50012815843,
             [
                 "An area of 10 square miles Will get the alert",
                 "An extra area of 7 square miles is Likely to get the alert",
@@ -1578,6 +1599,7 @@ def test_search_local_authority_bulk_add_areas_page(
         ),
         (
             [HG3_2RL],
+            1538.8637092434751,
             [
                 "An area of 30 square miles Will get the alert",
                 "An extra area of 60 square miles is Likely to get the alert",
@@ -1592,10 +1614,12 @@ def test_preview_areas_page_with_custom_polygons(
     service_one,
     fake_uuid,
     polygons,
+    count_of_phones,
     expected_list_items,
     active_user_create_broadcasts_permission,
     mock_check_can_update_status,
 ):
+    mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=count_of_phones)
     service_one["permissions"] += ["broadcast"]
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -2123,6 +2147,7 @@ def test_preview_areas_has_back_link_with_uuid(
     expected_back_link_url,
     expected_back_link_extra_kwargs,
     mock_check_can_update_status,
+    mock_get_count_of_phones,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -2345,6 +2370,7 @@ def test_add_flood_warning_area(
     fake_uuid,
     mocker,
     active_user_create_broadcasts_permission,
+    mock_get_count_of_phones,
 ):
     service_one["permissions"] += ["broadcast"]
     mock_get_broadcast_message = mocker.patch(
@@ -2423,6 +2449,7 @@ def test_add_flood_warning_areas_in_bulk_with_delimiters(
     mocker,
     active_user_create_broadcasts_permission,
     delimiter,
+    mock_get_count_of_phones,
 ):
     service_one["permissions"] += ["broadcast"]
     mock_get_broadcast_message = mocker.patch(
@@ -2520,6 +2547,7 @@ def test_add_local_authority_areas_in_bulk_with_newline_delimiter(
     active_user_create_broadcasts_permission,
     mock_get_broadcast_message_versions,
     mock_check_can_update_status,
+    mock_get_count_of_phones,
 ):
     service_one["permissions"] += ["broadcast"]
     mock_get_broadcast_message = mocker.patch(
@@ -2555,13 +2583,14 @@ def test_add_local_authority_areas_in_bulk_with_newline_delimiter(
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
         message_type="broadcast",
-        _data={"areas": ["Adur"]},
+        _data={"areas": ["Devon\nIsles of Scilly"]},
         _follow_redirects=True,
     )
 
     assert normalize_spaces(page.select_one("h1").text) == "Confirm the area for the alert"
     assert [normalize_spaces(item.text) for item in page.select("ul.area-list li.area-list-item")] == [
-        "Adur Remove Adur"
+        "Devon Remove Devon",
+        "Isles of Scilly Remove Isles of Scilly",
     ]
 
     assert mock_get_broadcast_message.call_count == 3
@@ -2572,10 +2601,10 @@ def test_add_local_authority_areas_in_bulk_with_newline_delimiter(
 
     actual_areas = mock_update_broadcast_message_kwargs["data"]["areas"]
     expected_areas = {
-        "ids": ["lad25-E07000223"],
-        "names": ["Adur"],
-        "aggregate_names": ["Adur"],
-        "simple_polygons": [ADUR],
+        "ids": ["ctyua25-E10000008", "lad25-E06000053"],
+        "names": ["Devon", "Isles of Scilly"],
+        "aggregate_names": ["Devon", "Isles of Scilly"],
+        "simple_polygons": DEVON_AND_ISLES_OF_SCILLY,
     }
 
     assert sorted(actual_areas["ids"]) == sorted(expected_areas["ids"])
@@ -2592,6 +2621,7 @@ def test_remove_flood_warning_area(
     fake_uuid,
     mocker,
     active_user_create_broadcasts_permission,
+    mock_get_count_of_phones,
 ):
     service_one["permissions"] += ["broadcast"]
     mock_get_broadcast_message = mocker.patch(
@@ -2723,6 +2753,7 @@ def test_error_if_flood_warning_code_bulk_input_invalid(
     areas_input,
     expected_field_error,
     expected_form_error,
+    mock_get_count_of_phones,
 ):
     service_one["permissions"] += ["broadcast"]
     mocker.patch(
@@ -2879,6 +2910,7 @@ def test_create_postcode_area(
     active_user_create_broadcasts_permission,
     post_data,
     update_broadcast_data,
+    mock_get_count_of_phones,
 ):
     service_one["permissions"] += ["broadcast"]
     mock_get_broadcast_message = mocker.patch(
@@ -2956,6 +2988,7 @@ def test_add_postcode_area_to_broadcast(
     update_broadcast_data,
     mock_get_broadcast_message_versions,
 ):
+    mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
     service_one["permissions"] += ["broadcast"]
     mock_get_broadcast_message = mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -3045,6 +3078,7 @@ def test_create_latitude_longitude_coordinate_area(
     post_data,
     update_broadcast_data,
 ):
+    mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
     service_one["permissions"] += ["broadcast"]
     mock_get_broadcast_message = mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -3122,6 +3156,7 @@ def test_add_latitude_longitude_coordinate_area_to_broadcast(
     update_broadcast_data,
     mock_get_broadcast_message_versions,
 ):
+    mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
     service_one["permissions"] += ["broadcast"]
     mock_get_broadcast_message = mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -3217,6 +3252,7 @@ def test_create_easting_northing_coordinate_area(
     active_user_create_broadcasts_permission,
     post_data,
     update_broadcast_data,
+    mock_get_count_of_phones,
 ):
     service_one["permissions"] += ["broadcast"]
     mock_get_broadcast_message = mocker.patch(
@@ -3296,6 +3332,7 @@ def test_add_easting_northing_coordinate_area_to_broadcast(
     post_data,
     update_broadcast_data,
     mock_get_broadcast_message_versions,
+    mock_get_count_of_phones,
 ):
     service_one["permissions"] += ["broadcast"]
     mock_get_broadcast_message = mocker.patch(
@@ -3464,6 +3501,7 @@ def test_latitude_longitude_coordinate_area_form_errors(
     active_user_create_broadcasts_permission,
     post_data,
     expected_error,
+    mock_get_count_of_phones,
 ):
     service_one["permissions"] += ["broadcast"]
     mock_get_broadcast_message = mocker.patch(
@@ -4239,7 +4277,9 @@ def test_preview_broadcast_message_page(
     mock_get_broadcast_message_versions,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mocker,
 ):
+    mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=46909327.34961163)
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.get(
@@ -4533,6 +4573,7 @@ def test_view_broadcast_message_page(
     mock_get_broadcast_message_provider_statuses,
     operator_statuses_text,
 ):
+    mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
         return_value=broadcast_message_json(
@@ -4605,6 +4646,7 @@ def test_view_rejected_broadcast_message_page(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
 ):
+    mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
         return_value=broadcast_message_json(
@@ -4696,6 +4738,7 @@ def test_view_broadcast_message_shows_correct_highlighted_navigation(
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
 ):
+    mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
         return_value=broadcast_message_json(
@@ -4741,6 +4784,7 @@ def test_view_pending_broadcast(
     mock_get_broadcast_message_versions,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_count_of_phones,
 ):
     broadcast_creator = create_active_user_create_broadcasts_permissions(with_unique_id=True)
     mocker.patch(
@@ -4851,6 +4895,7 @@ def test_view_pending_broadcast_without_template(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
+    mock_get_count_of_phones,
 ):
     broadcast_creator = create_active_user_create_broadcasts_permissions(with_unique_id=True)
     mocker.patch(
@@ -4897,6 +4942,7 @@ def test_view_pending_broadcast_from_api_call(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
+    mock_get_count_of_phones,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -4961,6 +5007,7 @@ def test_checkbox_to_confirm_non_training_broadcasts(
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
 ):
+    mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
         return_value=broadcast_message_json(
@@ -5009,6 +5056,7 @@ def test_confirm_approve_non_training_broadcasts_errors_if_not_ticked(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
+    mock_get_count_of_phones,
 ):
     page = mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5054,6 +5102,7 @@ def test_can_approve_own_broadcast_in_training_mode(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
+    mock_get_count_of_phones,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5116,6 +5165,7 @@ def test_can_approve_own_broadcast_if_service_is_live_and_user_didnt_submit_aler
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
+    mock_get_count_of_phones,
 ):
     service_one["restricted"] = False
     mocker.patch(
@@ -5168,6 +5218,7 @@ def test_cannot_approve_own_broadcast_if_service_is_live_and_user_submitted_aler
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
+    mock_get_count_of_phones,
 ):
     service_one["restricted"] = False
     mocker.patch(
@@ -5224,6 +5275,7 @@ def test_view_only_user_cant_approve_broadcast_created_by_someone_else(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
+    mock_get_count_of_phones,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5266,6 +5318,7 @@ def test_view_only_user_cant_approve_broadcasts_they_created(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
+    mock_get_count_of_phones,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5334,6 +5387,7 @@ def test_user_without_approve_permission_cant_approve_broadcast_created_by_someo
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
 ):
+    mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
     current_user = create_active_user_create_broadcasts_permissions(with_unique_id=True)
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5380,6 +5434,7 @@ def test_user_without_approve_permission_cant_approve_broadcast_they_created(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
+    mock_get_count_of_phones,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5521,6 +5576,7 @@ def test_confirm_approve_broadcast(
     mock_get_broadcast_message_versions,
     mock_check_can_update_status,
 ):
+    mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
         return_value=broadcast_message_json(
@@ -5594,6 +5650,7 @@ def test_cannot_approve_broadcast_if_transition_not_allowed(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
 ):
+    mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
         return_value=broadcast_message_json(
@@ -5644,6 +5701,7 @@ def test_reject_broadcast_displays_error_when_no_reason_provided(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
+    mock_get_count_of_phones,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5695,6 +5753,7 @@ def test_return_broadcast_for_edit_displays_error_when_no_reason_provided(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
+    mock_get_count_of_phones,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5745,6 +5804,7 @@ def test_can_return_broadcast_for_edit(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
+    mock_get_count_of_phones,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5789,6 +5849,7 @@ def test_discard_broadcast(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
+    mock_get_count_of_phones,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5838,6 +5899,7 @@ def test_cannot_reject_broadcast_if_transition_not_allowed(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
+    mock_get_count_of_phones,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5887,6 +5949,7 @@ def test_cannot_discard_broadcast_if_transition_not_allowed(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
+    mock_get_count_of_phones,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -6080,6 +6143,7 @@ def test_cannot_submit_if_transition_not_allowed(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
+    mock_get_count_of_phones,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -6167,6 +6231,7 @@ def test_can_view_current_page_for_draft(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
+    mock_get_count_of_phones,
 ):
     service_one["permissions"] += ["broadcast"]
     client_request.get(
@@ -6221,6 +6286,7 @@ def test_cancel_broadcast(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
+    mock_get_count_of_phones,
 ):
     """
     users with 'create/approve_broadcasts' permissions and platform admins should be able to cancel broadcasts.
@@ -6272,6 +6338,7 @@ def test_cannot_cancel_broadcast_if_transition_not_allowed(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
+    mock_get_count_of_phones,
 ):
     service_one["permissions"] += ["broadcast"]
 
@@ -6931,6 +6998,7 @@ def test_view_draft_broadcast_message_page(
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
 ):
+    mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
         return_value=broadcast_message_json(
@@ -7310,3 +7378,164 @@ def test_can_get_unsigned_ibag_xml(
         "/ibag:IBAG_Alert_Attributes/ibag:IBAG_alert_info/ibag:IBAG_certainty//text()",
         "ibag",
     ) == ["Likely"]
+
+
+def test_send_summary_email_section_not_visible_with_no_contacts(
+    mocker,
+    client_request,
+    service_one,
+    active_user_create_broadcasts_permission,
+    fake_uuid,
+    mock_get_broadcast_message_versions,
+    mock_get_broadcast_returned_for_edit_reasons,
+    mock_get_latest_edit_reason,
+    mock_get_count_of_phones,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            approved_by_id=fake_uuid,
+            starts_at="2020-02-20T20:20:20.000000",
+            created_at="2020-02-20T20:20:20.000000",
+            content="Hello",
+            extra_content="Test Extra Content",
+            reference="Test Template Reference",
+            duration=10_800,
+        ),
+    )
+
+    client_request.login(active_user_create_broadcasts_permission)
+
+    page = client_request.get(
+        ".view_current_broadcast",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+    )
+
+    keys = [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__key")]
+    assert "Send summary email" not in keys
+
+
+def test_send_summary_email_section_not_visible_with_no_perms(
+    mocker,
+    client_request,
+    service_one,
+    active_user_view_permissions,
+    fake_uuid,
+    mock_get_broadcast_message_versions,
+    mock_get_broadcast_returned_for_edit_reasons,
+    mock_get_latest_edit_reason,
+    mock_get_count_of_phones,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            created_at="2020-02-20T20:20:20.000000",
+            content="Hello",
+            extra_content="Test Extra Content",
+            reference="Test Template Reference",
+            duration=10_800,
+        ),
+    )
+
+    service_one["alert_notification_addresses"] += ["test@test1.com"]
+
+    client_request.login(active_user_view_permissions)
+
+    page = client_request.get(
+        ".view_current_broadcast",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+    )
+
+    keys = [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__key")]
+    assert "Send summary email" not in keys
+
+
+def test_send_summary_email(mocker, client_request, service_one, active_user_create_broadcasts_permission, fake_uuid):
+    mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            approved_by_id=fake_uuid,
+            starts_at="2020-02-20T20:20:20.000000",
+            created_at="2020-02-20T20:20:20.000000",
+            content="Hello",
+            extra_content="Test Extra Content",
+            reference="Test Template Reference",
+            duration=10_800,
+        ),
+    )
+
+    client_request.login(active_user_create_broadcasts_permission)
+
+    page = client_request.get(
+        ".alert_summary_email",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+    )
+
+    assert normalize_spaces(page.select_one("h1").text) == "Send summary email"
+    assert page.select_one("textarea")["name"] == "alert_summary"
+    assert page.select_one("textarea")["id"] == "alert_summary"
+    assert page.select_one("textarea")["data-notify-module"] == "enhanced-textbox"
+    assert page.select_one("textarea")["data-highlight-placeholders"] == "false"
+
+    paras = page.select("p.govuk-body")
+    for para in paras:
+        if "Alert Message" in para.get_text():
+            assert "Hello" in para.get_text()
+        if "Phone Estimate" in para.get_text():
+            assert "More than 1 million phones estimated" in para.get_text()
+        if "Additional Info" in para.get_text():
+            assert "Test Extra Content" in para.get_text()
+        if "Alert duration" in para.get_text():
+            assert "3 hours" in para.get_text()
+
+    assert normalize_spaces(page.select(".govuk-button")[5].text) == "Send Email"
+
+
+def test_send_summary_email_no_perms(
+    mocker,
+    client_request,
+    service_one,
+    active_user_view_permissions,
+    fake_uuid,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            approved_by_id=fake_uuid,
+            starts_at="2020-02-20T20:20:20.000000",
+            created_at="2020-02-20T20:20:20.000000",
+            content="Hello",
+            extra_content="Test Extra Content",
+            reference="Test Template Reference",
+            duration=10_800,
+        ),
+    )
+
+    client_request.login(active_user_view_permissions)
+
+    client_request.get(
+        ".alert_summary_email",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        _expected_status=403,
+    )

@@ -4,6 +4,7 @@
 {% from "components/page-footer.html" import page_footer %}
 {% from "views/broadcast/macros/area-map.html" import map %}
 {% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
+{% from "components/electoral-ward-descriptor.html" import electoral_ward_descriptor %}
 
 {% set page_title %}
   {% if message_type == "broadcast" %}
@@ -49,7 +50,7 @@
       <ul class="area-list">
         {% for area in message.areas %}
           <li class="area-list-item">
-            {{area.name}}
+            {{ electoral_ward_descriptor(area) }}
             {% if is_custom_broadcast %}
               <a class="area-list-item-remove govuk-button" data-module="govuk-button" role="button" href="{{ url_for('.remove_custom_area', service_id=current_service.id, message_id=message.id, area_slug=area.id or None, message_type=message_type) }}">
             {% else %}
@@ -85,7 +86,7 @@
       {% endif %}
     </div>
 
-    {{ map(message.simple_polygons.estimated_area, message.simple_polygons_with_bleed.estimated_area, message.count_of_phones, message.count_of_phones_likely, is_custom_broadcast, label) }}
+    {{ map(message.simple_polygons.estimated_area, message.simple_polygons_with_bleed.estimated_area, message.count_of_phones, is_custom_broadcast, label) }}
 
     {% if message_type == "broadcast" %}
       {{ govukButton({

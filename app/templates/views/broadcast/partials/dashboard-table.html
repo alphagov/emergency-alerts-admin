@@ -2,6 +2,7 @@
 {% from "components/select-input.html" import select_dropdown %}
 {% from "govuk_frontend_jinja/components/tag/macro.html" import govukTag %}
 {% from "components/form.html" import form_wrapper %}
+{% from "components/electoral-ward-descriptor.html" import electoral_ward_descriptor %}
 
 <div class="ajax-block-container js-mark-focus-on-parent" data-classes-to-persist="js-child-has-focus">
   {% if broadcasts %}
@@ -76,11 +77,13 @@
           </p>
         {% endif %}
         {% if item.status not in ['rejected', 'draft'] %}
-          <div>
+          <div class="area-list-section">
             <p class="govuk-!-margin-right-2 area-list">Area: </p>
             <ul class="area-list">
               {% for area in item.areas %}
-                <li class="area-list-item area-list-item--unremoveable area-list-item--smaller">{{area.name}}</li>
+                <li class="area-list-item area-list-item--unremoveable area-list-item--smaller">
+                  {{ electoral_ward_descriptor(area) }}
+                </li>
               {% endfor %}
             </ul>
             {% if item.duration|format_seconds_duration_as_time != "0 seconds" %}
@@ -129,11 +132,13 @@
               {% endif %}
             </p>
           </div>
-          <div>
+          <div class="area-list-section">
             <p class="govuk-!-margin-right-1 area-list govuk-!-font-weight-bold">Area: </p>
             <ul class="area-list">
               {% for area in item.areas %}
-                <li class="area-list-item area-list-item--unremoveable area-list-item--smaller">{{area.name}}</li>
+                <li class="area-list-item area-list-item--unremoveable area-list-item--smaller">
+                  {{ electoral_ward_descriptor(area) }}
+                </li>
               {% endfor %}
             </ul>
           </div>

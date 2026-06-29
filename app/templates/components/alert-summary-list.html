@@ -1,18 +1,16 @@
 {% from "govuk_frontend_jinja/components/summary-list/macro.html" import govukSummaryList %}
 {% from "views/broadcast/macros/enlarged-map.html" import enlarged_map %}
 {% from "views/broadcast/macros/area-map.html" import map %}
-{% from "views/broadcast/macros/estimated-phones.html" import estimated_phone_count_content %}
 {% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
+{% from "components/electoral-ward-descriptor.html" import electoral_ward_descriptor %}
 
-
-
-{% macro alertSummaryList(is_editable, current_service, broadcast_message, areas, bleed_estimated_area, count_of_phones, count_of_phones_likely, is_custom_broadcast) %}
+{% macro alertSummaryList(is_editable, current_service, broadcast_message, areas, bleed_estimated_area, count_of_phones, is_custom_broadcast) %}
 
     <dialog id="enlarged-map-dialog" tabindex="-1" aria-modal="true" class="enlarged-map-dialog"
         role="dialog" aria-labelledby="enlarged-map-dialog-message">
         <div class="enlarged-map-dialog-content">
             <h2 id="enlarged-map-dialog-message" class="govuk-visually-hidden screenreader-content" aria-live="assertive">Larger version of the map.</h2>
-            {{enlarged_map(estimated_area, bleed_estimated_area, count_of_phones, count_of_phones_likely, is_custom_broadcast, label)}}
+            {{enlarged_map(estimated_area, bleed_estimated_area, count_of_phones, is_custom_broadcast, label)}}
             {{ govukButton({
                 "text": "Close enlarged map",
                 "classes": "govuk-button",
@@ -29,13 +27,13 @@
         {% endif %}
     {% endif %}
 
-    {% set map_html = map(estimated_area, bleed_estimated_area, count_of_phones, count_of_phones_likely, is_custom_broadcast, label)%}
+    {% set map_html = map(estimated_area, bleed_estimated_area, count_of_phones, is_custom_broadcast, label)%}
 
     {% set areas_html %}
         <ul class="area-list">
         {% for area in broadcast_message.areas %}
             <li class="area-list-item area-list-item--unremoveable">
-            {{area.name}}
+              {{ electoral_ward_descriptor(area) }}
             </li>
         {% endfor %}
         </ul>
@@ -97,7 +95,7 @@
 
     {% set count_of_phones_html %}
         <p class="govuk-body">
-            {{estimated_phone_count_content(count_of_phones, count_of_phones_likely)}}
+            {{count_of_phones|format_estimated_phone_count}}
         </p>
     {% endset %}
 
@@ -260,6 +258,35 @@
         },
         }
     ] %}
+
+    {% if current_service.alert_notification_addresses and display_action %}
+        {% set alert_summary_email_section_html %}
+            {% for contact_email in current_service.alert_notification_addresses %}
+                <p class="govuk-body">{{ contact_email.email_address }}</p>
+            {% endfor %}
+        {% endset %}
+
+        {% set summaryListItems = summaryListItems + [
+            {
+            'key': {
+                'text': "Send summary email"
+            },
+            'value': {
+                'html': alert_summary_email_section_html
+            },
+            'actions': {
+                'items': [
+                {
+                    'href': url_for(".alert_summary_email", service_id=current_service.id, broadcast_message_id=broadcast_message.id,),
+                    'text': "Send",
+                    'visuallyHiddenText': "summary email to service contacts"
+                }
+                ]
+                }
+            }
+        ] %}
+    {% endif %}
+
 
     {{ govukSummaryList({
     'rows': summaryListItems

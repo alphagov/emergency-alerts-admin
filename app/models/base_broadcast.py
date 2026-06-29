@@ -3,7 +3,6 @@ from ordered_set import OrderedSet
 from werkzeug.utils import cached_property
 
 from app.broadcast_areas.models import (
-    CustomBroadcastArea,
     CustomBroadcastAreas,
     broadcast_area_libraries,
 )
@@ -12,7 +11,6 @@ from app.broadcast_areas.utils import (
     generate_aggregate_names,
     get_polygons_from_areas,
 )
-from app.formatters import round_to_significant_figures
 from app.models import JSONModel
 
 ESTIMATED_AREA_OF_LARGEST_UK_COUNTY = broadcast_area_libraries.get_areas(["lad25-E06000065"])[  # North Yorkshire
@@ -96,42 +94,7 @@ class BaseBroadcast(JSONModel):
 
     @cached_property
     def count_of_phones(self):
-        return round_to_significant_figures(sum(area.count_of_phones for area in self.areas), 1)
-
-    @cached_property
-    def estimated_count_of_phones(self):
-        return round_to_significant_figures(sum(area.estimated_count_of_phones for area in self.areas), 1)
-
-    @cached_property
-    def count_of_phones_likely(self):
-        estimated_area = self.simple_polygons.estimated_area
-        count_of_phones = self.count_of_phones
-
-        def naive_estimate():
-            return count_of_phones * (self.simple_polygons_with_bleed.estimated_area / estimated_area)
-
-        def intersecting_estimate():
-            return CustomBroadcastArea.from_polygon_objects(self.simple_polygons_with_bleed).count_of_phones
-
-        if estimated_area <= ESTIMATED_AREA_OF_LARGEST_UK_COUNTY:
-            # For smaller areas, where the computation can be done in
-            # a second or less (approximately) calculate the number of
-            # phones based on the ammount of overlap with areas for
-            # which we have population data
-            count = intersecting_estimate()
-
-            # This serves as a guardrail in case our bleed area yields smaller figures
-            # - which can happen because the calculations for the base polygon and the bleed
-            # area are different.
-            if count < count_of_phones:
-                count = naive_estimate()
-        else:
-            # For large areas, use a naïve but computationally less
-            # expensive way of counting the number of phones in the
-            # bleed area
-            count = naive_estimate()
-
-        return round_to_significant_figures(count, 1)
+        return sum(area.count_of_phones for area in self.areas)
 
     def get_areas(self, area_ids):
         return broadcast_area_libraries.get_areas(area_ids)

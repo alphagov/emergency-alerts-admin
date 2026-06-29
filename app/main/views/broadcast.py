@@ -1,12 +1,8 @@
 import json
-from datetime import datetime, timedelta, timezone
+import os
 from operator import attrgetter
-from typing import Collection
 
 from emergency_alerts_utils.template import BroadcastPreviewTemplate
-from emergency_alerts_utils.xml.broadcast import generate_xml_body
-from emergency_alerts_utils.xml.cap import convert_utc_datetime_to_cap_standard_string
-from emergency_alerts_utils.xml.common import HEADLINE
 from flask import (
     Response,
     abort,
@@ -21,7 +17,9 @@ from flask import (
 from notifications_python_client.errors import HTTPError
 
 from app import current_service
-from app.broadcast_areas.models import BaseBroadcastArea, CustomBroadcastAreas
+from app.broadcast_areas.models import CustomBroadcastAreas
+from app.config import Config
+from app.formatters import format_estimated_phone_count, format_seconds_duration_as_time
 from app.main import main
 from app.main.forms import (
     AddExtraContentForm,
@@ -29,6 +27,7 @@ from app.main.forms import (
     ChooseDurationForm,
     ChooseExtraContentForm,
     ConfirmBroadcastForm,
+    EmailSummaryForm,
     NewBroadcastForm,
     RejectionReasonForm,
     ReturnForEditForm,
@@ -41,6 +40,8 @@ from app.utils.broadcast import (
     _get_back_link_from_view_broadcast_endpoint,
     check_for_missing_fields,
     format_areas_list,
+    generate_geojson,
+    generate_unsigned_xml,
     get_alert_redirect_url,
     get_changed_alert_form_data,
     get_changed_extra_content_form_data,
@@ -54,7 +55,6 @@ from app.utils.broadcast import (
     render_preview_alert_page,
     update_broadcast_message_using_changed_data,
 )
-from app.utils.datetime import fromisoformat_allow_z_tz
 from app.utils.user import user_has_any_permissions, user_has_permissions
 
 FILTER_TEXT = {
@@ -730,7 +730,7 @@ def approve_broadcast_message(service_id, broadcast_message_id):
     form = ConfirmBroadcastForm(
         service_is_live=current_service.live,
         channel=current_service.broadcast_channel,
-        max_phones=broadcast_message.count_of_phones_likely,
+        max_phones=broadcast_message.count_of_phones,
     )
 
     is_custom_broadcast = type(broadcast_message.areas) is CustomBroadcastAreas
@@ -988,23 +988,7 @@ def get_broadcast_geojson(service_id, broadcast_message_id):
         service_id=current_service.id,
     )
 
-    areas: Collection[BaseBroadcastArea] = broadcast_message.areas
-
-    geojson = {
-        "type": "FeatureCollection",
-        "features": [
-            {
-                "type": "Feature",
-                "geometry": {
-                    "type": "Polygon",
-                    # geoJSON spec uses WGS84: https://datatracker.ietf.org/doc/html/rfc7946#section-4
-                    "coordinates": area.polygons.as_wgs84_coordinates,
-                },
-                "properties": {"name": area.__dict__.get("name")},
-            }
-            for area in areas
-        ],
-    }
+    geojson = generate_geojson(broadcast_message)
 
     return Response(
         json.dumps(geojson),
@@ -1023,52 +1007,7 @@ def get_broadcast_unsigned_xml(service_id, broadcast_message_id, xml_type):
         service_id=current_service.id,
     )
 
-    is_cap_format = True
-    if xml_type == "ibag":
-        is_cap_format = False
-
-    areas: Collection[BaseBroadcastArea] = broadcast_message.areas
-
-    all_area_coordinates = []
-    for area in areas:
-        # An area in a broadcast_message can have multiple polygons (e.g. islands), so we need
-        # to process each one and add it to the 'general' set of areas in the 'event' as used
-        # by the XML logic.
-        coordinate_pairs = area.polygons.as_coordinate_pairs_lat_long
-        for coordinate_pair in coordinate_pairs:
-            all_area_coordinates.append({"polygon": coordinate_pair})
-
-    event = {
-        # In a signed CAP message the identifier refers to a BroadcastProviderMessage which is unique per MNO
-        # We don't have such a thing here so we just use the overall BroadcastMessage
-        "identifier": broadcast_message_id,
-        "message_type": "alert",
-        "message_format": "cap" if is_cap_format else "ibag",
-        "message_number": "00000001",  # Only relevant for IBAG, and is made up here
-        "headline": HEADLINE,
-        "description": broadcast_message.content,
-        "language": "en-GB" if is_cap_format else "English",
-        "areas": all_area_coordinates,
-        "channel": current_service.broadcast_channel,
-        # starts_at and finishes_at can be None if it's a draft/awaiting approval, so we just use now
-        # sent and expires expect a string in 'CAP' format (see convert_utc_... method's description)
-        "sent": (
-            convert_utc_datetime_to_cap_standard_string(
-                fromisoformat_allow_z_tz(broadcast_message.starts_at)
-                if broadcast_message.starts_at
-                else datetime.now(timezone.utc)
-            )
-        ),
-        "expires": (
-            convert_utc_datetime_to_cap_standard_string(
-                fromisoformat_allow_z_tz(broadcast_message.finishes_at)
-                if broadcast_message.finishes_at
-                else datetime.now(timezone.utc) + timedelta(seconds=broadcast_message.broadcast_duration)
-            )
-        ),
-    }
-
-    cap_xml = generate_xml_body(event)
+    cap_xml = generate_unsigned_xml(broadcast_message, xml_type)
 
     return Response(
         cap_xml,
@@ -1149,4 +1088,67 @@ def create_new_broadcast(service_id):
         "views/broadcast/write-new-broadcast.html",
         broadcast_message=message,
         form=form,
+    )
+
+
+@main.route(
+    "/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/alert-summary-email",
+    methods=["GET", "POST"],
+)
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
+@service_has_permission("broadcast")
+def alert_summary_email(service_id, broadcast_message_id):
+    broadcast_message = BroadcastMessage.from_id(
+        broadcast_message_id,
+        service_id=current_service.id,
+    )
+
+    geojson = None
+    cap_xml = None
+    ibag_xml = None
+
+    if broadcast_message.duration:
+        duration_display = format_seconds_duration_as_time(broadcast_message.duration)
+    else:
+        if current_service.broadcast_channel in ["test", "operator"]:
+            duration_display = format_seconds_duration_as_time(Config.DEFAULT_DURATION_PERIODS.get("training"))
+        else:
+            duration_display = format_seconds_duration_as_time(Config.DEFAULT_DURATION_PERIODS.get("live"))
+
+    phone_estimate = format_estimated_phone_count(broadcast_message.count_of_phones)
+
+    form = EmailSummaryForm()
+    form.alert_summary.data = (
+        f"An alert is going to be sent from the '{current_service.name} - "
+        f"{os.environ.get('ENVIRONMENT')}' service with the following details. "
+        f"The broadcast channel will be '{current_service.broadcast_channel}'."
+    )
+
+    # Grab any updated values, and the json/cap now
+    if request.method == "POST":
+        form.alert_summary.data = request.form.get("alert_summary")
+        geojson = generate_geojson(broadcast_message)
+        cap_xml = generate_unsigned_xml(broadcast_message, "cap")
+        ibag_xml = generate_unsigned_xml(broadcast_message, "ibag")
+
+    if form.validate_on_submit():
+        BroadcastMessage.send_alert_summary_email(
+            broadcast_message_id=broadcast_message_id,
+            service_id=current_service.id,
+            geojson=geojson,
+            cap_xml=cap_xml,
+            ibag_xml=ibag_xml,
+            alert_summary=form.alert_summary.data,
+            phone_estimate=phone_estimate,
+            duration=duration_display,
+        )
+        return render_current_alert_page(broadcast_message)
+
+    return render_template(
+        "views/broadcast/email-summary.html",
+        form=form,
+        broadcast_message=broadcast_message,
+        back_link=request.referrer,
+        duration_display=duration_display,
+        phone_estimate=phone_estimate,
     )

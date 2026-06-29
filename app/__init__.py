@@ -50,6 +50,7 @@ from app.formatters import (
     format_day_of_week,
     format_delta,
     format_delta_days,
+    format_estimated_phone_count,
     format_mobile_networks,
     format_seconds_duration_as_time,
     format_thousands,
@@ -326,7 +327,7 @@ def useful_headers_after_request(response: Response):
             "connect-src 'self' *.google-analytics.com;"
             "object-src 'self';"
             "font-src 'self' {asset_domain} data:;"
-            "img-src 'self' {asset_domain} *.tile.openstreetmap.org *.google-analytics.com data:;".format(
+            "img-src 'self' {asset_domain} tile.openstreetmap.org *.google-analytics.com data:;".format(
                 asset_domain=current_app.config["ASSET_DOMAIN"], content_nonce=content_nonce
             )
         ),
@@ -509,6 +510,7 @@ def add_template_filters(application):
         format_day_of_week,
         format_delta,
         format_delta_days,
+        format_estimated_phone_count,
         format_mobile_networks,
         format_seconds_duration_as_time,
         format_thousands,

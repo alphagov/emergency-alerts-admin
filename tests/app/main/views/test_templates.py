@@ -439,6 +439,7 @@ def test_should_be_able_to_view_a_template_with_links(
     permissions,
     links_to_be_shown,
     permissions_warning_to_be_shown,
+    mock_get_count_of_phones,
 ):
     active_user_with_permissions["permissions"][SERVICE_ONE_ID] = permissions + ["view_activity"]
     client_request.login(active_user_with_permissions)
@@ -479,6 +480,7 @@ def test_view_broadcast_template(
     fake_uuid,
     active_user_create_broadcasts_permission,
     mock_get_template_from_id,
+    mock_get_count_of_phones,
 ):
     active_user_create_broadcasts_permission["permissions"][SERVICE_ONE_ID].append("manage_templates")
     client_request.login(active_user_create_broadcasts_permission)
@@ -542,6 +544,7 @@ def test_edit_broadcast_template(
     fake_uuid,
     active_user_create_broadcasts_permission,
     mock_get_template_from_id,
+    mock_get_count_of_phones,
 ):
     active_user_create_broadcasts_permission["permissions"][SERVICE_ONE_ID].append("manage_templates")
     client_request.login(active_user_create_broadcasts_permission)
@@ -596,10 +599,7 @@ def test_edit_broadcast_template(
 
 
 def test_should_hide_template_id_for_broadcast_templates(
-    client_request,
-    mock_get_template_from_id,
-    mock_get_template_folders,
-    fake_uuid,
+    client_request, mock_get_template_from_id, mock_get_template_folders, fake_uuid, mock_get_count_of_phones
 ):
     page = client_request.get(
         ".view_template",
@@ -771,7 +771,9 @@ def test_should_not_create_too_big_template_for_broadcasts(
     assert normalize_spaces(page.select_one(".error-message").text) == expected_error
 
 
-def test_should_show_delete_template_page_with_escaped_template_name(client_request, mocker, fake_uuid):
+def test_should_show_delete_template_page_with_escaped_template_name(
+    client_request, mocker, fake_uuid, mock_get_count_of_phones
+):
     template = template_json(SERVICE_ONE_ID, fake_uuid, reference="<script>evil</script>")
 
     mocker.patch("app.template_api_client.get_template", return_value={"data": template})
@@ -815,6 +817,7 @@ def test_should_show_page_for_a_deleted_template(
     mock_has_permissions,
     fake_uuid,
     mocker,
+    mock_get_count_of_phones,
 ):
     template = template_json(SERVICE_ONE_ID, fake_uuid, reference="Deleted template", archived=True)
 
@@ -849,6 +852,7 @@ def test_route_permissions(
     mock_get_template,
     mock_get_template_folders,
     fake_uuid,
+    mock_get_count_of_phones,
 ):
     validate_route_permission(
         mocker,
@@ -997,7 +1001,7 @@ def test_should_create_broadcast_template_without_downgrading_unicode_characters
 
 
 def test_should_not_show_redaction_stuff_for_broadcasts(
-    client_request, fake_uuid, mock_get_template, mock_get_template_folders
+    client_request, fake_uuid, mock_get_template, mock_get_template_folders, mock_get_count_of_phones
 ):
     page = client_request.get(
         "main.view_template",
@@ -1059,43 +1063,45 @@ def test_should_not_create_broadcast_template_with_placeholders(
         (
             "broadcast",
             "",
-            "You have 1,395 characters remaining",
+            "You have 1,395 characters remaining.",
             None,
         ),
         (
             "broadcast",
             "a",
-            "You have 1,394 characters remaining",
+            "You have 1,394 characters remaining.",
             None,
         ),
         (
             "broadcast",
             "a" * MAX_BROADCAST_CHAR_COUNT,
-            "You have 0 characters remaining",
+            "You have 0 characters remaining.",
             None,
         ),
         (
             "broadcast",
             "a" * (MAX_BROADCAST_CHAR_COUNT + 1),
-            "You have 1 character too many",
+            "You have 1 character too many.",
             "govuk-error-message",
         ),
         (
             "broadcast",
             "a" * (MAX_BROADCAST_CHAR_COUNT + 2),
-            "You have 2 characters too many",
+            "You have 2 characters too many.",
             "govuk-error-message",
         ),
         (
             "broadcast",
             "Ẅ" * 615,
-            "You have 0 characters remaining",
+            "You have 0 characters remaining. The character limit is reduced from 1,395 to 615 "
+            "because you have used the special character Ẅ. You can remove or change these characters"
+            " to restore the original limit.",
             None,
         ),
         (
             "broadcast",
             "Ẅ" * 616,
-            "You have 1 character too many",
+            "You have 1 character too many.",
             "govuk-error-message",
         ),
     ),
@@ -1291,7 +1297,9 @@ def test_add_area_to_template(client_request, fake_uuid, mock_get_template_with_
     )
 
 
-def test_remove_template_area(client_request, fake_uuid, mock_update_template, mock_get_template_with_area):
+def test_remove_template_area(
+    client_request, fake_uuid, mock_update_template, mock_get_template_with_area, mock_get_count_of_phones
+):
     page = client_request.get(
         "main.edit_template",
         service_id=SERVICE_ONE_ID,
@@ -1332,7 +1340,7 @@ def test_remove_template_area(client_request, fake_uuid, mock_update_template, m
 
 
 def test_remove_custom_template_area(
-    client_request, fake_uuid, mock_update_template, mock_get_template_with_custom_area
+    client_request, fake_uuid, mock_update_template, mock_get_template_with_custom_area, mock_get_count_of_phones
 ):
     page = client_request.get(
         "main.preview_areas",

@@ -37,8 +37,8 @@ jobs:
 
           if [[ -n $PR_UTILS_BRANCH ]]; then
             echo "Going to use branch $PR_UTILS_BRANCH for utils"
-            sed -i "s|emergency-alerts-utils\.git|emergency-alerts-utils.git@$PR_UTILS_BRANCH|" requirements_github_utils.txt
-            cat requirements_github_utils.txt
+            sed -i "s|emergency-alerts-utils\.git|emergency-alerts-utils.git@$PR_UTILS_BRANCH|" requirements.txt
+            cat requirements.txt
           else
             echo "Leaving utils target as default"
           fi
@@ -56,3 +56,12 @@ jobs:
           set -eu
           make bootstrap-for-tests
           make test
+
+  functional-tests:
+    name: Invoke Functional Tests
+    uses: alphagov/emergency-alerts-functional-tests/.github/workflows/run-functional-tests-pr.yml@main
+    with:
+      env-default: REPO_BRANCH_ADMIN=${{ github.head_ref }}
+      pr-description: ${{ github.event.pull_request.body }}
+    secrets:
+      EAS_GITHUB_RUNNER_RO_TOKEN: ${{ secrets.EAS_GITHUB_RUNNER_RO_TOKEN }}
