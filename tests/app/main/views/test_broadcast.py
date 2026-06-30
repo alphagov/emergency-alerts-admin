@@ -6859,6 +6859,60 @@ def test_add_extra_content_updates_message(
     )
 
 
+def test_add_extra_content_secondary_removes_extra_content(
+    client_request,
+    service_one,
+    active_user_create_broadcasts_permission,
+    mocker,
+    fake_uuid,
+    mock_check_can_update_status,
+    mock_update_broadcast_message,
+    mock_get_broadcast_message_versions,
+):
+    """
+    Checks that when the secondary ('no longer required') button is clicked, that the extra content is removed.
+    """
+    service_one["permissions"] += ["broadcast"]
+    client_request.login(active_user_create_broadcasts_permission)
+
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            extra_content="Test Extra Content",
+        ),
+    )
+    # Initial render of the page
+    client_request.get(".add_extra_content", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
+
+    # Simulate clicking the secondary button named remove-extra-content
+    client_request.post(
+        ".add_extra_content",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        _data={
+            "extra_content": "Test Extra Content",
+            "initial_extra_content": "Test Extra Content",
+            "remove-extra-content": "anything",
+        },
+        _expected_redirect=url_for(
+            ".view_current_broadcast", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid
+        ),
+    )
+
+    mock_update_broadcast_message.assert_called_once_with(
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        data={
+            "extra_content": "",
+        },
+    )
+
+
 def test_add_extra_content_keep_message_keeps_original_extra_content(
     client_request,
     service_one,
