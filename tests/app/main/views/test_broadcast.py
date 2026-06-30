@@ -318,6 +318,90 @@ def test_broadcast_pages_403_for_user_without_permission(
 
 
 @pytest.mark.parametrize(
+    "endpoint, endpoint_params, endpoint_data",
+    (
+        (".search_postcodes", {}, {"postcode": "BD1 1EE", "radius": "2", "continue": True}),
+        (".choose_area", {"library_slug": "countries"}, {"postcode": "BD1 1EE", "radius": "2", "continue": True}),
+        (
+            ".choose_sub_area",
+            {"library_slug": "wd25-lad25-ctyua25", "area_slug": "ctyua25-E10000016"},
+            {"postcode": "BD1 1EE", "radius": "2", "continue": True},
+        ),
+    ),
+)
+def test_template_area_pages_error_for_user_with_only_create_broadcasts_permission(
+    client_request,
+    service_one,
+    mock_get_draft_broadcast_message,
+    mock_update_broadcast_message,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
+    mock_get_broadcast_message_versions,
+    endpoint,
+    endpoint_params,
+    endpoint_data,
+):
+    """
+    The endpoints/logic is shared for templates and broadcasts, but the permissions for each are
+    defined separately.
+    """
+
+    client_request.login(active_user_create_broadcasts_permission)
+    client_request.post(
+        endpoint,
+        service_id=SERVICE_ONE_ID,
+        message_id=fake_uuid,
+        message_type="templates",
+        **endpoint_params,
+        _data=endpoint_data,
+        _expected_status=403,
+    )
+
+
+@pytest.mark.parametrize(
+    "endpoint, endpoint_params, endpoint_data",
+    (
+        (".search_postcodes", {}, {"postcode": "BD1 1EE", "radius": "2", "continue": True}),
+        (".choose_area", {"library_slug": "countries"}, {"postcode": "BD1 1EE", "radius": "2", "continue": True}),
+        (
+            ".choose_sub_area",
+            {"library_slug": "wd25-lad25-ctyua25", "area_slug": "ctyua25-E10000016"},
+            {"postcode": "BD1 1EE", "radius": "2", "continue": True},
+        ),
+    ),
+)
+def test_broadcast_area_pages_error_for_user_with_only_manage_templates_permission(
+    client_request,
+    service_one,
+    mock_get_draft_broadcast_message,
+    mock_update_broadcast_message,
+    fake_uuid,
+    mocker,
+    active_user_manage_template_permissions,
+    mock_get_broadcast_message_versions,
+    endpoint,
+    endpoint_params,
+    endpoint_data,
+):
+    """
+    The endpoints/logic is shared for templates and broadcasts, but the permissions for each are
+    defined separately.
+    """
+
+    client_request.login(active_user_manage_template_permissions)
+    client_request.post(
+        endpoint,
+        service_id=SERVICE_ONE_ID,
+        message_id=fake_uuid,
+        message_type="broadcast",
+        **endpoint_params,
+        _data=endpoint_data,
+        _expected_status=403,
+    )
+
+
+@pytest.mark.parametrize(
     "user",
     [
         create_active_user_view_permissions(),
