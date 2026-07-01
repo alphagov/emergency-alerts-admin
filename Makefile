@@ -81,10 +81,6 @@ freeze-requirements: ## create static requirements.txt
 	${PYTHON_EXECUTABLE_PREFIX}pip3 install pip-tools
 	${PYTHON_EXECUTABLE_PREFIX}pip-compile requirements.in
 
-.PHONY: bump-utils
-bump-utils:  # Bump emergency-alerts-utils package to latest version
-	${PYTHON_EXECUTABLE_PREFIX}python -c "from emergency-alerts-utils.version_tools import upgrade_version; upgrade_version()"
-
 .PHONY: uninstall-packages
 uninstall-packages:
 	python -m pip uninstall emergency-alerts-utils -y
