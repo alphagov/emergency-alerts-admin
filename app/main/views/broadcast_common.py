@@ -1,4 +1,4 @@
-from flask import flash, redirect, render_template, request, url_for
+from flask import abort, flash, redirect, render_template, request, url_for
 from notifications_python_client.errors import HTTPError
 
 from app.broadcast_areas.models import CustomBroadcastAreas
@@ -37,6 +37,7 @@ from app.utils.broadcast import (
     extract_attributes_from_custom_area,
     get_centroid_if_postcode_in_db,
     get_message_type,
+    has_permission_for_message_type,
     normalising_point,
     parse_coordinate_form_data,
     postcode_and_radius_entered,
@@ -121,6 +122,9 @@ def choose_area(
     message_type,
     message_id=None,
 ):
+    if not has_permission_for_message_type(service_id=service_id, message_type=message_type):
+        return abort(403)
+
     template_folder_id = request.args.get("template_folder_id")
     Message = get_message_type(message_type)
     message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
@@ -235,6 +239,9 @@ def choose_area(
 @service_has_permission("broadcast")
 @user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def choose_sub_area(service_id, message_type, library_slug, area_slug, message_id=None):
+    if not has_permission_for_message_type(service_id=service_id, message_type=message_type):
+        return abort(403)
+
     template_folder_id = request.args.get("template_folder_id")
     Message = get_message_type(message_type)
     message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
@@ -334,6 +341,9 @@ def preview_areas(service_id, message_id, message_type):
 @service_has_permission("broadcast")
 @user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def search_postcodes(service_id, message_type, message_id=None):
+    if not has_permission_for_message_type(service_id=service_id, message_type=message_type):
+        return abort(403)
+
     template_folder_id = request.args.get("template_folder_id")
     Message = get_message_type(message_type)
     message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
