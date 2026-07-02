@@ -1,6 +1,7 @@
 import copy
 import json
 import os
+from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from datetime import date, datetime, timedelta, timezone
 from functools import partial
@@ -1123,20 +1124,44 @@ def os_environ():
         os.environ[k] = v
 
 
+class ClientRequest(ABC):
+    """
+    See ClientRequestImpl - this is just an abstract for type hinting responses into a
+    BeautifulSoup instance for autocomplete when writing tests.
+    """
+
+    @abstractmethod
+    def get(
+        endpoint,
+        _expected_status=200,
+        _follow_redirects=False,
+        _expected_redirect=None,
+        _test_page_title=True,
+        _test_page_prefix=None,
+        _test_for_elements_without_class=True,
+        _optional_args="",
+        **endpoint_kwargs,
+    ) -> NotifyBeautifulSoup:
+        pass
+
+    @abstractmethod
+    def post(
+        endpoint,
+        _data=None,
+        _expected_status=None,
+        _follow_redirects=False,
+        _expected_redirect=None,
+        _content_type=None,
+        **endpoint_kwargs,
+    ) -> NotifyBeautifulSoup:
+        pass
+
+
 @pytest.fixture  # noqa (C901 too complex)
-def client_request(_logged_in_client, mocker, service_one):  # noqa (C901 too complex)
+def client_request(_logged_in_client, mocker, service_one) -> ClientRequest:  # noqa (C901 too complex)
     mocker.patch("app.feature_toggle_api_client.get_feature_toggle", return_value={})
 
-    def block_method(object, method_name, preferred_method_name):
-        def blocked_method(*args, **kwargs):
-            raise AttributeError(
-                f"Don’t use {object.__class__.__name__}.{method_name}"
-                f" – try {object.__class__.__name__}.{preferred_method_name} instead"
-            )
-
-        setattr(object, method_name, blocked_method)
-
-    class ClientRequest:
+    class ClientRequestImpl(ClientRequest):
         @staticmethod
         @contextmanager
         def session_transaction():
@@ -1163,7 +1188,7 @@ def client_request(_logged_in_client, mocker, service_one):  # noqa (C901 too co
             _optional_args="",
             **endpoint_kwargs,
         ):
-            return ClientRequest.get_url(
+            return ClientRequestImpl.get_url(
                 url_for(endpoint, **(endpoint_kwargs or {})) + _optional_args,
                 _expected_status=_expected_status,
                 _follow_redirects=_follow_redirects,
@@ -1242,7 +1267,7 @@ def client_request(_logged_in_client, mocker, service_one):  # noqa (C901 too co
             _content_type=None,
             **endpoint_kwargs,
         ):
-            return ClientRequest.post_url(
+            return ClientRequestImpl.post_url(
                 url_for(endpoint, **(endpoint_kwargs or {})),
                 _data=_data,
                 _expected_status=_expected_status,
@@ -1274,7 +1299,7 @@ def client_request(_logged_in_client, mocker, service_one):  # noqa (C901 too co
 
         @staticmethod
         def get_response(endpoint, _expected_status=200, _optional_args="", **endpoint_kwargs):
-            return ClientRequest.get_response_from_url(
+            return ClientRequestImpl.get_response_from_url(
                 url_for(endpoint, **(endpoint_kwargs or {})) + _optional_args,
                 _expected_status=_expected_status,
             )
@@ -1292,7 +1317,7 @@ def client_request(_logged_in_client, mocker, service_one):  # noqa (C901 too co
         def post_response(
             endpoint, _data=None, _expected_status=302, _optional_args="", _content_type=None, **endpoint_kwargs
         ):
-            return ClientRequest.post_response_from_url(
+            return ClientRequestImpl.post_response_from_url(
                 url_for(endpoint, **(endpoint_kwargs or {})) + _optional_args,
                 _data=_data,
                 _content_type=_content_type,
@@ -1313,7 +1338,7 @@ def client_request(_logged_in_client, mocker, service_one):  # noqa (C901 too co
             assert resp.status_code == _expected_status
             return resp
 
-    return ClientRequest
+    return ClientRequestImpl
 
 
 def normalize_spaces(input):

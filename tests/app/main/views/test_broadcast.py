@@ -5333,11 +5333,11 @@ def test_cannot_approve_own_broadcast_if_service_is_live_and_user_submitted_aler
     assert (normalize_spaces(page.select_one(".banner p").text)) == (
         "You need another member of your team to approve your alert."
     )
-    assert not page.select("form")
 
-    link = page.select_one(".banner a.govuk-link.govuk-link--destructive")
-    assert link.text == "Discard this alert"
-    assert link["href"] == url_for(
+    button = page.select_one(".banner button.govuk-button.govuk-button--warning")
+    assert button.text == "Discard this alert"
+    form = button.parent.parent
+    assert form["action"] == url_for(
         ".discard_broadcast_message",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
@@ -5501,10 +5501,13 @@ def test_user_without_approve_permission_cant_approve_broadcast_created_by_someo
     )
 
     assert (normalize_spaces(page.select_one(".banner").text)) == banner_text
-    assert not page.select_one("form")
-    link = page.select_one(".banner a")
-    assert link["href"] == url_for(
-        ".discard_broadcast_message", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid
+    button = page.select_one(".banner button.govuk-button.govuk-button--warning")
+    assert button.text == "Discard this alert"
+    form = button.parent.parent
+    assert form["action"] == url_for(
+        ".discard_broadcast_message",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
     )
 
 
@@ -5550,9 +5553,10 @@ def test_user_without_approve_permission_cant_approve_broadcast_they_created(
     )
     assert not page.select(".banner input[type=checkbox]")
 
-    link = page.select_one("a.govuk-link.govuk-link--destructive")
-    assert link.text == "Discard this alert"
-    assert link["href"] == url_for(
+    button = page.select_one(".banner button.govuk-button.govuk-button--warning")
+    assert button.text == "Discard this alert"
+    form = button.parent.parent
+    assert form["action"] == url_for(
         ".discard_broadcast_message",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
@@ -5953,9 +5957,10 @@ def test_discard_broadcast(
     page = client_request.post(
         ".reject_broadcast_message", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid, _expected_status=200
     )
-    link = page.select_one(".banner a.govuk-link.govuk-link--destructive")
-    assert link.text == "Discard this alert"
-    assert link["href"] == url_for(
+    button = page.select_one(".banner button.govuk-button.govuk-button--warning")
+    assert button.text == "Discard this alert"
+    form = button.parent.parent
+    assert form["action"] == url_for(
         ".discard_broadcast_message",
         service_id=SERVICE_ONE_ID,
         broadcast_message_id=fake_uuid,
@@ -6245,7 +6250,7 @@ def test_cannot_submit_if_transition_not_allowed(
 
     client_request.login(create_active_user_create_broadcasts_permissions())
 
-    page = client_request.get(
+    page = client_request.post(
         ".submit_broadcast_message", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid, _expected_status=200
     )
 
