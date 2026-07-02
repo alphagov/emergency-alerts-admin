@@ -2,7 +2,6 @@ import os
 
 import boto3
 from flask import current_app, jsonify, request
-from notifications_python_client.errors import HTTPError
 
 from app import status_api_client, version
 from app.status import status
@@ -19,7 +18,7 @@ def show_status():
     else:
         try:
             api_status = status_api_client.get_status()
-        except HTTPError as e:
+        except Exception as e:
             current_app.logger.exception("API failed to respond")
             return jsonify(status="error", message=str(e.message)), 500
         return (
