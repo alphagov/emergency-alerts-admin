@@ -318,6 +318,90 @@ def test_broadcast_pages_403_for_user_without_permission(
 
 
 @pytest.mark.parametrize(
+    "endpoint, endpoint_params, endpoint_data",
+    (
+        (".search_postcodes", {}, {"postcode": "BD1 1EE", "radius": "2", "continue": True}),
+        (".choose_area", {"library_slug": "countries"}, {"postcode": "BD1 1EE", "radius": "2", "continue": True}),
+        (
+            ".choose_sub_area",
+            {"library_slug": "wd25-lad25-ctyua25", "area_slug": "ctyua25-E10000016"},
+            {"postcode": "BD1 1EE", "radius": "2", "continue": True},
+        ),
+    ),
+)
+def test_template_area_pages_error_for_user_with_only_create_broadcasts_permission(
+    client_request,
+    service_one,
+    mock_get_draft_broadcast_message,
+    mock_update_broadcast_message,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
+    mock_get_broadcast_message_versions,
+    endpoint,
+    endpoint_params,
+    endpoint_data,
+):
+    """
+    The endpoints/logic is shared for templates and broadcasts, but the permissions for each are
+    defined separately.
+    """
+
+    client_request.login(active_user_create_broadcasts_permission)
+    client_request.post(
+        endpoint,
+        service_id=SERVICE_ONE_ID,
+        message_id=fake_uuid,
+        message_type="templates",
+        **endpoint_params,
+        _data=endpoint_data,
+        _expected_status=403,
+    )
+
+
+@pytest.mark.parametrize(
+    "endpoint, endpoint_params, endpoint_data",
+    (
+        (".search_postcodes", {}, {"postcode": "BD1 1EE", "radius": "2", "continue": True}),
+        (".choose_area", {"library_slug": "countries"}, {"postcode": "BD1 1EE", "radius": "2", "continue": True}),
+        (
+            ".choose_sub_area",
+            {"library_slug": "wd25-lad25-ctyua25", "area_slug": "ctyua25-E10000016"},
+            {"postcode": "BD1 1EE", "radius": "2", "continue": True},
+        ),
+    ),
+)
+def test_broadcast_area_pages_error_for_user_with_only_manage_templates_permission(
+    client_request,
+    service_one,
+    mock_get_draft_broadcast_message,
+    mock_update_broadcast_message,
+    fake_uuid,
+    mocker,
+    active_user_manage_template_permissions,
+    mock_get_broadcast_message_versions,
+    endpoint,
+    endpoint_params,
+    endpoint_data,
+):
+    """
+    The endpoints/logic is shared for templates and broadcasts, but the permissions for each are
+    defined separately.
+    """
+
+    client_request.login(active_user_manage_template_permissions)
+    client_request.post(
+        endpoint,
+        service_id=SERVICE_ONE_ID,
+        message_id=fake_uuid,
+        message_type="broadcast",
+        **endpoint_params,
+        _data=endpoint_data,
+        _expected_status=403,
+    )
+
+
+@pytest.mark.parametrize(
     "user",
     [
         create_active_user_view_permissions(),
@@ -6855,6 +6939,60 @@ def test_add_extra_content_updates_message(
         broadcast_message_id=fake_uuid,
         data={
             "extra_content": "Test Edit Alert NEW",
+        },
+    )
+
+
+def test_add_extra_content_secondary_removes_extra_content(
+    client_request,
+    service_one,
+    active_user_create_broadcasts_permission,
+    mocker,
+    fake_uuid,
+    mock_check_can_update_status,
+    mock_update_broadcast_message,
+    mock_get_broadcast_message_versions,
+):
+    """
+    Checks that when the secondary ('no longer required') button is clicked, that the extra content is removed.
+    """
+    service_one["permissions"] += ["broadcast"]
+    client_request.login(active_user_create_broadcasts_permission)
+
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            extra_content="Test Extra Content",
+        ),
+    )
+    # Initial render of the page
+    client_request.get(".add_extra_content", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
+
+    # Simulate clicking the secondary button named remove-extra-content
+    client_request.post(
+        ".add_extra_content",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        _data={
+            "extra_content": "Test Extra Content",
+            "initial_extra_content": "Test Extra Content",
+            "remove-extra-content": "anything",
+        },
+        _expected_redirect=url_for(
+            ".view_current_broadcast", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid
+        ),
+    )
+
+    mock_update_broadcast_message.assert_called_once_with(
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        data={
+            "extra_content": "",
         },
     )
 

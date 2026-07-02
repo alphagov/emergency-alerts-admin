@@ -97,8 +97,12 @@
         </div>
         {% if not changes %}
           <div class="govuk-button-group">
-            {{ page_footer('Save and continue', button_name='continue', secondary_link=url_for('.remove_extra_content', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
-            secondary_link_text='No longer required, return to alert') }}
+            {{ page_footer('Save and continue',
+              button_name='continue',
+              secondary_link_text='No longer required, return to alert',
+              secondary_link_button=True,
+              secondary_link_button_name="remove-extra-content",
+            )}}
           </div>
         {% endif %}
       </div>

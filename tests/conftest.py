@@ -1982,6 +1982,11 @@ def create_active_user_no_settings_permission(with_unique_id=False):
     )
 
 
+@pytest.fixture(scope="function")
+def active_user_manage_template_permissions():
+    return create_active_user_manage_template_permissions()
+
+
 def create_active_user_manage_template_permissions(with_unique_id=False):
     return create_service_one_user(
         id=str(uuid4()) if with_unique_id else sample_uuid(),

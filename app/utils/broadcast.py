@@ -11,7 +11,7 @@ from shapely import Point
 from shapely.geometry import MultiPolygon, Polygon
 from shapely.ops import unary_union
 
-from app import current_service
+from app import current_service, current_user
 from app.broadcast_areas.models import (
     BaseBroadcastArea,
     CustomBroadcastArea,
@@ -681,6 +681,15 @@ def get_message_type(message_type):
         "broadcast": BroadcastMessage,
         "templates": Template,
     }[message_type]
+
+
+def has_permission_for_message_type(service_id: str, message_type: str) -> bool:
+    if message_type == "broadcast":
+        return current_user.has_permission_for_service(service_id, "create_broadcasts")
+    elif message_type == "templates":
+        return current_user.has_permission_for_service(service_id, "manage_templates")
+    else:
+        raise RuntimeError("No known message_type " + message_type)
 
 
 def generate_geojson(broadcast_message):
