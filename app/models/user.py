@@ -266,6 +266,11 @@ class User(BaseUser, UserMixin):
 
         return self.id in template_folder.get("users_with_permission", [])
 
+    def has_template_folder_permission_or_403(self, template_folder, service=None):
+        if not self.has_template_folder_permission(template_folder, service=service):
+            abort(403)
+        return True
+
     def template_folders_for_service(self, service=None):
         """
         Returns list of template folders that a user can view for a given service
