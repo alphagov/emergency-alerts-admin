@@ -40,7 +40,7 @@ def view_template(service_id, template_id):
     template = Template.from_id(template_id=template_id, service_id=service_id)
     template_folder = current_service.get_template_folder(template.folder)
 
-    user_has_template_permission = current_user.has_template_folder_permission(template_folder)
+    user_has_template_permission = current_user.has_template_folder_permission_or_403(template_folder)
 
     return render_template(
         "views/templates/template.html",
@@ -61,7 +61,7 @@ def edit_template(service_id, template_id):
     template = Template.from_id(template_id=template_id, service_id=service_id)
     template_folder = current_service.get_template_folder(template.folder)
 
-    user_has_template_permission = current_user.has_template_folder_permission(template_folder)
+    user_has_template_permission = current_user.has_template_folder_permission_or_403(template_folder)
 
     return render_template(
         "views/templates/template.html",
@@ -89,7 +89,7 @@ def move_template(service_id, template_folder_id=None):
         folders_to_move = request.form.getlist("template_folders_to_move")
 
     template_folder = current_service.get_template_folder(template_folder_id)
-    user_has_template_folder_permission = current_user.has_template_folder_permission(template_folder)
+    user_has_template_folder_permission = current_user.has_template_folder_permission_or_403(template_folder)
 
     template_list = UserTemplateList(
         service=current_service, template_type=None, template_folder_id=template_folder_id, user=current_user
@@ -154,7 +154,7 @@ def process_folder_move_form(form, current_folder_id, service_id):
 @user_has_permissions(allow_org_user=True)
 def choose_template(service_id, template_type="all", template_folder_id=None):
     template_folder = current_service.get_template_folder(template_folder_id)
-    user_has_template_folder_permission = current_user.has_template_folder_permission(template_folder)
+    user_has_template_folder_permission = current_user.has_template_folder_permission_or_403(template_folder)
 
     template_list = UserTemplateList(
         service=current_service, template_type=template_type, template_folder_id=template_folder_id, user=current_user
@@ -342,8 +342,7 @@ def copy_template(service_id, template_id):
     template = Template.get_template(from_service, template_id)["data"]
 
     template_folder = template_folder_api_client.get_template_folder(from_service, template["folder"])
-    if not current_user.has_template_folder_permission(template_folder):
-        abort(403)
+    current_user.has_template_folder_permission_or_403(template_folder)
 
     if request.method == "POST":
         return add_service_template(service_id, template["template_type"])
