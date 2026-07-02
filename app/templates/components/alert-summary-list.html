@@ -261,9 +261,7 @@
 
     {% if current_service.alert_notification_addresses and display_action %}
         {% set alert_summary_email_section_html %}
-            {% for contact_email in current_service.alert_notification_addresses %}
-                <p class="govuk-body">{{ contact_email.email_address }}</p>
-            {% endfor %}
+            <p class="govuk-body">Email will be sent to predefined list of contacts for this service.</p>
         {% endset %}
 
         {% set summaryListItems = summaryListItems + [
