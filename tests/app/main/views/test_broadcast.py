@@ -516,7 +516,7 @@ def test_view_broadcast_page_displays_error_if_area_invalid(
         "to the Emergency Alerts team."
     )
 
-    submitted_alert_page = client_request.get(
+    submitted_alert_page = client_request.post(
         ".submit_broadcast_message", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid, _expected_status=200
     )
 
@@ -6245,7 +6245,7 @@ def test_cannot_submit_if_transition_not_allowed(
 
     client_request.login(create_active_user_create_broadcasts_permissions())
 
-    page = client_request.get(
+    page = client_request.post(
         ".submit_broadcast_message", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid, _expected_status=200
     )
 

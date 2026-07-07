@@ -352,16 +352,17 @@
 ) %}
 
 {% if can_submit_for_approval %}
-  {{ govukButton({
-    "element": "a",
-    "text": "Submit for approval",
-    "href":url_for(
+  {% call form_wrapper(action=url_for(
       ".submit_broadcast_message",
       service_id=current_service.id,
       broadcast_message_id=broadcast_message.id,
-    ),
-    "classes": "govuk-button"
-  }) }}
+    )) %}
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    {{ govukButton({
+      "text": "Submit for approval",
+      "classes": "govuk-button"
+    }) }}
+  {% endcall %}
 {% endif %}
 
 {% if broadcast_message.status in ["draft", "returned"] and broadcast_message_version_count > 1 %}
