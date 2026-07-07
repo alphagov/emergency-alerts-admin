@@ -37,7 +37,8 @@ form_objects = {
 def checks_template_folder_permissions_if_exists(template_folder_id):
     # Checks user has permissions for folder that template would be created in
     if template_folder_id:
-        current_user.has_template_folder_permission_or_403(template_folder_id)
+        template_folder = current_service.get_template_folder(template_folder_id)
+        current_user.has_template_folder_permission_or_403(template_folder)
 
 
 @main.route("/services/<uuid:service_id>/templates/<uuid:template_id>")
@@ -86,8 +87,6 @@ def edit_template(service_id, template_id):
 @main.route("/services/<uuid:service_id>/templates/folders/<uuid:template_folder_id>/move-to", methods=["POST"])
 @user_has_permissions(allow_org_user=True)
 def move_template(service_id, template_folder_id=None):
-    checks_template_folder_permissions_if_exists(template_folder_id)
-
     if not current_user.has_permissions("manage_templates"):
         abort(403)
 
@@ -276,8 +275,9 @@ def _view_template_version(service_id, template_id, version):
 @main.route("/services/<uuid:service_id>/templates/<uuid:template_id>/version/<int:version>")
 @user_has_permissions(allow_org_user=True)
 def view_template_version(service_id, template_id, version):
+    template = Template.from_id(template_id, service_id=service_id)
+    checks_template_folder_permissions_if_exists(template.folder or None)
     template_version = _view_template_version(service_id=service_id, template_id=template_id, version=version)
-    checks_template_folder_permissions_if_exists(version.folder or None)
 
     return render_template(
         "views/templates/template_history.html",
