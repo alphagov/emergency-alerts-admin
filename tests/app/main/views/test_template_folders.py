@@ -423,9 +423,18 @@ def test_template_id_is_searchable_for_services_with_api_keys(
 
 
 def test_can_create_email_template_with_parent_folder(
-    client_request, mock_get_templates, mock_get_template_from_id, fake_uuid, mocker
+    client_request, mock_get_templates, mock_get_template_from_id, fake_uuid, mocker, active_user_with_permissions
 ):
     template = template_json(SERVICE_ONE_ID, fake_uuid, reference="Template", folder=PARENT_FOLDER_ID)
+    mocker.patch(
+        "app.models.service.Service.get_template_folder",
+        return_value={
+            "id": PARENT_FOLDER_ID,
+            "name": "Parent Folder",
+            "parent_id": None,
+            "users_with_permission": [active_user_with_permissions["id"]],
+        },
+    )
     mock_create_template = mocker.patch("app.models.template.Template.create", return_value=Template(template))
     data = {
         "reference": "new name",
@@ -1441,18 +1450,6 @@ def test_show_custom_error_message_move_page(
             [],
             "This folder is empty",
         ),
-        (
-            {"template_folder_id": CHILD_FOLDER_ID},
-            [],
-            [],
-            "This folder is empty",
-        ),
-        (
-            {"template_folder_id": CHILD_FOLDER_ID, "template_type": "broadcast"},
-            [],
-            [],
-            "This folder is empty",
-        ),
     ],
 )
 def test_should_filter_templates_folder_page_based_on_user_permissions(
@@ -1506,3 +1503,32 @@ def test_should_filter_templates_folder_page_based_on_user_permissions(
         assert normalize_spaces(page.select_one(".template-list-empty").text) == (expected_empty_message)
     else:
         assert not page.select(".template-list-empty")
+
+
+@pytest.mark.parametrize(
+    "extra_args",
+    [
+        ({"template_folder_id": FOLDER_TWO_ID}),
+        ({"template_folder_id": FOLDER_B_ID, "template_type": "broadcast"}),
+        ({"template_folder_id": FOLDER_C_ID, "template_type": "broadcast"}),
+        ({"template_folder_id": CHILD_FOLDER_ID, "template_type": "broadcast"}),
+    ],
+)
+def test_folder_page_returns_403_if_user_not_permitted_to_view_folder(
+    client_request,
+    mock_get_template_folders,
+    mocker,
+    extra_args,
+):
+    # mock_get_template_folders returns folders with no users permitted to access
+    mock_get_template_folders.return_value = [
+        _folder("folder_A", FOLDER_TWO_ID, None, []),
+        _folder("folder_B", FOLDER_B_ID, FOLDER_TWO_ID, []),
+        _folder("folder_C", FOLDER_C_ID, FOLDER_TWO_ID, []),
+        _folder("folder_D", CHILD_FOLDER_ID, FOLDER_TWO_ID, []),
+    ]
+
+    # Thus GET request to this route results in 403
+    client_request.get(
+        "main.choose_template", service_id=SERVICE_ONE_ID, _test_page_title=False, **extra_args, _expected_status=403
+    )
