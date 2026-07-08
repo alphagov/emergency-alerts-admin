@@ -642,7 +642,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
     return render_preview_alert_page(broadcast_message, is_custom_broadcast, areas)
 
 
-@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/submit", methods=["GET", "POST"])
+@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/submit", methods=["POST"])
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
 def submit_broadcast_message(service_id, broadcast_message_id):

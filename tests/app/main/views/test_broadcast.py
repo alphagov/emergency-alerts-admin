@@ -516,7 +516,7 @@ def test_view_broadcast_page_displays_error_if_area_invalid(
         "to the Emergency Alerts team."
     )
 
-    submitted_alert_page = client_request.get(
+    submitted_alert_page = client_request.post(
         ".submit_broadcast_message", service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid, _expected_status=200
     )
 
