@@ -1506,29 +1506,55 @@ def test_should_filter_templates_folder_page_based_on_user_permissions(
 
 
 @pytest.mark.parametrize(
-    "extra_args",
+    "endpoint, extra_args",
     [
-        ({"template_folder_id": FOLDER_TWO_ID}),
-        ({"template_folder_id": FOLDER_B_ID, "template_type": "broadcast"}),
-        ({"template_folder_id": FOLDER_C_ID, "template_type": "broadcast"}),
-        ({"template_folder_id": CHILD_FOLDER_ID, "template_type": "broadcast"}),
+        # endpoints pertinent to template, that source folder ID from template
+        ("main.view_template", {}),
+        ("main.edit_template", {}),
+        ("main.view_template_version", {"version": 1}),
+        ("main.choose_template_to_copy", {"from_folder": FOLDER_TWO_ID, "from_service": SERVICE_ONE_ID}),
+        ("main.copy_template", {}),
+        ("main.view_template_versions", {}),
+        # endpoints that operate on a template in a folder
+        ("main.add_service_template", {"template_folder_id": FOLDER_TWO_ID, "template_type": "broadcast"}),
+        ("main.edit_service_template", {"template_folder_id": FOLDER_TWO_ID}),
+        ("main.delete_service_template", {"template_folder_id": FOLDER_TWO_ID}),
+        ("main.confirm_redact_template", {"template_folder_id": FOLDER_TWO_ID}),
+        # endpoints where we filter by broadcast template type and folder
+        ("main.choose_template_fields", {"template_folder_id": FOLDER_TWO_ID, "template_type": "broadcast"}),
     ],
 )
 def test_folder_page_returns_403_if_user_not_permitted_to_view_folder(
     client_request,
     mock_get_template_folders,
     mocker,
+    endpoint,
     extra_args,
+    fake_uuid,
+    mock_get_just_services_for_user,
+    mock_get_api_keys,
+    mock_get_template_versions,
+    mock_get_templates,
 ):
-    # mock_get_template_folders returns folders with no users permitted to access
+    # mock_get_template_folders returns folder with no users permitted to access
     mock_get_template_folders.return_value = [
-        _folder("folder_A", FOLDER_TWO_ID, None, []),
-        _folder("folder_B", FOLDER_B_ID, FOLDER_TWO_ID, []),
-        _folder("folder_C", FOLDER_C_ID, FOLDER_TWO_ID, []),
-        _folder("folder_D", CHILD_FOLDER_ID, FOLDER_TWO_ID, []),
+        _folder("folder_A", FOLDER_TWO_ID, FOLDER_B_ID, []),
     ]
+
+    # creates template to be used for mocks and call args
+    template = template_json(SERVICE_ONE_ID, fake_uuid, reference="Template", folder=FOLDER_TWO_ID)
+    mocker.patch("app.models.template.Template.from_id", return_value=Template(template))
+    mocker.patch(
+        "app.template_api_client.get_template",
+        return_value={"data": template},
+    )
 
     # Thus GET request to this route results in 403
     client_request.get(
-        "main.choose_template", service_id=SERVICE_ONE_ID, _test_page_title=False, **extra_args, _expected_status=403
+        endpoint,
+        service_id=SERVICE_ONE_ID,
+        _test_page_title=False,
+        template_id=fake_uuid,
+        _expected_status=403,
+        **extra_args,
     )
