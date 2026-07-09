@@ -76,6 +76,21 @@
   </div>
 {% endset %}
 
+{% set discard_alert_html %}
+  {% call form_wrapper(action=url_for(
+      'main.discard_broadcast_message',
+      service_id=current_service.id,
+      broadcast_message_id=broadcast_message.id
+  )) %}
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    {{ page_footer(
+        secondary_link_button=True,
+        secondary_link_destructive=True,
+        secondary_link_text='Discard this alert'
+    ) }}
+  {% endcall %}
+{% endset %}
+
 {% set approve_details %}
   <div class="govuk-!-margin-bottom-5">
     {% call form_wrapper(id='approve') %}
@@ -122,9 +137,7 @@
           <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-3">
             This alert cannot be approved.
           </p>
-          <span class="page-footer-link page-footer-delete-link-without-button">
-            <a class="govuk-link govuk-link--destructive" href="{{ url_for('main.discard_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id) }}">Discard this alert</a>
-          </span>
+          {{ discard_alert_html }}
         </div>
     {% elif broadcast_message.created_by_id and broadcast_message.created_by_id == current_user.id
       and current_user.has_permissions('create_broadcasts', 'approve_broadcasts', restrict_admin_usage=True) %}
@@ -177,10 +190,7 @@
             <p class="govuk-body">
               You need another member of your team to approve your alert.
             </p>
-            {{ page_footer(
-              delete_link=url_for('main.discard_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
-              delete_link_text='Discard this alert'
-            ) }}
+            {{ discard_alert_html }}
           {% elif current_user.has_permissions('approve_broadcasts', restrict_admin_usage=True) %}
             <p class="govuk-body govuk-!-margin-bottom-3">
               When you use a live account you’ll need another member of
@@ -217,10 +227,7 @@
             <p class="govuk-body">
               This service is in training mode. No real alerts will be sent.
             </p>
-            {{ page_footer(
-              delete_link=url_for('main.discard_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
-              delete_link_text='Discard this alert'
-            ) }}
+            {{ discard_alert_html }}
           {% endif %}
         </div>
       {% endif %}
@@ -234,10 +241,7 @@
         <p class="govuk-body">
           You need another member of your team to approve your alert.
         </p>
-        {{ page_footer(
-          delete_link=url_for('main.discard_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
-          delete_link_text='Discard this alert'
-        ) }}
+        {{ discard_alert_html }}
       </div>
     {% elif current_user.has_permissions('approve_broadcasts', restrict_admin_usage=True) %}
       <div class="banner govuk-!-margin-bottom-6">
@@ -296,10 +300,7 @@
             This service is in training mode. No real alerts will be sent.
           </p>
         {% endif %}
-        {{ page_footer(
-          delete_link=url_for('main.discard_broadcast_message', service_id=current_service.id, broadcast_message_id=broadcast_message.id),
-          delete_link_text='Discard this alert'
-          ) }}
+        {{ discard_alert_html }}
       </div>
     {% else %}
       <div class="banner govuk-!-margin-bottom-6">

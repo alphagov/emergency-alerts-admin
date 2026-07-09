@@ -57,7 +57,7 @@
       {% if secondary_link_button %}
         <button class="govuk-button {% if secondary_link_destructive %}govuk-button--warning{% else %}govuk-button--secondary{% endif %} page-footer-secondary-link" name="{{ secondary_link_button_name }}">{{ secondary_link_text }}</button>
       {% else%}
-        <a class="govuk-link govuk-link--no-visited-state page-footer-secondary-link" href="{{ secondary_link }}">{{ secondary_link_text }}</a>
+        <a class="govuk-link govuk-link--no-visited-state {% if secondary_link_destructive %}govuk-link--destructive{% endif %} page-footer-secondary-link" href="{{ secondary_link }}">{{ secondary_link_text }}</a>
       {% endif %}
     {% endif %}
 
