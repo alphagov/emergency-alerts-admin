@@ -864,7 +864,7 @@ def return_broadcast_for_edit(service_id, broadcast_message_id):
     )
 
 
-@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/discard", methods=["GET", "POST"])
+@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/discard", methods=["POST"])
 @user_has_permissions("create_broadcasts", "approve_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
 def discard_broadcast_message(service_id, broadcast_message_id):
