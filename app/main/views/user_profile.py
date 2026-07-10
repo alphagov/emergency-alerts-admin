@@ -111,6 +111,12 @@ def user_profile_email_confirm(token):
         current_app.config["EMAIL_EXPIRY_SECONDS"],
     )
     token_data = json.loads(token_data)
+    if current_user.id != token_data["user_id"]:
+        current_app.logger.error(
+            "Email change token was for user {} but user {} used it - rejecting", token_data["user_id"], current_user.id
+        )
+        abort(403)
+
     user = User.from_id(token_data["user_id"])
     user.update(email_address=token_data["email"])
     session.pop(NEW_EMAIL, None)
