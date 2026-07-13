@@ -106,7 +106,7 @@ def broadcast_dashboard(service_id):
 
 
 @main.route("/services/<uuid:service_id>/draft-alerts")
-@user_has_permissions()
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
 def broadcast_dashboard_drafts(service_id):
     broadcast_messages = BroadcastMessages(service_id).with_status("draft")
@@ -123,7 +123,7 @@ def broadcast_dashboard_drafts(service_id):
 
 
 @main.route("/services/<uuid:service_id>/delete-drafts", methods=["POST"])
-@user_has_permissions()
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
 def delete_draft_alerts(service_id):
     draft_ids = request.form.getlist("checked_alerts")
