@@ -60,11 +60,18 @@ def test_client_only_updates_allowed_attributes(mocker):
 
 def test_client_updates_password_separately(mocker, api_user_active):
     expected_url = "/user/{}/update-password".format(api_user_active["id"])
-    expected_params = {"_password": "newpassword"}
+    expected_params = {
+        "_password": "newpassword",
+        "_oldpassword": "oldpassword123",
+    }
     user_api_client.max_failed_login_count = 1  # doesn't matter for this test
     mock_update_password = mocker.patch("app.notify_client.user_api_client.UserApiClient.post")
 
-    user_api_client.update_password(api_user_active["id"], expected_params["_password"])
+    user_api_client.update_password(
+        api_user_active["id"],
+        password=expected_params["_password"],
+        oldpassword=expected_params["_oldpassword"],
+    )
     mock_update_password.assert_called_once_with(expected_url, data=expected_params)
 
 
@@ -143,7 +150,8 @@ def test_client_converts_admin_permissions_to_db_permissions_on_add_to_service(n
         (user_api_client, "update_user_attribute", [user_id], {}),
         (user_api_client, "reset_failed_login_count", [user_id], {}),
         (user_api_client, "update_user_attribute", [user_id], {}),
-        (user_api_client, "update_password", [user_id, "hunter2"], {}),
+        (user_api_client, "update_password", [user_id], {"password": "hunter2", "oldpassword": "hunter3"}),
+        (user_api_client, "update_password", [user_id], {"password": "hunter2", "token": "mytoken"}),
         (user_api_client, "verify_password", [user_id, "hunter2"], {}),
         (user_api_client, "check_verify_code", [user_id, "", ""], {}),
         (

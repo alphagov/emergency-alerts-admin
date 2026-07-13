@@ -773,7 +773,7 @@ def mock_verify_password(mocker):
 
 @pytest.fixture(scope="function")
 def mock_update_user_password(mocker, api_user_active):
-    def _update(user_id, password):
+    def _update(user_id, password, oldpassword=None, token=None):
         api_user_active["id"] = user_id
         return api_user_active
 
