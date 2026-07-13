@@ -27,7 +27,7 @@ def log_in_user(user_id):
         session["session_start_utc"] = str(datetime.now(timezone.utc))
         # Check if coming from new password page
         if "password" in session.get("user_details", {}):
-            user.update_password(session["user_details"]["password"])
+            user.update_password(session["user_details"]["password"], session["user_details"]["token"])
             user.activate()
             # User activated if necessary and redirected to login again
             return redirect(url_for(".sign_in", reset_password=True))
