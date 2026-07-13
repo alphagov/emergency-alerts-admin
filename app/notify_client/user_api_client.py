@@ -84,8 +84,12 @@ class UserApiClient(AdminAPIClient):
         user_data = self.post(url, data={})
         return user_data["data"]
 
-    def update_password(self, user_id, password, oldpassword):
-        data = {"_password": password, "_oldpassword": oldpassword}
+    def update_password(self, user_id, password, *, oldpassword=None, token=None):
+        data = {"_password": password}
+        if oldpassword is not None:
+            data["_oldpassword"] = oldpassword
+        if token is not None:
+            data["_token"] = token
         url = "/user/{}/update-password".format(user_id)
         user_data = self.post(url, data=data)
         return user_data["data"]
