@@ -215,7 +215,7 @@ def user_profile_password():
                     return render_template("views/user-profile/change-password.html", form=form)
             try:
                 user_api_client.update_password(
-                    current_user.id, password=form.new_password.data, oldpassword=form.old_password.data
+                    current_user.id, form.new_password.data, oldpassword=form.old_password.data
                 )
             except HTTPError as e:
                 field = e.message[0].get("field", "new_password")
