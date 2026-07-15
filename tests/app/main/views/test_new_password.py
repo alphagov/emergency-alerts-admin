@@ -1,4 +1,5 @@
 import json
+import urllib.parse
 from datetime import datetime, timezone
 
 import pytest
@@ -171,6 +172,8 @@ def test_should_sign_in_when_password_reset_is_successful_for_email_auth(
 
     # the log-in flow makes a couple of calls
     mock_get_user.assert_called_once_with(user["id"])
-    mock_update_user_password.assert_called_once_with(user["id"], "a-new_password_123")
+    mock_update_user_password.assert_called_once_with(
+        user["id"], "a-new_password_123", token=urllib.parse.unquote(token)
+    )
 
     assert not mock_send_verify_code.called

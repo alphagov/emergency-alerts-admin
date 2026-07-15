@@ -218,6 +218,7 @@ def test_two_factor_sms_should_set_password_when_new_password_exists_in_session(
             "id": api_user_active["id"],
             "email": api_user_active["email_address"],
             "password": "changedpassword",
+            "token": "mytoken",
         }
 
     client_request.post(
@@ -226,10 +227,7 @@ def test_two_factor_sms_should_set_password_when_new_password_exists_in_session(
         _expected_redirect=url_for("main.sign_in", reset_password=True),
     )
 
-    mock_update_user_password.assert_called_once_with(
-        api_user_active["id"],
-        "changedpassword",
-    )
+    mock_update_user_password.assert_called_once_with(api_user_active["id"], "changedpassword", token="mytoken")
 
 
 def test_two_factor_sms_returns_error_when_user_is_locked(
