@@ -74,12 +74,10 @@ def _construct_event_data(request):
     return {"ip_address": _get_remote_addr(request), "browser_fingerprint": _get_browser_fingerprint(request)}
 
 
-# This might not be totally correct depending on proxy setup
+# ProxyFix with an x_for of 1 resolves this to the rightmost entry of X-Forwarded-For
+# (which the reverse proxy the app sits behind will have appended based on the real source IP)
 def _get_remote_addr(request):
-    if request.headers.getlist("X-Forwarded-For"):
-        return request.headers.getlist("X-Forwarded-For")[0]
-    else:
-        return request.remote_addr
+    return request.remote_addr
 
 
 def _get_browser_fingerprint(request):

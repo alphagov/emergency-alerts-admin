@@ -33,8 +33,15 @@ class AdminAPIClient(BaseAPIClient):
             return headers
         headers["X-B3-TraceId"] = request.request_id
         headers["X-B3-SpanId"] = request.span_id
-        if x_forwarded_for := request.headers.get("X-Forwarded-For"):
-            headers["X-Forwarded-For"] = x_forwarded_for
+        # We use ProxyFix with an x_for of 1; i.e., we trust exactly one proxy hop
+        # (in practice, there'll always be some kind of reverse proxy sitting in front of the app).
+        # As such, `request.remote_addr` resolves to the last proxy hop before the reverse proxy
+        # (so, the client themself, or whatever kind of forward proxy they're sat behind).
+        # We can as such set X-Forwarded-For to that, clobbering whatever may have been
+        # (potentially untrustworthily) prepended on to whatever comes in from the reverse proxy.
+        # The API only cares about that IP, so that's what we send to it.
+        if request.remote_addr:
+            headers["X-Forwarded-For"] = request.remote_addr
         return headers
 
     def check_inactive_service(self):
