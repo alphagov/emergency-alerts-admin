@@ -106,7 +106,7 @@ def broadcast_dashboard(service_id):
 
 
 @main.route("/services/<uuid:service_id>/draft-alerts")
-@user_has_permissions()
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
 def broadcast_dashboard_drafts(service_id):
     broadcast_messages = BroadcastMessages(service_id).with_status("draft")
@@ -123,7 +123,7 @@ def broadcast_dashboard_drafts(service_id):
 
 
 @main.route("/services/<uuid:service_id>/delete-drafts", methods=["POST"])
-@user_has_permissions()
+@user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
 def delete_draft_alerts(service_id):
     draft_ids = request.form.getlist("checked_alerts")
@@ -642,7 +642,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
     return render_preview_alert_page(broadcast_message, is_custom_broadcast, areas)
 
 
-@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/submit", methods=["GET", "POST"])
+@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/submit", methods=["POST"])
 @user_has_permissions("create_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
 def submit_broadcast_message(service_id, broadcast_message_id):
@@ -864,7 +864,7 @@ def return_broadcast_for_edit(service_id, broadcast_message_id):
     )
 
 
-@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/discard", methods=["GET", "POST"])
+@main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/discard", methods=["POST"])
 @user_has_permissions("create_broadcasts", "approve_broadcasts", restrict_admin_usage=True)
 @service_has_permission("broadcast")
 def discard_broadcast_message(service_id, broadcast_message_id):

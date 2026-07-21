@@ -52,7 +52,12 @@ def new_password(token):
                 form.password.errors.append(e.message[0])
                 return render_template("views/new-password.html", token=token, form=form, user=user)
         user.reset_failed_login_count()
-        session["user_details"] = {"id": user.id, "email": user.email_address, "password": form.password.data}
+        session["user_details"] = {
+            "id": user.id,
+            "email": user.email_address,
+            "password": form.password.data,
+            "token": token,
+        }
         if user.email_auth:
             # they've just clicked an email link, so have done an email auth journey anyway. Just log them in.
             return log_in_user(user.id)
