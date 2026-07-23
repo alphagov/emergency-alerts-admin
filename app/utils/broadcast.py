@@ -579,7 +579,7 @@ def provider_statuses_contains_fail_to_send(provider_statuses):
         alert_statuses = provider_statuses[mno].get("alert", [])
         if len(alert_statuses) > 0:
             latest_alert_status = alert_statuses[-1]
-            if latest_alert_status["status"] == "returned-error":
+            if latest_alert_status["status"] in {"returned-error", "returned-error-retry-exhausted"}:
                 return True
 
     return False
