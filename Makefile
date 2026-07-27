@@ -17,7 +17,7 @@ PYTHON_EXECUTABLE_PREFIX := $(shell test -d "$${VIRTUALENV_ROOT}" && echo "$${VI
 .PHONY: bootstrap
 bootstrap: generate-version-file
 # In container builds we use a sibling utils from the base image, not a specific ref from git.
-	sed -i.orig 's/emergency-alerts-utils @/# DO NOT COMMIT: Commented out for parent requirements.txt: emergency-alerts-utils @/' requirements.txt
+	sed -i.orig 's/^emergency-alerts-utils @/# DO NOT COMMIT: Commented out for parent requirements.txt: emergency-alerts-utils @/' requirements.txt
 # Work around macOS having awkward sed that creates/requires an original file
 	rm requirements.txt.orig || true
 	${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements_local_utils.txt
