@@ -413,11 +413,17 @@ def split_text_by_newline(input):
 
 
 def format_provider_status_with_human_time(status, date):
+    """
+    Return something like "Sending since 7:14pm" or "Failed at 8:19pm"
+    """
+
+    # See BROADCAST_PROVIDER_STATUS_* in API
     status_mapping = {
         "technical-failure": "Failed ",  # Unused as of writing
         "sending": "Sending ",
         "returned-ack": "Sent ",
-        "returned-error": "Failed ",
+        "returned-error": "Sending, last attempted ",
+        "returned-error-retry-exhausted": "Sending failed ",
     }
 
     # Say "sending since"

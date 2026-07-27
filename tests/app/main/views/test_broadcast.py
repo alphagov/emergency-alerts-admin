@@ -4472,7 +4472,7 @@ def test_start_broadcasting(
                 "approved_by": "Bob",
             },
             sending_failure_statuses,
-            "Operator Statuses Operator Alert Status EE Failed today at 11:23:23pm O2 Three Vodafone",
+            "Operator Statuses Operator Alert Status EE Sending, last attempted today at 11:23:23pm O2 Three Vodafone",
             [
                 "sending error live since 20 February at 8:20pm Stop sending",
                 "More than 1 million phones estimated",
@@ -4533,7 +4533,7 @@ def test_start_broadcasting(
                 "approved_by": "Bob",
             },
             sending_failure_statuses,
-            "Operator Statuses Operator Alert Status EE Failed today at 11:23:23pm O2 Three Vodafone",
+            "Operator Statuses Operator Alert Status EE Sending, last attempted today at 11:23:23pm O2 Three Vodafone",
             [
                 "sending error Sent on 20 February at 8:20:20pm.",
                 "More than 1 million phones estimated",
