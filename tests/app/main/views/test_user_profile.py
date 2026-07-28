@@ -169,6 +169,25 @@ def test_should_render_change_email_continue_after_authenticate_email(
     assert "test@digital.cabinet-office.gov.uk" in page.text
 
 
+def test_should_403_when_user_confirms_email_link_with_wrong_user(
+    notify_admin,
+    client_request,
+    api_user_active,
+):
+    token = generate_token(
+        payload=json.dumps({"user_id": str(uuid.uuid4()), "email": "new_email@gov.uk"}),
+        secret=notify_admin.config["SECRET_KEY"],
+        salt=notify_admin.config["DANGEROUS_SALT"],
+    )
+    client_request.get_url(
+        url_for_endpoint_with_token(
+            "main.user_profile_email_confirm",
+            token=token,
+        ),
+        _expected_status=403,
+    )
+
+
 def test_should_redirect_to_user_profile_when_user_confirms_email_link(
     notify_admin,
     client_request,
