@@ -44,15 +44,6 @@ class BaseBroadcastArea(ABC):
             return polygons[0].wkt
         return MultiPolygon(polygons).wkt
 
-    @property
-    def as_wkt_geometry_with_bleed(self):
-        polygons = []
-        for ring in self.simple_polygons_with_bleed.as_coordinate_pairs_long_lat:
-            polygons.append(Polygon(ring))
-        if len(polygons) == 1:
-            return polygons[0].wkt
-        return MultiPolygon(polygons).wkt
-
     @cached_property
     def simple_polygons_with_bleed(self) -> Polygons:
         return self.simple_polygons.bleed_by(self.estimated_bleed_in_m)

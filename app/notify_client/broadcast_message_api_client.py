@@ -132,9 +132,7 @@ class BroadcastMessageAPIClient(AdminAPIClient):
         alert_summary,
         phone_estimate,
         duration,
-        approx_bleed_in_m,
         wkt,
-        wkt_with_bleed,
     ):
         """
         Send alert email summary to service contacts
@@ -153,12 +151,8 @@ class BroadcastMessageAPIClient(AdminAPIClient):
             data.update(phone_estimate=phone_estimate)
         if duration:
             data.update(duration=duration)
-        if approx_bleed_in_m:
-            data.update(approx_bleed_in_m=approx_bleed_in_m)
         if wkt:
             data.update(wkt=wkt)
-        if wkt_with_bleed:
-            data.update(wkt_with_bleed=wkt_with_bleed)
 
         data = _attach_current_user(data)
 

@@ -712,17 +712,13 @@ def generate_geojson(broadcast_message):
     return geojson
 
 
-def generate_wkt(broadcast_message, with_bleed=False):
+def generate_wkt(broadcast_message):
     areas = broadcast_message.areas
     geoms = []
 
+    # Iterate through all areas in broadcast message and combine them
     for area in areas:
-        if with_bleed:
-            # Get the bleed polygon geometry
-            wkt_str = area.as_wkt_geometry_with_bleed
-        else:
-            # Get the normal polygon geometry
-            wkt_str = area.as_wkt_geometry
+        wkt_str = area.as_wkt_geometry
 
         geoms.append(wkt.loads(wkt_str))
 

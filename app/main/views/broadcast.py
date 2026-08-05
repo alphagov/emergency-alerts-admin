@@ -1135,9 +1135,7 @@ def alert_summary_email(service_id, broadcast_message_id):
             alert_summary=form.alert_summary.data,
             phone_estimate=phone_estimate,
             duration=duration_display,
-            approx_bleed_in_m=broadcast_message.simple_polygons.approx_bleed_in_m,
             wkt=generate_wkt(broadcast_message),
-            wkt_with_bleed=generate_wkt(broadcast_message, True),
         )
         return render_current_alert_page(broadcast_message)
 
