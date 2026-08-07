@@ -80,6 +80,7 @@ from app.navigation import (
 )
 from app.notify_client import InviteTokenError
 from app.notify_client.admin_actions_api_client import admin_actions_api_client
+from app.notify_client.areas_api_client import areas_api_client
 from app.notify_client.api_key_api_client import api_key_api_client
 from app.notify_client.broadcast_message_api_client import broadcast_message_api_client
 from app.notify_client.events_api_client import events_api_client
@@ -143,6 +144,7 @@ def create_app(application):
         request_helper,
         # API clients
         admin_actions_api_client,
+        areas_api_client,
         api_key_api_client,
         broadcast_message_api_client,
         events_api_client,
