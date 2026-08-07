@@ -2,7 +2,6 @@ from app.notify_client import AdminAPIClient
 
 class AreasAPIClient(AdminAPIClient):
     def get_libraries(self):
-        print(self.get(url="/areas/geography-types")["data"])
         return self.get(url="/areas/geography-types")["data"]
 
     def get_areas_for_library(self, type_name):
@@ -20,6 +19,10 @@ class AreasAPIClient(AdminAPIClient):
     def get_area(self, id):
         return self.get(url=f"/areas/{id}")["data"]
 
+    def get_areas_by_names(self, names, type_name):
+        data = {"area_names": names}
+        return self.post(url=f"/areas/get-{type_name}-by-names", data=data)["data"]
+
     def get_polygons(self, area_ids):
         data = {"areas": area_ids}
         return self.post(url="/areas/polygons", data=data)["data"]
@@ -30,9 +33,9 @@ class AreasAPIClient(AdminAPIClient):
             data["type_name"] = type_name
         return self.post(url=f"/areas/{service_id}/{message_id}/add-areas", data=data)
 
-    def get_centroid(self, area_id):
+    def get_postcode_centroid(self, area_id):
         data = {"postcode": area_id}
-        return self.post(url="/areas/postcodes", data=data)["data"]
+        return self.post(url="/areas/postcodes/get-centroid", data=data)["data"]
 
     def create_postcode_area(self, area_id, radius):
         data = {"postcode": area_id, "radius": radius}
@@ -41,6 +44,10 @@ class AreasAPIClient(AdminAPIClient):
     def add_postcode_area(self, message_id, service_id, postcode, radius):
         data = {"type_name": "postcodes", "postcode": postcode, "radius": radius}
         return self.post(url=f"/areas/{service_id}/{message_id}/add-postcodes-area", data=data)
+
+    def get_coordinate_centroid(self, first_coordinate, second_coordinate, coordinate_type):
+        data = {"first_coordinate": first_coordinate, "second_coordinate": second_coordinate, "coordinate_type": coordinate_type}
+        return self.post(url="/areas/coordinates/get-centroid", data=data)["data"]
 
     def create_coordinate_area(self, first_coordinate, second_coordinate, radius, coordinate_type):
         data = {"first_coordinate": first_coordinate, "second_coordinate": second_coordinate, "radius": radius, "coordinate_type": coordinate_type}
@@ -52,7 +59,6 @@ class AreasAPIClient(AdminAPIClient):
 
     def check_coordinates_valid(self, first_coordinate, second_coordinate, coordinate_type):
         data = {"first_coordinate": first_coordinate, "second_coordinate": second_coordinate, "coordinate_type": coordinate_type}
-        print(self.post(url="/areas/check-coordinates-valid", data=data)["data"])
         return self.post(url="/areas/check-coordinates-valid", data=data)["data"]
 
     def remove_area(self, message_id, service_id, area_ids):
