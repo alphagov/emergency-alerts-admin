@@ -714,6 +714,11 @@ def generate_geojson(broadcast_message):
 
 def generate_wkt(broadcast_message):
     areas = broadcast_message.areas
+
+    # No areas return None
+    if not areas:
+        return None
+
     geoms = []
 
     # Iterate through all areas in broadcast message and combine them
@@ -721,6 +726,10 @@ def generate_wkt(broadcast_message):
         wkt_str = area.as_wkt_geometry
 
         geoms.append(wkt.loads(wkt_str))
+
+    # No valid geometries return None
+    if not geoms:
+        return None
 
     merged = unary_union(geoms)
     return merged.wkt
