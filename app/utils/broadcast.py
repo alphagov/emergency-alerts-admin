@@ -7,7 +7,7 @@ from emergency_alerts_utils.xml.cap import convert_utc_datetime_to_cap_standard_
 from emergency_alerts_utils.xml.common import HEADLINE
 from flask import redirect, render_template, request, url_for
 from postcode_validator.uk.uk_postcode_validator import UKPostcode
-from shapely import Point
+from shapely import Point, wkt
 from shapely.geometry import MultiPolygon, Polygon
 from shapely.ops import unary_union
 
@@ -710,6 +710,29 @@ def generate_geojson(broadcast_message):
         ],
     }
     return geojson
+
+
+def generate_wkt(broadcast_message):
+    areas = broadcast_message.areas
+
+    # No areas return None
+    if not areas:
+        return None
+
+    geoms = []
+
+    # Iterate through all areas in broadcast message and combine them
+    for area in areas:
+        wkt_str = area.as_wkt_geometry
+
+        geoms.append(wkt.loads(wkt_str))
+
+    # No valid geometries return None
+    if not geoms:
+        return None
+
+    merged = unary_union(geoms)
+    return merged.wkt
 
 
 def generate_unsigned_xml(broadcast_message, xml_type):

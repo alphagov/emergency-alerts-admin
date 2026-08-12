@@ -42,6 +42,7 @@ from app.utils.broadcast import (
     format_areas_list,
     generate_geojson,
     generate_unsigned_xml,
+    generate_wkt,
     get_alert_redirect_url,
     get_changed_alert_form_data,
     get_changed_extra_content_form_data,
@@ -1134,6 +1135,7 @@ def alert_summary_email(service_id, broadcast_message_id):
             alert_summary=form.alert_summary.data,
             phone_estimate=phone_estimate,
             duration=duration_display,
+            wkt=generate_wkt(broadcast_message),
         )
         return render_current_alert_page(broadcast_message)
 

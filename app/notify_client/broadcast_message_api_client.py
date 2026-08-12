@@ -122,7 +122,17 @@ class BroadcastMessageAPIClient(AdminAPIClient):
         return self.get(f"/service/{service_id}/broadcast-message/{broadcast_message_id}/provider-statuses")
 
     def send_alert_summary_email(
-        self, *, service_id, broadcast_message_id, geojson, cap_xml, ibag_xml, alert_summary, phone_estimate, duration
+        self,
+        *,
+        service_id,
+        broadcast_message_id,
+        geojson,
+        cap_xml,
+        ibag_xml,
+        alert_summary,
+        phone_estimate,
+        duration,
+        wkt,
     ):
         """
         Send alert email summary to service contacts
@@ -141,6 +151,8 @@ class BroadcastMessageAPIClient(AdminAPIClient):
             data.update(phone_estimate=phone_estimate)
         if duration:
             data.update(duration=duration)
+        if wkt:
+            data.update(wkt=wkt)
 
         data = _attach_current_user(data)
 
