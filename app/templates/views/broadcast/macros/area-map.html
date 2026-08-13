@@ -1,13 +1,8 @@
-{% macro map(estimated_area, estimated_area_with_bleed, count_of_phones, is_custom_broadcast, areas) %}
-{% if is_custom_broadcast %}
-  {% set area_color = "#0201FE" %}
-  {% set bleed_color = "#0201FE" %}
-  {% set fill = "none" %}
-{% else %}
-  {% set area_color = "#0B0B0C" %}
-  {% set bleed_color = "#1d70b8" %}
-  {% set fill = "#5694ca" %}
-{% endif %}
+{% macro map(estimated_area, estimated_area_with_bleed, count_of_phones, areas) %}
+
+{% set area_color = "#0201FE" %}
+{% set bleed_color = "#0201FE" %}
+{% set fill = "none" %}
 
 <div id="area-list-map" role="region" aria-label="{{areas}}" aria-describedby="area-list-map__description"></div>
 <p id="area-list-map__description" class="govuk-visually-hidden">
