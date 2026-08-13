@@ -51,7 +51,7 @@
         </p>
 
         <p class="govuk-body govuk-!-margin-0"><b>Areas</b></p>
-        <ul class="govuk-list govuk-list--bullet">
+        <ul class="govuk-list">
         {% for area in broadcast_message.areas %}
           <li>{{ electoral_ward_descriptor(area) }}</li>
         {% endfor %}
