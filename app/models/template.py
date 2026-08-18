@@ -2,9 +2,8 @@ from flask import abort
 from flask_login import current_user
 
 from app import current_service
-from app.broadcast_areas.models import BroadcastAreaLibraries, CustomBroadcastArea
-from app.broadcast_areas.utils import create_areas_dict
 from app.models.base_broadcast import BaseBroadcast
+from app.notify_client.areas_api_client import areas_api_client
 from app.notify_client.template_api_client import template_api_client
 
 
@@ -27,6 +26,10 @@ class Template(BaseBroadcast):
     def __init__(self, _dict):
         super().__init__(_dict)
 
+    @property
+    def service_id(self):
+        return self.service
+
     @classmethod
     def create(cls, *, service_id, reference=None, content=None, template_folder_id=None, areas=None):
         return cls(
@@ -39,30 +42,10 @@ class Template(BaseBroadcast):
             )
         )
 
-    @classmethod
-    def create_with_custom_area(cls, circle_polygon, area_id, service_id, template_folder_id=None):
-        """Creates a broadcast template with a custom area defined by polygons."""
-        simple_polygons = [circle_polygon]
-        area_to_get_params = CustomBroadcastArea(name="", polygons=simple_polygons)
-        id_with_local_authority = cls.add_local_authority_to_slug(cls, area_id, area_to_get_params)
-        areas = {
-            "ids": [id_with_local_authority],
-            "names": [id_with_local_authority],
-            "aggregate_names": [id_with_local_authority],
-            "simple_polygons": simple_polygons,
-        }
-        return cls(
-            template_api_client.create_template(
-                service_id=service_id,
-                template_folder_id=template_folder_id,
-                areas=areas,
-            )
-        )
 
     @classmethod
     def create_from_area(cls, service_id, template_folder_id=None, area_ids=None):
-        areas = BroadcastAreaLibraries().get_areas(area_ids)
-        areas_dict = create_areas_dict(areas)
+        areas_dict = areas_api_client.get_area_dict(area_ids)
         return cls(
             template_api_client.create_template(
                 service_id=service_id,
@@ -110,22 +93,6 @@ class Template(BaseBroadcast):
             data=kwargs,
             service_id=self.service,
         )
-
-    def add_custom_areas(self, *circle_polygon, id):
-        simple_polygons = list(circle_polygon)
-        area_to_get_params = CustomBroadcastArea(name="", polygons=simple_polygons)
-        id = self.add_local_authority_to_slug(id, area_to_get_params)
-        if id not in self.area_ids:
-            areas = {
-                "ids": [id],
-                "names": [id],
-                "aggregate_names": [id],
-                "simple_polygons": simple_polygons,
-            }
-            data = {"areas": areas}
-
-            self.area_ids = [id]
-            template_api_client.update_template(id_=self.id, service_id=self.service, data=data)
 
     def get_template_version(self, service_id, version):
         return template_api_client.get_template(service_id, self.id, version)["data"]

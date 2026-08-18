@@ -1,12 +1,11 @@
 from datetime import datetime, timedelta, timezone
 
+from app.notify_client.areas_api_client import areas_api_client
 from emergency_alerts_utils.template import BroadcastPreviewTemplate
 from flask import abort
 from flask_login import current_user
 from ordered_set import OrderedSet
 
-from app.broadcast_areas.models import BroadcastAreaLibraries, CustomBroadcastArea
-from app.broadcast_areas.utils import create_areas_dict
 from app.models import ModelList
 from app.models.base_broadcast import BaseBroadcast
 from app.notify_client.broadcast_message_api_client import broadcast_message_api_client
@@ -78,9 +77,7 @@ class BroadcastMessage(BaseBroadcast):
 
     @classmethod
     def create_from_area(cls, service_id, area_ids, template_id=None, content="", reference=""):
-        areas = BroadcastAreaLibraries().get_areas(area_ids)
-        areas_dict = create_areas_dict(areas)
-
+        areas_dict = areas_api_client.get_area_dict(area_ids)
         return cls(
             broadcast_message_api_client.create_broadcast_message(
                 service_id=service_id,
@@ -88,24 +85,6 @@ class BroadcastMessage(BaseBroadcast):
                 content=content,
                 reference=reference,
                 areas=areas_dict,
-            )
-        )
-
-    @classmethod
-    def create_from_custom_area(cls, service_id, areas, template_id=None, content="", reference=""):
-        areas = {
-            "ids": areas.items,
-            "names": areas.items,
-            "aggregate_names": areas.items,
-            "simple_polygons": areas._polygons,
-        }
-        return cls(
-            broadcast_message_api_client.create_broadcast_message(
-                service_id=service_id,
-                template_id=template_id,
-                content=content,
-                reference=reference,
-                areas=areas,
             )
         )
 
@@ -190,31 +169,6 @@ class BroadcastMessage(BaseBroadcast):
     def broadcast_duration(self):
         return self._dict["duration"]
 
-    def add_areas(self, *new_area_ids):
-        self.area_ids = list(OrderedSet(self.area_ids + list(new_area_ids)))
-        self._update_areas()
-
-    def add_custom_areas(self, *circle_polygon, id):
-        simple_polygons = list(circle_polygon)
-        area_to_get_params = CustomBroadcastArea(name="", polygons=simple_polygons)
-        id = self.add_local_authority_to_slug(id, area_to_get_params)
-        if id not in self.area_ids:
-            areas = {
-                "ids": [id],
-                "names": [id],
-                "aggregate_names": [id],
-                "simple_polygons": simple_polygons,
-            }
-            data = {"areas": areas}
-
-            self.area_ids = [id]
-            broadcast_message_api_client.update_broadcast_message(
-                broadcast_message_id=self.id, service_id=self.service_id, data=data
-            )
-
-    def remove_area(self, area_id):
-        self.area_ids = list(set(self._dict["areas"]["ids"]) - {area_id})
-        self._update_areas()
 
     def _set_status_to(self, status):
         broadcast_message_api_client.update_broadcast_message_status(
