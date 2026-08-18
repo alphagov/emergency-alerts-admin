@@ -52,7 +52,7 @@
   {% if form.errors %}
     {{ govukErrorSummary({
         "titleText": "There is a problem",
-        "errorList": [{"href": "areas", "text": form.form_errors[0]}]
+        "errorList": [{"href": "#areas", "text": form.form_errors[0]}]
     }) }}
   {% endif %}
   {{ page_header(page_title, classes="heading-no-margin-top") }}

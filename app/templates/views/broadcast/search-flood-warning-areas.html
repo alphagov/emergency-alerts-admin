@@ -83,9 +83,12 @@
     <div>
       <ul class="area-list">
         {% for area in message.areas %}
-          {% set area_id = area.id.split('-')[1]%}
           <li class="area-list-item">
-            {{area_id}}: {{area.name}}
+            {% if area.geography_type == "flood_warning_areas" %}
+              {{area.geographic_id}}: {{area.name}}
+            {% else %}
+              {{area.name}}
+            {% endif %}
             <a class="area-list-item-remove govuk-button" data-module="govuk-button" role="button" href="{{ url_for('.remove_area', service_id=current_service.id, message_id=message.id, area_slug=area.id or None, message_type=message_type, redirect_to_flood_warning_page=True) }}">
               <svg id="area-list-item-remove__icon" width="11" height="11" viewbox="0 0 10 10" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
                 <g transform="rotate(45),translate(1, -6)">
@@ -111,9 +114,9 @@
   {% endif %}
 
   {% if message.areas %}
-    {{ map(message.simple_polygons.estimated_area, message.simple_polygons_with_bleed.estimated_area, message.count_of_phones, False, label) }}
+    {{ map(message.estimated_area, message.estimated_area_with_bleed, message.count_of_phones, label) }}
   {% else %}
-    {{ map(None, None, None, False, label) }}
+    {{ map(None, None, None, label) }}
   {% endif %}
 
 {% endblock %}
