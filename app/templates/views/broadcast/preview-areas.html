@@ -31,10 +31,14 @@
 {% endblock %}
 
 {% if message.areas %}
-  {% if message.areas|length == 1 or is_custom_broadcast %}
-    {% set label = "Map of the United Kingdom, showing the area for "+message.areas[0].name %}
-  {% elif message.areas|length > 1 %}
-    {% set label = "Map of the United Kingdom, showing the areas for "+message.areas[:-1]|map(attribute='name')|join(', ')+' and '+message.areas[-1].name  %}
+  {% set area_names = message.areas | map(attribute='name') | list %}
+  {% if area_names | length == 1 %}
+    {% set label = "Map of the United Kingdom, showing the area for " ~ area_names[0] %}
+  {% else %}
+    {% set label = "Map of the United Kingdom, showing the areas for "
+      ~ area_names[:-1] | join(', ')
+      ~ " and " ~ area_names[-1]
+    %}
   {% endif %}
 {% else %}
   {% set label = "Map of the United Kingdom, showing no areas" %}
@@ -51,11 +55,7 @@
         {% for area in message.areas %}
           <li class="area-list-item">
             {{ electoral_ward_descriptor(area) }}
-            {% if is_custom_broadcast %}
-              <a class="area-list-item-remove govuk-button" data-module="govuk-button" role="button" href="{{ url_for('.remove_custom_area', service_id=current_service.id, message_id=message.id, area_slug=area.id or None, message_type=message_type) }}">
-            {% else %}
-              <a class="area-list-item-remove govuk-button" data-module="govuk-button" role="button" href="{{ url_for('.remove_area', service_id=current_service.id, message_id=message.id, area_slug=area.id or None, message_type=message_type) }}">
-            {% endif %}
+            <a class="area-list-item-remove govuk-button" data-module="govuk-button" role="button" href="{{ url_for('.remove_area', service_id=current_service.id, message_id=message.id, area_slug=area.id or None, message_type=message_type) }}">
               <svg id="area-list-item-remove__icon" width="11" height="11" viewbox="0 0 10 10" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
                 <g transform="rotate(45),translate(1, -6)">
                   <line stroke-width="1.75" id="svg_1" y2="0" x2="6" y1="12" x1="6" stroke="currentColor" fill="none"/>
@@ -67,26 +67,15 @@
           </li>
         {% endfor %}
       </ul>
-      {% if not is_custom_broadcast %}
-        {% if has_flood_warning_areas %}
-          {{ govukButton({
-            "element": "a",
-            "text": "Add another area",
-            "href": url_for('.search_flood_warning_areas', service_id=current_service.id, message_id=message.id, message_type=message_type),
-            "classes": "govuk-button--secondary govuk-!-margin-bottom-5"
-          }) }}
-        {% else %}
-          {{ govukButton({
-            "element": "a",
-            "text": "Add another area",
-            "href": url_for('.choose_library', service_id=current_service.id, message_id=message.id, message_type=message_type),
-            "classes": "govuk-button--secondary govuk-!-margin-bottom-5"
-          }) }}
-        {% endif %}
-      {% endif %}
+      {{ govukButton({
+        "element": "a",
+        "text": "Add another area",
+        "href": url_for('.choose_library', service_id=current_service.id, message_id=message.id, message_type=message_type),
+        "classes": "govuk-button--secondary govuk-!-margin-bottom-5"
+      }) }}
     </div>
 
-    {{ map(message.simple_polygons.estimated_area, message.simple_polygons_with_bleed.estimated_area, message.count_of_phones, is_custom_broadcast, label) }}
+    {{ map(message.estimated_area, message.estimated_area_with_bleed, message.count_of_phones, label) }}
 
     {% if message_type == "broadcast" %}
       {{ govukButton({
