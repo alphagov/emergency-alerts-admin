@@ -1,18 +1,12 @@
 <script nonce="{{ cspNonce }}" src="{{ asset_url('javascripts/leaflet.js') }}"></script>
 <script nonce="{{ cspNonce }}">
   let polygons = []
-  {% if is_custom_broadcast %}
-    area_color = "#0201FE"
-    bleed_color = "#0201FE"
-    fill_color = "none"
-  {% else %}
-    area_color = "#0B0B0C"
-    bleed_color = "#1d70b8"
-    fill_color = "#5694ca"
-  {% endif %}
+  area_color = "#0B0B0C"
+  bleed_color = "#1d70b8"
+  fill_color = "#5694ca"
 
   {% if message.areas %}
-    {% for polygon in message.simple_polygons_with_bleed.as_coordinate_pairs_lat_long %}
+    {% for polygon in message.simple_polygons_with_bleed.as_coordinate_pairs_lat_long%}
       polygons.push(
         L.polygon({{polygon}}, {
           opacity: 1,
@@ -26,7 +20,7 @@
       );
     {% endfor %}
 
-    {% for polygon in message.polygons.as_coordinate_pairs_lat_long %}
+    {% for polygon in message.simple_polygons.as_coordinate_pairs_lat_long %}
       polygons.push(
         L.polygon({{polygon}}, {
           color: area_color,
