@@ -1,7 +1,6 @@
+import shapely
 from flask import abort, flash, redirect, render_template, request, url_for
 from notifications_python_client.errors import HTTPError
-import shapely
-
 
 from app.formatters import split_text_by_comma_and_newline, split_text_by_newline
 from app.main import main
@@ -17,7 +16,7 @@ from app.main.forms import (
 )
 from app.main.views.broadcast import create_new_broadcast, update_broadcast
 from app.main.views.templates import write_new_broadcast_from_template
-from app.models.areas import Area, Areas, BroadcastAreaLibraries
+from app.models.areas import Area, BroadcastAreaLibraries
 from app.models.broadcast_message import BroadcastMessage
 from app.models.template import Template
 from app.notify_client.areas_api_client import areas_api_client

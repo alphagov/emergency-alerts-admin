@@ -35,7 +35,6 @@ from app.models.broadcast_message import BroadcastMessage, BroadcastMessages
 from app.models.template import Template
 from app.utils import service_has_permission
 from app.utils.broadcast import (
-    INVALID_AREA_ERROR_TEXT,
     _get_back_link_from_view_broadcast_endpoint,
     check_for_missing_fields,
     format_areas_list,
