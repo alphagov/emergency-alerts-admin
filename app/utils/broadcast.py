@@ -346,6 +346,30 @@ def format_areas_list(areas_list):
         return [format_area_name(area) if isinstance(area, str) else format_area_name(area.name) for area in areas_list]
 
 
+def format_areas_list_with_parent(areas_list):
+    if isinstance(areas_list, CustomBroadcastArea):
+        return [format_area_name(areas_list.name)]
+    elif isinstance(areas_list, CustomBroadcastAreas):
+        return [format_area_name(area) for area in areas_list.items]
+    else:
+        formatted = []
+        for area in areas_list:
+            # Strings: keep existing behaviour
+            if isinstance(area, str):
+                formatted.append(format_area_name(area))
+                continue
+
+            # Electoral ward: parent → child
+            if getattr(area, "is_electoral_ward", False):
+                parent = format_area_name(area.parent.name)
+                child = format_area_name(area.name)
+                formatted.append(f"{parent} -> {child}")
+            else:
+                formatted.append(format_area_name(area.name))
+
+        return formatted
+
+
 def create_map_label(areas):
     label = ""
     if len(areas) == 1:

@@ -5,6 +5,7 @@
 {% from "components/form.html" import form_wrapper %}
 {% from "components/error-summary.html" import errorSummary %}
 {% from "components/textbox.html" import textbox %}
+{% from "components/electoral-ward-descriptor.html" import electoral_ward_descriptor %}
 
 {% extends "withnav_template.html" %}
 
@@ -48,18 +49,26 @@
         <p class="govuk-body">
             <b>Additional Info</b><br>{{ broadcast_message.extra_content }}
         </p>
+
+        <p class="govuk-body govuk-!-margin-0"><b>Areas</b></p>
+        <ul class="govuk-list">
+        {% for area in broadcast_message.areas %}
+          <li>{{ electoral_ward_descriptor(area) }}</li>
+        {% endfor %}
+        </ul>
+
         <p class="govuk-body">
           <b>Alert duration</b><br>{{ duration_display }}
         </p>
-        <p class="govuk-body">
-          <b>Attachments</b>
-          <ul class="govuk-list govuk-list--bullet">
-            <li>areas.geojson - areas covered by this alert, in geoJSON format</li>
-            <li>areas.cap.xml - areas covered by this alert, in CAP XML format</li>
-            <li>areas.ibag.xml - areas covered by this alert, in IBAG XML format</li>
-            <li>areas.jpg - map image of areas covered by this alert</li>
-          </ul>
-        </p>
+
+        <p class="govuk-body govuk-!-margin-0"></p>
+        <b>Attachments</b>
+        <ul class="govuk-list govuk-list--bullet">
+          <li>areas.geojson - areas covered by this alert, in geoJSON format</li>
+          <li>areas.cap.xml - areas covered by this alert, in CAP XML format</li>
+          <li>areas.ibag.xml - areas covered by this alert, in IBAG XML format</li>
+          <li>areas.jpg - map image of areas covered by this alert</li>
+        </ul>
 
         <p class="govuk-body">
           If you require assistance, or wish to unsubscribe from future advance notice notifications please contact

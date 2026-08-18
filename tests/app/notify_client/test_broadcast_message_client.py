@@ -137,6 +137,7 @@ def test_send_alert_summary_email(mocker, wkt_value):
         phone_estimate="less than 1 million",
         duration="30 minutes",
         wkt=wkt_value,
+        areas=["area1", "area2"],
     )
 
     mock_post.assert_called_once_with(
@@ -150,5 +151,6 @@ def test_send_alert_summary_email(mocker, wkt_value):
             "duration": "30 minutes",
             **({"wkt": wkt_value} if wkt_value else {}),
             "created_by": "1",
+            "areas": ["area1", "area2"],
         },
     )

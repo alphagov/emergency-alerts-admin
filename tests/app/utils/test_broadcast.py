@@ -22,6 +22,7 @@ from app.utils.broadcast import (
     extract_attributes_from_custom_area,
     format_area_name,
     format_areas_list,
+    format_areas_list_with_parent,
     get_centroid,
     get_centroid_if_postcode_in_db,
     normalising_point,
@@ -230,6 +231,18 @@ def test_format_area_name(area_name, expected_output):
     assert format_area_name(area_name) == expected_output
 
 
+class MockArea:
+    def __init__(self, name, parent=None, is_electoral_ward=False):
+        self.name = name
+        self.parent = parent
+        self.is_electoral_ward = is_electoral_ward
+
+
+class MockParentArea:
+    def __init__(self, name):
+        self.name = name
+
+
 class MockCustomBroadcastArea:
     def __init__(self, name):
         self.name = name
@@ -264,3 +277,58 @@ def test_format_areas_list_multiple_areas():
 def test_format_areas_list_regular_list():
     areas_list = ["London", "Lancaster, City of", "Oxfordshire, County of"]
     assert format_areas_list(areas_list) == ["London", "City of Lancaster", "County of Oxfordshire"]
+
+
+def test_format_areas_list_with_parent_single_custom_area():
+    with patch("app.utils.broadcast.CustomBroadcastArea", MockCustomBroadcastArea):
+        custom_area = MockCustomBroadcastArea("Bristol, City of")
+        assert format_areas_list_with_parent(custom_area) == ["City of Bristol"]
+
+
+def test_format_areas_list_with_parent_multiple_custom_areas():
+    with patch("app.utils.broadcast.CustomBroadcastAreas", MockCustomBroadcastAreas):
+        custom_area1 = "Manchester, City of"
+        custom_area2 = "Yorkshire, County of"
+        custom_areas_list = MockCustomBroadcastAreas([custom_area1, custom_area2])
+
+        assert format_areas_list_with_parent(custom_areas_list) == [
+            "City of Manchester",
+            "County of Yorkshire",
+        ]
+
+
+def test_format_areas_list_with_parent_regular_list():
+    areas_list = ["London", "Lancaster, City of", "Oxfordshire, County of"]
+    assert format_areas_list_with_parent(areas_list) == [
+        "London",
+        "City of Lancaster",
+        "County of Oxfordshire",
+    ]
+
+
+def test_format_areas_list_with_parent_electoral_ward():
+    parent = MockParentArea("Bristol West")
+    ward = MockArea("Clifton", parent=parent, is_electoral_ward=True)
+
+    assert format_areas_list_with_parent([ward]) == ["Bristol West -> Clifton"]
+
+
+def test_format_areas_list_with_parent_mixed_list():
+    parent = MockParentArea("Bristol West")
+    ward = MockArea("Clifton", parent=parent, is_electoral_ward=True)
+    non_ward = MockArea("Somerset")
+    string_area = "London"
+
+    assert format_areas_list_with_parent([string_area, ward, non_ward]) == [
+        "London",
+        "Bristol West -> Clifton",
+        "Somerset",
+    ]
+
+
+def test_format_areas_list_with_parent_missing_is_electoral_ward_attribute():
+    # No is_electoral_ward attribute → should behave like a normal area
+    area = MockArea("Somerset")
+    del area.is_electoral_ward
+
+    assert format_areas_list_with_parent([area]) == ["Somerset"]

@@ -310,6 +310,7 @@ class BroadcastMessage(BaseBroadcast):
         phone_estimate,
         duration,
         wkt,
+        areas,
     ):
         broadcast_message_api_client.send_alert_summary_email(
             service_id=service_id,
@@ -321,6 +322,7 @@ class BroadcastMessage(BaseBroadcast):
             phone_estimate=phone_estimate,
             duration=duration,
             wkt=wkt,
+            areas=areas,
         )
 
 
