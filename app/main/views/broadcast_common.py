@@ -1,7 +1,8 @@
 from flask import abort, flash, redirect, render_template, request, url_for
 from notifications_python_client.errors import HTTPError
+import shapely
 
-from app.broadcast_areas.models import CustomBroadcastAreas
+
 from app.formatters import split_text_by_comma_and_newline, split_text_by_newline
 from app.main import main
 from app.main.forms import (
@@ -16,8 +17,10 @@ from app.main.forms import (
 )
 from app.main.views.broadcast import create_new_broadcast, update_broadcast
 from app.main.views.templates import write_new_broadcast_from_template
+from app.models.areas import Area, Areas, BroadcastAreaLibraries
 from app.models.broadcast_message import BroadcastMessage
 from app.models.template import Template
+from app.notify_client.areas_api_client import areas_api_client
 from app.utils import service_has_permission
 from app.utils.broadcast import (
     _get_broadcast_sub_area_back_link,
@@ -25,20 +28,12 @@ from app.utils.broadcast import (
     adding_invalid_coords_errors_to_form,
     all_coordinate_form_fields_empty,
     all_fields_empty,
-    check_coordinates_valid_for_enclosed_polygons,
     continue_button_clicked,
     coordinates_and_radius_entered,
     coordinates_entered_but_no_radius,
-    create_coordinate_area,
-    create_coordinate_area_slug,
     create_custom_area_polygon,
-    create_postcode_area_slug,
     create_postcode_db_id,
-    extract_attributes_from_custom_area,
-    get_centroid_if_postcode_in_db,
-    get_message_type,
     has_permission_for_message_type,
-    normalising_point,
     parse_coordinate_form_data,
     postcode_and_radius_entered,
     postcode_entered,
@@ -49,6 +44,12 @@ from app.utils.broadcast import (
     validate_form_based_on_fields_entered,
 )
 from app.utils.user import user_has_any_permissions
+
+def get_message_type(message_type):
+    return {
+        "broadcast": BroadcastMessage,
+        "templates": Template,
+    }[message_type]
 
 
 @main.route("/services/<uuid:service_id>/write-new-broadcast", methods=["GET", "POST"])
@@ -79,30 +80,23 @@ def write_new_broadcast(service_id):
 @service_has_permission("broadcast")
 @user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def choose_library(service_id, message_type, message_id=None):
+    libraries = BroadcastAreaLibraries()
     template_folder_id = request.args.get("template_folder_id")
     Message = get_message_type(message_type)
     if message_id:
         message = Message.from_id_or_403(message_id, service_id=service_id)
-        is_custom_broadcast = type(message.areas) is CustomBroadcastAreas
-        if is_custom_broadcast or message.has_flood_warning_target_areas:
-            # If alert has custom area or flood warning area, alert area is cleared as
-            # they cannot be combined with other library areas
-            message.clear_areas()
     else:
         message = None
-        is_custom_broadcast = False
     return render_template(
         "views/broadcast/libraries.html",
-        libraries=BroadcastMessage.libraries,
+        libraries=libraries,
         message=message,
-        custom_broadcast=is_custom_broadcast,
         back_link=_get_choose_library_back_link(
             service_id, message_type, template_folder_id=template_folder_id, message_id=message_id
         ),
         message_type=message_type,
         message_id=message_id,
         template_folder_id=template_folder_id,
-        has_flood_warning_areas=message.has_flood_warning_target_areas if message else False,
     )
 
 
@@ -128,7 +122,8 @@ def choose_area(
     template_folder_id = request.args.get("template_folder_id")
     Message = get_message_type(message_type)
     message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
-    library = BroadcastMessage.libraries.get(library_slug)
+    libraries = BroadcastAreaLibraries()
+    library = libraries.get(library_slug)
 
     def redirect_for_library_page(url, service_id, message_type, message_id, template_folder_id):
         return redirect(
@@ -180,7 +175,7 @@ def choose_area(
         return render_template(
             "views/broadcast/areas-with-sub-areas.html",
             search_form=SearchByNameForm(),
-            show_search_form=(len(library) > 7),
+            show_search_form=(len(library.get_areas()) > 7),
             library=library,
             page_title=f"Choose a {library.name_singular.lower()}",
             message=message,
@@ -188,10 +183,10 @@ def choose_area(
             template_folder_id=template_folder_id,
         )
 
-    form = BroadcastAreaForm.from_library(library)
+    form = BroadcastAreaForm.from_library(library.get_areas())
     if form.validate_on_submit():
         if message:
-            message.replace_areas([*form.areas.data])
+            message.add_areas(message.id, message.service_id, [*form.areas.data], message_type, library.route)
         else:
             message = Message.create_from_area(
                 service_id=service_id, area_ids=[*form.areas.data], template_folder_id=template_folder_id
@@ -245,17 +240,18 @@ def choose_sub_area(service_id, message_type, library_slug, area_slug, message_i
     template_folder_id = request.args.get("template_folder_id")
     Message = get_message_type(message_type)
     message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
-    area = BroadcastMessage.libraries.get_areas([area_slug])[0]
+    area = Area.from_id(area_slug)
+    sub_areas = area.get_sub_areas()
     back_link = _get_broadcast_sub_area_back_link(service_id, message_id, library_slug, message_type)
-    is_county = any(sub_area.sub_areas for sub_area in area.sub_areas)
+    is_county = area.is_grandparent()
 
     form = BroadcastAreaFormWithSelectAll.from_library(
-        [] if is_county else area.sub_areas,
+        sub_areas,
         select_all_choice=(area.id, f"All of {area.name}"),
     )
     if form.validate_on_submit():
         if message:
-            message.replace_areas([*form.selected_areas])
+            message.add_areas(message.id, message.service_id, [*form.selected_areas], message_type)
         else:
             message = Message.create_from_area(
                 service_id=service_id, area_ids=[*form.selected_areas], template_folder_id=template_folder_id
@@ -275,7 +271,7 @@ def choose_sub_area(service_id, message_type, library_slug, area_slug, message_i
             "views/broadcast/counties.html",
             form=form,
             search_form=SearchByNameForm(),
-            show_search_form=(len(area.sub_areas) > 7),
+            show_search_form=(len(sub_areas) > 7),
             library_slug=library_slug,
             page_title=f"Choose an area of {area.name}",
             message=message,
@@ -302,7 +298,6 @@ def choose_sub_area(service_id, message_type, library_slug, area_slug, message_i
 def preview_areas(service_id, message_id, message_type):
     Message = get_message_type(message_type)
     message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
-    is_custom = type(message.areas) is CustomBroadcastAreas if Message else False
     if Message is BroadcastMessage:
         if message.status != "returned":
             try:
@@ -323,10 +318,8 @@ def preview_areas(service_id, message_id, message_type):
         "views/broadcast/preview-areas.html",
         message=message,
         back_link=request.referrer or url_for(".write_new_broadcast", service_id=service_id, message_id=message_id),
-        is_custom_broadcast=is_custom,
         redirect_url=redirect_url,  # The url for when 'Save and continue' button clicked
         message_type=message_type,
-        has_flood_warning_areas=message.has_flood_warning_target_areas,
     )
 
 
@@ -364,8 +357,8 @@ def search_postcodes(service_id, message_type, message_id=None):
         postcode field and displayed on the page.
         """
         postcode = create_postcode_db_id(form)
-        centroid = get_centroid_if_postcode_in_db(postcode, form)
-        form.pre_validate(form)  # Validating the postcode field
+        form.pre_validate(form)
+        centroid, circle_wkt, id = create_custom_area_polygon(form, postcode)
     elif postcode_and_radius_entered(request, form):
         """
         If postcode and radius entered, that are validated successfully,
@@ -373,27 +366,28 @@ def search_postcodes(service_id, message_type, message_id=None):
         """
         postcode = create_postcode_db_id(form)
         form.pre_validate(form)
-        centroid, circle_polygon = create_custom_area_polygon(form, postcode)
+        centroid, circle_wkt, id = create_custom_area_polygon(form, postcode)
         if form.validate_on_submit():
             """
             If postcode is in database, i.e. creating the Polygon didn't return IndexError,
             then a dummy CustomBroadcastArea is created and used for the attributes that
             are required for the Leaflet map, key, number of phones to display etc.
             """
-            bleed, estimated_area, estimated_area_with_bleed, count_of_phones = extract_attributes_from_custom_area(
-                circle_polygon
-            )
-            id = create_postcode_area_slug(form)
+            area = Area.from_wkt(circle_wkt)
+            bleed = area.bleed
+            estimated_area = area.estimated_area
+            estimated_area_with_bleed = area.estimated_area_with_bleed
+            count_of_phones = area.count_of_phones
             if continue_button_clicked(request):
                 """
                 If 'Continue' button is clicked, area is added to Broadcast Message
                 and message is updated.
                 """
                 if message:
-                    message.add_custom_areas(circle_polygon, id=id)
+                    message = message.add_postcode_area(message.id, message.service_id, postcode=postcode, radius=float(form.data["radius"]), message_type=message_type)
                 elif Message is Template:
-                    message = Message.create_with_custom_area(
-                        circle_polygon, id, service_id, template_folder_id=template_folder_id
+                    message = Message.create_from_area(
+                        service_id, template_folder_id=template_folder_id, area_ids=[id]
                     )
                 if Message is BroadcastMessage:
                     return redirect(
@@ -403,7 +397,7 @@ def search_postcodes(service_id, message_type, message_id=None):
                             broadcast_message_id=message.id,
                         ),
                     )
-                else:
+                elif Message is Template:
                     return redirect(
                         url_for(
                             ".view_template",
@@ -440,14 +434,12 @@ def search_coordinates(service_id, coordinate_type, message_type, message_id=Non
     Message = get_message_type(message_type)
     message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
     (
-        polygon,
         bleed,
         estimated_area,
         estimated_area_with_bleed,
         count_of_phones,
         marker,
     ) = (
-        None,
         None,
         None,
         None,
@@ -472,16 +464,12 @@ def search_coordinates(service_id, coordinate_type, message_type, message_id=Non
         """
         first_coordinate = float(form.data["first_coordinate"])
         second_coordinate = float(form.data["second_coordinate"])
-        if check_coordinates_valid_for_enclosed_polygons(
-            first_coordinate,
-            second_coordinate,
-            coordinate_type,
-        ):
-            Point = normalising_point(first_coordinate, second_coordinate, coordinate_type)
-            marker = [Point.y, Point.x]
-        else:
+        if not areas_api_client.check_coordinates_valid(first_coordinate, second_coordinate, coordinate_type):
             adding_invalid_coords_errors_to_form(coordinate_type, form)
-        form.pre_validate(form)  # To validate the fields don't have any errors
+        form.pre_validate(form)  # To validate the fields don't have any errors - is this needed?
+        centroid_coords = areas_api_client.get_coordinate_centroid(first_coordinate, second_coordinate, coordinate_type)
+        centroid_point = shapely.wkt.loads(centroid_coords)
+        marker = [centroid_point.y, centroid_point.x]
     elif coordinates_and_radius_entered(request, form):
         """
         If both radius and coordinates entered, then coordinates are checked to determine if within
@@ -490,26 +478,17 @@ def search_coordinates(service_id, coordinate_type, message_type, message_id=Non
         are required for the Leaflet map, key, number of phones to display etc.
         """
         first_coordinate, second_coordinate, radius = parse_coordinate_form_data(form)
-        if check_coordinates_valid_for_enclosed_polygons(
-            first_coordinate,
-            second_coordinate,
-            coordinate_type,
-        ):
+        if areas_api_client.check_coordinates_valid(first_coordinate, second_coordinate, coordinate_type):
             marker = [first_coordinate, second_coordinate]
             if form.validate_on_submit():
-                if polygon := create_coordinate_area(
-                    first_coordinate,
-                    second_coordinate,
-                    radius,
-                    coordinate_type,
-                ):
-                    id = create_coordinate_area_slug(coordinate_type, first_coordinate, second_coordinate, radius)
-                    (
-                        bleed,
-                        estimated_area,
-                        estimated_area_with_bleed,
-                        count_of_phones,
-                    ) = extract_attributes_from_custom_area(polygon)
+                circle_polygon = areas_api_client.create_coordinate_area(first_coordinate, second_coordinate, radius, coordinate_type)
+                area = Area.from_wkt(circle_polygon)
+                bleed = area.bleed
+                estimated_area = area.estimated_area
+                estimated_area_with_bleed = area.estimated_area_with_bleed
+                count_of_phones = area.count_of_phones
+                circle_polygon = shapely.wkt.loads(circle_polygon)
+
         else:
             adding_invalid_coords_errors_to_form(coordinate_type, form)
             form.validate_on_submit()
@@ -519,10 +498,21 @@ def search_coordinates(service_id, coordinate_type, message_type, message_id=Non
             and message is updated.
             """
             if message:
-                message.add_custom_areas(polygon, id=id)
+                message = message.add_coordinate_area(
+                    message.id,
+                    service_id=message.service_id,
+                    first_coordinate=first_coordinate,
+                    second_coordinate=second_coordinate,
+                    radius=float(form.data["radius"]),
+                    coordinate_type=coordinate_type,
+                    message_type=message_type
+                )
             elif Message is Template:
-                message = Message.create_with_custom_area(
-                    polygon, id, service_id, template_folder_id=template_folder_id
+                # No existing template: create a new template seeded with this custom area
+                message = Message.create_from_area(
+                    service_id=service_id,
+                    template_folder_id=template_folder_id,
+                    area_ids=[id],
                 )
             if Message is BroadcastMessage:
                 return redirect(
@@ -568,14 +558,11 @@ def search_flood_warning_areas(service_id, message_type, message_id=None):
     template_folder_id = request.args.get("template_folder_id")
     Message = get_message_type(message_type)
     message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
-    library = BroadcastMessage.libraries.get("Flood_Warning_Target_Areas")
+    library = BroadcastMessage.libraries.get("flood_warning_areas")
     form = FloodWarningForm()
 
     def get_back_link_url():
         request_url = ""
-        # If there's a Flood Warning area added, the back link will just take them to view
-        # the alert/template, you cannot choose a new library to select areas from as
-        # Flood Warning areas can't be combined with other areas
         if len(message.areas) > 0:
             if Message is BroadcastMessage:
                 request_url = url_for(
@@ -628,15 +615,13 @@ def search_flood_warning_areas(service_id, message_type, message_id=None):
         )
 
     if form.validate_on_submit():
-        area_id = f"Flood_Warning_Target_Areas-{form.flood_warning_area.data}"
-        if area_id not in library.item_ids:
-            form.flood_warning_area.errors.append("Flood Warning TA code not found")
-            return render_search_flood_warning_areas_page()
-        elif message and area_id in message.area_ids:
-            form.flood_warning_area.errors.append("Flood Warning TA code already selected")
-            return render_search_flood_warning_areas_page()
+        area_id = form.flood_warning_area.data
         if message:
-            message.add_areas(area_id)
+            try:
+                message = message.add_areas(message.id, message.service_id, [area_id], message_type, library.route)
+            except Exception as e:
+                form.flood_warning_area.errors.append(e.message)
+                return render_search_flood_warning_areas_page()
         else:
             message = Message.create_from_area(
                 service_id=service_id,
@@ -662,18 +647,37 @@ def search_flood_warning_areas_as_a_list(service_id, message_type, message_id=No
     template_folder_id = request.args.get("template_folder_id")
     Message = get_message_type(message_type)
     message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
-    library = BroadcastMessage.libraries.get("Flood_Warning_Target_Areas")
+    libraries = BroadcastAreaLibraries()
+    library = libraries.get("flood_warning_areas")
 
-    form = FloodWarningBulkAreasForm(library_ids=library.item_ids)
+    form = FloodWarningBulkAreasForm()
 
     if form.validate_on_submit():
         ids = split_text_by_comma_and_newline(form.areas.data)
-        area_ids = [f"Flood_Warning_Target_Areas-{id}" for id in ids]
         if message:
-            message.replace_areas([*area_ids])
+            try:
+                message.add_areas(message.id, message.service_id, [*ids], message_type, library.route)
+            except Exception as e:
+                form.form_errors = ["Flood Warning TA code not found"]
+                form.areas.errors.append(e.message)
+                return render_template(
+                    "views/broadcast/search-flood-warnings-list.html",
+                    broadcast_message=message,
+                    page_title="Enter Flood Warning Target Areas (TA) as a list",
+                    back_link=url_for(
+                        ".search_flood_warning_areas",
+                        service_id=service_id,
+                        message_id=message_id,
+                        message_type=message_type,
+                    ),
+                    template_folder_id=template_folder_id,
+                    message=message,
+                    message_type=message_type,
+                    form=form,
+                )
         else:
             message = Message.create_from_area(
-                service_id=service_id, area_ids=[*area_ids], template_folder_id=template_folder_id
+                service_id=service_id, area_ids=[*ids], template_folder_id=template_folder_id
             )
         return redirect(
             url_for(
@@ -715,15 +719,34 @@ def search_local_authority_areas_as_a_list(service_id, message_type, message_id=
     template_folder_id = request.args.get("template_folder_id")
     Message = get_message_type(message_type)
     message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
-    library = BroadcastMessage.libraries.get("wd25-lad25-ctyua25")
-
-    form = LocalAuthorityBulkAreasForm(library_ids=library.area_names_ids_lookup)
+    form = LocalAuthorityBulkAreasForm()
 
     if form.validate_on_submit():
         ids = split_text_by_newline(form.areas.data)
-        area_ids = [library.area_names_ids_lookup.get(name.lower()) for name in ids]
+        try:
+            area_ids = areas_api_client.get_areas_by_names(ids, "local_authorities")
+        except Exception as e:
+            form.areas.errors.append(e.message)
+            form.form_errors = ["Local authority not found"]
+            return render_template(
+                "views/broadcast/search-local-authority-list.html",
+                broadcast_message=message,
+                page_title="Enter local authorities as a list",
+                back_link=url_for(
+                    ".choose_area",
+                    service_id=service_id,
+                    message_id=message_id,
+                    message_type=message_type,
+                    library_slug="local_authorities",
+                ),
+                template_folder_id=template_folder_id,
+                message=message,
+                message_type=message_type,
+                form=form,
+            )
+
         if message:
-            message.replace_areas([*area_ids])
+            message.add_areas(message.id, message.service_id, [*area_ids], message_type)
         else:
             message = Message.create_from_area(
                 service_id=service_id, area_ids=[*area_ids], template_folder_id=template_folder_id
@@ -747,7 +770,7 @@ def search_local_authority_areas_as_a_list(service_id, message_type, message_id=
             service_id=service_id,
             message_id=message_id,
             message_type=message_type,
-            library_slug="wd25-lad25-ctyua25",
+            library_slug="local_authorities",
         ),
         template_folder_id=template_folder_id,
         message=message,
@@ -760,36 +783,17 @@ def search_local_authority_areas_as_a_list(service_id, message_type, message_id=
 @service_has_permission("broadcast")
 @user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
 def remove_area(service_id, message_id, area_slug, message_type):
-    redirect_to_flood_warning_page = bool(request.args.get("redirect_to_flood_warning_page"))
     Message = get_message_type(message_type)
     message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
-    message.remove_area(area_slug)
-    if redirect_to_flood_warning_page:
-        url = ".search_flood_warning_areas"
-    elif len(message.areas) == 0:
+    message = message.remove_area(message_id, service_id, area_slug, message_type)
+
+    if len(message.areas) == 0:
         url = ".choose_library"
     else:
         url = ".preview_areas"
     return redirect(
         url_for(
             url,
-            service_id=service_id,
-            message_id=message_id,
-            message_type=message_type,
-        )
-    )
-
-
-@main.route("/services/<uuid:service_id>/<message_type>/<uuid:message_id>/remove/")
-@service_has_permission("broadcast")
-@user_has_any_permissions(["create_broadcasts", "manage_templates"], restrict_admin_usage=True)
-def remove_custom_area(service_id, message_id, message_type):
-    Message = get_message_type(message_type)
-    message = Message.from_id_or_403(message_id, service_id=service_id) if message_id else None
-    message.clear_areas()
-    return redirect(
-        url_for(
-            ".choose_library",
             service_id=service_id,
             message_id=message_id,
             message_type=message_type,
