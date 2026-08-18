@@ -10,7 +10,6 @@ from app import (
     template_api_client,
     template_folder_api_client,
 )
-from app.broadcast_areas.models import CustomBroadcastAreas
 from app.formatters import character_count, format_thousands
 from app.main import main
 from app.main.forms import (
@@ -65,7 +64,6 @@ def view_template(service_id, template_id):
         message=template,
         template_folder_path=current_service.get_template_folder_path(template.folder),
         edit_mode=False,
-        is_custom_broadcast=type(template.areas) is CustomBroadcastAreas,
         areas=format_areas_list(template.areas),
     )
 
@@ -86,7 +84,6 @@ def edit_template(service_id, template_id):
         message=template,
         template_folder_path=current_service.get_template_folder_path(template.folder),
         edit_mode=True,
-        is_custom_broadcast=type(template.areas) is CustomBroadcastAreas,
         areas=format_areas_list(template.areas),
     )
 
@@ -748,7 +745,6 @@ def delete_service_template(service_id, template_id):
         template=template,
         message=template,
         template_folder_path=current_service.get_template_folder_path(template.folder),
-        is_custom_broadcast=type(template.areas) is CustomBroadcastAreas,
         areas=format_areas_list(template.areas),
     )
 
@@ -879,24 +875,13 @@ def write_new_broadcast_from_template(service_id, template_id):
 
     if form.validate_on_submit():
         if template_id and template and template.areas:
-            # If Template has already been made and has areas, create broadcast_message
-            #  from anything existing in Template
-            if isinstance(template.areas, CustomBroadcastAreas):
-                message = BroadcastMessage.create_from_custom_area(
-                    service_id=service_id,
-                    content=form.content.data,
-                    reference=form.reference.data,
-                    areas=template.areas,
-                    template_id=template_id,
-                )
-            else:
-                message = BroadcastMessage.create_from_area(
-                    service_id=service_id,
-                    content=form.content.data,
-                    reference=form.reference.data,
-                    area_ids=template.area_ids,
-                    template_id=template_id,
-                )
+            message = BroadcastMessage.create_from_area(
+                service_id=service_id,
+                content=form.content.data,
+                reference=form.reference.data,
+                area_ids=template.area_ids,
+                template_id=template_id,
+            )
         # Redirects to 'Choose library' page if created in operator service,
         # as you cannot add extra_content in operator service, otherwise redirects
         # to page to add extra_content
