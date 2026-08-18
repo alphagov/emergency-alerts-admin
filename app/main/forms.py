@@ -536,27 +536,28 @@ class GovukTextareaField(GovukFrontendWidgetMixin, TextAreaField):
 
 
 class GovukTextareaBulkField(GovukTextareaField):
-    def __init__(
-        self,
-        label,
-        *,
-        item,
-        **kwargs,
-    ):
+    param_extensions = {
+        "classes": "govuk-!-width-two-thirds govuk-!-margin-bottom-0",
+        "rows": 10,
+    }
+
+    def __init__(self, label, *, item, **kwargs):
         # How we refer to a singular area i.e. Local Authority
         self.item = item
+        super().__init__(label, **kwargs)
 
-        validators = kwargs.pop("validators", [])
+    def validate(self, form, extra_validators=None):
+        if not super().validate(form, extra_validators):
+            return False
 
-        super().__init__(
-            label,
-            validators=validators,
-            param_extensions={
-                "classes": "govuk-!-width-two-thirds govuk-!-margin-bottom-0",
-                "rows": 10,
-            },
-            **kwargs,
-        )
+        data = (self.data or "").strip()
+        if not data:
+            # If no areas entered, add errors to both form and field
+            message = f"Enter at least 1 {self.item}"
+            form.form_errors = [message]
+            self.errors.append("This field is required")
+            return False
+        return True
 
 
 # based on work done by @richardjpope: https://github.com/richardjpope/recourse/blob/master/recourse/forms.py#L6
@@ -1927,22 +1928,10 @@ class FloodWarningForm(StripWhitespaceForm):
 
 class FloodWarningBulkAreasForm(StripWhitespaceForm):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # self.areas.area_id_parser = self._parse_ids
-        if not hasattr(self, "form_errors"):
-            self.form_errors = []
-
     areas = GovukTextareaBulkField("", item="Flood Warning TA code")
 
 
 class LocalAuthorityBulkAreasForm(StripWhitespaceForm):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if not hasattr(self, "form_errors"):
-            self.form_errors = []
-
     areas = GovukTextareaBulkField("", item="Local authority")
 
 
