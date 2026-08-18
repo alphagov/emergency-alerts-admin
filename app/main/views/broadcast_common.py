@@ -45,6 +45,7 @@ from app.utils.broadcast import (
 )
 from app.utils.user import user_has_any_permissions
 
+
 def get_message_type(message_type):
     return {
         "broadcast": BroadcastMessage,
@@ -384,11 +385,15 @@ def search_postcodes(service_id, message_type, message_id=None):
                 and message is updated.
                 """
                 if message:
-                    message = message.add_postcode_area(message.id, message.service_id, postcode=postcode, radius=float(form.data["radius"]), message_type=message_type)
-                elif Message is Template:
-                    message = Message.create_from_area(
-                        service_id, template_folder_id=template_folder_id, area_ids=[id]
+                    message = message.add_postcode_area(
+                        message.id,
+                        message.service_id,
+                        postcode=postcode,
+                        radius=float(form.data["radius"]),
+                        message_type=message_type,
                     )
+                elif Message is Template:
+                    message = Message.create_from_area(service_id, template_folder_id=template_folder_id, area_ids=[id])
                 if Message is BroadcastMessage:
                     return redirect(
                         url_for(
@@ -481,7 +486,9 @@ def search_coordinates(service_id, coordinate_type, message_type, message_id=Non
         if areas_api_client.check_coordinates_valid(first_coordinate, second_coordinate, coordinate_type):
             marker = [first_coordinate, second_coordinate]
             if form.validate_on_submit():
-                circle_polygon = areas_api_client.create_coordinate_area(first_coordinate, second_coordinate, radius, coordinate_type)
+                circle_polygon = areas_api_client.create_coordinate_area(
+                    first_coordinate, second_coordinate, radius, coordinate_type
+                )
                 area = Area.from_wkt(circle_polygon)
                 bleed = area.bleed
                 estimated_area = area.estimated_area
@@ -505,7 +512,7 @@ def search_coordinates(service_id, coordinate_type, message_type, message_id=Non
                     second_coordinate=second_coordinate,
                     radius=float(form.data["radius"]),
                     coordinate_type=coordinate_type,
-                    message_type=message_type
+                    message_type=message_type,
                 )
             elif Message is Template:
                 # No existing template: create a new template seeded with this custom area

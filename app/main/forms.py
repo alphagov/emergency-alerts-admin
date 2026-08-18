@@ -1935,7 +1935,6 @@ class LocalAuthorityBulkAreasForm(StripWhitespaceForm):
     areas = GovukTextareaBulkField("", item="Local authority")
 
 
-
 class RejectionReasonForm(StripWhitespaceForm):
     hint = """ Provide details of why you are rejecting the alert.
         For example, "The emergency has passed"."""

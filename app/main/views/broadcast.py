@@ -521,14 +521,12 @@ def broadcast(service_id, template_id):
         if template.areas:
             # As Template area already exists, created broadcast_message using this
             # and reference and content if they have been set also
-            broadcast_message = (
-                BroadcastMessage.create_from_area(
-                    service_id=service_id,
-                    template_id=template_id,
-                    area_ids=template.area_ids,
-                    content=template.content,
-                    reference=template.reference,
-                )
+            broadcast_message = BroadcastMessage.create_from_area(
+                service_id=service_id,
+                template_id=template_id,
+                area_ids=template.area_ids,
+                content=template.content,
+                reference=template.reference,
             )
         else:
             # Only reference and content have been set for Template,
@@ -641,7 +639,6 @@ def submit_broadcast_message(service_id, broadcast_message_id):
 
     if errors := check_for_missing_fields(broadcast_message):
         return render_current_alert_page(broadcast_message, hide_stop_link=True, errors=errors)
-
 
     broadcast_message.request_approval()
     return redirect(
