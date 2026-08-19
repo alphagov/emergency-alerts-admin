@@ -1,21 +1,12 @@
-from flask import current_app
-from ordered_set import OrderedSet
+import math
+
+from emergency_alerts_utils.polygons import Polygons
 from werkzeug.utils import cached_property
 
-from app.broadcast_areas.models import (
-    CustomBroadcastAreas,
-    broadcast_area_libraries,
-)
-from app.broadcast_areas.utils import (
-    aggregate_areas,
-    generate_aggregate_names,
-    get_polygons_from_areas,
-)
 from app.models import JSONModel
-
-ESTIMATED_AREA_OF_LARGEST_UK_COUNTY = broadcast_area_libraries.get_areas(["lad25-E06000065"])[  # North Yorkshire
-    0
-].polygons.estimated_area
+from app.models.areas import Area, Areas, broadcast_area_libraries
+from app.notify_client.areas_api_client import areas_api_client
+from app.notify_client.broadcast_message_api_client import broadcast_message_api_client
 
 
 class BaseBroadcast(JSONModel):
@@ -25,173 +16,99 @@ class BaseBroadcast(JSONModel):
 
     @cached_property
     def areas(self):
-        if "ids" in self._dict["areas"]:
-            library_areas = self.get_areas(self.area_ids)
-
-            if len(library_areas) == len(self.area_ids):
-                return library_areas
-            else:
-                # it's possible an old broadcast may refer to areas that
-                # are no longer part of our area libraries; in this case
-                # we should just treat the whole thing as a custom broadcast,
-                # which isn't great as our code doesn't support editing its
-                # areas, but we don't expect this to happen often
-                current_app.logger.warn(
-                    f"BroadcastMessage has {len(self.area_ids)} area IDs "
-                    f"but {len(library_areas)} found in the library. Treating "
-                    f"{self.id} as a custom broadcast."
-                )
-
-        polygons = self._dict["areas"].get("simple_polygons", [])
-
-        if polygons:
-            return CustomBroadcastAreas(
-                names=self._dict["areas"]["names"],
-                polygons=polygons,
-            )
-
+        """
+        Returns list of Area objects for areas in `areas` in brodacast dictionary
+        """
+        areas_data = self._dict.get("areas", {})
+        if "ids" in areas_data:
+            areas = Areas()
+            return areas.get(areas_data["ids"], areas_data.get("names"))
         return []
 
     @property
     def area_ids(self):
-        return self._dict["areas"].get("ids", [])
+        """Returns list of IDs for areas in broadcast"""
+        return [area.id for area in self.areas]
 
-    @area_ids.setter
-    def area_ids(self, value):
-        self._dict["areas"]["ids"] = value
+    @property
+    def area_names(self):
+        """Returns list of names for areas in broadcast"""
+        return [area.name for area in self.areas]
 
     @property
     def ancestor_areas(self):
-        return sorted(set(self._ancestor_areas_iterator))
-
-    @property
-    def _ancestor_areas_iterator(self):
+        """Returns list of unique parent Areas for Areas"""
+        existing_parent_ids = set()
+        ancestors = []
         for area in self.areas:
-            for ancestor in area.ancestors:
-                yield ancestor
-
-    @property
-    def has_flood_warning_target_areas(self):
-        if type(self.areas) is CustomBroadcastAreas:
-            return False
-        return any(
-            # Returns True if any of the message areas have an ID
-            # that means its a Flood Warning Target Area, otherwise False
-            (area.id.startswith("Flood_Warning_Target_Areas-") for area in self.areas)
-        )
-
-    @cached_property
-    def polygons(self):
-        return get_polygons_from_areas(self.areas, area_attribute="polygons")
-
-    @cached_property
-    def simple_polygons(self):
-        return get_polygons_from_areas(self.areas, area_attribute="simple_polygons")
-
-    @cached_property
-    def simple_polygons_with_bleed(self):
-        return get_polygons_from_areas(self.areas, area_attribute="simple_polygons_with_bleed")
+            if not area.parent:
+                continue
+            if area.parent in existing_parent_ids:
+                continue
+            existing_parent_ids.add(area.parent)
+            ancestors.append(Area.from_geographic_id(area.parent))
+        return ancestors
 
     @cached_property
     def count_of_phones(self):
-        return sum(area.count_of_phones for area in self.areas)
+        """Returns the `count_of_phones` sourced via API client method, or 0"""
+        response = broadcast_message_api_client.get_count_of_phones(self.simple_polygons.as_wkt)
+        return response or 0
 
-    def get_areas(self, area_ids):
-        return broadcast_area_libraries.get_areas(area_ids)
+    @cached_property
+    def estimated_area(self):
+        return self.simple_polygons.estimated_area
 
-    def add_areas(self, *new_area_ids):
-        self.area_ids = list(OrderedSet(self.area_ids + list(new_area_ids)))
-        self._update_areas()
+    @cached_property
+    def estimated_area_with_bleed(self):
+        return self.simple_polygons_with_bleed.estimated_area
 
-    def add_local_authority_to_slug(self, id, area_to_get_params):
-        if not (local_authority := area_to_get_params.local_authority):
-            return id
-        if local_authority.endswith(", City of"):
-            return f"{id} in City of {local_authority[:-9]}"
-        elif local_authority.endswith(", County of"):
-            return f"{id} in County of {local_authority[:-11]}"
-        else:
-            return f"{id} in {local_authority}"
+    @cached_property
+    def simple_polygons(self):
+        areas_data = self._dict.get("areas") or {}
+        raw_polygons = areas_data.get("simple_polygons") or []
+        # Coordinates are reversed as utils' Polygons class works in long, lat - not lat, long
+        reversed_coords = [[[coord[1], coord[0]] for coord in polygon] for polygon in raw_polygons]
+        return Polygons(polygons=reversed_coords)
 
-    def remove_area(self, area_id):
-        self.area_ids = list(set(self._dict["areas"]["ids"]) - {area_id})
-        self._update_areas()
+    @cached_property
+    def simple_polygons_with_bleed(self):
+        if self.count_of_phones == 0 or not self.estimated_area:
+            # Use utils' approximate bleed distance when data is missing
+            return self.simple_polygons.bleed_by(Polygons.approx_bleed_in_m)
 
-    def replace_areas(self, new_area_ids):
-        """
-        Created this to ensure that if areas are added, that are in the libraries,
-        they will overwrite the custom area if added afterwards.
-        """
-        area_ids = (
-            list(set(self._dict["areas"]["ids"]) & {area.id for area in self.get_areas(self.area_ids)})
-            if self.area_ids
-            else []
+        bleed = self.calculate_bleed()
+        return self.simple_polygons.bleed_by(bleed)
+
+    @classmethod
+    def add_areas(cls, id, service_id, new_area_ids, message_type="broadcast", type_name=None):
+        return cls(areas_api_client.add_areas(id, service_id, new_area_ids, message_type, type_name))
+
+    @classmethod
+    def add_postcode_area(cls, id, service_id, postcode, radius, message_type):
+        return cls(areas_api_client.add_postcode_area(id, service_id, postcode, radius, message_type))
+
+    @classmethod
+    def add_coordinate_area(
+        cls, id, service_id, first_coordinate, second_coordinate, radius, coordinate_type, message_type
+    ):
+        return cls(
+            areas_api_client.add_coordinate_area(
+                id, service_id, first_coordinate, second_coordinate, radius, coordinate_type, message_type
+            )
         )
-        self.area_ids = list(OrderedSet(area_ids + list(new_area_ids)))
-        self._update_areas()
 
-    def _update_areas(self, force_override=False):
-        aggregated_areas = aggregate_areas(self.areas)
-        aggregate_names = generate_aggregate_names(aggregated_areas)
-        areas = {
-            "ids": self.area_ids,
-            "names": [area.name for area in self.areas],
-            "aggregate_names": aggregate_names,
-            "simple_polygons": self.simple_polygons.as_coordinate_pairs_lat_long,
-        }
+    @classmethod
+    def remove_area(cls, message_id, service_id, area_id, message_type):
+        return cls(areas_api_client.remove_area(message_id, service_id, area_id, message_type))
 
-        data = {"areas": areas}
-
-        # TEMPORARY: while we migrate to a new format for "areas"
+    def calculate_bleed(self):
         """
-            The following link is a ticket to ensure tracking of whether this temporary fix is still required
-            https://gds-ea.atlassian.net/browse/EAS-2037?atlOrigin=eyJpIjoiOWY2OWQ5ZTcwNjU4NDNkZWFjYzE1NDg0NGMwOTgyOTciLCJwIjoiaiJ9
+        Estimates the amount of bleed based on the population of an
+        area. Higher density areas tend to have short range masts, so
+        the bleed is low (down to 500m). Lower density areas have longer
+        range masts, so the typical bleed will be high (up to 5,000m).
         """
-
-        if force_override:
-            data["force_override"] = True
-
-        self._update(**data)
-
-    def _update_custom_areas(self, force_override=False):
-        areas = {
-            "ids": self.area_ids,
-            "names": [area.name for area in self.areas],
-            "aggregate_names": [area.name for area in aggregate_areas(self.areas)],
-            "simple_polygons": self.simple_polygons.as_coordinate_pairs_lat_long,
-        }
-
-        data = {"areas": areas}
-
-        # TEMPORARY: while we migrate to a new format for "areas"
-        """
-            The following link is a ticket to ensure tracking of whether this temporary fix is still required
-            https://gds-ea.atlassian.net/browse/EAS-2037?atlOrigin=eyJpIjoiOWY2OWQ5ZTcwNjU4NDNkZWFjYzE1NDg0NGMwOTgyOTciLCJwIjoiaiJ9
-        """
-
-        if force_override:
-            data["force_override"] = True
-
-        self._update(**data)
-
-    def clear_areas(self, force_override=False):
-        self.area_ids.clear()
-        areas = {
-            "ids": [],
-            "names": [],
-            "aggregate_names": [],
-            "simple_polygons": [],
-        }
-
-        data = {"areas": areas}
-
-        # TEMPORARY: while we migrate to a new format for "areas"
-        """
-            The following link is a ticket to ensure tracking of whether this temporary fix is still required
-            https://gds-ea.atlassian.net/browse/EAS-2037?atlOrigin=eyJpIjoiOWY2OWQ5ZTcwNjU4NDNkZWFjYzE1NDg0NGMwOTgyOTciLCJwIjoiaiJ9
-        """
-
-        if force_override:
-            data["force_override"] = True
-
-        self._update(**data)
+        phone_density = self.count_of_phones / (self.estimated_area) * 3.86e-7  # Square metres to square miles
+        estimated_bleed = 5_900 - (math.log(phone_density, 10) * 1_250)
+        return max(500, min(estimated_bleed, 5000))
