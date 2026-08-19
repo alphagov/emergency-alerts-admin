@@ -30,6 +30,7 @@ from app.utils.broadcast import (
     continue_button_clicked,
     coordinates_and_radius_entered,
     coordinates_entered_but_no_radius,
+    create_area_from_wkt,
     create_custom_area_polygon,
     create_postcode_db_id,
     has_permission_for_message_type,
@@ -373,11 +374,7 @@ def search_postcodes(service_id, message_type, message_id=None):
             then a dummy CustomBroadcastArea is created and used for the attributes that
             are required for the Leaflet map, key, number of phones to display etc.
             """
-            area = Area.from_wkt(circle_wkt)
-            bleed = area.bleed
-            estimated_area = area.estimated_area
-            estimated_area_with_bleed = area.estimated_area_with_bleed
-            count_of_phones = area.count_of_phones
+            bleed, estimated_area, estimated_area_with_bleed, count_of_phones = create_area_from_wkt(circle_wkt)
             if continue_button_clicked(request):
                 """
                 If 'Continue' button is clicked, area is added to Broadcast Message
@@ -488,12 +485,7 @@ def search_coordinates(service_id, coordinate_type, message_type, message_id=Non
                 circle_polygon = areas_api_client.create_coordinate_area(
                     first_coordinate, second_coordinate, radius, coordinate_type
                 )
-                area = Area.from_wkt(circle_polygon)
-                bleed = area.bleed
-                estimated_area = area.estimated_area
-                estimated_area_with_bleed = area.estimated_area_with_bleed
-                count_of_phones = area.count_of_phones
-                circle_polygon = shapely.wkt.loads(circle_polygon)
+                bleed, estimated_area, estimated_area_with_bleed, count_of_phones = create_area_from_wkt(circle_polygon)
 
         else:
             adding_invalid_coords_errors_to_form(coordinate_type, form)
