@@ -42,7 +42,6 @@ class Template(BaseBroadcast):
             )
         )
 
-
     @classmethod
     def create_from_area(cls, service_id, template_folder_id=None, area_ids=None):
         areas_dict = areas_api_client.get_area_dict(area_ids)
