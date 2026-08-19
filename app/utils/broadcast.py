@@ -1,39 +1,30 @@
 from datetime import datetime, timedelta, timezone
+import math
 from typing import Collection
 
-import pyproj
+from app.models.areas import Area
 from emergency_alerts_utils.xml.broadcast import generate_xml_body
 from emergency_alerts_utils.xml.cap import convert_utc_datetime_to_cap_standard_string
 from emergency_alerts_utils.xml.common import HEADLINE
 from flask import redirect, render_template, request, url_for
 from postcode_validator.uk.uk_postcode_validator import UKPostcode
-from shapely import Point
-from shapely.geometry import MultiPolygon, Polygon
-from shapely.ops import unary_union
+from shapely import wkt
 
 from app import current_service, current_user
-from app.broadcast_areas.models import (
-    BaseBroadcastArea,
-    CustomBroadcastArea,
-    CustomBroadcastAreas,
-)
 from app.config import BroadcastProvider, Config
 from app.formatters import (
     format_mobile_networks,
-    format_number_no_scientific,
     format_provider_status_with_human_time,
-    round_to_significant_figures,
 )
 from app.main.forms import (
     ConfirmBroadcastForm,
     EastingNorthingCoordinatesForm,
     LatitudeLongitudeCoordinatesForm,
-    PostcodeForm,
     RejectionReasonForm,
     ReturnForEditForm,
 )
 from app.models.broadcast_message import BroadcastMessage
-from app.models.template import Template
+from app.notify_client.areas_api_client import areas_api_client
 from app.utils.datetime import fromisoformat_allow_z_tz
 
 INVALID_AREA_ERROR_TEXT = (
@@ -43,135 +34,23 @@ INVALID_AREA_ERROR_TEXT = (
 )
 
 
-def create_coordinate_area_slug(coordinate_type, first_coordinate, second_coordinate, radius):
-    radius_min_sig_figs = format_number_no_scientific(radius)
-    id = f"{radius_min_sig_figs}km around "
-    if coordinate_type == "latitude_longitude":
-        id = f"{id}{first_coordinate} latitude, {second_coordinate} longitude"
-    elif coordinate_type == "easting_northing":
-        first_coordinate = format_number_no_scientific(first_coordinate)
-        second_coordinate = format_number_no_scientific(second_coordinate)
-        id = f"{id}the easting of {first_coordinate} and the northing of {second_coordinate}"
-    return id
-
-
-def create_coordinate_area(lat, lng, radius, type):
-    radius *= 1000
-    if type == "easting_northing":
-        crs_4326 = pyproj.CRS("EPSG:4326")
-        crs_normalized = pyproj.CRS("EPSG:27700")
-        transformer_inverse = pyproj.Transformer.from_crs(crs_normalized, crs_4326)
-        normalized_center = Point(lat, lng)
-    elif type == "latitude_longitude":
-        crs_4326 = pyproj.CRS("EPSG:4326")
-        crs_normalized = pyproj.CRS(proj="aeqd", datum="WGS84", lat_0=lat, lon_0=lng)
-        transformer = pyproj.Transformer.from_crs(crs_4326, crs_normalized)
-        transformer_inverse = pyproj.Transformer.from_crs(crs_normalized, crs_4326)
-        normalized_center = Point(transformer.transform(lat, lng))
-    circle = normalized_center.buffer(radius)
-    xx, yy = circle.exterior.coords.xy
-    xx_wgs84, yy_wgs84 = transformer_inverse.transform(xx, yy)
-    return [[lat, lon] for lat, lon in zip(xx_wgs84, yy_wgs84)]
-
-
-def check_coordinates_valid_for_enclosed_polygons(lat, lng, type):
-    in_polygon = []
-    uk_countries = BroadcastMessage.libraries.get_areas(
-        [
-            "ctry19-E92000001",
-            "ctry19-N92000002",
-            "ctry19-S92000003",
-            "ctry19-W92000004",
-        ]
-    )
-    test_areas = BroadcastMessage.libraries.get_areas(
-        [
-            "test-santa-claus-village-rovaniemi-a",
-            "test-santa-claus-village-rovaniemi-b",
-            "test-santa-claus-village-rovaniemi-c",
-            "test-santa-claus-village-rovaniemi-d",
-        ]
-    )
-    polygons_to_check = [uk_countries, test_areas]
-    for group in polygons_to_check:
-        polygons = []
-        for area in group:
-            # Extending polygons list by a list of polygons from those areas, with a buffer of 0.25 degrees
-            polygons.extend([Polygon(p).buffer(0.25) for p in area.polygons.polygons])
-        combined_polygon = unary_union(polygons)  # Calculating unary union of buffered polygons
-        if isinstance(combined_polygon, MultiPolygon):
-            shapely_polygon = MultiPolygon(combined_polygon)
-        else:
-            shapely_polygon = Polygon(combined_polygon)
-        normalized_center = normalising_point(lat, lng, type)
-        in_polygon.append(shapely_polygon.contains(normalized_center))
-    return any(in_polygon)
-
-
-def normalising_point(lat, lng, type):
-    if type == "easting_northing":
-        crs_4326 = pyproj.CRS("EPSG:4326")
-        crs_normalized = pyproj.CRS("EPSG:27700")
-        transformer_inverse = pyproj.Transformer.from_crs(crs_normalized, crs_4326)
-        lat, lng = transformer_inverse.transform(lat, lng)
-        normalized_center = Point(lng, lat)
-    elif type == "latitude_longitude":
-        normalized_center = Point(lng, lat)
-    return normalized_center
-
-
-def extract_attributes_from_custom_area(polygons):
-    custom_area = CustomBroadcastArea(name="", polygons=[polygons])
-    bleed = custom_area.estimated_bleed_in_m
-    estimated_area = custom_area.simple_polygons.estimated_area
-    estimated_area_with_bleed = custom_area.simple_polygons_with_bleed.estimated_area
-    count_of_phones = round_to_significant_figures(custom_area.count_of_phones, 1)
-    return bleed, estimated_area, estimated_area_with_bleed, count_of_phones
-
-
 def create_postcode_db_id(form):
     if form.pre_validate(form):
-        postcode_formatted = UKPostcode(form.data["postcode"]).postcode
-        postcode = f"postcodes-{postcode_formatted}"
-        return postcode
+        return str(UKPostcode(form.data["postcode"]).postcode)
 
 
-def create_custom_area_polygon(form: PostcodeForm, postcode):
+def create_custom_area_polygon(form, postcode):
     centroid = None
-    circle_polygon = None
     radius = float(form.data["radius"]) if form.data["radius"] else 0
+    circle_wkt = None
+    id = None
     try:
-        area = BroadcastMessage.libraries.get_areas([postcode])[0]
-        centroid = get_centroid(area)
-        circle_polygon = create_circle(centroid, radius * 1000)
-    except IndexError:
+        centroid = areas_api_client.get_postcode_centroid(postcode)
+        centroid = wkt.loads(centroid)
+        data = areas_api_client.create_postcode_area(postcode, radius)
+    except Exception:
         form.postcode.process_errors.append("Enter a postcode within the UK")
-    return centroid, circle_polygon
-
-
-def create_postcode_area_slug(form):
-    postcode_formatted = UKPostcode(form.data["postcode"]).postcode
-    radius_to_min_sig_figs = "{:g}".format(float(form.data["radius"]))
-    return f"{radius_to_min_sig_figs}km around the postcode {postcode_formatted}"
-
-
-def get_centroid(area):
-    polygons = area.polygons[0]
-    return Polygon(polygons).centroid
-
-
-def create_circle(center, radius):
-    crs_4326 = pyproj.CRS("EPSG:4326")
-    crs_normalized = pyproj.CRS(proj="aeqd", datum="WGS84", lat_0=center.y, lon_0=center.x)
-
-    transformer = pyproj.Transformer.from_crs(crs_4326, crs_normalized)
-    transformer_inverse = pyproj.Transformer.from_crs(crs_normalized, crs_4326)
-
-    normalized_center = Point(transformer.transform(center.y, center.x))
-    circle = normalized_center.buffer(radius)
-    xx, yy = circle.exterior.coords.xy
-    xx_wgs84, yy_wgs84 = transformer_inverse.transform(xx, yy)
-    return [[lat, lon] for lat, lon in zip(xx_wgs84, yy_wgs84)]
+    return centroid, data.get("circle"), data.get("id")
 
 
 def parse_coordinate_form_data(form):
@@ -220,6 +99,7 @@ def render_postcode_page(
     return render_template(
         "views/broadcast/search-postcodes.html",
         broadcast_message=message,
+        message=message,
         page_title="Choose alert area" if message_type == "broadcast" else "Choose template area",
         form=form,
         bleed=bleed or None,
@@ -319,15 +199,6 @@ def adding_invalid_coords_errors_to_form(coordinate_type, form):
         form.second_coordinate.process_errors.append("The easting and northing must be within the UK")
 
 
-def get_centroid_if_postcode_in_db(postcode, form):
-    try:
-        area = BroadcastMessage.libraries.get_areas([postcode])[0]
-    except IndexError:
-        form.postcode.process_errors.append("Enter a postcode within the UK")
-    else:
-        return get_centroid(area)
-
-
 def format_area_name(area_name):
     if area_name.endswith(", City of"):
         return f"City of {area_name[:-9]}"
@@ -338,12 +209,7 @@ def format_area_name(area_name):
 
 
 def format_areas_list(areas_list):
-    if isinstance(areas_list, CustomBroadcastArea):
-        return [format_area_name(areas_list.name)]
-    elif isinstance(areas_list, CustomBroadcastAreas):
-        return [format_area_name(area) for area in areas_list.items]
-    else:
-        return [format_area_name(area) if isinstance(area, str) else format_area_name(area.name) for area in areas_list]
+    return [format_area_name(area) if isinstance(area, str) else format_area_name(area.name) for area in areas_list]
 
 
 def create_map_label(areas):
@@ -373,10 +239,6 @@ def render_current_alert_page(
     hide_stop_link=False,
     errors=None,
 ):
-    if type(broadcast_message.areas) is CustomBroadcastAreas and not broadcast_message.areas.is_valid_area():
-        # We only validate areas for CustomBroadcastAreas; pre-defined areas are assumed valid
-        errors = [{"text": INVALID_AREA_ERROR_TEXT}]
-
     broadcast_provider_status_rows = None
     broadcast_provider_sending_error = False
 
@@ -413,7 +275,6 @@ def render_current_alert_page(
             if confirm_broadcast_form is None
             else confirm_broadcast_form
         ),
-        is_custom_broadcast=type(broadcast_message.areas) is CustomBroadcastAreas,
         areas=format_areas_list(broadcast_message.areas),
         back_link=url_for(
             back_link_url,
@@ -442,12 +303,11 @@ def render_edit_alert_page(broadcast_message, form):
     )
 
 
-def render_preview_alert_page(broadcast_message, is_custom_broadcast, areas, errors=None):
+def render_preview_alert_page(broadcast_message, areas, errors=None):
     return render_template(
         "views/broadcast/preview-message.html",
         broadcast_message=broadcast_message,
         message=broadcast_message,
-        custom_broadcast=is_custom_broadcast,
         areas=areas,
         back_link=request.referrer,
         label=create_map_label(areas),
@@ -676,13 +536,6 @@ def _get_mno_status_row(mno, mno_statuses, include_cancellation_status):
     return result
 
 
-def get_message_type(message_type):
-    return {
-        "broadcast": BroadcastMessage,
-        "templates": Template,
-    }[message_type]
-
-
 def has_permission_for_message_type(service_id: str, message_type: str) -> bool:
     if message_type == "broadcast":
         return current_user.has_permission_for_service(service_id, "create_broadcasts")
@@ -693,7 +546,7 @@ def has_permission_for_message_type(service_id: str, message_type: str) -> bool:
 
 
 def generate_geojson(broadcast_message):
-    areas: Collection[BaseBroadcastArea] = broadcast_message.areas
+    areas: Collection[Area]= broadcast_message.areas
     geojson = {
         "type": "FeatureCollection",
         "features": [
@@ -717,7 +570,7 @@ def generate_unsigned_xml(broadcast_message, xml_type):
     if xml_type == "ibag":
         is_cap_format = False
 
-    areas: Collection[BaseBroadcastArea] = broadcast_message.areas
+    areas:Collection[Area]= broadcast_message.areas
 
     all_area_coordinates = []
     for area in areas:
@@ -779,3 +632,12 @@ def _get_broadcast_duration(broadcast_duration):
         return Config.DEFAULT_DURATION_PERIODS.get("training", 30)
     else:
         return Config.DEFAULT_DURATION_PERIODS.get("live", 1350)
+
+
+def create_area_from_wkt(circle_wkt):
+    area = Area.from_wkt(circle_wkt)
+    bleed = area.bleed
+    estimated_area = area.estimated_area
+    estimated_area_with_bleed = area.estimated_area_with_bleed
+    count_of_phones = area.count_of_phones
+    return bleed, estimated_area, estimated_area_with_bleed, count_of_phones
