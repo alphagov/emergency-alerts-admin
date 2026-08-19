@@ -1,8 +1,6 @@
 from datetime import datetime, timedelta, timezone
-import math
 from typing import Collection
 
-from app.models.areas import Area
 from emergency_alerts_utils.xml.broadcast import generate_xml_body
 from emergency_alerts_utils.xml.cap import convert_utc_datetime_to_cap_standard_string
 from emergency_alerts_utils.xml.common import HEADLINE
@@ -23,6 +21,7 @@ from app.main.forms import (
     RejectionReasonForm,
     ReturnForEditForm,
 )
+from app.models.areas import Area
 from app.models.broadcast_message import BroadcastMessage
 from app.notify_client.areas_api_client import areas_api_client
 from app.utils.datetime import fromisoformat_allow_z_tz
@@ -42,8 +41,6 @@ def create_postcode_db_id(form):
 def create_custom_area_polygon(form, postcode):
     centroid = None
     radius = float(form.data["radius"]) if form.data["radius"] else 0
-    circle_wkt = None
-    id = None
     try:
         centroid = areas_api_client.get_postcode_centroid(postcode)
         centroid = wkt.loads(centroid)
@@ -546,7 +543,7 @@ def has_permission_for_message_type(service_id: str, message_type: str) -> bool:
 
 
 def generate_geojson(broadcast_message):
-    areas: Collection[Area]= broadcast_message.areas
+    areas: Collection[Area] = broadcast_message.areas
     geojson = {
         "type": "FeatureCollection",
         "features": [
@@ -570,7 +567,7 @@ def generate_unsigned_xml(broadcast_message, xml_type):
     if xml_type == "ibag":
         is_cap_format = False
 
-    areas:Collection[Area]= broadcast_message.areas
+    areas: Collection[Area] = broadcast_message.areas
 
     all_area_coordinates = []
     for area in areas:
