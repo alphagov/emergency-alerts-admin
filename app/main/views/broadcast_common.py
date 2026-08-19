@@ -467,7 +467,7 @@ def search_coordinates(service_id, coordinate_type, message_type, message_id=Non
         second_coordinate = float(form.data["second_coordinate"])
         if not areas_api_client.check_coordinates_valid(first_coordinate, second_coordinate, coordinate_type):
             adding_invalid_coords_errors_to_form(coordinate_type, form)
-        form.pre_validate(form)  # To validate the fields don't have any errors - is this needed?
+        form.pre_validate(form)
         centroid_coords = areas_api_client.get_coordinate_centroid(first_coordinate, second_coordinate, coordinate_type)
         centroid_point = shapely.wkt.loads(centroid_coords)
         marker = [centroid_point.y, centroid_point.x]
