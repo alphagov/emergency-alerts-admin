@@ -251,7 +251,18 @@ class BroadcastMessage(BaseBroadcast):
 
     @classmethod
     def send_alert_summary_email(
-        cls, *, service_id, broadcast_message_id, geojson, cap_xml, ibag_xml, alert_summary, phone_estimate, duration
+        cls,
+        *,
+        service_id,
+        broadcast_message_id,
+        geojson,
+        cap_xml,
+        ibag_xml,
+        alert_summary,
+        phone_estimate,
+        duration,
+        wkt,
+        areas,
     ):
         broadcast_message_api_client.send_alert_summary_email(
             service_id=service_id,
@@ -262,6 +273,8 @@ class BroadcastMessage(BaseBroadcast):
             alert_summary=alert_summary,
             phone_estimate=phone_estimate,
             duration=duration,
+            wkt=wkt,
+            areas=areas,
         )
 
 

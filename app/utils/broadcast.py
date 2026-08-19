@@ -6,7 +6,7 @@ from emergency_alerts_utils.xml.cap import convert_utc_datetime_to_cap_standard_
 from emergency_alerts_utils.xml.common import HEADLINE
 from flask import redirect, render_template, request, url_for
 from postcode_validator.uk.uk_postcode_validator import UKPostcode
-from shapely import wkt
+from shapely.ops import unary_union
 
 from app import current_service, current_user
 from app.config import BroadcastProvider, Config
@@ -207,6 +207,25 @@ def format_area_name(area_name):
 
 def format_areas_list(areas_list):
     return [format_area_name(area) if isinstance(area, str) else format_area_name(area.name) for area in areas_list]
+
+
+def format_areas_list_with_parent(areas_list):
+    formatted = []
+    for area in areas_list:
+        # Strings: keep existing behaviour
+        if isinstance(area, str):
+            formatted.append(format_area_name(area))
+            continue
+
+        # Electoral ward: parent → child
+        if getattr(area, "is_electoral_ward", False):
+            parent = format_area_name(area.parent.name)
+            child = format_area_name(area.name)
+            formatted.append(f"{parent} -> {child}")
+        else:
+            formatted.append(format_area_name(area.name))
+
+    return formatted
 
 
 def create_map_label(areas):
@@ -560,6 +579,29 @@ def generate_geojson(broadcast_message):
         ],
     }
     return geojson
+
+
+def generate_wkt(broadcast_message):
+    areas = broadcast_message.areas
+
+    # No areas return None
+    if not areas:
+        return None
+
+    geoms = []
+
+    # Iterate through all areas in broadcast message and combine them
+    for area in areas:
+        wkt_str = area.as_wkt_geometry
+
+        geoms.append(wkt.loads(wkt_str))
+
+    # No valid geometries return None
+    if not geoms:
+        return None
+
+    merged = unary_union(geoms)
+    return merged.wkt
 
 
 def generate_unsigned_xml(broadcast_message, xml_type):
