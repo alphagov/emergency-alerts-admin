@@ -1,13 +1,12 @@
 from datetime import datetime, timedelta, timezone
 
-from app.notify_client.areas_api_client import areas_api_client
 from emergency_alerts_utils.template import BroadcastPreviewTemplate
 from flask import abort
 from flask_login import current_user
-from ordered_set import OrderedSet
 
 from app.models import ModelList
 from app.models.base_broadcast import BaseBroadcast
+from app.notify_client.areas_api_client import areas_api_client
 from app.notify_client.broadcast_message_api_client import broadcast_message_api_client
 
 
@@ -168,7 +167,6 @@ class BroadcastMessage(BaseBroadcast):
     @property
     def broadcast_duration(self):
         return self._dict["duration"]
-
 
     def _set_status_to(self, status):
         broadcast_message_api_client.update_broadcast_message_status(
