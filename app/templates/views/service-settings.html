@@ -104,6 +104,18 @@
           }}
         {% endcall %}
 
+        {% call row() %}
+          {{ text_field('Email notifications for alerts')}}
+          {% set emails = current_service.alert_notification_addresses | map(attribute='email_address') | sort | join('\n') %}
+          {{ optional_text_field(emails or None, default="None", wrap=False) }}
+          {{ edit_field(
+              'Change',
+              url_for('.edit_service_notification_emails', service_id=current_service.id),
+              suffix='notification email addresses for this service'
+            )
+          }}
+        {% endcall %}
+
       {% endcall %}
 
       </div>
