@@ -38,6 +38,7 @@ FAKE_TEMPLATE_ID = uuid4()
                 "Notes None Change the notes for the service",
                 "Email authentication Off Change your settings for Email authentication",
                 "Emergency alerts Off Change your settings for emergency alerts",
+                "Email notifications for alerts None Change notification email addresses for this service",
             ],
         ),
     ],
@@ -98,6 +99,7 @@ def test_platform_admin_sees_only_relevant_settings_for_broadcast_service(
         "Notes None Change the notes for the service",
         "Email authentication Off Change your settings for Email authentication",
         "Emergency alerts Off Change your settings for emergency alerts",
+        "Email notifications for alerts None Change notification email addresses for this service",
     ]
 
     assert len(rows) == len(expected_rows)
@@ -145,7 +147,7 @@ def test_platform_admin_sees_correct_description_of_broadcast_service_setting(
     client_request.login(create_platform_admin_user(), service_one)
     page = client_request.get("main.service_settings", service_id=SERVICE_ONE_ID)
 
-    broadcast_setting_row = page.select("tr")[-1]
+    broadcast_setting_row = page.select("tr")[-2]
     assert normalize_spaces(broadcast_setting_row.select("td")[0].text) == "Emergency alerts"
     broadcast_setting_description = broadcast_setting_row.select("td")[1].text
     assert normalize_spaces(broadcast_setting_description) == expected_text

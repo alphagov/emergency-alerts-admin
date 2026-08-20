@@ -4,9 +4,11 @@ import pytest
 from wtforms import ValidationError
 
 from app.main.validators import (
+    BlockedEmailDomain,
     CharactersNotAllowed,
     MustContainAlphanumericCharacters,
     NoCommasInPlaceHolders,
+    NoDuplicates,
     OnlySMSCharacters,
     StringsNotAllowed,
     ValidGovEmail,
@@ -82,6 +84,81 @@ def test_invalid_list_of_white_list_email_domains(
     mock_get_organisations,
 ):
     email_domain_validators = ValidGovEmail()
+    with pytest.raises(ValidationError):
+        email_domain_validators(None, _gen_mock_field(email))
+
+
+@pytest.mark.parametrize(
+    "email",
+    [
+        "test@gov.uk",
+        "test@GOV.UK",
+        "test@gov.uK",
+        "test@test.test.gov.uk",
+        "test@test.gov.uk",
+        "test@nhs.uk",
+        "test@gov.nhs.uk",
+        "test@nhs.net",
+        "test@gov.nhs.net",
+        "test@nhs.scot",
+        "test@police.uk",
+        "test@gov.police.uk",
+        "test@GOV.PoliCe.uk",
+        "test@cjsm.net",
+        "test@example.ac.uk",
+        "test@example.sch.uk",
+    ],
+)
+def test_valid_list_of_black_list_email_domains(
+    client_request,
+    email,
+):
+    email_domain_validators = BlockedEmailDomain()
+    email_domain_validators(None, _gen_mock_field(email))
+
+
+@pytest.mark.parametrize(
+    "email",
+    [
+        "test@gmail.com",
+        "test@googlemail.com",
+        "test@outlook.com",
+        "test@hotmail.com",
+        "test@live.com",
+        "test@msn.com",
+        "test@yahoo.com",
+        "test@ymail.com",
+        "test@icloud.com",
+        "test@me.com",
+        "test@mac.com",
+        "test@protonmail.com",
+        "test@proton.me",
+        "test@gmx.com",
+        "test@gmx.co.uk",
+        "test@mail.com",
+        "test@zoho.com",
+        "test@fastmail.com",
+        "test@tutanota.com",
+        "test@mailinator.com",
+        "test@tempmail.com",
+        "test@10minutemail.com",
+        "test@guerrillamail.com",
+        "test@trashmail.com",
+        "test@dispostable.com",
+        "test@fakeinbox.com",
+        "test@getnada.com",
+        "test@maildrop.cc",
+        "test@pm.me",
+        "test@cock.li",
+        "test@riseup.net",
+    ],
+)
+def test_invalid_list_of_black_list_email_domains(
+    client_request,
+    email,
+    mock_get_organisations,
+):
+    email_domain_validators = BlockedEmailDomain()
     with pytest.raises(ValidationError):
         email_domain_validators(None, _gen_mock_field(email))
 
@@ -187,3 +264,76 @@ def test_string_cannot_contain_string_with_custom_error_message():
         StringsNotAllowed("abc", "123", message="No sequences please")(None, _gen_mock_field("abc"))
 
     assert str(error.value) == "No sequences please"
+
+
+class _Field:
+    def __init__(self, name, data):
+        self.name = name
+        self.data = data
+        self.errors = []
+
+
+class _Form:
+    def __init__(self, fieldlist_name, fields):
+        setattr(self, fieldlist_name, fields)
+
+
+@pytest.mark.parametrize(
+    "values",
+    [
+        ["a@example.com", "b@example.com", "c@example.com"],
+        ["one", "two", "three"],
+    ],
+)
+def test_no_duplicate_allows_unique_values(values):
+    fields = [
+        _Field("emails-0", values[0]),
+        _Field("emails-1", values[1]),
+        _Field("emails-2", values[2]),
+    ]
+    form = _Form("emails", fields)
+
+    validator = NoDuplicates()
+
+    # Should not raise
+    for field in fields:
+        validator(form, field)
+
+
+@pytest.mark.parametrize(
+    "values, index",
+    [
+        (["a@example.com", "a@example.com", ""], 1),
+        (["x", "y", "x"], 2),
+    ],
+)
+def test_duplicate_raises_validation_error(values, index):
+    fields = [
+        _Field("emails-0", values[0]),
+        _Field("emails-1", values[1]),
+        _Field("emails-2", values[2]),
+    ]
+    form = _Form("emails", fields)
+
+    validator = NoDuplicates()
+
+    with pytest.raises(ValidationError) as error:
+        validator(form, fields[index])
+
+    assert str(error.value) == "Duplicate email entered"
+    assert fields[index].errors == ["Duplicate email entered"]
+
+
+def test_non_plural_prefix_kept_as_is():
+    fields = [
+        _Field("code-0", "123"),
+        _Field("code-1", "123"),
+    ]
+    form = _Form("code", fields)
+
+    validator = NoDuplicates()
+
+    with pytest.raises(ValidationError) as error:
+        validator(form, fields[1])
+
+    assert str(error.value) == "Duplicate code entered"

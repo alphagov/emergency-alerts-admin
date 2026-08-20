@@ -74,6 +74,7 @@ EXCLUDED_ENDPOINTS = tuple(
             "edit_organisation_type",
             "edit_organisation_user",
             "edit_service_notes",
+            "edit_service_notification_emails",
             "edit_service_template",
             "edit_template",
             "edit_user_email",
