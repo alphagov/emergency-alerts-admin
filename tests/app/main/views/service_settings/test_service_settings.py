@@ -1168,3 +1168,120 @@ def test_service_set_broadcast_channel_makes_you_choose(
             account_type="training-test-all",
         ),
     )
+
+
+def test_alert_notification_addresses_view(
+    client_request,
+    platform_admin_user,
+):
+    client_request.login(platform_admin_user)
+    page = client_request.get(
+        "main.edit_service_notification_emails",
+        service_id=SERVICE_ONE_ID,
+    )
+    assert page.select_one("h1").text == "Edit service notification emails"
+
+    labels = page.select("label.govuk-input--numbered__label")
+    assert labels[0].text.strip() == "email address number  + 1."
+    assert labels[1].text.strip() == "email address number  + 2."
+    assert labels[2].text.strip() == "email address number  + 3."
+
+    inputs = page.select("input.govuk-input--numbered")
+    assert inputs[0]["name"] == "emails-1"
+    assert inputs[1]["name"] == "emails-2"
+    assert inputs[2]["name"] == "emails-3"
+
+    # add and remove buttons added client side, so can't test here
+
+    legend = page.select_one("legend.govuk-fieldset__legend")
+    assert legend.text.strip() == "Email addresses"
+
+    container = page.select_one("#list-entry-emails")
+    assert container is not None
+    assert container["data-list-item-name"] == "email address"
+
+
+@pytest.mark.parametrize(
+    "emails, expected_error",
+    [
+        # Duplicate emails
+        (["a@test.com", "a@test.com"], "Duplicate email entered"),
+        (["x@test.com", "y@test.com", "x@test.com"], "Duplicate email entered"),
+        # Non-work / personal emails
+        (["a@test.com", "a@gmail.com"], "You cannot enter a personal email address"),
+        (["x@outlook.com", "y@gmail.com", "x@yahoo.com"], "You cannot enter a personal email address"),
+        (["x@outlook.com", "y@test.com"], "You cannot enter a personal email address"),
+        # Invalid email format
+        (["atest.com", "agmail.com"], "Enter a valid email address"),
+        (["xoutlook.com", "ygmail.com", "x@test.com"], "Enter a valid email address"),
+        (["xoutlook.com", "y@test.com"], "Enter a valid email address"),
+    ],
+)
+def test_alert_notification_addresses_validation(
+    client_request,
+    platform_admin_user,
+    emails,
+    expected_error,
+):
+    client_request.login(platform_admin_user)
+
+    page = client_request.post(
+        ".edit_service_notification_emails",
+        service_id=SERVICE_ONE_ID,
+        _data={f"emails-{i+1}": e for i, e in enumerate(emails)},
+        _expected_status=200,
+    )
+
+    banner = page.select_one(".banner-dangerous")
+    assert banner is not None
+
+    title = banner.select_one(".banner-title")
+    assert title is not None
+    assert title.text.strip() == "There is a problem"
+
+    items = banner.select(".govuk-list--bullet li")
+    assert len(items) >= 1
+
+    # Every error item must contain the expected message
+    for item in items:
+        assert expected_error in item.text
+
+
+@pytest.mark.parametrize(
+    "emails",
+    [
+        # Single email update
+        ["new@test.com"],
+        # Multiple email update
+        ["new@test.com", "another@test.com"],
+    ],
+)
+def test_alert_notification_addresses_update(
+    client_request,
+    platform_admin_user,
+    mock_update_service,
+    emails,
+):
+    client_request.login(platform_admin_user)
+
+    # POST valid emails
+    client_request.post(
+        ".edit_service_notification_emails",
+        service_id=SERVICE_ONE_ID,
+        _data={f"emails-{i+1}": e for i, e in enumerate(emails)},
+        _expected_redirect=url_for(
+            ".service_settings",
+            service_id=SERVICE_ONE_ID,
+        ),
+    )
+
+    # Build expected sorted list (route sorts alphabetically)
+    expected = sorted(
+        [{"service_id": SERVICE_ONE_ID, "email_address": e} for e in emails],
+        key=lambda x: x["email_address"],
+    )
+
+    mock_update_service.assert_called_with(
+        SERVICE_ONE_ID,
+        alert_notification_addresses=expected,
+    )
