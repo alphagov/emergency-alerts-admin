@@ -6,6 +6,7 @@ from emergency_alerts_utils.xml.cap import convert_utc_datetime_to_cap_standard_
 from emergency_alerts_utils.xml.common import HEADLINE
 from flask import redirect, render_template, request, url_for
 from postcode_validator.uk.uk_postcode_validator import UKPostcode
+from shapely import wkt
 from shapely.ops import unary_union
 
 from app import current_service, current_user
