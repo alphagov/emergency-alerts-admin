@@ -133,6 +133,7 @@ class BroadcastMessageAPIClient(AdminAPIClient):
         phone_estimate,
         duration,
         wkt,
+        areas,
     ):
         """
         Send alert email summary to service contacts
@@ -153,6 +154,8 @@ class BroadcastMessageAPIClient(AdminAPIClient):
             data.update(duration=duration)
         if wkt:
             data.update(wkt=wkt)
+        if areas:
+            data.update(areas=areas)
 
         data = _attach_current_user(data)
 
