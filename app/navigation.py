@@ -111,7 +111,6 @@ class MainNavigation(Navigation):
             "approve_broadcast_message",
             "reject_broadcast_message",
             "cancel_broadcast_message",
-            "remove_custom_area",
             "view_broadcast_versions",
             "choose_extra_content",
             "add_extra_content",
