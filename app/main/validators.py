@@ -59,18 +59,29 @@ class ValidEmail:
             raise ValidationError(self.message)
 
 
-class NoDuplicateEmails:
+class NoDuplicates:
     def __call__(self, form, field):
         if not field.data:
             return
 
-        # Build list of all emails in the FieldList
-        emails = [f.data.lower() for f in form.emails if f.data]
+        # Field names look like: "emails-1", "emails-2", "emails-3"
+        # Extract the prefix before the dash
+        prefix = field.name.split("-", 1)[0]
 
-        # Count occurrences
-        if emails.count(field.data.lower()) > 1:
-            field.errors[:] = ["Duplicate email address"]
-            raise ValidationError("Duplicate email address")
+        # Singularise if ending in "s"
+        if prefix.endswith("s"):
+            singular = prefix[:-1]
+        else:
+            singular = prefix
+
+        # Build list of all values in the FieldList
+        values = [f.data.lower() for f in getattr(form, prefix) if f.data]
+
+        # Check duplicates
+        if values.count(field.data.lower()) > 1:
+            message = f"Duplicate {singular} entered"
+            field.errors[:] = [message]
+            raise ValidationError(message)
 
 
 class BlockedEmailDomain:
