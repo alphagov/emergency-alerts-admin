@@ -54,6 +54,7 @@ from app.formatters import (
     split_text_by_newline,
 )
 from app.main.validators import (
+    BlockedEmailDomain,
     BroadcastLength,
     CharactersNotAllowed,
     CommonlyUsedPassword,
@@ -1452,6 +1453,27 @@ class Triage(StripWhitespaceForm):
 
 class AdminNotesForm(StripWhitespaceForm):
     notes = TextAreaField(validators=[])
+
+
+class AdminNotificationEmailsForm(StripWhitespaceForm):
+    def populate(self, email_list):
+        for index, value in enumerate(email_list):
+            self.emails[index].data = value
+
+    emails = FieldList(
+        StripWhitespaceStringField(
+            "",
+            validators=[
+                ValidEmail(),
+                BlockedEmailDomain(),
+                Optional(),
+            ],
+            default="",
+        ),
+        min_entries=40,
+        max_entries=40,
+        label="Email addresses",
+    )
 
 
 class ServiceOnOffSettingForm(StripWhitespaceForm):
