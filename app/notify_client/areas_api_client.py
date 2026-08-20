@@ -2,6 +2,7 @@ from app.notify_client import AdminAPIClient
 
 
 class AreasAPIClient(AdminAPIClient):
+
     def get_libraries(self):
         return self.get(url="/areas/geography-types")["data"]
 
