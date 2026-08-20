@@ -59,6 +59,20 @@ class ValidEmail:
             raise ValidationError(self.message)
 
 
+class NoDuplicateEmails:
+    def __call__(self, form, field):
+        if not field.data:
+            return
+
+        # Build list of all emails in the FieldList
+        emails = [f.data.lower() for f in form.emails if f.data]
+
+        # Count occurrences
+        if emails.count(field.data.lower()) > 1:
+            field.errors[:] = ["Duplicate email address"]
+            raise ValidationError("Duplicate email address")
+
+
 class BlockedEmailDomain:
     def __call__(self, form, field):
         if field.data == "":

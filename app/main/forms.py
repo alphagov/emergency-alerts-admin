@@ -64,6 +64,7 @@ from app.main.validators import (
     MustContainAlphanumericCharacters,
     NameMustBeDifferent,
     NoCommasInPlaceHolders,
+    NoDuplicateEmails,
     NoPlaceholders,
     Only2DecimalPlaces,
     Only6DecimalPlaces,
@@ -1466,6 +1467,7 @@ class AdminNotificationEmailsForm(StripWhitespaceForm):
             validators=[
                 ValidEmail(),
                 BlockedEmailDomain(),
+                NoDuplicateEmails(),
                 Optional(),
             ],
             default="",
