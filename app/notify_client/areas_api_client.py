@@ -32,10 +32,6 @@ class AreasAPIClient(AdminAPIClient):
         data = {"area_names": names}
         return self.post(url=f"/areas/get-{type_name}-by-names", data=data)["data"]
 
-    def get_polygons(self, area_ids):
-        data = {"areas": area_ids}
-        return self.post(url="/areas/polygons", data=data)["data"]
-
     def get_area_dict(self, area_ids):
         data = {"area_ids": area_ids}
         return self.post(url="/areas/get-area-dict", data=data)
