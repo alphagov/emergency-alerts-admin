@@ -17,7 +17,7 @@ class BaseBroadcast(JSONModel):
     @cached_property
     def areas(self):
         """
-        Returns list of Area objects for areas in `areas` in brodacast dictionary
+        Returns list of Area objects for areas in `areas` in broadcast dictionary
         """
         areas_data = self._dict.get("areas", {})
         if "ids" in areas_data:
