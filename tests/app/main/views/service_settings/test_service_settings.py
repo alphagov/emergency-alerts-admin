@@ -1272,10 +1272,7 @@ def test_alert_notification_addresses_update(
     )
 
     # Build expected sorted list (route sorts alphabetically)
-    expected = sorted(
-        [{"service_id": SERVICE_ONE_ID, "email_address": e} for e in email],
-        key=lambda x: x["email_address"],
-    )
+    expected = sorted(email)
 
     mock_update_service.assert_called_with(
         SERVICE_ONE_ID,
