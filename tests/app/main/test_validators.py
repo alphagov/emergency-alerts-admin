@@ -233,11 +233,11 @@ def test_no_duplicate_allows_unique_values(values):
 )
 def test_duplicate_raises_validation_error(values, index):
     fields = [
-        _Field("emails-0", values[0]),
-        _Field("emails-1", values[1]),
-        _Field("emails-2", values[2]),
+        _Field("email-0", values[0]),
+        _Field("email-1", values[1]),
+        _Field("email-2", values[2]),
     ]
-    form = _Form("emails", fields)
+    form = _Form("email", fields)
 
     validator = NoDuplicates()
 

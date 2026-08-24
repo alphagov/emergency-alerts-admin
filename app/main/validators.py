@@ -67,18 +67,12 @@ class NoDuplicates:
         # Extract the prefix before the dash
         prefix = field.name.split("-", 1)[0]
 
-        # Singularise if ending in "s"
-        if prefix.endswith("s"):
-            singular = prefix[:-1]
-        else:
-            singular = prefix
-
         # Build list of all values in the FieldList
         values = [f.data.lower() for f in getattr(form, prefix) if f.data]
 
         # Check duplicates
         if values.count(field.data.lower()) > 1:
-            message = f"Duplicate {singular} entered"
+            message = f"Duplicate {prefix} entered"
             field.errors[:] = [message]
             raise ValidationError(message)
 

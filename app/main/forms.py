@@ -1458,9 +1458,9 @@ class AdminNotesForm(StripWhitespaceForm):
 class AdminNotificationEmailsForm(StripWhitespaceForm):
     def populate(self, email_list):
         for index, value in enumerate(email_list):
-            self.emails[index].data = value
+            self.email[index].data = value
 
-    emails = FieldList(
+    email = FieldList(
         StripWhitespaceStringField(
             "",
             validators=[

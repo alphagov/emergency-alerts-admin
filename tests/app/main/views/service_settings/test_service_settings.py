@@ -1187,22 +1187,22 @@ def test_alert_notification_addresses_view(
     assert labels[2].text.strip() == "email address number  + 3."
 
     inputs = page.select("input.govuk-input--numbered")
-    assert inputs[0]["name"] == "emails-1"
-    assert inputs[1]["name"] == "emails-2"
-    assert inputs[2]["name"] == "emails-3"
+    assert inputs[0]["name"] == "email-1"
+    assert inputs[1]["name"] == "email-2"
+    assert inputs[2]["name"] == "email-3"
 
     # add and remove buttons added client side, so can't test here
 
     legend = page.select_one("legend.govuk-fieldset__legend")
     assert legend.text.strip() == "Email addresses"
 
-    container = page.select_one("#list-entry-emails")
+    container = page.select_one("#list-entry-email")
     assert container is not None
     assert container["data-list-item-name"] == "email address"
 
 
 @pytest.mark.parametrize(
-    "emails, expected_error",
+    "email, expected_error",
     [
         # Duplicate emails
         (["a@test.com", "a@test.com"], "Duplicate email entered"),
@@ -1216,7 +1216,7 @@ def test_alert_notification_addresses_view(
 def test_alert_notification_addresses_validation(
     client_request,
     platform_admin_user,
-    emails,
+    email,
     expected_error,
 ):
     client_request.login(platform_admin_user)
@@ -1224,7 +1224,7 @@ def test_alert_notification_addresses_validation(
     page = client_request.post(
         ".edit_service_notification_emails",
         service_id=SERVICE_ONE_ID,
-        _data={f"emails-{i+1}": e for i, e in enumerate(emails)},
+        _data={f"email-{i+1}": e for i, e in enumerate(email)},
         _expected_status=200,
     )
 
@@ -1244,7 +1244,7 @@ def test_alert_notification_addresses_validation(
 
 
 @pytest.mark.parametrize(
-    "emails",
+    "email",
     [
         # Single email update
         ["new@test.com"],
@@ -1256,7 +1256,7 @@ def test_alert_notification_addresses_update(
     client_request,
     platform_admin_user,
     mock_update_service,
-    emails,
+    email,
 ):
     client_request.login(platform_admin_user)
 
@@ -1264,7 +1264,7 @@ def test_alert_notification_addresses_update(
     client_request.post(
         ".edit_service_notification_emails",
         service_id=SERVICE_ONE_ID,
-        _data={f"emails-{i+1}": e for i, e in enumerate(emails)},
+        _data={f"email-{i+1}": e for i, e in enumerate(email)},
         _expected_redirect=url_for(
             ".service_settings",
             service_id=SERVICE_ONE_ID,
@@ -1273,7 +1273,7 @@ def test_alert_notification_addresses_update(
 
     # Build expected sorted list (route sorts alphabetically)
     expected = sorted(
-        [{"service_id": SERVICE_ONE_ID, "email_address": e} for e in emails],
+        [{"service_id": SERVICE_ONE_ID, "email_address": e} for e in email],
         key=lambda x: x["email_address"],
     )
 

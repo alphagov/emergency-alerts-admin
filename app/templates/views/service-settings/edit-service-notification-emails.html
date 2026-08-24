@@ -17,7 +17,7 @@
 
 {% block maincolumn_content %}
 
-  {% if form.emails.errors %}
+  {% if form.email.errors %}
     {% call banner_wrapper(type='dangerous') %}
 
       <h1 class='banner-title'>
@@ -25,7 +25,7 @@
       </h1>
 
       <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
-        {% for field_errors in form.emails.errors %}
+        {% for field_errors in form.email.errors %}
           {% if field_errors %}
             <li>Item {{ loop.index }}: {{ field_errors[0] }}</li>
           {% endif %}
@@ -43,7 +43,7 @@
       </p>
       {% call form_wrapper() %}
         {{ list_entry(
-          form.emails,
+          form.email,
           item_name='email address',
           autocomplete=False
         ) }}

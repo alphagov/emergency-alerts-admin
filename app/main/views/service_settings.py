@@ -260,10 +260,10 @@ def edit_service_notes(service_id):
 @user_is_platform_admin
 def edit_service_notification_emails(service_id):
     current_emails = sorted(item["email_address"] for item in current_service.alert_notification_addresses)
-    form = AdminNotificationEmailsForm(emails=current_emails)
+    form = AdminNotificationEmailsForm(email=current_emails)
 
     if form.validate_on_submit():
-        submitted_emails = sorted([e for e in form.emails.data if e.strip()])
+        submitted_emails = sorted([e for e in form.email.data if e.strip()])
         if submitted_emails == current_emails:
             return redirect(url_for(".service_settings", service_id=service_id))
 
