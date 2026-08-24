@@ -147,7 +147,7 @@ def test_platform_admin_sees_correct_description_of_broadcast_service_setting(
     client_request.login(create_platform_admin_user(), service_one)
     page = client_request.get("main.service_settings", service_id=SERVICE_ONE_ID)
 
-    broadcast_setting_row = page.select("tr")[-2]
+    broadcast_setting_row = next(row for row in page.select("tr.table-row") if "Emergency alerts" in row.get_text())
     assert normalize_spaces(broadcast_setting_row.select("td")[0].text) == "Emergency alerts"
     broadcast_setting_description = broadcast_setting_row.select("td")[1].text
     assert normalize_spaces(broadcast_setting_description) == expected_text
