@@ -13,7 +13,6 @@ from postcode_validator.uk.uk_postcode_regex import postcode_regex
 from wtforms import ValidationError
 
 from app.main._commonly_used_passwords import commonly_used_passwords
-from app.utils.email_validators import is_blocked_email_domain
 from app.utils.user import is_gov_user
 
 
@@ -81,16 +80,6 @@ class NoDuplicates:
         if values.count(field.data.lower()) > 1:
             message = f"Duplicate {singular} entered"
             field.errors[:] = [message]
-            raise ValidationError(message)
-
-
-class BlockedEmailDomain:
-    def __call__(self, form, field):
-        if field.data == "":
-            return
-
-        message = "You cannot enter a personal email address"
-        if is_blocked_email_domain(field.data.lower()):
             raise ValidationError(message)
 
 

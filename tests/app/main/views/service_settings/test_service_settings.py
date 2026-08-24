@@ -1207,10 +1207,6 @@ def test_alert_notification_addresses_view(
         # Duplicate emails
         (["a@test.com", "a@test.com"], "Duplicate email entered"),
         (["x@test.com", "y@test.com", "x@test.com"], "Duplicate email entered"),
-        # Non-work / personal emails
-        (["a@test.com", "a@gmail.com"], "You cannot enter a personal email address"),
-        (["x@outlook.com", "y@gmail.com", "x@yahoo.com"], "You cannot enter a personal email address"),
-        (["x@outlook.com", "y@test.com"], "You cannot enter a personal email address"),
         # Invalid email format
         (["atest.com", "agmail.com"], "Enter a valid email address"),
         (["xoutlook.com", "ygmail.com", "x@test.com"], "Enter a valid email address"),

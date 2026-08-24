@@ -54,7 +54,6 @@ from app.formatters import (
     split_text_by_newline,
 )
 from app.main.validators import (
-    BlockedEmailDomain,
     BroadcastLength,
     CharactersNotAllowed,
     CommonlyUsedPassword,
@@ -1466,7 +1465,6 @@ class AdminNotificationEmailsForm(StripWhitespaceForm):
             "",
             validators=[
                 ValidEmail(),
-                BlockedEmailDomain(),
                 NoDuplicates(),
                 Optional(),
             ],
