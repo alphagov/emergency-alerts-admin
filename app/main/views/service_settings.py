@@ -267,8 +267,7 @@ def edit_service_notification_emails(service_id):
         if submitted_emails == current_emails:
             return redirect(url_for(".service_settings", service_id=service_id))
 
-        new_email_dict = [{"service_id": current_service.id, "email_address": email} for email in submitted_emails]
-        current_service.update(alert_notification_addresses=new_email_dict)
+        current_service.update(alert_notification_addresses=submitted_emails)
         return redirect(url_for(".service_settings", service_id=service_id))
 
     return render_template(
