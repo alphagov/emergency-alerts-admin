@@ -1472,8 +1472,8 @@ class AdminNotificationEmailsForm(StripWhitespaceForm):
             ],
             default="",
         ),
-        min_entries=40,
-        max_entries=40,
+        min_entries=60,
+        max_entries=60,
         label="Email addresses",
     )
 
