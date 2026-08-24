@@ -628,7 +628,7 @@ def search_flood_warning_areas(service_id, message_type, message_id=None):
             template_folder_id=template_folder_id,
             message=message,
             message_type=message_type,
-            redirect_url=get_redirect_url(), # redirect URL for when an area is removed
+            redirect_url=get_redirect_url(),  # redirect URL for when an area is removed
         )
 
     if form.validate_on_submit():
