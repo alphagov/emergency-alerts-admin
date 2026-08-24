@@ -572,27 +572,31 @@ def search_flood_warning_areas(service_id, message_type, message_id=None):
     form = FloodWarningForm()
 
     def get_back_link_url():
-        request_url = ""
         # If there's a Flood Warning area added, the back link will just take them to view
         # the alert/template, you cannot choose a new library to select areas from as
         # Flood Warning areas can't be combined with other areas
-        if len(message.areas) > 0:
+
+        # Sets default request_url
+        request_url = url_for(
+            ".choose_library",
+            service_id=service_id,
+            message_id=message_id,
+            message_type=message_type,
+        )
+        if message and message.areas:
             if Message is BroadcastMessage:
                 request_url = url_for(
                     ".view_current_broadcast",
                     service_id=service_id,
                     broadcast_message_id=message.id,
                 )
-            else:
+            elif Message is Template:
                 request_url = url_for(
                     ".view_template",
                     service_id=service_id,
                     template_id=message.id,
                 )
-        else:
-            request_url = url_for(
-                ".choose_library", service_id=service_id, message_id=message_id, message_type=message_type
-            )
+
         return request_url
 
     def get_redirect_url():
@@ -624,7 +628,7 @@ def search_flood_warning_areas(service_id, message_type, message_id=None):
             template_folder_id=template_folder_id,
             message=message,
             message_type=message_type,
-            redirect_url=get_redirect_url(),
+            redirect_url=get_redirect_url(),  # redirect URL for when an area is removed
         )
 
     if form.validate_on_submit():
