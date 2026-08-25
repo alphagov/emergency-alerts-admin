@@ -506,26 +506,29 @@ def search_coordinates(service_id, coordinate_type, message_type, message_id=Non
                     message_type=message_type,
                 )
             elif Message is Template:
-                # No existing template: create a new template seeded with this custom area
+                # No existing template: create a new template
                 message = Message.create_from_area(
                     service_id=service_id,
                     template_folder_id=template_folder_id,
                     area_ids=[id],
                 )
-            if Message is BroadcastMessage:
+            if Message is BroadcastMessage and message.duration:
                 return redirect(
                     url_for(
-                        ".preview_broadcast_message" if message.duration else ".choose_broadcast_duration",
+                        ".choose_broadcast_duration",
                         service_id=service_id,
+                        message_id=message.id,
+                        message_type=message_type,
                         broadcast_message_id=message.id,
                     ),
                 )
             else:
                 return redirect(
                     url_for(
-                        ".view_template",
+                        ".preview_areas",
                         service_id=service_id,
-                        template_id=message.id,
+                        message_id=message.id,
+                        message_type=message_type,
                     )
                 )
     return render_coordinates_page(
@@ -616,7 +619,7 @@ def search_flood_warning_areas(service_id, message_type, message_id=None):
             template_folder_id=template_folder_id,
             message=message,
             message_type=message_type,
-            redirect_url=get_redirect_url(), # redirect URL for when an area is removed
+            redirect_url=get_redirect_url(),  # redirect URL for when an area is removed
         )
 
     if form.validate_on_submit():
