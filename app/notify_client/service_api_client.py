@@ -65,6 +65,7 @@ class ServiceAPIClient(AdminAPIClient):
         data = _attach_current_user(kwargs)
         disallowed_attributes = set(data.keys()) - {
             "active",
+            "alert_notification_addresses",
             "created_by",
             "name",
             "notes",
