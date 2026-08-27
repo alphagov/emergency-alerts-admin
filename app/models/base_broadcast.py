@@ -19,11 +19,13 @@ class BaseBroadcast(JSONModel):
         """
         Returns list of Area objects for areas in `areas` in broadcast dictionary
         """
-        areas_data = self._dict.get("areas", {})
-        if "ids" in areas_data:
-            areas = Areas()
-            return areas.get(areas_data["ids"], areas_data.get("names"))
-        return []
+        areas_data = self._dict.get("areas") or {}
+        area_ids = areas_data.get("ids")
+
+        if not area_ids:
+            return []
+
+        return Areas().get(area_ids, areas_data.get("names"))
 
     @property
     def area_ids(self):
@@ -38,15 +40,13 @@ class BaseBroadcast(JSONModel):
     @property
     def ancestor_areas(self):
         """Returns list of unique parent Areas for Areas"""
-        existing_parent_ids = set()
+        parent_ids = set()
         ancestors = []
         for area in self.areas:
-            if not area.parent:
-                continue
-            if area.parent in existing_parent_ids:
-                continue
-            existing_parent_ids.add(area.parent)
-            ancestors.append(Area.from_geographic_id(area.parent))
+            parent_id = area.parent
+            if parent_id and parent_id not in parent_ids:
+                parent_ids.add(parent_id)
+                ancestors.append(Area.from_geographic_id(parent_id))
         return ancestors
 
     @cached_property
@@ -109,6 +109,6 @@ class BaseBroadcast(JSONModel):
         the bleed is low (down to 500m). Lower density areas have longer
         range masts, so the typical bleed will be high (up to 5,000m).
         """
-        phone_density = self.count_of_phones / (self.estimated_area) * 3.86e-7  # Square metres to square miles
-        estimated_bleed = 5_900 - (math.log(phone_density, 10) * 1_250)
+        phone_density = self.count_of_phones / self.estimated_area * 3.86e-7  # Square metres to square miles
+        estimated_bleed = 5_900 - (math.log10(phone_density) * 1_250)
         return max(500, min(estimated_bleed, 5000))
