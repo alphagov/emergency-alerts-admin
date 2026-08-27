@@ -40,10 +40,7 @@ class AreasAPIClient(AdminAPIClient):
         data = {"area_ids": area_ids}
         if type_name:
             data["type_name"] = type_name
-        if message_type == "broadcast":
-            return self.post(url=f"/areas/{service_id}/{message_id}/add-areas", data=data)
-        elif message_type == "templates":
-            return self.post(url=f"/areas/{service_id}/{message_id}/add-areas-template", data=data)
+        return self.post(url=f"/areas/{service_id}/{message_id}/{message_type}/add-areas", data=data)
 
     def get_postcode_centroid(self, area_id):
         data = {"postcode": area_id}
@@ -55,10 +52,7 @@ class AreasAPIClient(AdminAPIClient):
 
     def add_postcode_area(self, message_id, service_id, postcode, radius, message_type):
         data = {"type_name": "postcodes", "postcode": postcode, "radius": radius}
-        if message_type == "broadcast":
-            return self.post(url=f"/areas/{service_id}/{message_id}/add-postcodes-area", data=data)
-        elif message_type == "templates":
-            return self.post(url=f"/areas/{service_id}/{message_id}/add-postcodes-area-template", data=data)
+        return self.post(url=f"/areas/{service_id}/{message_id}/{message_type}/add-postcodes-area", data=data)
 
     def get_coordinate_centroid(self, first_coordinate, second_coordinate, coordinate_type):
         data = {
@@ -86,10 +80,7 @@ class AreasAPIClient(AdminAPIClient):
             "radius": radius,
             "coordinate_type": coordinate_type,
         }
-        if message_type == "broadcast":
-            return self.post(url=f"/areas/{service_id}/{message_id}/add-coordinates-area", data=data)
-        elif message_type == "templates":
-            return self.post(url=f"/areas/{service_id}/{message_id}/add-coordinates-area-template", data=data)
+        return self.post(url=f"/areas/{service_id}/{message_id}/{message_type}/add-coordinates-area", data=data)
 
     def check_coordinates_valid(self, first_coordinate, second_coordinate, coordinate_type):
         data = {
@@ -101,10 +92,7 @@ class AreasAPIClient(AdminAPIClient):
 
     def remove_area(self, message_id, service_id, area_id, message_type):
         data = {"area_id": area_id}
-        if message_type == "broadcast":
-            return self.post(url=f"/areas/{service_id}/{message_id}/remove-area", data=data)
-        elif message_type == "templates":
-            return self.post(url=f"/areas/{service_id}/{message_id}/remove-area-template", data=data)
+        return self.post(url=f"/areas/{service_id}/{message_id}/{message_type}/remove-area", data=data)
 
 
 areas_api_client = AreasAPIClient()
