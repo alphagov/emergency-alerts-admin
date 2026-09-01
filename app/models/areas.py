@@ -78,6 +78,9 @@ class Area:
         the bleed is low (down to 500m). Lower density areas have longer
         range masts, so the typical bleed will be high (up to 5,000m).
         """
+        if count_of_phones <= 0 or estimated_area <= 0:
+            return 0
+
         phone_density = count_of_phones / (estimated_area) * 3.86e-7  # Square metres to square miles
         estimated_bleed = 5_900 - (math.log(phone_density, 10) * 1_250)
         return max(500, min(estimated_bleed, 5000))

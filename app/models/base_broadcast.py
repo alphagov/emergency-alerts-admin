@@ -1,6 +1,7 @@
 import math
 
 from emergency_alerts_utils.polygons import Polygons
+from shapely import Polygon
 from werkzeug.utils import cached_property
 
 from app.models import JSONModel
@@ -80,6 +81,10 @@ class BaseBroadcast(JSONModel):
         bleed = self.calculate_bleed()
         return self.simple_polygons.bleed_by(bleed)
 
+    @cached_property
+    def has_valid_area(self):
+        return all(Polygon(polygon).is_valid for polygon in self.simple_polygons)
+
     @classmethod
     def add_areas(cls, id, service_id, new_area_ids, message_type="broadcast", type_name=None):
         return cls(areas_api_client.add_areas(id, service_id, new_area_ids, message_type, type_name))
@@ -109,6 +114,8 @@ class BaseBroadcast(JSONModel):
         the bleed is low (down to 500m). Lower density areas have longer
         range masts, so the typical bleed will be high (up to 5,000m).
         """
+        if self.count_of_phones <= 0 or self.estimated_area <= 0:
+            return 0
         phone_density = self.count_of_phones / self.estimated_area * 3.86e-7  # Square metres to square miles
         estimated_bleed = 5_900 - (math.log10(phone_density) * 1_250)
         return max(500, min(estimated_bleed, 5000))

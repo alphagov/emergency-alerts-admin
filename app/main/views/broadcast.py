@@ -35,13 +35,13 @@ from app.models.broadcast_message import BroadcastMessage, BroadcastMessages
 from app.models.template import Template
 from app.utils import service_has_permission
 from app.utils.broadcast import (
+    INVALID_AREA_ERROR_TEXT,
     _get_back_link_from_view_broadcast_endpoint,
     check_for_missing_fields,
     format_areas_list,
     format_areas_list_with_parent,
     generate_geojson,
     generate_unsigned_xml,
-    generate_wkt,
     get_alert_redirect_url,
     get_changed_alert_form_data,
     get_changed_extra_content_form_data,
@@ -604,6 +604,10 @@ def preview_broadcast_message(service_id, broadcast_message_id):
     )
     areas = format_areas_list(broadcast_message.areas)
 
+    if not broadcast_message.has_valid_area:
+        errors = [{"text": INVALID_AREA_ERROR_TEXT}]
+        return render_preview_alert_page(broadcast_message, areas, errors)
+
     if request.method == "POST":
         try:
             broadcast_message.check_can_update_status("pending-approval")
@@ -639,6 +643,10 @@ def submit_broadcast_message(service_id, broadcast_message_id):
         return render_current_alert_page(broadcast_message, hide_stop_link=True)
 
     if errors := check_for_missing_fields(broadcast_message):
+        return render_current_alert_page(broadcast_message, hide_stop_link=True, errors=errors)
+
+    if not broadcast_message.has_valid_area:
+        errors = [{"text": INVALID_AREA_ERROR_TEXT}]
         return render_current_alert_page(broadcast_message, hide_stop_link=True, errors=errors)
 
     broadcast_message.request_approval()
@@ -1110,7 +1118,7 @@ def alert_summary_email(service_id, broadcast_message_id):
             alert_summary=form.alert_summary.data,
             phone_estimate=phone_estimate,
             duration=duration_display,
-            wkt=generate_wkt(broadcast_message),
+            wkt=broadcast_message.simple_polygons.as_wkt,
             areas=format_areas_list_with_parent(broadcast_message.areas),
         )
 
