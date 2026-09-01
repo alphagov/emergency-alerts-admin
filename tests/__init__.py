@@ -260,8 +260,7 @@ def template_json(
         "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f"),
         "archived": archived,
         "folder": folder,
-        "areas": areas
-        or {"ids": ["ctry19-E92000001", "ctry19-S92000003"], "simple_polygons": [], "aggregate_names": []},
+        "areas": areas or {"ids": ["E92000001", "S92000003"], "simple_polygons": [], "aggregate_names": []},
     }
     if content is None:
         template["content"] = "template content"
@@ -422,6 +421,8 @@ def broadcast_message_json(
     cancelled_by_id=None,
     areas=None,
     area_ids=None,
+    area_names=None,
+    aggregate_names=None,
     simple_polygons=None,
     content=None,
     cap_event=None,
@@ -450,11 +451,16 @@ def broadcast_message_json(
         "reference": reference,
         "cap_event": cap_event,
         "personalisation": {},
-        "areas": areas
-        or {
-            "ids": area_ids or ["ctry19-E92000001", "ctry19-S92000003"],
-            "simple_polygons": simple_polygons or [],
-        },
+        "areas": (
+            areas
+            if areas is not None
+            else {
+                "ids": area_ids if area_ids is not None else ["E92000001", "S92000003"],
+                "names": area_names if area_names is not None else ["England", "Scotland"],
+                "aggregate_names": (aggregate_names if aggregate_names is not None else ["England", "Scotland"]),
+                "simple_polygons": simple_polygons if simple_polygons is not None else [],
+            }
+        ),
         "status": status,
         "duration": duration,
         "starts_at": starts_at,
@@ -502,7 +508,7 @@ def broadcast_message_version_json(
         "reference": reference,
         "personalisation": {},
         "areas": {
-            "ids": ["ctry19-E92000001"],
+            "ids": ["E92000001"],
             "simple_polygons": MULTIPLE_ENGLAND,
             "names": ["England"],
             "aggregate_names": ["England"],
