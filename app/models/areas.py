@@ -22,11 +22,14 @@ class Area:
         self.name = data.get("name")
         self.parent = data.get("parent")
         self.geography_type = data.get("geography_type")
+        self.geometry_wkt = data.get("geometry_wkt")
+
+        # Not returned from API but created with `from_wkt` method and used
+        # for rendering areas on custom area pages
         self.count_of_phones = data.get("count_of_phones")
         self.estimated_area = data.get("estimated_area")
-        self.estimated_area_with_bleed = data.get("estimated_area")
+        self.estimated_area_with_bleed = data.get("estimated_area_with_bleed")
         self.bleed = data.get("bleed")
-        self.geometry_wkt = data.get("geometry_wkt")
 
     @cached_property
     def polygons(self):
@@ -103,7 +106,7 @@ class Area:
         if count_of_phones <= 0 or estimated_area <= 0:
             return 0
 
-        phone_density = count_of_phones / (estimated_area) * 3.86e-7  # Square metres to square miles
+        phone_density = count_of_phones / (estimated_area * 3.86e-7)  # Square metres to square miles
         estimated_bleed = 5_900 - (math.log(phone_density, 10) * 1_250)
         return max(500, min(estimated_bleed, 5000))
 
