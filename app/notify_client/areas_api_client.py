@@ -28,6 +28,10 @@ class AreasAPIClient(AdminAPIClient):
     def get_area_by_geographic_id(self, id):
         return self.get(url=f"/areas/geographic_id/{id}")["data"]
 
+    def get_polygons(self, area_id):
+        data = {"area_id": area_id}
+        return self.post(url="/areas/polygons", data=data)["data"]
+
     def get_areas_by_names(self, names, type_name):
         data = {"area_names": names}
         return self.post(url=f"/areas/get-{type_name}-by-names", data=data)["data"]

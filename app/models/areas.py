@@ -3,6 +3,7 @@ import math
 from emergency_alerts_utils.polygons import Polygons
 from emergency_alerts_utils.serialised_model import SerialisedModelCollection
 from shapely import wkt
+from werkzeug.utils import cached_property
 
 from app.models import ModelList
 from app.notify_client.areas_api_client import areas_api_client
@@ -25,6 +26,27 @@ class Area:
         self.estimated_area = data.get("estimated_area")
         self.estimated_area_with_bleed = data.get("estimated_area")
         self.bleed = data.get("bleed")
+        self.geometry_wkt = data.get("geometry_wkt")
+
+    @cached_property
+    def polygons(self):
+        if self.geography_type in ["coordinates", "postcodes"]:
+            # No geometry_wkt returned as not predefined
+            polygon_wkt = areas_api_client.get_polygons(self.id)
+        else:
+            polygon_wkt = self.geometry_wkt
+
+        if not polygon_wkt:
+            return None
+
+        geom = wkt.loads(polygon_wkt)
+        geometries = geom.geoms if geom.geom_type == "MultiPolygon" else [geom]
+
+        return Polygons(
+            polygons=[
+                [[coordinate[0], coordinate[1]] for coordinate in polygon.exterior.coords] for polygon in geometries
+            ]
+        )
 
     @classmethod
     def from_id(cls, id):
@@ -120,11 +142,10 @@ class BroadcastAreaLibrary(SerialisedModelCollection):
         # `examples` stores the hint text displayed for each library
         self.examples = data.get("examples")
         self.route = data.get("route")
-        # self.parent = data.get("parent")
 
         super().__init__([])
 
-    @property
+    @cached_property
     def is_group(self):
         """Returns whether or not the library has areas that are parents,
         i.e. their ID is the parent_geography_id of another area"""
