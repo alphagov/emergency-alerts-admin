@@ -53,14 +53,13 @@ def test_lat_long_order():
     (
         (0, 1_000, 0),  # estimated_area of 0 results in bleed of 0
         (1_000, 0, 0),  # count_of_phones of 0 results in bleed of 0
-        (1, 1, 5_000),  # bleed capped at 5_000
-        (1, 1_000_000_000, 2_667.5),  # normally calculated result
+        (1_000_000_000, 1, 5_000),  # bleed capped at 5,000m
+        (1_000_000_000, 148_600, 2_667.5),  # normally calculated result
+        (1, 1_000_000_000, 500),  # bleed capped at the minimum of 500m
     ),
 )
 def test_estimated_bleed(estimated_area, count_of_phones, expected_bleed_in_m):
-    area = MockArea({"estimated_area": estimated_area})
-
     assert close_enough(
-        Area.calculate_bleed(area.estimated_area, count_of_phones),
+        Area.calculate_bleed(estimated_area, count_of_phones),
         expected_bleed_in_m,
     )
