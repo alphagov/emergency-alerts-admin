@@ -393,9 +393,9 @@ def search_postcodes(service_id, message_type, message_id=None):
                 if Message is BroadcastMessage:
                     return redirect(
                         url_for(
-                            ".preview_broadcast_message" if message.duration else ".choose_broadcast_duration",
+                            ".preview_broadcast_message",
                             service_id=service_id,
-                            broadcast_message_id=message.id,
+                            broadcast_message_id=message_id,
                         ),
                     )
                 elif Message is Template:
@@ -512,25 +512,14 @@ def search_coordinates(service_id, coordinate_type, message_type, message_id=Non
                     template_folder_id=template_folder_id,
                     area_ids=[id],
                 )
-            if Message is BroadcastMessage and message.duration:
-                return redirect(
-                    url_for(
-                        ".choose_broadcast_duration",
-                        service_id=service_id,
-                        message_id=message.id,
-                        message_type=message_type,
-                        broadcast_message_id=message.id,
-                    ),
+            return redirect(
+                url_for(
+                    ".preview_areas",
+                    service_id=service_id,
+                    message_id=message_id,
+                    message_type=message_type,
                 )
-            else:
-                return redirect(
-                    url_for(
-                        ".preview_areas",
-                        service_id=service_id,
-                        message_id=message.id,
-                        message_type=message_type,
-                    )
-                )
+            )
     return render_coordinates_page(
         service_id,
         coordinate_type,
@@ -595,7 +584,7 @@ def search_flood_warning_areas(service_id, message_type, message_id=None):
         if message:
             if Message is BroadcastMessage:
                 request_url = url_for(
-                    ".preview_broadcast_message" if message.duration else ".choose_broadcast_duration",
+                    ".preview_broadcast_message",
                     service_id=service_id,
                     broadcast_message_id=message.id,
                 )
