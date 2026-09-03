@@ -40,7 +40,7 @@ def create_postcode_db_id(form):
 
 
 def create_custom_area_polygon(form, postcode):
-    centroid = None
+    centroid, data = None, {}
     radius = float(form.data["radius"]) if form.data["radius"] else 0
     try:
         centroid = areas_api_client.get_postcode_centroid(postcode)
@@ -571,12 +571,14 @@ def generate_geojson(broadcast_message):
                 "type": "Feature",
                 "geometry": {
                     "type": "Polygon",
-                    # geoJSON spec uses WGS84: https://datatracker.ietf.org/doc/html/rfc7946#section-4
-                    "coordinates": area.polygons.as_wgs84_coordinates,
+                    # GeoJSON spec uses WGS84:
+                    # https://datatracker.ietf.org/doc/html/rfc7946#section-4
+                    "coordinates": [polygon],
                 },
-                "properties": {"name": area.__dict__.get("name")},
+                "properties": {"name": area.name},
             }
             for area in areas
+            for polygon in area.polygons.as_wgs84_coordinates
         ],
     }
     return geojson
@@ -610,16 +612,10 @@ def generate_unsigned_xml(broadcast_message, xml_type):
     if xml_type == "ibag":
         is_cap_format = False
 
-    areas: Collection[Area] = broadcast_message.areas
-
     all_area_coordinates = []
-    for area in areas:
-        # An area in a broadcast_message can have multiple polygons (e.g. islands), so we need
-        # to process each one and add it to the 'general' set of areas in the 'event' as used
-        # by the XML logic.
-        coordinate_pairs = area.polygons.as_coordinate_pairs_lat_long
-        for coordinate_pair in coordinate_pairs:
-            all_area_coordinates.append({"polygon": coordinate_pair})
+    # We append each pair of coordinates to the 'general' set of areas in the 'event' as used by the XML logic.
+    for coordinate_pair in broadcast_message.simple_polygons.as_coordinate_pairs_lat_long:
+        all_area_coordinates.append({"polygon": coordinate_pair})
 
     # When in training mode default to 'test' channel if channel is not set.
     # Prevents 500 error in utils.xml.common.validate_channel call later on.
