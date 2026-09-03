@@ -40,15 +40,30 @@ class BaseBroadcast(JSONModel):
 
     @property
     def ancestor_areas(self):
-        """Returns list of unique parent Areas for Areas"""
+        """Returns unique parent Areas, including all ancestor levels."""
+
         parent_ids = set()
         ancestors = []
         for area in self.areas:
-            parent_id = area.parent
-            if parent_id and parent_id not in parent_ids:
+            parent = area
+
+            # Continue while the current area has a parent
+            while parent.parent:
+                # Get the geographic ID of the current area's parent
+                parent_id = parent.parent
+
+                if parent_id in parent_ids:
+                    break
+
                 parent_ids.add(parent_id)
-                ancestors.append(Area.from_geographic_id(parent_id))
-        return ancestors
+
+                # Load the parent Area object using its geographic ID
+                parent = Area.from_geographic_id(parent_id)
+
+                ancestors.append(parent)
+
+        # Return all ancestors sorted alphabetically by area name
+        return sorted(ancestors, key=lambda area: area.name)
 
     @cached_property
     def count_of_phones(self):
