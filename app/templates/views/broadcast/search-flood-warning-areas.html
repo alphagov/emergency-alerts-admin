@@ -110,6 +110,12 @@
       "href": redirect_url,
       "classes": "govuk-button"
       }) }}
+      {{ govukButton({
+        "element": "a",
+        "text": "Add another area",
+        "href": url_for('.choose_library', service_id=current_service.id, message_id=message.id, message_type=message_type),
+        "classes": "govuk-button--secondary govuk-!-margin-bottom-5 govuk-!-margin-left-5"
+      }) }}
     </div>
   {% endif %}
 
