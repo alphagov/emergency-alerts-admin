@@ -131,6 +131,6 @@ class BaseBroadcast(JSONModel):
         """
         if self.count_of_phones <= 0 or self.estimated_area <= 0:
             return 0
-        phone_density = self.count_of_phones / self.estimated_area * 3.86e-7  # Square metres to square miles
+        phone_density = self.count_of_phones / (self.estimated_area * 3.86e-7)  # Square metres to square miles
         estimated_bleed = 5_900 - (math.log10(phone_density) * 1_250)
         return max(500, min(estimated_bleed, 5000))
