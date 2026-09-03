@@ -559,6 +559,7 @@ class MockArea:
         self.estimated_area = data.get("estimated_area")
         self.estimated_area_with_bleed = data.get("estimated_area_with_bleed")
         self.bleed = data.get("bleed")
+        self.geometry_wkt = data.get("geometry_wkt")
 
 
 class MockBroadcastAreaLibrary:
