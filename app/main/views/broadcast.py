@@ -636,6 +636,11 @@ def submit_broadcast_message(service_id, broadcast_message_id):
         broadcast_message_id,
         service_id=current_service.id,
     )
+
+    if not broadcast_message.has_valid_area:
+        errors = [{"text": INVALID_AREA_ERROR_TEXT}]
+        return render_current_alert_page(broadcast_message, hide_stop_link=True, errors=errors)
+
     try:
         broadcast_message.check_can_update_status("pending-approval")
     except HTTPError as e:
@@ -643,10 +648,6 @@ def submit_broadcast_message(service_id, broadcast_message_id):
         return render_current_alert_page(broadcast_message, hide_stop_link=True)
 
     if errors := check_for_missing_fields(broadcast_message):
-        return render_current_alert_page(broadcast_message, hide_stop_link=True, errors=errors)
-
-    if not broadcast_message.has_valid_area:
-        errors = [{"text": INVALID_AREA_ERROR_TEXT}]
         return render_current_alert_page(broadcast_message, hide_stop_link=True, errors=errors)
 
     broadcast_message.request_approval()
@@ -692,6 +693,12 @@ def view_broadcast(service_id, broadcast_message_id):
                     broadcast_message_id=broadcast_message.id,
                 )
             )
+
+    if not broadcast_message.has_valid_area:
+        errors = [{"text": INVALID_AREA_ERROR_TEXT}]
+        return render_current_alert_page(
+            broadcast_message, back_link_url=_get_back_link_from_view_broadcast_endpoint(), errors=errors
+        )
 
     return render_current_alert_page(broadcast_message, back_link_url=_get_back_link_from_view_broadcast_endpoint())
 
