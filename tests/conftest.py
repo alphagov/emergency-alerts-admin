@@ -2892,3 +2892,96 @@ def mock_add_areas_returns_error_for_invalid_input(mocker):
 @pytest.fixture(scope="function")
 def mock_get_areas_by_names_returns_error_for_invalid_input(mocker):
     return mocker.patch("app.areas_api_client.get_areas_by_names")
+
+
+@pytest.fixture(scope="function")
+def mock_get_aberdeen_areas(mocker):
+    return mocker.patch(
+        "app.areas_api_client.get_areas_for_library",
+        return_value=[
+            {
+                "id": "S12000033",
+                "geographic_id": "S12000033",
+                "name": "Aberdeen City",
+                "parent": None,
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "S12000034",
+                "geographic_id": "S12000034",
+                "name": "Aberdeenshire",
+                "parent": None,
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "E07000223",
+                "geographic_id": "E07000223",
+                "name": "Adur",
+                "parent": None,
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "E07000032",
+                "geographic_id": "E07000032",
+                "name": "Amber Valley",
+                "parent": None,
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "S12000041",
+                "geographic_id": "S12000041",
+                "name": "Angus",
+                "parent": None,
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "N09000001",
+                "geographic_id": "N09000001",
+                "name": "Antrim and Newtownabbey",
+                "parent": None,
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "N09000011",
+                "geographic_id": "N09000011",
+                "name": "Ards and North Down",
+                "parent": None,
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "S12000035",
+                "geographic_id": "S12000035",
+                "name": "Argyll and Bute",
+                "parent": None,
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "E07000224",
+                "geographic_id": "E07000224",
+                "name": "Arun",
+                "parent": None,
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "E07000170",
+                "geographic_id": "E07000170",
+                "name": "Ashfield",
+                "parent": None,
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "E07000105",
+                "geographic_id": "E07000105",
+                "name": "Ashford",
+                "parent": None,
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "E07000200",
+                "geographic_id": "E07000200",
+                "name": "Babergh",
+                "parent": None,
+                "geography_type": "local_authorities",
+            },
+        ],
+    )
