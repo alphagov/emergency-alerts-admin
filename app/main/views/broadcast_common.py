@@ -390,22 +390,14 @@ def search_postcodes(service_id, message_type, message_id=None):
                     )
                 elif Message is Template:
                     message = Message.create_from_area(service_id, template_folder_id=template_folder_id, area_ids=[id])
-                if Message is BroadcastMessage:
-                    return redirect(
-                        url_for(
-                            ".preview_broadcast_message",
-                            service_id=service_id,
-                            broadcast_message_id=message_id,
-                        ),
+                return redirect(
+                    url_for(
+                        ".preview_areas",
+                        service_id=service_id,
+                        message_id=message_id,
+                        message_type=message_type,
                     )
-                elif Message is Template:
-                    return redirect(
-                        url_for(
-                            ".view_template",
-                            service_id=service_id,
-                            template_id=message.id,
-                        )
-                    )
+                )
     return render_postcode_page(
         service_id,
         message,
