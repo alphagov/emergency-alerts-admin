@@ -655,7 +655,10 @@ def search_flood_warning_areas_as_a_list(service_id, message_type, message_id=No
             try:
                 message.add_areas(message.id, message.service_id, [*ids], message_type, library.route)
             except Exception as e:
-                form.form_errors = ["Flood Warning TA code not found"]
+                if "appears in the list more than once" in e.message:
+                    form.form_errors = ["All Flood Warning TA codes must be unique"]
+                else:
+                    form.form_errors = ["Flood Warning TA code not found"]
                 form.areas.errors.append(e.message)
                 return render_template(
                     "views/broadcast/search-flood-warnings-list.html",
