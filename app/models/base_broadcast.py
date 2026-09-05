@@ -23,10 +23,13 @@ class BaseBroadcast(JSONModel):
         areas_data = self._dict.get("areas") or {}
         area_ids = areas_data.get("ids")
 
-        if not area_ids:
+        try:
+            return Areas().get(area_ids, areas_data.get("names"))
+        except Exception:
+            # If error returned by API, setting this results
+            # in has_valid_area method returning False
+            self.get_areas_by_id_failed = True
             return []
-
-        return Areas().get(area_ids, areas_data.get("names"))
 
     @property
     def area_ids(self):
@@ -68,6 +71,8 @@ class BaseBroadcast(JSONModel):
     @cached_property
     def count_of_phones(self):
         """Returns the `count_of_phones` sourced via API client method, or 0"""
+        if not self.has_valid_area:
+            return 0
         response = broadcast_message_api_client.get_count_of_phones(self.simple_polygons.as_wkt)
         return response or 0
 
@@ -96,9 +101,24 @@ class BaseBroadcast(JSONModel):
         bleed = self.calculate_bleed()
         return self.simple_polygons.bleed_by(bleed)
 
-    @cached_property
+    @property
     def has_valid_area(self):
-        return all(Polygon(polygon).is_valid for polygon in self.simple_polygons)
+        areas_data = self._dict.get("areas") or {}
+        raw_polygons = areas_data.get("simple_polygons") or []
+
+        if getattr(self, "_area_lookup_failed", False):
+            return False
+
+        if not raw_polygons:
+            return True  # no Area still returns valid
+
+        for coordinates in raw_polygons:
+            if coordinates[0] != coordinates[-1]:
+                # Polygon isn't closed
+                return False
+
+        # returns True only if the all polygons are valid
+        return all(Polygon(coordinates).is_valid for coordinates in raw_polygons)
 
     @classmethod
     def add_areas(cls, id, service_id, new_area_ids, message_type="broadcast", type_name=None):
