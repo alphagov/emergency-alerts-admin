@@ -3527,6 +3527,7 @@ def test_add_postcode_area_to_broadcast(
     mock_get_postcode_centroid,
     mock_get_areas_by_ids,
     mock_get_latest_edit_reason,
+    mock_get_broadcast_returned_for_edit_reasons,
 ):
     mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
     service_one["permissions"] += ["broadcast"]
@@ -3538,6 +3539,7 @@ def test_add_postcode_area_to_broadcast(
             created_by_id=fake_uuid,
             service_id=SERVICE_ONE_ID,
             status="draft",
+            created_at="2020-02-20T10:20:20.000000",
             areas={
                 "ids": ["1km around the postcode BD1 1EE in Bradford"],
                 "simple_polygons": [BD1_1EE_1],
