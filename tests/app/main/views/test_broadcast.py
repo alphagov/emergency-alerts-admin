@@ -1775,6 +1775,7 @@ def test_choose_library_page(
     mock_areas,
     expected_list,
     mock_get_libraries,
+    mock_get_library_example,
 ):
     parent_areas = {
         "E07000081": MockArea(
@@ -1904,6 +1905,7 @@ def test_choose_library_page_with_custom_broadcast(
     expected_list,
     mock_get_libraries,
     mock_get_areas_by_ids,
+    mock_get_library_example,
 ):
     service_one["permissions"] += ["broadcast"]
     mocker.patch(
@@ -1937,7 +1939,13 @@ def test_choose_library_page_with_custom_broadcast(
 
 
 def test_suggested_area_has_correct_link(
-    mocker, client_request, service_one, fake_uuid, active_user_create_broadcasts_permission, mock_get_areas_by_ids
+    mocker,
+    client_request,
+    service_one,
+    fake_uuid,
+    active_user_create_broadcasts_permission,
+    mock_get_areas_by_ids,
+    mock_get_library_example,
 ):
     mocker.patch(
         "app.models.areas.Area.from_geographic_id",

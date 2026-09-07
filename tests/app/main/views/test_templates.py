@@ -1295,6 +1295,7 @@ def test_add_area_to_template(
     mock_add_areas,
     mock_get_libraries,
     mock_get_areas_for_library,
+    mock_get_library_example,
 ):
     page = client_request.get(
         "main.edit_template",

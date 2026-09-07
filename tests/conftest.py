@@ -2731,6 +2731,11 @@ def mock_get_libraries(mocker):
 
 
 @pytest.fixture(scope="function")
+def mock_get_library_example(mocker):
+    return mocker.patch("app.areas_api_client.get_library_example", return_value="")
+
+
+@pytest.fixture(scope="function")
 def mock_get_areas_for_library(mocker):
     return mocker.patch(
         "app.areas_api_client.get_areas_for_library",
