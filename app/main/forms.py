@@ -61,6 +61,7 @@ from app.main.validators import (
     MustContainAlphanumericCharacters,
     NameMustBeDifferent,
     NoCommasInPlaceHolders,
+    NoDuplicates,
     NoPlaceholders,
     Only2DecimalPlaces,
     Only6DecimalPlaces,
@@ -1392,6 +1393,27 @@ class Triage(StripWhitespaceForm):
 
 class AdminNotesForm(StripWhitespaceForm):
     notes = TextAreaField(validators=[])
+
+
+class AdminNotificationEmailsForm(StripWhitespaceForm):
+    def populate(self, email_list):
+        for index, value in enumerate(email_list):
+            self.email[index].data = value
+
+    email = FieldList(
+        StripWhitespaceStringField(
+            "",
+            validators=[
+                ValidEmail(),
+                NoDuplicates(),
+                Optional(),
+            ],
+            default="",
+        ),
+        min_entries=60,
+        max_entries=60,
+        label="Email addresses",
+    )
 
 
 class ServiceOnOffSettingForm(StripWhitespaceForm):

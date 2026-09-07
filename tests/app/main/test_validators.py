@@ -7,6 +7,7 @@ from app.main.validators import (
     CharactersNotAllowed,
     MustContainAlphanumericCharacters,
     NoCommasInPlaceHolders,
+    NoDuplicates,
     OnlySMSCharacters,
     StringsNotAllowed,
     ValidGovEmail,
@@ -187,3 +188,76 @@ def test_string_cannot_contain_string_with_custom_error_message():
         StringsNotAllowed("abc", "123", message="No sequences please")(None, _gen_mock_field("abc"))
 
     assert str(error.value) == "No sequences please"
+
+
+class _Field:
+    def __init__(self, name, data):
+        self.name = name
+        self.data = data
+        self.errors = []
+
+
+class _Form:
+    def __init__(self, fieldlist_name, fields):
+        setattr(self, fieldlist_name, fields)
+
+
+@pytest.mark.parametrize(
+    "values",
+    [
+        ["a@example.com", "b@example.com", "c@example.com"],
+        ["one", "two", "three"],
+    ],
+)
+def test_no_duplicate_allows_unique_values(values):
+    fields = [
+        _Field("emails-0", values[0]),
+        _Field("emails-1", values[1]),
+        _Field("emails-2", values[2]),
+    ]
+    form = _Form("emails", fields)
+
+    validator = NoDuplicates()
+
+    # Should not raise
+    for field in fields:
+        validator(form, field)
+
+
+@pytest.mark.parametrize(
+    "values, index",
+    [
+        (["a@example.com", "a@example.com", ""], 1),
+        (["x", "y", "x"], 2),
+    ],
+)
+def test_duplicate_raises_validation_error(values, index):
+    fields = [
+        _Field("email-0", values[0]),
+        _Field("email-1", values[1]),
+        _Field("email-2", values[2]),
+    ]
+    form = _Form("email", fields)
+
+    validator = NoDuplicates()
+
+    with pytest.raises(ValidationError) as error:
+        validator(form, fields[index])
+
+    assert str(error.value) == "Duplicate email entered"
+    assert fields[index].errors == ["Duplicate email entered"]
+
+
+def test_non_plural_prefix_kept_as_is():
+    fields = [
+        _Field("code-0", "123"),
+        _Field("code-1", "123"),
+    ]
+    form = _Form("code", fields)
+
+    validator = NoDuplicates()
+
+    with pytest.raises(ValidationError) as error:
+        validator(form, fields[1])
+
+    assert str(error.value) == "Duplicate code entered"

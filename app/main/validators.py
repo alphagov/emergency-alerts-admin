@@ -58,6 +58,25 @@ class ValidEmail:
             raise ValidationError(self.message)
 
 
+class NoDuplicates:
+    def __call__(self, form, field):
+        if not field.data:
+            return
+
+        # Field names look like: "emails-1", "emails-2", "emails-3"
+        # Extract the prefix before the dash
+        prefix = field.name.split("-", 1)[0]
+
+        # Build list of all values in the FieldList
+        values = [f.data.lower() for f in getattr(form, prefix) if f.data]
+
+        # Check duplicates
+        if values.count(field.data.lower()) > 1:
+            message = f"Duplicate {prefix} entered"
+            field.errors[:] = [message]
+            raise ValidationError(message)
+
+
 class NoCommasInPlaceHolders:
     def __init__(self, message="You cannot put commas between double brackets"):
         self.message = message

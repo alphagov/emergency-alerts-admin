@@ -38,6 +38,7 @@ FAKE_TEMPLATE_ID = uuid4()
                 "Notes None Change the notes for the service",
                 "Email authentication Off Change your settings for Email authentication",
                 "Emergency alerts Off Change your settings for emergency alerts",
+                "Email notifications for alerts None Change notification email addresses for this service",
             ],
         ),
     ],
@@ -98,6 +99,7 @@ def test_platform_admin_sees_only_relevant_settings_for_broadcast_service(
         "Notes None Change the notes for the service",
         "Email authentication Off Change your settings for Email authentication",
         "Emergency alerts Off Change your settings for emergency alerts",
+        "Email notifications for alerts None Change notification email addresses for this service",
     ]
 
     assert len(rows) == len(expected_rows)
@@ -145,7 +147,7 @@ def test_platform_admin_sees_correct_description_of_broadcast_service_setting(
     client_request.login(create_platform_admin_user(), service_one)
     page = client_request.get("main.service_settings", service_id=SERVICE_ONE_ID)
 
-    broadcast_setting_row = page.select("tr")[-1]
+    broadcast_setting_row = next(row for row in page.select("tr.table-row") if "Emergency alerts" in row.get_text())
     assert normalize_spaces(broadcast_setting_row.select("td")[0].text) == "Emergency alerts"
     broadcast_setting_description = broadcast_setting_row.select("td")[1].text
     assert normalize_spaces(broadcast_setting_description) == expected_text
@@ -1165,4 +1167,114 @@ def test_service_set_broadcast_channel_makes_you_choose(
             service_id=SERVICE_ONE_ID,
             account_type="training-test-all",
         ),
+    )
+
+
+def test_alert_notification_addresses_view(
+    client_request,
+    platform_admin_user,
+):
+    client_request.login(platform_admin_user)
+    page = client_request.get(
+        "main.edit_service_notification_emails",
+        service_id=SERVICE_ONE_ID,
+    )
+    assert page.select_one("h1").text == "Edit service notification emails"
+
+    labels = page.select("label.govuk-input--numbered__label")
+    assert labels[0].text.strip() == "email address number  + 1."
+    assert labels[1].text.strip() == "email address number  + 2."
+    assert labels[2].text.strip() == "email address number  + 3."
+
+    inputs = page.select("input.govuk-input--numbered")
+    assert inputs[0]["name"] == "email-1"
+    assert inputs[1]["name"] == "email-2"
+    assert inputs[2]["name"] == "email-3"
+
+    # add and remove buttons added client side, so can't test here
+
+    legend = page.select_one("legend.govuk-fieldset__legend")
+    assert legend.text.strip() == "Email addresses"
+
+    container = page.select_one("#list-entry-email")
+    assert container is not None
+    assert container["data-list-item-name"] == "email address"
+
+
+@pytest.mark.parametrize(
+    "email, expected_error",
+    [
+        # Duplicate emails
+        (["a@test.com", "a@test.com"], "Duplicate email entered"),
+        (["x@test.com", "y@test.com", "x@test.com"], "Duplicate email entered"),
+        # Invalid email format
+        (["atest.com", "agmail.com"], "Enter a valid email address"),
+        (["xoutlook.com", "ygmail.com", "x@test.com"], "Enter a valid email address"),
+        (["xoutlook.com", "y@test.com"], "Enter a valid email address"),
+    ],
+)
+def test_alert_notification_addresses_validation(
+    client_request,
+    platform_admin_user,
+    email,
+    expected_error,
+):
+    client_request.login(platform_admin_user)
+
+    page = client_request.post(
+        ".edit_service_notification_emails",
+        service_id=SERVICE_ONE_ID,
+        _data={f"email-{i+1}": e for i, e in enumerate(email)},
+        _expected_status=200,
+    )
+
+    banner = page.select_one(".banner-dangerous")
+    assert banner is not None
+
+    title = banner.select_one(".banner-title")
+    assert title is not None
+    assert title.text.strip() == "There is a problem"
+
+    items = banner.select(".govuk-list--bullet li")
+    assert len(items) >= 1
+
+    # Every error item must contain the expected message
+    for item in items:
+        assert expected_error in item.text
+
+
+@pytest.mark.parametrize(
+    "email",
+    [
+        # Single email update
+        ["new@test.com"],
+        # Multiple email update
+        ["new@test.com", "another@test.com"],
+    ],
+)
+def test_alert_notification_addresses_update(
+    client_request,
+    platform_admin_user,
+    mock_update_service,
+    email,
+):
+    client_request.login(platform_admin_user)
+
+    # POST valid emails
+    client_request.post(
+        ".edit_service_notification_emails",
+        service_id=SERVICE_ONE_ID,
+        _data={f"email-{i+1}": e for i, e in enumerate(email)},
+        _expected_redirect=url_for(
+            ".service_settings",
+            service_id=SERVICE_ONE_ID,
+        ),
+    )
+
+    # Build expected sorted list (route sorts alphabetically)
+    expected = sorted(email)
+
+    mock_update_service.assert_called_with(
+        SERVICE_ONE_ID,
+        alert_notification_addresses=expected,
     )

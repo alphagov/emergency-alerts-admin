@@ -1,0 +1,54 @@
+{% extends "withnav_template.html" %}
+{% from "components/page-header.html" import page_header %}
+{% from "components/page-footer.html" import page_footer %}
+{% from "components/list-entry.html" import list_entry %}
+{% from "components/form.html" import form_wrapper %}
+{% from "components/textbox.html" import textbox %}
+{% from "govuk_frontend_jinja/components/back-link/macro.html" import govukBackLink %}
+{% from "components/banner.html" import banner_wrapper %}
+
+{% block service_page_title %}
+  Edit service notification emails
+{% endblock %}
+
+{% block backLink %}
+  {{ govukBackLink({ "href": url_for('.service_settings', service_id=current_service.id) }) }}
+{% endblock %}
+
+{% block maincolumn_content %}
+
+  {% if form.email.errors %}
+    {% call banner_wrapper(type='dangerous') %}
+
+      <h1 class='banner-title'>
+        There is a problem
+      </h1>
+
+      <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+        {% for field_errors in form.email.errors %}
+          {% if field_errors %}
+            <li>Item {{ loop.index }}: {{ field_errors[0] }}</li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+
+    {% endcall %}
+  {% endif %}
+
+  {{ page_header("Edit service notification emails") }}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-five-sixths">
+      <p class="govuk-body">
+        These email addresses will receive email notifications for alerts.
+      </p>
+      {% call form_wrapper() %}
+        {{ list_entry(
+          form.email,
+          item_name='email address',
+          autocomplete=False
+        ) }}
+        {{ page_footer('Save') }}
+      {% endcall %}
+    </div>
+  </div>
+{% endblock %}

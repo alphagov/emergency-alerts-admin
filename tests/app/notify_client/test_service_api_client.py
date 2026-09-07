@@ -112,6 +112,7 @@ def test_client_updates_service_with_allowed_attributes(
 
     allowed_attributes = [
         "active",
+        "alert_notification_addresses",
         "name",
         "notes",
         "organisation_type",
