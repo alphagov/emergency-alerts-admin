@@ -120,6 +120,10 @@ class Area:
         i.e. it is the parent geography of an area that is also a parent geography"""
         return areas_api_client.check_grandparent(self.id)
 
+    @cached_property
+    def is_electoral_ward(self):
+        return self.geography_type == "wards"
+
 
 class Areas(ModelList):
     model = Area
