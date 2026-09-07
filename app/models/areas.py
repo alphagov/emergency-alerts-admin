@@ -124,6 +124,10 @@ class Area:
     def is_electoral_ward(self):
         return self.geography_type == "wards"
 
+    @cached_property
+    def parent_area(self):
+        return areas_api_client.get_area_by_geographic_id(self.parent)
+
 
 class Areas(ModelList):
     model = Area
