@@ -6,6 +6,9 @@ class AreasAPIClient(AdminAPIClient):
     def get_libraries(self):
         return self.get(url="/areas/geography-types")["data"]
 
+    def get_library_example(self, type_name):
+        return self.get(url=f"/areas/geography-types/{type_name}/examples")["data"]
+
     def get_areas_for_library(self, type_name):
         return self.get(url=f"/areas/geography-types/{type_name}/areas")["data"]
 

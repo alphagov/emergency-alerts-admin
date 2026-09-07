@@ -143,7 +143,6 @@ class BroadcastAreaLibrary(SerialisedModelCollection):
         # to in the application .i.e. local authority
         self.name_singular = data.get("name_singular")
         # `examples` stores the hint text displayed for each library
-        self.examples = data.get("examples")
         self.route = data.get("route")
 
         super().__init__([])
@@ -153,6 +152,10 @@ class BroadcastAreaLibrary(SerialisedModelCollection):
         """Returns whether or not the library has areas that are parents,
         i.e. their ID is the parent_geography_id of another area"""
         return self.route in ["local_authorities"]
+
+    @cached_property
+    def examples(self):
+        return areas_api_client.get_library_example(self.route)
 
     def get_areas(self):
         """
