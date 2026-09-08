@@ -719,7 +719,10 @@ def search_local_authority_areas_as_a_list(service_id, message_type, message_id=
             area_ids = areas_api_client.get_areas_by_names(ids, "local_authorities")
         except Exception as e:
             form.areas.errors.append(e.message)
-            form.form_errors = ["Local authority not found"]
+            if "appears in the list more than once" in e.message:
+                form.form_errors = ["All local authorities must be unique"]
+            else:
+                form.form_errors = ["Local authority not found"]
             return render_template(
                 "views/broadcast/search-local-authority-list.html",
                 broadcast_message=message,
