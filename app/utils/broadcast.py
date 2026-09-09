@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta, timezone
-from typing import Collection
 
 from emergency_alerts_utils.xml.broadcast import generate_xml_body
 from emergency_alerts_utils.xml.cap import convert_utc_datetime_to_cap_standard_string
@@ -563,7 +562,6 @@ def has_permission_for_message_type(service_id: str, message_type: str) -> bool:
 
 
 def generate_geojson(broadcast_message):
-    areas: Collection[Area] = broadcast_message.areas
     geojson = {
         "type": "FeatureCollection",
         "features": [
@@ -571,14 +569,13 @@ def generate_geojson(broadcast_message):
                 "type": "Feature",
                 "geometry": {
                     "type": "Polygon",
-                    # GeoJSON spec uses WGS84:
-                    # https://datatracker.ietf.org/doc/html/rfc7946#section-4
+                    # geoJSON spec uses WGS84: https://datatracker.ietf.org/doc/html/rfc7946#section-4
                     "coordinates": [polygon],
                 },
-                "properties": {"name": area.name},
+                "properties": {"name": name},
             }
-            for area in areas
-            for polygon in area.polygons.as_wgs84_coordinates
+            for name in broadcast_message.area_names
+            for polygon in broadcast_message.simple_polygons.as_wgs84_coordinates
         ],
     }
     return geojson
