@@ -24,7 +24,9 @@ class BaseBroadcast(JSONModel):
         area_ids = areas_data.get("ids")
 
         try:
-            return Areas().get(area_ids, areas_data.get("names"))
+            areas = Areas().get(area_ids, areas_data.get("names"))
+            self.get_areas_by_id_failed = False
+            return areas
         except Exception:
             # If error returned by API, setting this results
             # in has_valid_area method returning False
@@ -39,7 +41,10 @@ class BaseBroadcast(JSONModel):
     @property
     def area_names(self):
         """Returns list of names for areas in broadcast"""
-        return [area.name for area in self.areas]
+        if self.areas:
+            return [area.name for area in self.areas]
+        if self._dict.get("areas"):
+            return self._dict.get("areas").get("names")
 
     @property
     def ancestor_areas(self):
@@ -106,7 +111,7 @@ class BaseBroadcast(JSONModel):
         areas_data = self._dict.get("areas") or {}
         raw_polygons = areas_data.get("simple_polygons") or []
 
-        if getattr(self, "_area_lookup_failed", False):
+        if getattr(self, "get_areas_by_id_failed", True):
             return False
 
         if not raw_polygons:
