@@ -64,7 +64,7 @@ def view_template(service_id, template_id):
         message=template,
         template_folder_path=current_service.get_template_folder_path(template.folder),
         edit_mode=False,
-        areas=format_areas_list(template.areas),
+        areas=format_areas_list(template.area_names),
     )
 
 
@@ -84,7 +84,7 @@ def edit_template(service_id, template_id):
         message=template,
         template_folder_path=current_service.get_template_folder_path(template.folder),
         edit_mode=True,
-        areas=format_areas_list(template.areas),
+        areas=format_areas_list(template.area_names),
     )
 
 
@@ -745,7 +745,7 @@ def delete_service_template(service_id, template_id):
         template=template,
         message=template,
         template_folder_path=current_service.get_template_folder_path(template.folder),
-        areas=format_areas_list(template.areas),
+        areas=format_areas_list(template.area_names),
     )
 
 

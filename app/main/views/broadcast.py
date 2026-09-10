@@ -602,9 +602,8 @@ def preview_broadcast_message(service_id, broadcast_message_id):
         broadcast_message_id,
         service_id=current_service.id,
     )
-    areas = format_areas_list(broadcast_message.areas)
+    areas = format_areas_list(broadcast_message.area_names)
 
-    areas = broadcast_message.areas
     if not broadcast_message.has_valid_area:
         errors = [{"text": INVALID_AREA_ERROR_TEXT}]
         return render_preview_alert_page(broadcast_message, areas, errors)
@@ -719,7 +718,7 @@ def approve_broadcast_message(service_id, broadcast_message_id):
         max_phones=broadcast_message.count_of_phones,
     )
 
-    areas = format_areas_list(broadcast_message.areas)
+    areas = format_areas_list(broadcast_message.area_names)
 
     try:
         broadcast_message.check_can_update_status("broadcasting")
