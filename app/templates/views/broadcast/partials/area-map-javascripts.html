@@ -5,7 +5,7 @@
   bleed_color = "#1d70b8"
   fill_color = "#5694ca"
 
-  {% if message.areas %}
+  {% if message.simple_polygons %}
     {% for polygon in message.simple_polygons_with_bleed.as_coordinate_pairs_lat_long%}
       polygons.push(
         L.polygon({{polygon}}, {
