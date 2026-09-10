@@ -1,4 +1,5 @@
 {% from "components/banner.html" import banner_wrapper %}
+{% from "govuk_frontend_jinja/components/error-summary/macro.html" import govukErrorSummary %}
 
 <div class="govuk-grid-column-full">
   {% if template.archived %}
@@ -11,6 +12,11 @@
       {{ 1|message_count_label(template.template_type, suffix='') }}
       or edit this template, contact your manager.
     </p>
+  {% elif not template.has_valid_area %}
+    {{ govukErrorSummary({
+      "titleText": "There is a problem",
+      "errorList": [{"text": "The area used is invalid and the template cannot be used to create an alert."}],
+    }) }}
   {% else %}
     <div class="bottom-gutter-2-3">
       <div class="govuk-grid-row">
