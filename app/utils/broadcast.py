@@ -206,6 +206,8 @@ def format_area_name(area_name):
 
 
 def format_areas_list(areas_list):
+    if not areas_list:
+        return []
     return [format_area_name(area) if isinstance(area, str) else format_area_name(area.name) for area in areas_list]
 
 
