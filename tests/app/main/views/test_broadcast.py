@@ -2796,10 +2796,7 @@ def test_add_flood_warning_area(
     )
     mocker.patch(
         "app.areas_api_client.get_areas_by_ids",
-        side_effect=[
-            [],  # Initial page render
-            areas,  # The area has been added
-        ],
+        return_value=areas,
     )
     # Initial GET request should have empty broadcast_message
     empty_broadcast_message = broadcast_message_json(
@@ -2858,7 +2855,7 @@ def test_add_flood_warning_area(
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
         message_type="broadcast",
-        _data={"flood_warning_area": ["011FWCN2M"]},
+        _data={"flood_warning_area": "011FWCN2M", "add_area_button": ""},
         _follow_redirects=True,
     )
 
@@ -7149,6 +7146,12 @@ def test_view_draft_broadcast_message_page(
             extra_content="Test Extra Content",
             reference="Test Template Reference",
             duration=10_800,
+            areas={
+                "ids": ["E92000001", "S92000003"],
+                "names": ["England", "Scotland"],
+                "simple_polygons": MULTIPLE_ENGLAND,
+                "aggregate_names": [],
+            },
         ),
     )
     service_one["permissions"] += ["broadcast"]

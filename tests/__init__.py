@@ -260,7 +260,13 @@ def template_json(
         "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f"),
         "archived": archived,
         "folder": folder,
-        "areas": areas or {"ids": ["E92000001", "S92000003"], "simple_polygons": [], "aggregate_names": []},
+        "areas": areas
+        or {
+            "ids": ["E92000001", "S92000003"],
+            "names": ["England", "Scotland"],
+            "simple_polygons": MULTIPLE_ENGLAND,
+            "aggregate_names": [],
+        },
     }
     if content is None:
         template["content"] = "template content"
@@ -458,7 +464,7 @@ def broadcast_message_json(
                 "ids": area_ids if area_ids is not None else ["E92000001", "S92000003"],
                 "names": area_names if area_names is not None else ["England", "Scotland"],
                 "aggregate_names": (aggregate_names if aggregate_names is not None else ["England", "Scotland"]),
-                "simple_polygons": simple_polygons if simple_polygons is not None else [],
+                "simple_polygons": simple_polygons if simple_polygons is not None else MULTIPLE_ENGLAND,
             }
         ),
         "status": status,
