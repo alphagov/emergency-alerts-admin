@@ -43,7 +43,7 @@
         {% endif %}
 
 
-        {% if template.areas %}
+        {% if template.simple_polygons %}
             {% set conditional_area_action_text = "Change" %}
             {% set visually_hidden_area_text = " areas" %}
         {% else %}
@@ -62,17 +62,25 @@
     {% set map_html = map(estimated_area, bleed_estimated_area, count_of_phones, label)%}
 
     {% set areas_html %}
-        <ul class="area-list">
-        {% for area in template.areas %}
-            <li class="area-list-item area-list-item--unremoveable">
-              {{ electoral_ward_descriptor(area) }}
-            </li>
-        {% endfor %}
-        </ul>
+        {% if template.areas %}
+            <ul class="area-list">
+            {% for area in template.areas %}
+                <li class="area-list-item area-list-item--unremoveable">
+                {{ electoral_ward_descriptor(area) }}
+                </li>
+            {% endfor %}
+            </ul>
+        {% elif template.simple_polygons %}
+            {% for name in areas %}
+                <li class="area-list-item area-list-item--unremoveable">
+                {{name}}
+                </li>
+            {% endfor %}
+        {% endif %}
     {% endset %}
 
     {% set conditional_areas %}
-        {% if template.areas %}
+        {% if template.simple_polygons %}
             {{( areas_html | safe ~ " " ~ map_html ) | safe}}
             {{ govukButton({
                 "text": "View larger map",
