@@ -21,10 +21,16 @@ class BaseBroadcast(JSONModel):
         Returns list of Area objects for areas in `areas` in broadcast dictionary
         """
         areas_data = self._dict.get("areas") or {}
-        area_ids = areas_data.get("ids")
+        area_ids = areas_data.get("ids") or []
+        area_names = areas_data.get("names") or []
+
+        if not area_ids and not area_names:
+            # If no IDs or names then dict is likely empty - so doesn't have an invalid area
+            self.get_areas_by_id_failed = False
+            return []
 
         try:
-            areas = Areas().get(area_ids, areas_data.get("names"))
+            areas = Areas().get(area_ids, area_names)
             self.get_areas_by_id_failed = False
             return areas
         except Exception:
@@ -111,7 +117,7 @@ class BaseBroadcast(JSONModel):
         areas_data = self._dict.get("areas") or {}
         raw_polygons = areas_data.get("simple_polygons") or []
 
-        if getattr(self, "get_areas_by_id_failed", True):
+        if hasattr(self, "get_areas_by_id_failed") and self.get_areas_by_id_failed:
             return False
 
         if not raw_polygons:
