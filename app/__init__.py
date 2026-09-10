@@ -35,6 +35,7 @@ from app.config import configs
 from app.extensions import zendesk_client
 from app.formatters import (
     convert_to_boolean,
+    format_area_name,
     format_auth_type,
     format_date,
     format_date_human,
@@ -498,6 +499,7 @@ def add_template_filters(application):
     for fn in [
         convert_to_boolean,
         format_auth_type,
+        format_area_name,
         format_date,
         format_date_human,
         format_date_normal,
