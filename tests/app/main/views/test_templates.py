@@ -1348,7 +1348,9 @@ def test_add_area_to_template(
     )
 
 
-def test_remove_template_area(client_request, fake_uuid, mock_get_template_with_area, mock_get_count_of_phones, mocker):
+def test_remove_template_area(
+    client_request, fake_uuid, mock_get_template_with_area, mock_get_count_of_phones, mocker, mock_get_library_example
+):
     mock_remove_area = mocker.patch(
         "app.models.base_broadcast.areas_api_client.remove_area",
         return_value=template_json(
