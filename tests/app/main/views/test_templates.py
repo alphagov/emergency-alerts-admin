@@ -7,8 +7,12 @@ from flask import url_for
 from freezegun import freeze_time
 
 from app.models.template import Template
-from tests import NotifyBeautifulSoup, template_json, validate_route_permission
-from tests.app.broadcast_areas.custom_polygons import MULTIPLE_ENGLAND
+from tests import (
+    MockArea,
+    NotifyBeautifulSoup,
+    template_json,
+    validate_route_permission,
+)
 from tests.app.main.views.test_template_folders import PARENT_FOLDER_ID, _folder
 from tests.conftest import (
     SERVICE_ONE_ID,
@@ -440,6 +444,7 @@ def test_should_be_able_to_view_a_template_with_links(
     links_to_be_shown,
     permissions_warning_to_be_shown,
     mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     active_user_with_permissions["permissions"][SERVICE_ONE_ID] = permissions + ["view_activity"]
     client_request.login(active_user_with_permissions)
@@ -481,7 +486,21 @@ def test_view_broadcast_template(
     active_user_create_broadcasts_permission,
     mock_get_template_from_id,
     mock_get_count_of_phones,
+    mocker,
 ):
+    mocker.patch(
+        "app.areas_api_client.get_areas_by_ids",
+        return_value=[
+            {
+                "id": "england",
+                "name": "England",
+            },
+            {
+                "id": "scotland",
+                "name": "Scotland",
+            },
+        ],
+    )
     active_user_create_broadcasts_permission["permissions"][SERVICE_ONE_ID].append("manage_templates")
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.get(
@@ -545,7 +564,21 @@ def test_edit_broadcast_template(
     active_user_create_broadcasts_permission,
     mock_get_template_from_id,
     mock_get_count_of_phones,
+    mocker,
 ):
+    mocker.patch(
+        "app.areas_api_client.get_areas_by_ids",
+        return_value=[
+            {
+                "id": "england",
+                "name": "England",
+            },
+            {
+                "id": "scotland",
+                "name": "Scotland",
+            },
+        ],
+    )
     active_user_create_broadcasts_permission["permissions"][SERVICE_ONE_ID].append("manage_templates")
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.get(
@@ -599,7 +632,12 @@ def test_edit_broadcast_template(
 
 
 def test_should_hide_template_id_for_broadcast_templates(
-    client_request, mock_get_template_from_id, mock_get_template_folders, fake_uuid, mock_get_count_of_phones
+    client_request,
+    mock_get_template_from_id,
+    mock_get_template_folders,
+    fake_uuid,
+    mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     page = client_request.get(
         ".view_template",
@@ -772,7 +810,7 @@ def test_should_not_create_too_big_template_for_broadcasts(
 
 
 def test_should_show_delete_template_page_with_escaped_template_name(
-    client_request, mocker, fake_uuid, mock_get_count_of_phones
+    client_request, mocker, fake_uuid, mock_get_count_of_phones, mock_get_areas_by_ids
 ):
     template = template_json(SERVICE_ONE_ID, fake_uuid, reference="<script>evil</script>")
 
@@ -818,6 +856,7 @@ def test_should_show_page_for_a_deleted_template(
     fake_uuid,
     mocker,
     mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     template = template_json(SERVICE_ONE_ID, fake_uuid, reference="Deleted template", archived=True)
 
@@ -853,6 +892,7 @@ def test_route_permissions(
     mock_get_template_folders,
     fake_uuid,
     mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     validate_route_permission(
         mocker,
@@ -1001,7 +1041,12 @@ def test_should_create_broadcast_template_without_downgrading_unicode_characters
 
 
 def test_should_not_show_redaction_stuff_for_broadcasts(
-    client_request, fake_uuid, mock_get_template, mock_get_template_folders, mock_get_count_of_phones
+    client_request,
+    fake_uuid,
+    mock_get_template,
+    mock_get_template_folders,
+    mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     page = client_request.get(
         "main.view_template",
@@ -1240,7 +1285,18 @@ def test_edit_content_redirects_to_write_template_page_and_updates_template(
     )
 
 
-def test_add_area_to_template(client_request, fake_uuid, mock_get_template_with_no_area, mock_update_template):
+def test_add_area_to_template(
+    mocker,
+    client_request,
+    fake_uuid,
+    mock_get_template_with_no_area,
+    mock_update_template,
+    mock_get_count_of_phones,
+    mock_add_areas,
+    mock_get_libraries,
+    mock_get_areas_for_library,
+    mock_get_library_example,
+):
     page = client_request.get(
         "main.edit_template",
         service_id=SERVICE_ONE_ID,
@@ -1278,28 +1334,58 @@ def test_add_area_to_template(client_request, fake_uuid, mock_get_template_with_
         template_id=fake_uuid,
         message_type="templates",
         message_id=fake_uuid,
-        library_slug="ctry19",
-        _data={"areas": "ctry19-E92000001"},
+        library_slug="countries",
+        _data={"areas": "E92000001"},
         _follow_redirects=True,
     )
 
-    mock_update_template.assert_called_with(
-        id_=fake_uuid,
-        data={
-            "areas": {
-                "ids": ["ctry19-E92000001"],
-                "names": ["England"],
-                "aggregate_names": ["England"],
-                "simple_polygons": MULTIPLE_ENGLAND,
-            }
-        },
-        service_id=SERVICE_ONE_ID,
+    mock_add_areas.assert_called_once_with(
+        fake_uuid,
+        SERVICE_ONE_ID,
+        ["E92000001"],
+        "templates",
+        "countries",
     )
 
 
 def test_remove_template_area(
-    client_request, fake_uuid, mock_update_template, mock_get_template_with_area, mock_get_count_of_phones
+    client_request, fake_uuid, mock_get_template_with_area, mock_get_count_of_phones, mocker, mock_get_library_example
 ):
+    mock_remove_area = mocker.patch(
+        "app.models.base_broadcast.areas_api_client.remove_area",
+        return_value=template_json(
+            SERVICE_ONE_ID,
+            fake_uuid,
+            areas={"ids": [], "names": [], "aggregate_names": [], "simple_polygons": []},
+        ),
+    )
+    mocker.patch(
+        "app.areas_api_client.get_libraries",
+        return_value=[
+            {
+                "id": "test-library",
+                "name": "Test Library",
+                "name_singular": "test library",
+                "examples": [],
+                "route": "test-library",
+                "areas": [MockArea({"id": "E92000001", "name": "England"})],
+            }
+        ],
+    )
+    mocker.patch(
+        "app.models.base_broadcast.Areas.get",
+        return_value=[
+            MockArea(
+                {
+                    "id": "E92000001",
+                    "geographic_id": "E92000001",
+                    "name": "England",
+                    "parent": None,
+                    "geography_type": "country",
+                }
+            )
+        ],
+    )
     page = client_request.get(
         "main.edit_template",
         service_id=SERVICE_ONE_ID,
@@ -1327,46 +1413,14 @@ def test_remove_template_area(
         template_id=fake_uuid,
         message_type="templates",
         message_id=fake_uuid,
-        area_slug="ctry19-E92000001",
+        area_slug="E92000001",
         _follow_redirects=True,
     )
 
     # Asserts that Template areas is updated with no area, as only area was removed
-    mock_update_template.assert_called_with(
-        id_=fake_uuid,
-        data={"areas": {"ids": [], "names": [], "aggregate_names": [], "simple_polygons": []}},
-        service_id=SERVICE_ONE_ID,
-    )
-
-
-def test_remove_custom_template_area(
-    client_request, fake_uuid, mock_update_template, mock_get_template_with_custom_area, mock_get_count_of_phones
-):
-    page = client_request.get(
-        "main.preview_areas",
-        service_id=SERVICE_ONE_ID,
-        template_id=fake_uuid,
-        message_type="templates",
-        message_id=fake_uuid,
-    )
-    assert normalize_spaces(page.select(".heading-large")) == "Confirm the area for the template"
-    assert normalize_spaces(page.select_one(".area-list-item").text) == (
-        "5km around 54.0 latitude, -1.7 longitude, in Harrogate Remove 5km "
-        + "around 54.0 latitude, -1.7 longitude, in Harrogate"
-    )
-
-    page = client_request.get(
-        "main.remove_custom_area",
-        service_id=SERVICE_ONE_ID,
-        template_id=fake_uuid,
-        message_type="templates",
-        message_id=fake_uuid,
-        _follow_redirects=True,
-    )
-
-    # Asserts that Template areas is updated with no area, as only area was removed
-    mock_update_template.assert_called_with(
-        id_=fake_uuid,
-        data={"areas": {"ids": [], "names": [], "aggregate_names": [], "simple_polygons": []}},
-        service_id=SERVICE_ONE_ID,
+    mock_remove_area.assert_called_once_with(
+        fake_uuid,
+        SERVICE_ONE_ID,
+        "E92000001",
+        "templates",
     )

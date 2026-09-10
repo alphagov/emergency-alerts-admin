@@ -261,7 +261,12 @@ def template_json(
         "archived": archived,
         "folder": folder,
         "areas": areas
-        or {"ids": ["ctry19-E92000001", "ctry19-S92000003"], "simple_polygons": [], "aggregate_names": []},
+        or {
+            "ids": ["E92000001", "S92000003"],
+            "names": ["England", "Scotland"],
+            "simple_polygons": MULTIPLE_ENGLAND,
+            "aggregate_names": [],
+        },
     }
     if content is None:
         template["content"] = "template content"
@@ -422,6 +427,8 @@ def broadcast_message_json(
     cancelled_by_id=None,
     areas=None,
     area_ids=None,
+    area_names=None,
+    aggregate_names=None,
     simple_polygons=None,
     content=None,
     cap_event=None,
@@ -450,11 +457,16 @@ def broadcast_message_json(
         "reference": reference,
         "cap_event": cap_event,
         "personalisation": {},
-        "areas": areas
-        or {
-            "ids": area_ids or ["ctry19-E92000001", "ctry19-S92000003"],
-            "simple_polygons": simple_polygons or [],
-        },
+        "areas": (
+            areas
+            if areas is not None
+            else {
+                "ids": area_ids if area_ids is not None else ["E92000001", "S92000003"],
+                "names": area_names if area_names is not None else ["England", "Scotland"],
+                "aggregate_names": (aggregate_names if aggregate_names is not None else ["England", "Scotland"]),
+                "simple_polygons": simple_polygons if simple_polygons is not None else MULTIPLE_ENGLAND,
+            }
+        ),
         "status": status,
         "duration": duration,
         "starts_at": starts_at,
@@ -502,7 +514,7 @@ def broadcast_message_version_json(
         "reference": reference,
         "personalisation": {},
         "areas": {
-            "ids": ["ctry19-E92000001"],
+            "ids": ["E92000001"],
             "simple_polygons": MULTIPLE_ENGLAND,
             "names": ["England"],
             "aggregate_names": ["England"],
@@ -539,3 +551,43 @@ def broadcast_message_edit_reason_json(
         "submitted_by": submitted_by,
         "submitted_by_id": submitted_by_id,
     }
+
+
+# Mock area objects used across tests
+class MockArea:
+    def __init__(self, data):
+        self.id = data.get("id")
+        self.geographic_id = data.get("geographic_id")
+        self.name = data.get("name")
+        self.parent = data.get("parent")
+        self.geography_type = data.get("geography_type")
+        self.count_of_phones = data.get("count_of_phones")
+        self.estimated_area = data.get("estimated_area")
+        self.estimated_area_with_bleed = data.get("estimated_area_with_bleed")
+        self.bleed = data.get("bleed")
+        self.geometry_wkt = data.get("geometry_wkt")
+
+
+class MockBroadcastAreaLibrary:
+    def __init__(
+        self,
+        id="library-id",
+        name="Library name",
+        name_singular="library area",
+        examples=None,
+        route="library-route",
+        areas=None,
+    ):
+        self.id = id
+        self.name = name
+        self.name_singular = name_singular
+        self.examples = examples if examples is not None else ["Example area"]
+        self.route = route
+        self.areas = areas if areas is not None else [MockArea({"id": "area-id", "name": "Example area"})]
+
+    @property
+    def is_group(self):
+        return self.route == "local_authorities"
+
+    def get_areas(self):
+        return self.areas

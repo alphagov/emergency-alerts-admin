@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from datetime import date, datetime, timedelta, timezone
 from functools import partial
-from unittest.mock import Mock, PropertyMock
+from unittest.mock import Mock, PropertyMock, patch
 from uuid import UUID, uuid4
 
 import pytest
@@ -14,9 +14,13 @@ from flask import Flask, Response, url_for
 from notifications_python_client.errors import HTTPError
 
 from app import create_app, webauthn_server
-from app.models.broadcast_message import BroadcastMessage
-from app.models.template import Template
-from tests.app.broadcast_areas.custom_polygons import HG3_2RL, MULTIPLE_ENGLAND
+from app.notify_client.areas_api_client import AreasAPIClient
+from tests.app.broadcast_areas.custom_polygons import MULTIPLE_ENGLAND
+
+with patch.object(AreasAPIClient, "get_libraries", return_value=[]):
+    from app.models.broadcast_message import BroadcastMessage
+    from app.models.template import Template
+    from tests.app.utils.test_broadcast import MockArea
 
 from . import (
     NotifyBeautifulSoup,
@@ -256,27 +260,6 @@ def mock_get_template_with_area(mocker):
                 "names": ["England"],
                 "aggregate_names": ["England"],
                 "simple_polygons": MULTIPLE_ENGLAND,
-            },
-        )
-        return {"data": template}
-
-    return mocker.patch("app.template_api_client.get_template", side_effect=_get)
-
-
-@pytest.fixture(scope="function")
-def mock_get_template_with_custom_area(mocker):
-    def _get(service_id, template_id, version=None):
-        template = template_json(
-            service_id,
-            template_id,
-            "Sample Template",
-            "broadcast",
-            "Template <em>content</em> with & entity",
-            areas={
-                "ids": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
-                "names": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
-                "aggregate_names": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
-                "simple_polygons": [HG3_2RL],
             },
         )
         return {"data": template}
@@ -2663,3 +2646,347 @@ def mock_admin_action_notification(mocker):
 @pytest.fixture
 def mock_get_count_of_phones(mocker):
     return mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=100_000)
+
+
+# Areas API client mock fixtures
+
+
+@pytest.fixture(scope="function")
+def mock_get_flood_warning_area_library(mocker):
+    library = mocker.Mock()
+    library.route = "flood_warning_areas"
+
+    return mocker.patch(
+        "app.main.views.broadcast_common.BroadcastAreaLibraries.get",
+        return_value=library,
+    )
+
+
+@pytest.fixture(scope="function")
+def mock_get_broadcast_areas(mocker):
+    return mocker.patch(
+        "app.models.base_broadcast.Areas.get",
+        return_value=[
+            MockArea({"id": "E92000001", "name": "England", "parent": None}),
+            MockArea({"id": "S92000003", "name": "Scotland", "parent": None}),
+        ],
+    )
+
+
+@pytest.fixture(scope="function")
+def mock_get_libraries(mocker):
+    return mocker.patch(
+        "app.areas_api_client.get_libraries",
+        return_value=[
+            {
+                "id": "ctry19",
+                "name": "Countries",
+                "name_singular": "Country",
+                "examples": [],
+                "route": "countries",
+                "areas": [MockArea({"id": "E92000001", "name": "England", "parent": None})],
+            },
+            {
+                "id": "flood_warning_areas",
+                "name": "Flood Warning Target Areas (TA code)",
+                "name_singular": "Flood Warning Target Area (TA code)",
+                "examples": [],
+                "route": "flood_warning_areas",
+                "areas": [],
+            },
+            {
+                "id": "wd25-lad25-ctyua25",
+                "name": "Local authorities",
+                "name_singular": "Local authority",
+                "examples": [],
+                "route": "local_authorities",
+                "areas": [],
+            },
+            {
+                "id": "postcodes",
+                "name": "Postcode areas",
+                "name_singular": "Postcode area",
+                "examples": [],
+                "route": "postcodes",
+                "areas": [],
+            },
+            {
+                "id": "REPPIR_DEPZ_sites",
+                "name": "REPPIR DEPZ sites",
+                "name_singular": "REPPIR DEPZ site",
+                "examples": [],
+                "route": "reppir_sites",
+                "areas": [],
+            },
+            {
+                "id": "test",
+                "name": "Test areas",
+                "name_singular": "Test area",
+                "examples": [],
+                "route": "test",
+                "areas": [],
+            },
+        ],
+    )
+
+
+@pytest.fixture(scope="function")
+def mock_get_library_example(mocker):
+    return mocker.patch("app.areas_api_client.get_library_example", return_value="")
+
+
+@pytest.fixture(scope="function")
+def mock_get_areas_for_library(mocker):
+    return mocker.patch(
+        "app.areas_api_client.get_areas_for_library",
+        return_value=[
+            {
+                "id": "E92000001",
+                "geographic_id": "E92000001",
+                "name": "England",
+                "geography_type": "countries",
+            }
+        ],
+    )
+
+
+@pytest.fixture(scope="function")
+def mock_get_areas_for_parent(mocker):
+    return mocker.patch(
+        "app.areas_api_client.get_areas_for_parent",
+        return_value=[
+            {
+                "id": "child-area-id",
+                "geographic_id": "child-geographic-id",
+                "name": "Child area",
+                "parent": None,
+                "geography_type": "generic",
+            }
+        ],
+    )
+
+
+@pytest.fixture(scope="function")
+def mock_get_areas_by_ids(mocker):
+    return mocker.patch(
+        "app.areas_api_client.get_areas_by_ids",
+        return_value=[
+            {
+                "id": "area-id",
+                "geographic_id": "geographic-id",
+                "name": "Area name",
+                "parent": None,
+                "geography_type": "generic",
+            }
+        ],
+    )
+
+
+@pytest.fixture(scope="function")
+def mock_get_area(mocker):
+    return mocker.patch(
+        "app.areas_api_client.get_area",
+        return_value={
+            "id": "area-id",
+            "geographic_id": "geographic-id",
+            "name": "Area name",
+            "parent": None,
+            "geography_type": "generic",
+        },
+    )
+
+
+@pytest.fixture(scope="function")
+def mock_get_area_by_geographic_id(mocker):
+    return mocker.patch(
+        "app.areas_api_client.get_area_by_geographic_id",
+        return_value=[
+            MockArea(
+                {
+                    "id": "geo-id",
+                    "geographic_id": "geographic-id",
+                    "name": "Geographic area",
+                    "parent": None,
+                    "geography_type": "generic",
+                }
+            )
+        ],
+    )
+
+
+@pytest.fixture(scope="function")
+def mock_get_areas_by_names(mocker):
+    return mocker.patch("app.areas_api_client.get_areas_by_names", return_value=[])
+
+
+@pytest.fixture(scope="function")
+def mock_get_area_dict(mocker):
+    return mocker.patch("app.areas_api_client.get_area_dict", return_value={})
+
+
+@pytest.fixture(scope="function")
+def mock_add_areas(mocker):
+    return mocker.patch("app.areas_api_client.add_areas", return_value="")
+
+
+@pytest.fixture(scope="function")
+def mock_get_postcode_centroid(mocker):
+    return mocker.patch(
+        "app.areas_api_client.get_postcode_centroid",
+        return_value="POINT (-2 54)",
+    )
+
+
+@pytest.fixture(scope="function")
+def mock_create_postcode_area(mocker):
+    return mocker.patch(
+        "app.areas_api_client.create_postcode_area",
+        return_value={
+            "circle": ("POLYGON ((-1.75 53.79, " "-1.74 53.79, " "-1.74 53.80, " "-1.75 53.80, " "-1.75 53.79))"),
+            "id": "3km around the postcode BD1 1EE in Bradford",
+        },
+    )
+
+
+@pytest.fixture(scope="function")
+def mock_add_postcode_area(mocker):
+    return mocker.patch("app.areas_api_client.add_postcode_area", return_value="")
+
+
+@pytest.fixture(scope="function")
+def mock_get_coordinate_centroid(mocker):
+    return mocker.patch(
+        "app.areas_api_client.get_coordinate_centroid",
+        return_value={"lat": 51.5, "lon": -0.1},
+    )
+
+
+@pytest.fixture(scope="function")
+def mock_create_coordinate_area(mocker):
+    return mocker.patch(
+        "app.areas_api_client.create_coordinate_area",
+        return_value="POLYGON ((-0.1400 51.5150,-0.1400 51.4950,-0.1000 51.4950,-0.1000 51.5150,-0.1400 51.5150))",
+    )
+
+
+@pytest.fixture(scope="function")
+def mock_add_coordinate_area(mocker):
+    return mocker.patch("app.areas_api_client.add_coordinate_area", return_value="")
+
+
+@pytest.fixture(scope="function")
+def mock_check_coordinates_valid(mocker):
+    return mocker.patch("app.areas_api_client.check_coordinates_valid", return_value=True)
+
+
+@pytest.fixture(scope="function")
+def mock_remove_area(mocker):
+    return mocker.patch("app.areas_api_client.remove_area", return_value="")
+
+
+@pytest.fixture(scope="function")
+def mock_check_grandparent(mocker):
+    return mocker.patch("app.areas_api_client.check_grandparent", return_value=True)
+
+
+@pytest.fixture(scope="function")
+def mock_add_areas_returns_error_for_invalid_input(mocker):
+    return mocker.patch("app.areas_api_client.add_areas")
+
+
+@pytest.fixture(scope="function")
+def mock_get_areas_by_names_returns_error_for_invalid_input(mocker):
+    return mocker.patch("app.areas_api_client.get_areas_by_names")
+
+
+@pytest.fixture(scope="function")
+def mock_get_aberdeen_areas(mocker):
+    return mocker.patch(
+        "app.areas_api_client.get_areas_for_library",
+        return_value=[
+            {
+                "id": "S12000033",
+                "geographic_id": "S12000033",
+                "name": "Aberdeen City",
+                "parent": None,
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "S12000034",
+                "geographic_id": "S12000034",
+                "name": "Aberdeenshire",
+                "parent": None,
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "E07000223",
+                "geographic_id": "E07000223",
+                "name": "Adur",
+                "parent": None,
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "E07000032",
+                "geographic_id": "E07000032",
+                "name": "Amber Valley",
+                "parent": None,
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "S12000041",
+                "geographic_id": "S12000041",
+                "name": "Angus",
+                "parent": None,
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "N09000001",
+                "geographic_id": "N09000001",
+                "name": "Antrim and Newtownabbey",
+                "parent": None,
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "N09000011",
+                "geographic_id": "N09000011",
+                "name": "Ards and North Down",
+                "parent": None,
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "S12000035",
+                "geographic_id": "S12000035",
+                "name": "Argyll and Bute",
+                "parent": None,
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "E07000224",
+                "geographic_id": "E07000224",
+                "name": "Arun",
+                "parent": None,
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "E07000170",
+                "geographic_id": "E07000170",
+                "name": "Ashfield",
+                "parent": None,
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "E07000105",
+                "geographic_id": "E07000105",
+                "name": "Ashford",
+                "parent": None,
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "E07000200",
+                "geographic_id": "E07000200",
+                "name": "Babergh",
+                "parent": None,
+                "geography_type": "local_authorities",
+            },
+        ],
+    )

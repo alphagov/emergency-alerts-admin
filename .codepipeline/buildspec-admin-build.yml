@@ -18,8 +18,6 @@ phases:
         fi
       - echo Build started on `date`
       - echo Building Docker image...
-      - chmod +x ./scripts/get-broadcast-areas-db.sh
-      - ./scripts/get-broadcast-areas-db.sh "./app/broadcast_areas" "${BROADCAST_AREAS_BUCKET_NAME}" "True"
       - docker build $TAGS -f Dockerfile.eas-admin
         --build-arg ECS_ACCOUNT_NUMBER=$ACCOUNT_NUMBER
         --build-arg AWS_REGION=${AWS_REGION:-eu-west-2}

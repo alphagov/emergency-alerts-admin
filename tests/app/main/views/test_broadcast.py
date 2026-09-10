@@ -1,14 +1,11 @@
 import json
-import math
 import uuid
-from collections import namedtuple
 from functools import partial
 
 import pytest
 from flask import url_for
 from freezegun import freeze_time
 
-from app.broadcast_areas.models import BroadcastAreaLibraries
 from tests import (
     NotifyBeautifulSoup,
     broadcast_message_json,
@@ -17,19 +14,19 @@ from tests import (
     user_json,
 )
 from tests.app.broadcast_areas.custom_polygons import (
-    ABERDEEN_CITY,
     BD1_1EE,
     BD1_1EE_1,
     BD1_1EE_2,
     BD1_1EE_3,
     BRISTOL,
+    BURFORD,
+    CHELTENHAM,
     CUMBRIA_FLOOD_WARNING_AREA,
-    DEVON_AND_ISLES_OF_SCILLY,
     HG3_2RL,
     MULTIPLE_ENGLAND,
-    MULTIPLE_FLOOD_WARNING_AREAS,
     SKYE,
 )
+from tests.app.utils.test_broadcast import MockArea
 from tests.conftest import (
     SERVICE_NO_BROADCAST,
     SERVICE_ONE_ID,
@@ -152,16 +149,7 @@ sending_failure_statuses = {
         ),
         (
             ".remove_area",
-            {"message_id": sample_uuid, "area_slug": "countries-E92000001", "message_type": "broadcast"},
-            403,
-            405,
-        ),
-        (
-            ".remove_custom_area",
-            {
-                "message_id": sample_uuid,
-                "message_type": "broadcast",
-            },
+            {"message_id": sample_uuid, "area_slug": "E92000001", "message_type": "broadcast"},
             403,
             405,
         ),
@@ -274,15 +262,6 @@ def test_broadcast_pages_403_without_permission(
             405,
         ),
         (
-            ".remove_custom_area",
-            {
-                "message_id": sample_uuid,
-                "message_type": "broadcast",
-            },
-            403,
-            405,
-        ),
-        (
             ".preview_broadcast_message",
             {"broadcast_message_id": sample_uuid},
             403,
@@ -324,7 +303,7 @@ def test_broadcast_pages_403_for_user_without_permission(
         (".choose_area", {"library_slug": "countries"}, {"postcode": "BD1 1EE", "radius": "2", "continue": True}),
         (
             ".choose_sub_area",
-            {"library_slug": "wd25-lad25-ctyua25", "area_slug": "ctyua25-E10000016"},
+            {"library_slug": "local_authorities", "area_slug": "E10000016"},
             {"postcode": "BD1 1EE", "radius": "2", "continue": True},
         ),
     ),
@@ -366,7 +345,7 @@ def test_template_area_pages_error_for_user_with_only_create_broadcasts_permissi
         (".choose_area", {"library_slug": "countries"}, {"postcode": "BD1 1EE", "radius": "2", "continue": True}),
         (
             ".choose_sub_area",
-            {"library_slug": "wd25-lad25-ctyua25", "area_slug": "ctyua25-E10000016"},
+            {"library_slug": "local_authorities", "area_slug": "E10000016"},
             {"postcode": "BD1 1EE", "radius": "2", "continue": True},
         ),
     ),
@@ -412,6 +391,9 @@ def test_broadcast_area_pages_error_for_user_with_only_manage_templates_permissi
 def test_user_cannot_accept_broadcast_without_permission(
     client_request,
     service_one,
+    mock_get_broadcast_message,
+    mock_check_can_update_status,
+    mock_update_broadcast_message_status,
     user,
 ):
     service_one["permissions"] += ["broadcast"]
@@ -481,23 +463,36 @@ def test_view_broadcast_page_displays_error_if_area_invalid(
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
     mock_update_broadcast_message_status,
+    mock_get_count_of_phones,
 ):
     mocker.patch(
+        "app.areas_api_client.get_areas_by_ids",
+        return_value=[
+            {
+                "id": "area-id",
+                "name": "Invalid area",
+            }
+        ],
+    )
+    broadcast_message = broadcast_message_json(
+        id_=fake_uuid,
+        template_id=fake_uuid,
+        created_by_id=fake_uuid,
+        service_id=SERVICE_ONE_ID,
+        starts_at="2020-02-20T20:20:20.000000",
+        created_at="2020-02-20T20:20:20.000000",
+        status="draft",
+        areas={
+            # The ring is not closed and is self-intersecting.
+            "simple_polygons": [[[51.5310, -0.1580], [51.5310, -0.1570], [51.5310, -0.1580], [51.5310, -0.2]]],
+            "names": ["Invalid area"],
+            "ids": ["test"],
+        },
+    )
+
+    mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
-        return_value=broadcast_message_json(
-            id_=fake_uuid,
-            template_id=fake_uuid,
-            created_by_id=fake_uuid,
-            service_id=SERVICE_ONE_ID,
-            starts_at="2020-02-20T20:20:20.000000",
-            created_at="2020-02-20T20:20:20.000000",
-            status="draft",
-            areas={
-                # Area is invalid because the final coord isn't the same as first coord, so area isn't closed
-                "simple_polygons": [[[51.5310, -0.1580], [51.5310, -0.1570], [51.5310, -0.1580], [51.5310, -0.2]]],
-                "names": ["Invalid area"],
-            },
-        ),
+        return_value=broadcast_message,
     )
     service_one["permissions"] += ["broadcast"]
 
@@ -771,13 +766,20 @@ def test_empty_broadcast_dashboard(
     indirect=["mock_get_broadcast_messages"],
 )
 @freeze_time("2020-02-20 02:20")
-def test_broadcast_dashboard(
-    client_request,
-    service_one,
-    mock_get_broadcast_messages,
-    has_sending_error,
-    user,
-):
+def test_broadcast_dashboard(client_request, service_one, mock_get_broadcast_messages, has_sending_error, user, mocker):
+    mocker.patch(
+        "app.areas_api_client.get_areas_by_ids",
+        return_value=[
+            {
+                "id": "england",
+                "name": "England",
+            },
+            {
+                "id": "scotland",
+                "name": "Scotland",
+            },
+        ],
+    )
     service_one["permissions"] += ["broadcast"]
     client_request.login(user)
     page = client_request.get(
@@ -828,6 +830,7 @@ def test_broadcast_dashboard_does_not_have_button_if_user_does_not_have_permissi
     mock_get_broadcast_message_provider_statuses,
     endpoint,
     user,
+    mock_get_areas_by_ids,
 ):
     client_request.login(user)
 
@@ -854,6 +857,7 @@ def test_broadcast_dashboard_has_new_alert_button_if_user_has_permission_to_crea
     mock_get_broadcast_message_provider_statuses,
     active_user_create_broadcasts_permission,
     endpoint,
+    mock_get_areas_by_ids,
 ):
     client_request.login(active_user_create_broadcasts_permission)
 
@@ -876,6 +880,7 @@ def test_broadcast_dashboard_json(
     service_one,
     mock_get_broadcast_messages,
     mock_get_broadcast_message_provider_statuses,
+    mock_get_areas_by_ids,
 ):
     service_one["permissions"] += ["broadcast"]
 
@@ -902,12 +907,21 @@ def test_broadcast_dashboard_json(
 )
 @freeze_time("2020-02-20 02:20")
 def test_previous_broadcasts_page(
-    client_request,
-    service_one,
-    mock_get_broadcast_messages,
-    mock_get_broadcast_message_provider_statuses,
-    user,
+    client_request, service_one, mock_get_broadcast_messages, mock_get_broadcast_message_provider_statuses, user, mocker
 ):
+    mocker.patch(
+        "app.areas_api_client.get_areas_by_ids",
+        return_value=[
+            {
+                "id": "england",
+                "name": "England",
+            },
+            {
+                "id": "scotland",
+                "name": "Scotland",
+            },
+        ],
+    )
     service_one["permissions"] += ["broadcast"]
     client_request.login(user)
     page = client_request.get(
@@ -932,10 +946,7 @@ def test_previous_broadcasts_page(
 )
 @freeze_time("2020-02-20 02:20")
 def test_rejected_broadcasts_page(
-    client_request,
-    service_one,
-    mock_get_broadcast_messages,
-    user,
+    client_request, service_one, mock_get_broadcast_messages, user, mock_get_areas_by_ids
 ):
     service_one["permissions"] += ["broadcast"]
     client_request.login(user)
@@ -1252,6 +1263,8 @@ def test_broadcast_page(
     active_user_create_broadcasts_permission,
     mock_get_template_from_id,
     mocker,
+    mock_get_areas_by_ids,
+    mock_get_area_dict,
 ):
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
@@ -1268,153 +1281,78 @@ def test_broadcast_page(
 
 
 @pytest.mark.parametrize(
-    "areas_selected, areas_listed, count_of_phones, estimates",
+    "areas_selected, areas_listed, count_of_phones, bleed, estimates",
     (
         (
-            [
-                "ctry19-E92000001",
-                "ctry19-S92000003",
-            ],
+            {
+                "ids": ["E92000001"],
+                "names": ["England"],
+                "aggregate_names": ["England"],
+                "simple_polygons": MULTIPLE_ENGLAND,
+            },
             [
                 "England Remove England",
-                "Scotland Remove Scotland",
             ],
-            46_909_327,
+            42_870_423,
+            4_000,
             [
-                "An area of 100,000 square miles Will get the alert",
-                "An extra area of 4,000 square miles is Likely to get the alert",
+                "An area of 50,000 square miles Will get the alert",
+                "An extra area of 2,000 square miles is Likely to get the alert",
                 "More than 1 million phones estimated",
             ],
         ),
         (
+            {
+                "ids": ["bristol", "skye"],
+                "names": ["Bristol", "Skye"],
+                "aggregate_names": ["Bristol", "Skye"],
+                "simple_polygons": [BRISTOL, SKYE],
+            },
             [
-                "wd25-E05014242",
-                "wd25-E05014243",
+                "Bristol Remove Bristol",
+                "Skye Remove Skye",
             ],
-            [
-                "Westmorland and Furness > Penrith North Remove Penrith North",
-                "Westmorland and Furness > Penrith South Remove Penrith South",
-            ],
-            13_123,
-            [
-                "An area of 10 square miles Will get the alert",
-                "An extra area of 20 square miles is Likely to get the alert",
-                "Less than 1 million phones estimated",
-            ],
-        ),
-        (
-            [
-                "lad25-E09000019",
-            ],
-            [
-                "Islington Remove Islington",
-            ],
-            188_563,
-            [
-                "An area of 6 square miles Will get the alert",
-                "An extra area of 4 square miles is Likely to get the alert",
-                "Less than 1 million phones estimated",
-            ],
-        ),
-        (
-            [
-                "ctyua25-E10000019",
-            ],
-            [
-                "Lincolnshire Remove Lincolnshire",
-            ],
-            569_308,
+            84_030,
+            4,
             [
                 "An area of 2,000 square miles Will get the alert",
-                "An extra area of 500 square miles is Likely to get the alert",
+                "An extra area of 400 square miles is Likely to get the alert",
                 "Less than 1 million phones estimated",
             ],
         ),
         (
-            ["ctyua25-E10000019", "lad25-E06000065"],
+            {
+                "ids": ["burford"],
+                "names": ["Burford"],
+                "aggregate_names": ["Burford"],
+                "simple_polygons": [BURFORD],
+            },
             [
-                "Lincolnshire Remove Lincolnshire",
-                "North Yorkshire Remove North Yorkshire",
+                "Burford Remove Burford",
             ],
-            1_048_461,
+            31_143,
+            500,
             [
-                "An area of 6,000 square miles Will get the alert",
-                "An extra area of 1,000 square miles is Likely to get the alert",
-                "More than 1 million phones estimated",
-            ],
-        ),
-        (
-            [
-                "REPPIR_DEPZ_sites-loch_ewe",
-            ],
-            [
-                "Loch Ewe Remove Loch Ewe",
-            ],
-            8.7,
-            [
-                "An area of 3 square miles Will get the alert",
-                "An extra area of 50 square miles is Likely to get the alert",
+                "An area of 100 square miles Will get the alert",
+                "An extra area of 90 square miles is Likely to get the alert",
                 "Less than 1 million phones estimated",
             ],
         ),
         (
+            {
+                "ids": ["cheltenham"],
+                "names": ["Cheltenham"],
+                "aggregate_names": ["Cheltenham"],
+                "simple_polygons": [CHELTENHAM],
+            },
             [
-                "REPPIR_DEPZ_sites-awe_aldermaston",
+                "Cheltenham Remove Cheltenham",
             ],
+            86_078,
+            1_000,
             [
-                "AWE Aldermaston Remove AWE Aldermaston",
-            ],
-            3_492,
-            [
-                "An area of 8 square miles Will get the alert",
-                "An extra area of 30 square miles is Likely to get the alert",
-                "Less than 1 million phones estimated",
-            ],
-        ),
-        (
-            [
-                "Flood_Warning_Target_Areas-011FWCN2M",
-            ],
-            ["Cumbria coast at Maryport harbour Remove Cumbria coast at Maryport harbour"],
-            42,
-            [
-                "An area of 0 square miles Will get the alert",
-                "An extra area of 10 square miles is Likely to get the alert",
-                "Less than 1 million phones estimated",
-            ],
-        ),
-        (
-            [
-                "Flood_Warning_Target_Areas-011FWCN3A",
-            ],
-            [
-                "Cumbrian coastline from St Bees Head to Haverigg, along the coast from North Head "
-                "to Haverigg Remove Cumbrian coastline from St Bees Head to Haverigg, along "
-                "the coast from North Head to Haverigg",
-            ],
-            126,
-            [
-                "An area of 10 square miles Will get the alert",
-                "An extra area of 200 square miles is Likely to get the alert",
-                "Less than 1 million phones estimated",
-            ],
-        ),
-        (
-            [
-                "Flood_Warning_Target_Areas-011FWCN4A",
-                "Flood_Warning_Target_Areas-011FWCN1A",
-            ],
-            [
-                "Cumbrian coastline from Gretna to Silloth including Port Carlisle, Skinburness and Rockcliffe "
-                "Remove Cumbrian coastline from Gretna to Silloth including Port Carlisle, Skinburness and Rockcliffe",
-                "Cumbrian coastline at Duddon estuary, at Haverigg to Duddon "
-                "Bridge, Foxfield, Dunnerholme Remove Cumbrian "
-                "coastline at Duddon estuary, at Haverigg to Duddon Bridge, Foxfield, Dunnerholme",
-            ],
-            2_400,
-            [
-                "An area of 60 square miles Will get the alert",
-                "An extra area of 200 square miles is Likely to get the alert",
+                "An area of 20 square miles Will get the alert",
+                "An extra area of 20 square miles is Likely to get the alert",
                 "Less than 1 million phones estimated",
             ],
         ),
@@ -1428,12 +1366,27 @@ def test_preview_areas_page(
     areas_selected,
     areas_listed,
     count_of_phones,
+    bleed,
     estimates,
     active_user_create_broadcasts_permission,
     mock_get_broadcast_message_versions,
     mock_check_can_update_status,
 ):
     mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=count_of_phones)
+    mocker.patch(
+        "app.models.base_broadcast.Areas.get",
+        return_value=[
+            MockArea(
+                {
+                    "id": area_id,
+                    "name": area_name,
+                    "count_of_phones": count_of_phones,
+                    "bleed": bleed,
+                }
+            )
+            for area_id, area_name in zip(areas_selected["ids"], areas_selected["names"])
+        ],
+    )
     service_one["permissions"] += ["broadcast"]
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -1443,7 +1396,7 @@ def test_preview_areas_page(
             created_by_id=fake_uuid,
             service_id=SERVICE_ONE_ID,
             status="draft",
-            area_ids=areas_selected,
+            areas=areas_selected,
         ),
     )
     client_request.login(active_user_create_broadcasts_permission)
@@ -1469,8 +1422,20 @@ def test_search_flood_warning_areas_page(
     fake_uuid,
     mocker,
     active_user_create_broadcasts_permission,
+    mock_get_flood_warning_area_library,
 ):
     mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=42.74975272772588)
+    mocker.patch(
+        "app.areas_api_client.get_areas_by_ids",
+        return_value=[
+            {
+                "id": "011FWCN2M",
+                "geographic_id": "011FWCN2M",
+                "name": "Cumbria coast at Maryport harbour",
+                "geography_type": "flood_warning_areas",
+            }
+        ],
+    )
     service_one["permissions"] += ["broadcast"]
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -1480,9 +1445,9 @@ def test_search_flood_warning_areas_page(
             created_by_id=fake_uuid,
             service_id=SERVICE_ONE_ID,
             status="draft",
-            area_ids=["Flood_Warning_Target_Areas-011FWCN2M"],
+            area_ids=["011FWCN2M"],
             areas={
-                "ids": ["Flood_Warning_Target_Areas-011FWCN2M"],
+                "ids": ["011FWCN2M"],
                 "names": ["Cumbria coast at Maryport harbour"],
                 "aggregate_names": ["Cumbria coast at Maryport harbour"],
                 "simple_polygons": [CUMBRIA_FLOOD_WARNING_AREA],
@@ -1525,6 +1490,8 @@ def test_search_flood_warning_bulk_add_areas_page(
     mocker,
     active_user_create_broadcasts_permission,
     mock_get_count_of_phones,
+    mock_get_libraries,
+    mock_get_areas_by_ids,
 ):
     service_one["permissions"] += ["broadcast"]
     mocker.patch(
@@ -1535,9 +1502,9 @@ def test_search_flood_warning_bulk_add_areas_page(
             created_by_id=fake_uuid,
             service_id=SERVICE_ONE_ID,
             status="draft",
-            area_ids=["Flood_Warning_Target_Areas-011FWCN2M"],
+            area_ids=["011FWCN2M"],
             areas={
-                "ids": ["Flood_Warning_Target_Areas-011FWCN2M"],
+                "ids": ["011FWCN2M"],
                 "names": ["Cumbria coast at Maryport harbour"],
                 "aggregate_names": ["Cumbria coast at Maryport harbour"],
                 "simple_polygons": [CUMBRIA_FLOOD_WARNING_AREA],
@@ -1572,6 +1539,8 @@ def test_search_local_authority_bulk_add_areas_page(
     fake_uuid,
     mocker,
     active_user_create_broadcasts_permission,
+    mock_get_areas_by_ids,
+    mock_get_count_of_phones,
 ):
     service_one["permissions"] += ["broadcast"]
     mocker.patch(
@@ -1582,7 +1551,7 @@ def test_search_local_authority_bulk_add_areas_page(
             created_by_id=fake_uuid,
             service_id=SERVICE_ONE_ID,
             status="draft",
-            area_ids=["lad25-E07000225"],
+            area_ids=["E07000225"],
             areas={
                 "ids": [""],
                 "names": [""],
@@ -1622,14 +1591,14 @@ def test_search_local_authority_bulk_add_areas_page(
             ],
             0,
             [
-                "An area of 800 square miles Will get the alert",
-                "An extra area of 2,000 square miles is Likely to get the alert",
+                "An area of 300 square miles Will get the alert",
+                "An extra area of 1,000 square miles is Likely to get the alert",
                 "Unknown number of phones",
             ],
         ),
         (
             [BRISTOL],
-            393465.26791524055,
+            77000,
             [
                 "An area of 4 square miles Will get the alert",
                 "An extra area of 3 square miles is Likely to get the alert",
@@ -1641,52 +1610,7 @@ def test_search_local_authority_bulk_add_areas_page(
             7030.187134868168,
             [
                 "An area of 2,000 square miles Will get the alert",
-                "An extra area of 600 square miles is Likely to get the alert",
-                "Less than 1 million phones estimated",
-            ],
-        ),
-        (
-            [BD1_1EE_1],
-            12913.63647166792,
-            [
-                "An area of 1 square miles Will get the alert",
-                "An extra area of 3 square miles is Likely to get the alert",
-                "Less than 1 million phones estimated",
-            ],
-        ),
-        (
-            [BD1_1EE_2],
-            55951.76130384487,
-            [
-                "An area of 5 square miles Will get the alert",
-                "An extra area of 5 square miles is Likely to get the alert",
-                "Less than 1 million phones estimated",
-            ],
-        ),
-        (
-            [BD1_1EE_3],
-            126071.33758423096,
-            [
-                "An area of 10 square miles Will get the alert",
-                "An extra area of 7 square miles is Likely to get the alert",
-                "Less than 1 million phones estimated",
-            ],
-        ),
-        (
-            [BD1_1EE],
-            124278.50012815843,
-            [
-                "An area of 10 square miles Will get the alert",
-                "An extra area of 7 square miles is Likely to get the alert",
-                "Less than 1 million phones estimated",
-            ],
-        ),
-        (
-            [HG3_2RL],
-            1538.8637092434751,
-            [
-                "An area of 30 square miles Will get the alert",
-                "An extra area of 60 square miles is Likely to get the alert",
+                "An extra area of 500 square miles is Likely to get the alert",
                 "Less than 1 million phones estimated",
             ],
         ),
@@ -1706,6 +1630,14 @@ def test_preview_areas_page_with_custom_polygons(
     mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=count_of_phones)
     service_one["permissions"] += ["broadcast"]
     mocker.patch(
+        "app.models.areas.Areas.get",
+        return_value=[
+            MockArea({"id": "area-one", "name": "Area one"}),
+            MockArea({"id": "area-two", "name": "Area two"}),
+            MockArea({"id": "area-three", "name": "Area three"}),
+        ],
+    )
+    mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
         return_value=broadcast_message_json(
             id_=fake_uuid,
@@ -1714,6 +1646,7 @@ def test_preview_areas_page_with_custom_polygons(
             service_id=SERVICE_ONE_ID,
             status="draft",
             areas={
+                "ids": ["area-one", "area-two", "area-three"],
                 "names": ["Area one", "Area two", "Area three"],
                 "simple_polygons": polygons,
             },
@@ -1736,49 +1669,97 @@ def test_preview_areas_page_with_custom_polygons(
 
 
 @pytest.mark.parametrize(
-    "area_ids, expected_list",
+    "mock_areas, expected_list",
     (
         (
             [
-                # Countries have no parent areas
-                "ctry19-E92000001",
-                "ctry19-S92000003",
+                MockArea(
+                    {
+                        "id": "E92000001",
+                        "name": "England",
+                        "geography_type": "countries",
+                    }
+                ),
+                MockArea(
+                    {
+                        "id": "S92000003",
+                        "name": "Scotland",
+                        "geography_type": "countries",
+                    }
+                ),
             ],
             [
+                "Coordinates",
                 "Countries",
+                "Flood Warning Target Areas (TA code)",
                 "Local authorities",
+                "Postcode areas",
                 "REPPIR DEPZ sites",
                 "Test areas",
             ],
         ),
         (
             [
-                # If you’ve chosen the whole of a county or unitary authority
-                # there’s no reason to  also pick districts of it
-                "ctyua25-E10000013",  # Gloucestershire, a county
-                "lad25-E06000052",  # Cornwall, a unitary authority
+                MockArea(
+                    {
+                        "id": "E10000013",
+                        "name": "Gloucestershire",
+                    }
+                ),
+                MockArea(
+                    {
+                        "id": "E06000052",
+                        "name": "Cornwall",
+                    }
+                ),
             ],
             [
+                "Coordinates",
                 "Countries",
+                "Flood Warning Target Areas (TA code)",
                 "Local authorities",
+                "Postcode areas",
                 "REPPIR DEPZ sites",
                 "Test areas",
             ],
         ),
         (
             [
-                "wd25-E05010951",  # Abbeymead, in Gloucester, in Gloucestershire
-                "wd25-S13003154",  # Shetland Central, in Shetland Isles
-                "lad25-E07000037",  # High Peak, a district in Derbyshire
+                MockArea(
+                    {
+                        "id": "E05010951",
+                        "name": "Abbeymead",
+                        "parent": "E07000081",
+                        "geography_type": "local_authorities",
+                    }
+                ),
+                MockArea(
+                    {
+                        "id": "S13003154",
+                        "name": "Shetland Central",
+                        "parent": "S12000027",
+                        "geography_type": "local_authorities",
+                    }
+                ),
+                MockArea(
+                    {
+                        "id": "E07000037",
+                        "name": "High Peak",
+                        "parent": "E10000007",
+                        "geography_type": "local_authorities",
+                    }
+                ),
             ],
             [
                 "Derbyshire",
                 "Gloucester",
                 "Gloucestershire",
                 "Shetland Islands",
-                # ---
+                "Coordinates",
                 "Countries",
+                "Flood Warning Target Areas (TA code)",
                 "Local authorities",
+                "Postcode areas",
                 "REPPIR DEPZ sites",
                 "Test areas",
             ],
@@ -1791,9 +1772,54 @@ def test_choose_library_page(
     service_one,
     fake_uuid,
     active_user_create_broadcasts_permission,
-    area_ids,
+    mock_areas,
     expected_list,
+    mock_get_libraries,
+    mock_get_library_example,
 ):
+    parent_areas = {
+        "E07000081": MockArea(
+            {
+                "id": "E07000081",
+                "name": "Gloucester",
+                "parent": "E10000013",
+                "geography_type": "local_authorities",
+            }
+        ),
+        "E10000013": MockArea(
+            {
+                "id": "E10000013",
+                "name": "Gloucestershire",
+                "geography_type": "local_authorities",
+            }
+        ),
+        "S12000027": MockArea(
+            {
+                "id": "S12000027",
+                "name": "Shetland Islands",
+                "geography_type": "local_authorities",
+            }
+        ),
+        "E10000007": MockArea(
+            {
+                "id": "E10000007",
+                "name": "Derbyshire",
+                "geography_type": "local_authorities",
+            }
+        ),
+    }
+
+    mocker.patch(
+        "app.models.areas.Areas.get",
+        return_value=mock_areas,
+    )
+    mocker.patch(
+        "app.models.areas.Area.from_geographic_id",
+        side_effect=parent_areas.__getitem__,
+    )  # get parent area using geographic ID
+
+    area_ids = [area.id for area in mock_areas]
+
     service_one["permissions"] += ["broadcast"]
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -1808,12 +1834,15 @@ def test_choose_library_page(
     )
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.get(
-        ".choose_library", service_id=SERVICE_ONE_ID, message_id=fake_uuid, message_type="broadcast"
+        ".choose_library",
+        service_id=SERVICE_ONE_ID,
+        message_id=fake_uuid,
+        message_type="broadcast",
     )
     assert [normalize_spaces(title.text) for title in page.select("main a.govuk-link")] == expected_list
 
-    assert normalize_spaces(page.select(".file-list-hint-large")[0].text) == (
-        "England, Northern Ireland, Scotland and Wales"
+    assert normalize_spaces(page.select_one(".file-list-hint-large").text) == (
+        "Use coordinates to create an alert area."
     )
 
     assert page.select_one("a.file-list-filename-large.govuk-link")["href"] == url_for(
@@ -1821,7 +1850,7 @@ def test_choose_library_page(
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
         message_type="broadcast",
-        library_slug="ctry19",
+        library_slug="coordinates",
     )
 
 
@@ -1874,6 +1903,9 @@ def test_choose_library_page_with_custom_broadcast(
     active_user_create_broadcasts_permission,
     area_ids,
     expected_list,
+    mock_get_libraries,
+    mock_get_areas_by_ids,
+    mock_get_library_example,
 ):
     service_one["permissions"] += ["broadcast"]
     mocker.patch(
@@ -1912,7 +1944,61 @@ def test_suggested_area_has_correct_link(
     service_one,
     fake_uuid,
     active_user_create_broadcasts_permission,
+    mock_get_areas_by_ids,
+    mock_get_library_example,
 ):
+    mocker.patch(
+        "app.models.areas.Area.from_geographic_id",
+        return_value=MockArea(
+            {
+                "id": "E07000078",
+                "name": "Cheltenham",
+                "geography_type": "local_authorities",
+            }
+        ),
+    )
+    mocker.patch(
+        "app.areas_api_client.get_libraries",
+        return_value=[
+            {
+                "id": "wd25-lad25-local_authorities",
+                "name": "Local authorities",
+                "name_singular": "Local authority",
+                "examples": [],
+                "route": "local_authorities",
+                "areas": [
+                    MockArea(
+                        {
+                            "id": "E05015715",
+                            "name": "Pitville",
+                            "parent": "E07000078",
+                        }
+                    )
+                ],
+            },
+        ],
+    )
+    mocker.patch(
+        "app.areas_api_client.get_area",
+        return_value={
+            "id": "E05015715",
+            "name": "Pitville",
+            "parent": "E07000078",
+        },
+    )
+    mocker.patch(
+        "app.models.areas.Areas.get",
+        return_value=[
+            MockArea(
+                {
+                    "id": "E05015715",
+                    "name": "Pitville",
+                    "parent": "E07000078",
+                    "geography_type": "local_authorities",
+                }
+            )
+        ],
+    )
     service_one["permissions"] += ["broadcast"]
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -1923,7 +2009,7 @@ def test_suggested_area_has_correct_link(
             service_id=SERVICE_ONE_ID,
             status="draft",
             area_ids=[
-                "wd25-E05015715",  # Pitville, a ward of Cheltenham
+                "E05015715",  # Pitville, a ward of Cheltenham
             ],
         ),
     )
@@ -1942,8 +2028,8 @@ def test_suggested_area_has_correct_link(
         "main.choose_sub_area",
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
-        library_slug="wd25-lad25-ctyua25",
-        area_slug="lad25-E07000078",
+        library_slug="local_authorities",
+        area_slug="E07000078",
         message_type="broadcast",
     )
 
@@ -1952,10 +2038,10 @@ def test_suggested_area_has_correct_link(
     "library_slug, expected_page_title",
     (
         (
-            "ctry19",
+            "countries",
             "Choose countries",
         ),
-        ("wd25-lad25-ctyua25", "Choose a local authority"),
+        ("local_authorities", "Choose a local authority"),
         (
             "test",
             "Choose test areas",
@@ -1972,6 +2058,9 @@ def test_choose_area_page_titles(
     active_user_create_broadcasts_permission,
     library_slug,
     expected_page_title,
+    mock_get_libraries,
+    mock_get_areas_by_ids,
+    mock_get_areas_for_library,
 ):
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
@@ -1992,7 +2081,38 @@ def test_choose_area_page(
     mock_get_draft_broadcast_message,
     fake_uuid,
     active_user_create_broadcasts_permission,
+    mock_get_libraries,
+    mocker,
 ):
+    mocker.patch(
+        "app.areas_api_client.get_areas_for_library",
+        return_value=[
+            {
+                "id": "E92000001",
+                "geographic_id": "E92000001",
+                "name": "England",
+                "geography_type": "countries",
+            },
+            {
+                "id": "N92000002",
+                "geographic_id": "N92000002",
+                "name": "Northern Ireland",
+                "geography_type": "countries",
+            },
+            {
+                "id": "S92000003",
+                "geographic_id": "S92000003",
+                "name": "Scotland",
+                "geography_type": "countries",
+            },
+            {
+                "id": "W92000004",
+                "geographic_id": "W92000004",
+                "name": "Wales",
+                "geography_type": "countries",
+            },
+        ],
+    )
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.get(
@@ -2000,7 +2120,7 @@ def test_choose_area_page(
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
         message_type="broadcast",
-        library_slug="ctry19",
+        library_slug="countries",
     )
     assert [
         (
@@ -2009,10 +2129,10 @@ def test_choose_area_page(
         )
         for choice in page.select("form[method=post] .govuk-checkboxes__item")
     ] == [
-        ("ctry19-E92000001", "England"),
-        ("ctry19-N92000002", "Northern Ireland"),
-        ("ctry19-S92000003", "Scotland"),
-        ("ctry19-W92000004", "Wales"),
+        ("E92000001", "England"),
+        ("N92000002", "Northern Ireland"),
+        ("S92000003", "Scotland"),
+        ("W92000004", "Wales"),
     ]
 
 
@@ -2022,6 +2142,9 @@ def test_choose_area_page_for_area_with_sub_areas(
     mock_get_draft_broadcast_message,
     fake_uuid,
     active_user_create_broadcasts_permission,
+    mock_get_libraries,
+    mocker,
+    mock_get_aberdeen_areas,
 ):
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
@@ -2030,7 +2153,7 @@ def test_choose_area_page_for_area_with_sub_areas(
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
         message_type="broadcast",
-        library_slug="wd25-lad25-ctyua25",
+        library_slug="local_authorities",
     )
     assert normalize_spaces(page.select_one("h1").text) == "Choose a local authority"
     live_search = page.select_one("[data-notify-module=live-search]")
@@ -2041,7 +2164,7 @@ def test_choose_area_page_for_area_with_sub_areas(
         "main.choose_sub_area",
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
-        library_slug="wd25-lad25-ctyua25",
+        library_slug="local_authorities",
         message_type="broadcast",
     )
     choices = [
@@ -2051,11 +2174,10 @@ def test_choose_area_page_for_area_with_sub_areas(
         )
         for choice in page.select(".file-list-item")
     ]
-    assert len(choices) == 382
 
     # First item, somewhere in Scotland
     assert choices[0] == (
-        partial_url_for(area_slug="lad25-S12000033"),
+        partial_url_for(area_slug="S12000033"),
         "Aberdeen City",
     )
 
@@ -2063,27 +2185,27 @@ def test_choose_area_page_for_area_with_sub_areas(
     # ---
     # Note: we don't populate prev_area_slug query param, so the back link will come here rather than to a county page,
     # even though ashford belongs to kent
-    assert choices[12] == (
-        partial_url_for(area_slug="lad25-E07000200"),
-        "Babergh",
+    assert choices[2] == (
+        partial_url_for(area_slug="E07000223"),
+        "Adur",
     )
 
-    # Somewhere in Wales
-    assert choices[219] == (
-        partial_url_for(area_slug="lad25-W06000022"),
-        "Newport",
+    # Somewhere in Scotland
+    assert choices[4] == (
+        partial_url_for(area_slug="S12000041"),
+        "Angus",
     )
 
     # Somewhere in Northern Ireland
-    assert choices[21] == (
-        partial_url_for(area_slug="lad25-N09000003"),
-        "Belfast",
+    assert choices[5] == (
+        partial_url_for(area_slug="N09000001"),
+        "Antrim and Newtownabbey",
     )
 
     # Last item on the page
     assert choices[-1] == (
-        partial_url_for(area_slug="lad25-E06000014"),
-        "York",
+        partial_url_for(area_slug="E07000200"),
+        "Babergh",
     )
 
 
@@ -2093,15 +2215,108 @@ def test_choose_sub_area_page_for_district_shows_checkboxes_for_wards(
     mock_get_draft_broadcast_message,
     fake_uuid,
     active_user_create_broadcasts_permission,
+    mocker,
 ):
+    mocker.patch("app.areas_api_client.check_grandparent", return_value=False)
+    mocker.patch(
+        "app.areas_api_client.get_area",
+        return_value={
+            "id": "S12000033",
+            "geographic_id": "S12000033",
+            "name": "Aberdeen City",
+            "geography_type": "local_authorities",
+        },
+    )
+    mocker.patch(
+        "app.areas_api_client.get_areas_for_parent",
+        return_value=[
+            {
+                "id": "S13002845",
+                "geographic_id": "S13002845",
+                "name": "Airyhall/Broomhill/Garthdee",
+                "parent": "S12000033",
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "S13002836",
+                "geographic_id": "S13002836",
+                "name": "Bridge of Don",
+                "parent": "S12000033",
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "S13002835",
+                "geographic_id": "S13002835",
+                "name": "Dyce/Bucksburn/Danestone",
+                "parent": "S12000033",
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "S13002837",
+                "geographic_id": "S13002837",
+                "name": "George Street/Harbour",
+                "parent": "S12000033",
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "S13002838",
+                "geographic_id": "S13002838",
+                "name": "Hazlehead/Queens Cross",
+                "parent": "S12000033",
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "S13002839",
+                "geographic_id": "S13002839",
+                "name": "Kincorth/Nigg/Cove",
+                "parent": "S12000033",
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "S13002840",
+                "geographic_id": "S13002840",
+                "name": "Kingswells/Sheddocksley/Summerhill",
+                "parent": "S12000033",
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "S13002841",
+                "geographic_id": "S13002841",
+                "name": "Lower Deeside",
+                "parent": "S12000033",
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "S13002842",
+                "geographic_id": "S13002842",
+                "name": "Northfield/Mastrick North",
+                "parent": "S12000033",
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "S13002843",
+                "geographic_id": "S13002843",
+                "name": "Tillydrone/Seaton/Old Aberdeen",
+                "parent": "S12000033",
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "S13002846",
+                "geographic_id": "S13002846",
+                "name": "Torry/Ferryhill",
+                "parent": "S12000033",
+                "geography_type": "local_authorities",
+            },
+        ],
+    )
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.get(
         "main.choose_sub_area",
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
-        library_slug="wd25-lad25-ctyua25",
-        area_slug="lad25-S12000033",
+        library_slug="local_authorities",
+        area_slug="S12000033",
         message_type="broadcast",
     )
     assert normalize_spaces(page.select_one("h1").text) == "Choose an area of Aberdeen City"
@@ -2124,19 +2339,19 @@ def test_choose_sub_area_page_for_district_shows_checkboxes_for_wards(
     ]
     assert all_choices[:3] == [
         ("y", "All of Aberdeen City"),
-        ("wd25-S13002845", "Airyhall/Broomhill/Garthdee"),
-        ("wd25-S13002836", "Bridge of Don"),
+        ("S13002845", "Airyhall/Broomhill/Garthdee"),
+        ("S13002836", "Bridge of Don"),
     ]
     assert sub_choices[:3] == [
-        ("wd25-S13002845", "Airyhall/Broomhill/Garthdee"),
-        ("wd25-S13002836", "Bridge of Don"),
-        ("wd25-S13002835", "Dyce/Bucksburn/Danestone"),
+        ("S13002845", "Airyhall/Broomhill/Garthdee"),
+        ("S13002836", "Bridge of Don"),
+        ("S13002835", "Dyce/Bucksburn/Danestone"),
     ]
     assert (
         all_choices[-1:]
         == sub_choices[-1:]
         == [
-            ("wd25-S13002846", "Torry/Ferryhill"),
+            ("S13002846", "Torry/Ferryhill"),
         ]
     )
 
@@ -2144,7 +2359,7 @@ def test_choose_sub_area_page_for_district_shows_checkboxes_for_wards(
 @pytest.mark.parametrize(
     "prev_area_slug, expected_back_link_url, expected_back_link_extra_kwargs",
     [
-        ("ctyua25-E10000016", "main.choose_sub_area", {"area_slug": "ctyua25-E10000016"}),  # Kent
+        ("E10000016", "main.choose_sub_area", {"area_slug": "E10000016"}),  # Kent
         (None, ".choose_area", {}),
     ],
 )
@@ -2156,15 +2371,32 @@ def test_choose_sub_area_page_for_district_has_back_link(
     prev_area_slug,
     expected_back_link_url,
     expected_back_link_extra_kwargs,
+    mocker,
+    mock_get_areas_for_parent,
+    mock_check_grandparent,
 ):
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
+    mocker.patch(
+        "app.areas_api_client.get_area",
+        return_value={
+            "id": "ashdord_id",
+            "name": "Ashford",
+        },
+    )
+    mocker.patch(
+        "app.models.base_broadcast.Areas.get",
+        return_value=[
+            MockArea({"id": "E07000105", "name": "Ashford", "parent": "E10000016"}),
+            MockArea({"id": "E10000016", "name": "Kent", "parent": None}),
+        ],
+    )
     page = client_request.get(
         "main.choose_sub_area",
         service_id=SERVICE_ONE_ID,
         message_id=str(uuid.UUID(int=0)),
-        library_slug="wd25-lad25-ctyua25",
-        area_slug="lad25-E07000105",  # Ashford
+        library_slug="local_authorities",
+        area_slug="E07000105",  # Ashford
         message_type="broadcast",
         prev_area_slug=prev_area_slug,
     )
@@ -2174,7 +2406,7 @@ def test_choose_sub_area_page_for_district_has_back_link(
         expected_back_link_url,
         service_id=SERVICE_ONE_ID,
         message_id=str(uuid.UUID(int=0)),
-        library_slug="wd25-lad25-ctyua25",
+        library_slug="local_authorities",
         message_type="broadcast",
         **expected_back_link_extra_kwargs,
     )
@@ -2232,6 +2464,7 @@ def test_preview_areas_has_back_link_with_uuid(
     expected_back_link_extra_kwargs,
     mock_check_can_update_status,
     mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -2326,7 +2559,109 @@ def test_choose_sub_area_page_for_county_shows_links_for_districts(
     mock_get_draft_broadcast_message,
     fake_uuid,
     active_user_create_broadcasts_permission,
+    mock_check_grandparent,
+    mock_get_libraries,
+    mocker,
 ):
+    mocker.patch(
+        "app.areas_api_client.get_area",
+        return_value={
+            "id": "E10000016",
+            "geographic_id": "E10000016",
+            "name": "Kent",
+            "parent": None,
+            "geography_type": "local_authorities",
+        },
+    )
+    mocker.patch(
+        "app.areas_api_client.get_areas_for_parent",
+        return_value=[
+            {
+                "id": "E07000105",
+                "geographic_id": "E07000105",
+                "name": "Ashford",
+                "parent": "E10000016",
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "E07000106",
+                "geographic_id": "E07000106",
+                "name": "Canterbury",
+                "parent": "E10000016",
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "E07000107",
+                "geographic_id": "E07000107",
+                "name": "Dartford",
+                "parent": "E10000016",
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "E07000108",
+                "geographic_id": "E07000108",
+                "name": "Dover",
+                "parent": "E10000016",
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "E07000109",
+                "geographic_id": "E07000109",
+                "name": "Gravesham",
+                "parent": "E10000016",
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "E07000110",
+                "geographic_id": "E07000110",
+                "name": "Maidstone",
+                "parent": "E10000016",
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "E07000111",
+                "geographic_id": "E07000111",
+                "name": "Sevenoaks",
+                "parent": "E10000016",
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "E07000112",
+                "geographic_id": "E07000112",
+                "name": "Folkestone and Hythe",
+                "parent": "E10000016",
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "E07000113",
+                "geographic_id": "E07000113",
+                "name": "Swale",
+                "parent": "E10000016",
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "E07000114",
+                "geographic_id": "E07000114",
+                "name": "Thanet",
+                "parent": "E10000016",
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "E07000115",
+                "geographic_id": "E07000115",
+                "name": "Tonbridge and Malling",
+                "parent": "E10000016",
+                "geography_type": "local_authorities",
+            },
+            {
+                "id": "E07000116",
+                "geographic_id": "E07000116",
+                "name": "Tunbridge Wells",
+                "parent": "E10000016",
+                "geography_type": "local_authorities",
+            },
+        ],
+    )
     service_one["permissions"] += ["broadcast"]
 
     client_request.login(active_user_create_broadcasts_permission)
@@ -2334,8 +2669,8 @@ def test_choose_sub_area_page_for_county_shows_links_for_districts(
         "main.choose_sub_area",
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
-        library_slug="wd25-lad25-ctyua25",
-        area_slug="ctyua25-E10000016",  # Kent
+        library_slug="local_authorities",
+        area_slug="E10000016",  # Kent
         message_type="broadcast",
     )
     assert normalize_spaces(page.select_one("h1").text) == "Choose an area of Kent"
@@ -2365,18 +2700,18 @@ def test_choose_sub_area_page_for_county_shows_links_for_districts(
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
         message_type="broadcast",
-        library_slug="wd25-lad25-ctyua25",
-        area_slug="lad25-E07000105",
-        prev_area_slug="ctyua25-E10000016",  # Kent
+        library_slug="local_authorities",
+        area_slug="E07000105",
+        prev_area_slug="E10000016",  # Kent
     )
     assert districts[0][1] == "Ashford"
     assert districts[-1][0] == url_for(
         "main.choose_sub_area",
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
-        library_slug="wd25-lad25-ctyua25",
-        area_slug="lad25-E07000116",
-        prev_area_slug="ctyua25-E10000016",  # Kent
+        library_slug="local_authorities",
+        area_slug="E07000116",
+        prev_area_slug="E10000016",  # Kent
         message_type="broadcast",
     )
     assert districts[-1][1] == "Tunbridge Wells"
@@ -2390,16 +2725,20 @@ def test_add_broadcast_area(
     fake_uuid,
     mocker,
     active_user_create_broadcasts_permission,
+    mock_get_libraries,
+    mock_add_areas,
 ):
-    service_one["permissions"] += ["broadcast"]
-    polygon_class = namedtuple("polygon_class", ["as_coordinate_pairs_lat_long"])
-    coordinates = [[50.1, 0.1], [50.2, 0.2], [50.3, 0.2]]
-    polygons = polygon_class(as_coordinate_pairs_lat_long=coordinates)
-    areas = BroadcastAreaLibraries().get_areas(["ctry19-E92000001", "ctry19-W92000004"])
-    mock_get_polygons_from_areas = mocker.patch(
-        "app.models.base_broadcast.get_polygons_from_areas", return_value=polygons
+    mocker.patch(
+        "app.areas_api_client.get_areas_for_library",
+        return_value=[
+            {"id": "E92000001", "name": "England"},
+            {"id": "N92000002", "name": "Northern Ireland"},
+            {"id": "S92000003", "name": "Scotland"},
+            {"id": "W92000004", "name": "Wales"},
+        ],
     )
-    mock_get_broadcast_message = mocker.patch(
+    service_one["permissions"] += ["broadcast"]
+    mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
         return_value=broadcast_message_json(
             id_=fake_uuid,
@@ -2407,11 +2746,11 @@ def test_add_broadcast_area(
             created_by_id=fake_uuid,
             service_id=SERVICE_ONE_ID,
             status="draft",
-            area_ids=["ctry19-E92000001", "ctry19-W92000004"],
+            area_ids=["E92000001", "W92000004"],
             areas={
-                "ids": ["ctry19-E92000001", "ctry19-W92000004"],
+                "ids": ["E92000001", "W92000004"],
                 "names": ["England", "Wales"],
-                "simple_polygons": [polygons],
+                "simple_polygons": [],
             },
         ),
     )
@@ -2422,28 +2761,12 @@ def test_add_broadcast_area(
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
         message_type="broadcast",
-        library_slug="ctry19",
-        _data={"areas": ["ctry19-E92000001", "ctry19-W92000004"]},
+        library_slug="countries",
+        _data={"areas": ["E92000001", "W92000004"]},
     )
-    mock_get_polygons_from_areas.assert_called_once_with(areas, area_attribute="simple_polygons")
-    mock_get_broadcast_message.assert_called_once_with(service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
-
-    mock_update_broadcast_message_kwargs = mock_update_broadcast_message.call_args.kwargs
-    assert mock_update_broadcast_message_kwargs["service_id"] == SERVICE_ONE_ID
-    assert mock_update_broadcast_message_kwargs["broadcast_message_id"] == fake_uuid
-
-    actual_areas = mock_update_broadcast_message_kwargs["data"]["areas"]
-    expected_areas = {
-        "ids": ["ctry19-E92000001", "ctry19-W92000004"],
-        "names": ["England", "Wales"],
-        "aggregate_names": ["England", "Wales"],
-        "simple_polygons": coordinates,
-    }
-
-    assert sorted(actual_areas["ids"]) == sorted(expected_areas["ids"])
-    assert actual_areas["names"] == expected_areas["names"]
-    assert actual_areas["aggregate_names"] == expected_areas["aggregate_names"]
-    assert actual_areas["simple_polygons"] == expected_areas["simple_polygons"]
+    mock_add_areas.assert_called_once_with(
+        fake_uuid, SERVICE_ONE_ID, ["E92000001", "W92000004"], "broadcast", "countries"
+    )
 
 
 def test_add_flood_warning_area(
@@ -2455,23 +2778,64 @@ def test_add_flood_warning_area(
     mocker,
     active_user_create_broadcasts_permission,
     mock_get_count_of_phones,
+    mock_get_flood_warning_area_library,
+    mock_add_areas,
 ):
     service_one["permissions"] += ["broadcast"]
+    areas = [
+        {
+            "id": "011FWCN2M",
+            "name": "Cumbria coast at Maryport harbour",
+            "geography_type": "flood_warning_areas",
+            "geographic_id": "011FWCN2M",
+        }
+    ]
+    mocker.patch(
+        "app.areas_api_client.get_areas_by_names",
+        return_value=areas,
+    )
+    mocker.patch(
+        "app.areas_api_client.get_areas_by_ids",
+        return_value=areas,
+    )
+    # Initial GET request should have empty broadcast_message
+    empty_broadcast_message = broadcast_message_json(
+        id_=fake_uuid,
+        template_id=fake_uuid,
+        created_by_id=fake_uuid,
+        service_id=SERVICE_ONE_ID,
+        status="draft",
+        area_ids=[],
+        areas={
+            "ids": [],
+            "names": [],
+            "simple_polygons": [],
+        },
+    )
+
+    updated_broadcast_message = broadcast_message_json(
+        id_=fake_uuid,
+        template_id=fake_uuid,
+        created_by_id=fake_uuid,
+        service_id=SERVICE_ONE_ID,
+        status="draft",
+        area_ids=["011FWCN2M"],
+        areas={
+            "ids": ["011FWCN2M"],
+            "names": ["Cumbria coast at Maryport harbour"],
+            "aggregate_names": ["Cumbria coast at Maryport harbour"],
+            "simple_polygons": [CUMBRIA_FLOOD_WARNING_AREA],
+        },
+    )
+
+    mock_add_areas.return_value = updated_broadcast_message
+
     mock_get_broadcast_message = mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
-        return_value=broadcast_message_json(
-            id_=fake_uuid,
-            template_id=fake_uuid,
-            created_by_id=fake_uuid,
-            service_id=SERVICE_ONE_ID,
-            status="draft",
-            area_ids=[],
-            areas={
-                "ids": [],
-                "names": [],
-                "simple_polygons": [],
-            },
-        ),
+        side_effect=[
+            empty_broadcast_message,
+            updated_broadcast_message,
+        ],
     )
     client_request.login(active_user_create_broadcasts_permission)
 
@@ -2491,7 +2855,7 @@ def test_add_flood_warning_area(
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
         message_type="broadcast",
-        _data={"flood_warning_area": ["011FWCN2M"]},
+        _data={"flood_warning_area": "011FWCN2M", "add_area_button": ""},
         _follow_redirects=True,
     )
 
@@ -2501,23 +2865,13 @@ def test_add_flood_warning_area(
     ]
 
     assert mock_get_broadcast_message.call_count == 2
-
-    mock_update_broadcast_message_kwargs = mock_update_broadcast_message.call_args.kwargs
-    assert mock_update_broadcast_message_kwargs["service_id"] == SERVICE_ONE_ID
-    assert mock_update_broadcast_message_kwargs["broadcast_message_id"] == fake_uuid
-
-    actual_areas = mock_update_broadcast_message_kwargs["data"]["areas"]
-    expected_areas = {
-        "ids": ["Flood_Warning_Target_Areas-011FWCN2M"],
-        "names": ["Cumbria coast at Maryport harbour"],
-        "aggregate_names": ["Cumbria coast at Maryport harbour"],
-        "simple_polygons": [CUMBRIA_FLOOD_WARNING_AREA],
-    }
-
-    assert sorted(actual_areas["ids"]) == sorted(expected_areas["ids"])
-    assert actual_areas["names"] == expected_areas["names"]
-    assert actual_areas["aggregate_names"] == expected_areas["aggregate_names"]
-    assert actual_areas["simple_polygons"] == expected_areas["simple_polygons"]
+    mock_add_areas.assert_called_once_with(
+        fake_uuid,
+        SERVICE_ONE_ID,
+        ["011FWCN2M"],
+        "broadcast",
+        "flood_warning_areas",
+    )
 
 
 @pytest.mark.parametrize(
@@ -2534,25 +2888,86 @@ def test_add_flood_warning_areas_in_bulk_with_delimiters(
     active_user_create_broadcasts_permission,
     delimiter,
     mock_get_count_of_phones,
+    mock_get_libraries,
+    mock_get_flood_warning_area_library,
+    mock_add_areas,
 ):
     service_one["permissions"] += ["broadcast"]
+
+    client_request.login(active_user_create_broadcasts_permission)
+    areas = [
+        {
+            "id": "011FWBWH",
+            "name": "Whitehaven Sea Lock failure, town centre and North Shore Rd",
+            "geography_type": "flood_warning_areas",
+            "geographic_id": "011FWBWH",
+        },
+        {
+            "id": "011FWCN1A",
+            "name": (
+                "Cumbrian coastline from Gretna to Silloth including Port Carlisle, " "Skinburness and Rockcliffe"
+            ),
+            "geography_type": "flood_warning_areas",
+            "geographic_id": "011FWCN1A",
+        },
+        {
+            "id": "011FWCN1B",
+            "name": ("Cumbrian coastline from Gretna to Silloth, between Longtown and " "Skinburness"),
+            "geography_type": "flood_warning_areas",
+            "geographic_id": "011FWCN1B",
+        },
+    ]
+
+    mocker.patch(
+        "app.areas_api_client.get_areas_by_names",
+        return_value=areas,
+    )
+    mocker.patch(
+        "app.areas_api_client.get_areas_by_ids",
+        return_value=areas,
+    )
+
+    # Initial GET request should have empty broadcast_message
+    empty_broadcast_message = broadcast_message_json(
+        id_=fake_uuid,
+        template_id=fake_uuid,
+        created_by_id=fake_uuid,
+        service_id=SERVICE_ONE_ID,
+        status="draft",
+        area_ids=[],
+        areas={
+            "ids": [],
+            "names": [],
+            "simple_polygons": [],
+        },
+    )
+
+    updated_broadcast_message = broadcast_message_json(
+        id_=fake_uuid,
+        template_id=fake_uuid,
+        created_by_id=fake_uuid,
+        service_id=SERVICE_ONE_ID,
+        status="draft",
+        area_ids=["011FWBWH", "011FWCN1A", "011FWCN1B"],
+        areas={
+            "ids": ["011FWBWH", "011FWCN1A", "011FWCN1B"],
+            "names": [
+                "Whitehaven Sea Lock failure, town centre and North Shore Rd",
+                ("Cumbrian coastline from Gretna to Silloth including Port Carlisle, " "Skinburness and Rockcliffe"),
+                ("Cumbrian coastline from Gretna to Silloth, between Longtown and " "Skinburness"),
+            ],
+            "simple_polygons": [],
+        },
+    )
+
     mock_get_broadcast_message = mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
-        return_value=broadcast_message_json(
-            id_=fake_uuid,
-            template_id=fake_uuid,
-            created_by_id=fake_uuid,
-            service_id=SERVICE_ONE_ID,
-            status="draft",
-            area_ids=[],
-            areas={
-                "ids": [],
-                "names": [],
-                "simple_polygons": [],
-            },
-        ),
+        side_effect=[
+            empty_broadcast_message,
+            empty_broadcast_message,
+            updated_broadcast_message,  # Once areas added
+        ],
     )
-    client_request.login(active_user_create_broadcasts_permission)
 
     page = client_request.get(
         ".search_flood_warning_areas_as_a_list",
@@ -2590,35 +3005,7 @@ def test_add_flood_warning_areas_in_bulk_with_delimiters(
     ]
 
     assert mock_get_broadcast_message.call_count == 3
-
-    mock_update_broadcast_message_kwargs = mock_update_broadcast_message.call_args.kwargs
-    assert mock_update_broadcast_message_kwargs["service_id"] == SERVICE_ONE_ID
-    assert mock_update_broadcast_message_kwargs["broadcast_message_id"] == fake_uuid
-
-    actual_areas = mock_update_broadcast_message_kwargs["data"]["areas"]
-    expected_areas = {
-        "ids": [
-            "Flood_Warning_Target_Areas-011FWBWH",
-            "Flood_Warning_Target_Areas-011FWCN1A",
-            "Flood_Warning_Target_Areas-011FWCN1B",
-        ],
-        "names": [
-            "Whitehaven Sea Lock failure, town centre and North Shore Rd",
-            "Cumbrian coastline from Gretna to Silloth including Port Carlisle, Skinburness and Rockcliffe",
-            "Cumbrian coastline from Gretna to Silloth, between Longtown and Skinburness",
-        ],
-        "aggregate_names": [
-            "Whitehaven Sea Lock failure, town centre and North Shore Rd",
-            "Cumbrian coastline from Gretna to Silloth including Port Carlisle, Skinburness and Rockcliffe",
-            "Cumbrian coastline from Gretna to Silloth, between Longtown and Skinburness",
-        ],
-        "simple_polygons": MULTIPLE_FLOOD_WARNING_AREAS,
-    }
-
-    assert sorted(actual_areas["ids"]) == sorted(expected_areas["ids"])
-    assert sorted(actual_areas["names"]) == sorted(expected_areas["names"])
-    assert sorted(actual_areas["aggregate_names"]) == sorted(expected_areas["aggregate_names"])
-    assert actual_areas["simple_polygons"] == expected_areas["simple_polygons"]
+    assert mock_add_areas.called
 
 
 def test_add_local_authority_areas_in_bulk_with_newline_delimiter(
@@ -2632,25 +3019,61 @@ def test_add_local_authority_areas_in_bulk_with_newline_delimiter(
     mock_get_broadcast_message_versions,
     mock_check_can_update_status,
     mock_get_count_of_phones,
+    mock_add_areas,
 ):
     service_one["permissions"] += ["broadcast"]
+    client_request.login(active_user_create_broadcasts_permission)
+    areas = [
+        {"id": "devon", "name": "Devon"},
+        {"id": "isles_of_scilly", "name": "Isles of Scilly"},
+    ]
+
+    mocker.patch(
+        "app.areas_api_client.get_areas_by_names",
+        return_value=areas,
+    )
+    mocker.patch(
+        "app.areas_api_client.get_areas_by_ids",
+        return_value=areas,
+    )
+
+    # Initial GET request should have empty broadcast_message
+    empty_broadcast_message = broadcast_message_json(
+        id_=fake_uuid,
+        template_id=fake_uuid,
+        created_by_id=fake_uuid,
+        service_id=SERVICE_ONE_ID,
+        status="draft",
+        area_ids=[],
+        areas={
+            "ids": [],
+            "names": [],
+            "simple_polygons": [],
+        },
+    )
+
+    updated_broadcast_message = broadcast_message_json(
+        id_=fake_uuid,
+        template_id=fake_uuid,
+        created_by_id=fake_uuid,
+        service_id=SERVICE_ONE_ID,
+        status="draft",
+        area_ids=["devon", "isles_of_scilly"],
+        areas={
+            "ids": ["devon", "isles_of_scilly"],
+            "names": ["Devon", "Isles of Scilly"],
+            "simple_polygons": [],
+        },
+    )
+
     mock_get_broadcast_message = mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
-        return_value=broadcast_message_json(
-            id_=fake_uuid,
-            template_id=fake_uuid,
-            created_by_id=fake_uuid,
-            service_id=SERVICE_ONE_ID,
-            status="draft",
-            area_ids=[],
-            areas={
-                "ids": [],
-                "names": [],
-                "simple_polygons": [],
-            },
-        ),
+        side_effect=[
+            empty_broadcast_message,
+            empty_broadcast_message,
+            updated_broadcast_message,  # Once areas added
+        ],
     )
-    client_request.login(active_user_create_broadcasts_permission)
 
     page = client_request.get(
         ".search_local_authority_areas_as_a_list",
@@ -2661,13 +3084,12 @@ def test_add_local_authority_areas_in_bulk_with_newline_delimiter(
 
     assert normalize_spaces(page.select_one("h1").text) == "Enter local authorities as a list"
 
-    client_request.login(active_user_create_broadcasts_permission)
     page = client_request.post(
         ".search_local_authority_areas_as_a_list",
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
         message_type="broadcast",
-        _data={"areas": ["Devon\nIsles of Scilly"]},
+        _data={"areas": "Devon\nIsles of Scilly"},
         _follow_redirects=True,
     )
 
@@ -2678,23 +3100,7 @@ def test_add_local_authority_areas_in_bulk_with_newline_delimiter(
     ]
 
     assert mock_get_broadcast_message.call_count == 3
-
-    mock_update_broadcast_message_kwargs = mock_update_broadcast_message.call_args.kwargs
-    assert mock_update_broadcast_message_kwargs["service_id"] == SERVICE_ONE_ID
-    assert mock_update_broadcast_message_kwargs["broadcast_message_id"] == fake_uuid
-
-    actual_areas = mock_update_broadcast_message_kwargs["data"]["areas"]
-    expected_areas = {
-        "ids": ["ctyua25-E10000008", "lad25-E06000053"],
-        "names": ["Devon", "Isles of Scilly"],
-        "aggregate_names": ["Devon", "Isles of Scilly"],
-        "simple_polygons": DEVON_AND_ISLES_OF_SCILLY,
-    }
-
-    assert sorted(actual_areas["ids"]) == sorted(expected_areas["ids"])
-    assert sorted(actual_areas["names"]) == sorted(expected_areas["names"])
-    assert sorted(actual_areas["aggregate_names"]) == sorted(expected_areas["aggregate_names"])
-    assert actual_areas["simple_polygons"] == expected_areas["simple_polygons"]
+    mock_add_areas.assert_called_once_with(fake_uuid, SERVICE_ONE_ID, areas, "broadcast", None)
 
 
 def test_remove_flood_warning_area(
@@ -2706,25 +3112,61 @@ def test_remove_flood_warning_area(
     mocker,
     active_user_create_broadcasts_permission,
     mock_get_count_of_phones,
+    mock_get_flood_warning_area_library,
 ):
+    area = {
+        "id": "011FWCN2M",
+        "name": "Cumbria coast at Maryport harbour",
+        "geography_type": "flood_warning_areas",
+        "geographic_id": "011FWCN2M",
+    }
+
+    mocker.patch(
+        "app.areas_api_client.get_areas_by_ids",
+        side_effect=[
+            [area],  # Initial page render
+            [],  # The area has been removed
+        ],
+    )
+
     service_one["permissions"] += ["broadcast"]
+    broadcast_message_with_area = broadcast_message_json(
+        id_=fake_uuid,
+        template_id=fake_uuid,
+        created_by_id=fake_uuid,
+        service_id=SERVICE_ONE_ID,
+        status="draft",
+        area_ids=["011FWCN2M"],
+        areas={
+            "ids": ["011FWCN2M"],
+            "names": ["Cumbria coast at Maryport harbour"],
+            "aggregate_names": ["Cumbria coast at Maryport harbour"],
+            "simple_polygons": [CUMBRIA_FLOOD_WARNING_AREA],
+        },
+    )
+    broadcast_message_without_area = broadcast_message_json(
+        id_=fake_uuid,
+        template_id=fake_uuid,
+        created_by_id=fake_uuid,
+        service_id=SERVICE_ONE_ID,
+        status="draft",
+        area_ids=[],
+        areas={
+            "ids": [],
+            "names": [],
+            "aggregate_names": [],
+            "simple_polygons": [],
+        },
+    )
+
     mock_get_broadcast_message = mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
-        return_value=broadcast_message_json(
-            id_=fake_uuid,
-            template_id=fake_uuid,
-            created_by_id=fake_uuid,
-            service_id=SERVICE_ONE_ID,
-            status="draft",
-            area_ids=["Flood_Warning_Target_Areas-011FWCN2M"],
-            areas={
-                "ids": ["Flood_Warning_Target_Areas-011FWCN2M"],
-                "names": ["Cumbria coast at Maryport harbour"],
-                "aggregate_names": ["Cumbria coast at Maryport harbour"],
-                "simple_polygons": [CUMBRIA_FLOOD_WARNING_AREA],
-            },
-        ),
+        side_effect=[
+            broadcast_message_with_area,
+            broadcast_message_without_area,
+        ],
     )
+    mock_remove_area = mocker.patch("app.areas_api_client.remove_area", return_value=broadcast_message_without_area)
     client_request.login(active_user_create_broadcasts_permission)
 
     page = client_request.get(
@@ -2743,7 +3185,7 @@ def test_remove_flood_warning_area(
         ".remove_area",
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
-        area_slug="Flood_Warning_Target_Areas-011FWCN2M",
+        area_slug="011FWCN2M",
         message_type="broadcast",
         _expected_redirect=url_for(
             ".choose_library", service_id=SERVICE_ONE_ID, message_id=fake_uuid, message_type="broadcast"
@@ -2751,81 +3193,43 @@ def test_remove_flood_warning_area(
     )
 
     assert mock_get_broadcast_message.call_count == 2
-    # The broadcast is updated with no area data as the only area was removed
-    mock_update_broadcast_message.assert_called_once_with(
-        service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
-        data={"areas": {"ids": [], "names": [], "aggregate_names": [], "simple_polygons": []}},
-    )
+    mock_remove_area.assert_called_once_with(fake_uuid, SERVICE_ONE_ID, "011FWCN2M", "broadcast")
 
 
-def test_error_if_flood_warning_code_invalid(
+def test_error_if_flood_warning_code_bulk_input_input_empty(
     client_request,
     service_one,
     mock_get_draft_broadcast_message,
     mock_update_broadcast_message,
     fake_uuid,
-    mocker,
     active_user_create_broadcasts_permission,
+    mock_add_areas,
+    mock_get_libraries,
+    mock_get_areas_by_ids,
+    mock_get_count_of_phones,
 ):
     service_one["permissions"] += ["broadcast"]
-    mocker.patch(
-        "app.broadcast_message_api_client.get_broadcast_message",
-        return_value=broadcast_message_json(
-            id_=fake_uuid,
-            template_id=fake_uuid,
-            created_by_id=fake_uuid,
-            service_id=SERVICE_ONE_ID,
-            status="draft",
-            area_ids=[],
-            areas={
-                "ids": [],
-                "names": [],
-                "simple_polygons": [],
-            },
-        ),
-    )
     client_request.login(active_user_create_broadcasts_permission)
 
-    page = client_request.get(
-        ".search_flood_warning_areas", service_id=SERVICE_ONE_ID, message_id=fake_uuid, message_type="broadcast"
-    )
-
-    assert normalize_spaces(page.select_one("h1").text) == "Choose Flood Warning Target Areas (TA)"
-    assert not page.select("ul.area-list li.area-list-item")
-
-    client_request.login(active_user_create_broadcasts_permission)
     page = client_request.post(
-        ".search_flood_warning_areas",
+        ".search_flood_warning_areas_as_a_list",
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
         message_type="broadcast",
-        _data={"flood_warning_area": ["INVALID AREA ID"]},
+        _data={"areas": []},
         _follow_redirects=True,
     )
 
-    assert normalize_spaces(page.select_one("h1").text) == "Choose Flood Warning Target Areas (TA)"
+    assert normalize_spaces(page.select_one("h1").text) == "Enter Flood Warning Target Areas (TA) as a list"
     assert not page.select("ul.area-list li.area-list-item")
-    assert normalize_spaces(page.select_one(".govuk-error-message").text) == "Error: Flood Warning TA code not found"
-    assert not mock_update_broadcast_message.called
+    assert normalize_spaces(page.select_one(".govuk-error-message").text) == "Error: This field is required"
+    assert (
+        normalize_spaces(page.select_one(".govuk-error-summary").text)
+        == "There is a problem Enter at least 1 Flood Warning TA code"
+    )
+    assert not mock_add_areas.called
 
 
-@pytest.mark.parametrize(
-    "areas_input, expected_field_error, expected_form_error",
-    (
-        ([], "Error: This field is required", "There is a problem Enter at least 1 Flood Warning TA code"),
-        (
-            ["test"],
-            "Error: Flood Warning TA code 'test' not found",
-            "There is a problem Flood Warning TA code not found",
-        ),
-        (
-            ["test", "test"],
-            "Error: Flood Warning TA code 'test' not found",
-            "There is a problem Flood Warning TA code not found",
-        ),
-    ),
-)
 def test_error_if_flood_warning_code_bulk_input_invalid(
     client_request,
     service_one,
@@ -2834,11 +3238,15 @@ def test_error_if_flood_warning_code_bulk_input_invalid(
     fake_uuid,
     mocker,
     active_user_create_broadcasts_permission,
-    areas_input,
-    expected_field_error,
-    expected_form_error,
-    mock_get_count_of_phones,
+    mock_get_flood_warning_area_library,
+    mock_add_areas_returns_error_for_invalid_input,
+    mock_get_libraries,
 ):
+    mock_add_areas_returns_error_for_invalid_input.side_effect = type(
+        "MockAreaError",
+        (Exception,),
+        {"message": "Flood Warning TA code not found"},
+    )()
     service_one["permissions"] += ["broadcast"]
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -2866,40 +3274,25 @@ def test_error_if_flood_warning_code_bulk_input_invalid(
     )
 
     assert normalize_spaces(page.select_one("h1").text) == "Enter Flood Warning Target Areas (TA) as a list"
-
     client_request.login(active_user_create_broadcasts_permission)
     page = client_request.post(
         ".search_flood_warning_areas_as_a_list",
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
         message_type="broadcast",
-        _data={"areas": areas_input},
+        _data={"areas": ["test"]},
         _follow_redirects=True,
     )
 
     assert normalize_spaces(page.select_one("h1").text) == "Enter Flood Warning Target Areas (TA) as a list"
     assert not page.select("ul.area-list li.area-list-item")
-    assert normalize_spaces(page.select_one(".govuk-error-message").text) == expected_field_error
-    assert normalize_spaces(page.select_one(".govuk-error-summary").text) == (expected_form_error)
-    assert not mock_update_broadcast_message.called
+    assert normalize_spaces(page.select_one(".govuk-error-message").text) == "Error: Flood Warning TA code not found"
+    assert (
+        normalize_spaces(page.select_one(".govuk-error-summary").text)
+        == "There is a problem Flood Warning TA code not found"
+    )
 
 
-@pytest.mark.parametrize(
-    "areas_input, expected_field_error, expected_form_error",
-    (
-        ([], "Error: This field is required", "There is a problem Enter at least 1 local authority"),
-        (
-            ["test"],
-            "Error: Local authority 'test' not found",
-            "There is a problem Local authority not found",
-        ),
-        (
-            ["test", "test"],
-            "Error: Local authority 'test' not found",
-            "There is a problem Local authority not found",
-        ),
-    ),
-)
 def test_error_if_local_authority_bulk_input_invalid(
     client_request,
     service_one,
@@ -2908,9 +3301,70 @@ def test_error_if_local_authority_bulk_input_invalid(
     fake_uuid,
     mocker,
     active_user_create_broadcasts_permission,
-    areas_input,
-    expected_field_error,
-    expected_form_error,
+    mock_get_areas_by_names_returns_error_for_invalid_input,
+    mock_add_areas,
+):
+    mock_get_areas_by_names_returns_error_for_invalid_input.side_effect = type(
+        "MockAreaError",
+        (Exception,),
+        {"message": "Local authority 'test' not found'"},
+    )()
+    service_one["permissions"] += ["broadcast"]
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            status="draft",
+            area_ids=[],
+            created_at="2020-02-20T10:20:20.000000",
+            areas={
+                "ids": [],
+                "names": [],
+                "simple_polygons": [],
+            },
+        ),
+    )
+    client_request.login(active_user_create_broadcasts_permission)
+
+    page = client_request.get(
+        ".search_local_authority_areas_as_a_list",
+        service_id=SERVICE_ONE_ID,
+        message_id=fake_uuid,
+        message_type="broadcast",
+    )
+
+    assert normalize_spaces(page.select_one("h1").text) == "Enter local authorities as a list"
+
+    client_request.login(active_user_create_broadcasts_permission)
+    page = client_request.post(
+        ".search_local_authority_areas_as_a_list",
+        service_id=SERVICE_ONE_ID,
+        message_id=fake_uuid,
+        message_type="broadcast",
+        _data={"areas": ["test"]},
+        _follow_redirects=True,
+    )
+
+    assert normalize_spaces(page.select_one("h1").text) == "Enter local authorities as a list"
+    assert not page.select("ul.area-list li.area-list-item")
+    assert normalize_spaces(page.select_one(".govuk-error-message").text) == "Error: Local authority 'test' not found'"
+    assert normalize_spaces(page.select_one(".govuk-error-summary").text) == (
+        "There is a problem Local authority not found"
+    )
+    assert not mock_add_areas.called
+
+
+def test_error_if_local_authority_input_empty(
+    client_request,
+    service_one,
+    mock_get_draft_broadcast_message,
+    mock_update_broadcast_message,
+    fake_uuid,
+    mocker,
+    active_user_create_broadcasts_permission,
 ):
     service_one["permissions"] += ["broadcast"]
     mocker.patch(
@@ -2946,14 +3400,16 @@ def test_error_if_local_authority_bulk_input_invalid(
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
         message_type="broadcast",
-        _data={"areas": areas_input},
+        _data={"areas": []},
         _follow_redirects=True,
     )
 
     assert normalize_spaces(page.select_one("h1").text) == "Enter local authorities as a list"
     assert not page.select("ul.area-list li.area-list-item")
-    assert normalize_spaces(page.select_one(".govuk-error-message").text) == expected_field_error
-    assert normalize_spaces(page.select_one(".govuk-error-summary").text) == (expected_form_error)
+    assert normalize_spaces(page.select_one(".govuk-error-message").text) == "Error: This field is required"
+    assert normalize_spaces(page.select_one(".govuk-error-summary").text) == (
+        "There is a problem Enter at least 1 Local authority"
+    )
     assert not mock_update_broadcast_message.called
 
 
@@ -3007,7 +3463,7 @@ def test_create_postcode_area(
             status="draft",
             areas={
                 "ids": ["1km around the postcode BD1 1EE in Bradford"],
-                "simple_polygons": [BD1_1EE_1],
+                "simple_polygons": [BD1_1EE_2],
                 "names": ["1km around the postcode BD1 1EE in Bradford"],
             },
         ),
@@ -3071,10 +3527,16 @@ def test_add_postcode_area_to_broadcast(
     post_data,
     update_broadcast_data,
     mock_get_broadcast_message_versions,
+    mock_create_postcode_area,
+    mock_add_postcode_area,
+    mock_get_postcode_centroid,
+    mock_get_areas_by_ids,
+    mock_get_latest_edit_reason,
+    mock_get_broadcast_returned_for_edit_reasons,
 ):
     mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
     service_one["permissions"] += ["broadcast"]
-    mock_get_broadcast_message = mocker.patch(
+    mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
         return_value=broadcast_message_json(
             id_=fake_uuid,
@@ -3082,6 +3544,7 @@ def test_add_postcode_area_to_broadcast(
             created_by_id=fake_uuid,
             service_id=SERVICE_ONE_ID,
             status="draft",
+            created_at="2020-02-20T10:20:20.000000",
             areas={
                 "ids": ["1km around the postcode BD1 1EE in Bradford"],
                 "simple_polygons": [BD1_1EE_1],
@@ -3100,28 +3563,15 @@ def test_add_postcode_area_to_broadcast(
         _data=post_data,
         _follow_redirects=True,
     )
-    mock_update_broadcast_message.assert_called_once()
-    assert (
-        mock_update_broadcast_message._mock_call_args[1]["data"]["areas"]["names"]
-        == update_broadcast_data["areas"]["names"]
-    )
-    assert (
-        mock_update_broadcast_message._mock_call_args[1]["data"]["areas"]["ids"]
-        == update_broadcast_data["areas"]["ids"]
-    )
-    assert (
-        mock_update_broadcast_message._mock_call_args[1]["data"]["areas"]["aggregate_names"]
-        == update_broadcast_data["areas"]["aggregate_names"]
-    )
 
-    actual_polygons = mock_update_broadcast_message._mock_call_args[1]["data"]["areas"]["simple_polygons"]
-    expected_polygons = update_broadcast_data["areas"]["simple_polygons"]
-
-    for coords1, coords2 in zip(actual_polygons, expected_polygons):
-        for coord1, coord2 in zip(coords1, coords2):
-            assert all(abs(a - b) < math.exp(1e-12) for a, b in zip(coord1, coord2))
-
-    assert mock_get_broadcast_message.call_count == 2
+    assert mock_create_postcode_area.called
+    mock_add_postcode_area.assert_called_once_with(
+        fake_uuid,
+        SERVICE_ONE_ID,
+        post_data["postcode"],
+        float(post_data["radius"]),
+        "broadcast",
+    )
 
 
 @pytest.mark.parametrize(
@@ -3161,6 +3611,8 @@ def test_create_latitude_longitude_coordinate_area(
     active_user_create_broadcasts_permission,
     post_data,
     update_broadcast_data,
+    mock_check_coordinates_valid,
+    mock_create_coordinate_area,
 ):
     mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
     service_one["permissions"] += ["broadcast"]
@@ -3199,6 +3651,7 @@ def test_create_latitude_longitude_coordinate_area(
     assert second_coordinate == post_data["second_coordinate"]
     assert radius_value == post_data["radius"]
     assert mock_get_broadcast_message.call_count == 1
+    assert mock_create_coordinate_area.called
 
 
 @pytest.mark.parametrize(
@@ -3239,16 +3692,22 @@ def test_add_latitude_longitude_coordinate_area_to_broadcast(
     post_data,
     update_broadcast_data,
     mock_get_broadcast_message_versions,
+    mock_check_coordinates_valid,
+    mock_create_coordinate_area,
+    mock_add_coordinate_area,
+    mock_get_broadcast_returned_for_edit_reasons,
+    mock_get_latest_edit_reason,
 ):
     mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
     service_one["permissions"] += ["broadcast"]
-    mock_get_broadcast_message = mocker.patch(
+    mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
         return_value=broadcast_message_json(
             id_=fake_uuid,
             template_id=fake_uuid,
             created_by_id=fake_uuid,
             service_id=SERVICE_ONE_ID,
+            created_at="2020-02-20T10:20:20.000000",
             status="draft",
             areas={
                 "ids": [],
@@ -3268,28 +3727,15 @@ def test_add_latitude_longitude_coordinate_area_to_broadcast(
         _follow_redirects=True,
     )
 
-    mock_update_broadcast_message.assert_called_once()
-    assert (
-        mock_update_broadcast_message._mock_call_args[1]["data"]["areas"]["names"]
-        == update_broadcast_data["areas"]["names"]
+    mock_add_coordinate_area.assert_called_once_with(
+        fake_uuid,
+        SERVICE_ONE_ID,
+        float(post_data["first_coordinate"]),
+        float(post_data["second_coordinate"]),
+        float(post_data["radius"]),
+        "latitude_longitude",
+        "broadcast",
     )
-    assert (
-        mock_update_broadcast_message._mock_call_args[1]["data"]["areas"]["ids"]
-        == update_broadcast_data["areas"]["ids"]
-    )
-    assert (
-        mock_update_broadcast_message._mock_call_args[1]["data"]["areas"]["aggregate_names"]
-        == update_broadcast_data["areas"]["aggregate_names"]
-    )
-
-    actual_polygons = mock_update_broadcast_message._mock_call_args[1]["data"]["areas"]["simple_polygons"]
-    expected_polygons = update_broadcast_data["areas"]["simple_polygons"]
-
-    for coords1, coords2 in zip(actual_polygons, expected_polygons):
-        for coord1, coord2 in zip(coords1, coords2):
-            assert all(abs(a - b) < math.exp(1e-12) for a, b in zip(coord1, coord2))
-
-    assert mock_get_broadcast_message.call_count == 2
 
 
 @pytest.mark.parametrize(
@@ -3337,6 +3783,8 @@ def test_create_easting_northing_coordinate_area(
     post_data,
     update_broadcast_data,
     mock_get_count_of_phones,
+    mock_check_coordinates_valid,
+    mock_create_coordinate_area,
 ):
     service_one["permissions"] += ["broadcast"]
     mock_get_broadcast_message = mocker.patch(
@@ -3417,9 +3865,14 @@ def test_add_easting_northing_coordinate_area_to_broadcast(
     update_broadcast_data,
     mock_get_broadcast_message_versions,
     mock_get_count_of_phones,
+    mock_check_coordinates_valid,
+    mock_create_coordinate_area,
+    mock_add_coordinate_area,
+    mock_get_broadcast_returned_for_edit_reasons,
+    mock_get_latest_edit_reason,
 ):
     service_one["permissions"] += ["broadcast"]
-    mock_get_broadcast_message = mocker.patch(
+    mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
         return_value=broadcast_message_json(
             id_=fake_uuid,
@@ -3432,6 +3885,7 @@ def test_add_easting_northing_coordinate_area_to_broadcast(
                 "simple_polygons": [],
                 "names": [],
             },
+            created_at="2020-02-20T10:20:20.000000",
         ),
     )
 
@@ -3445,425 +3899,15 @@ def test_add_easting_northing_coordinate_area_to_broadcast(
         _data=post_data,
         _follow_redirects=True,
     )
-    mock_update_broadcast_message.assert_called_once()
-
-    assert (
-        mock_update_broadcast_message._mock_call_args[1]["data"]["areas"]["names"]
-        == update_broadcast_data["areas"]["names"]
+    mock_add_coordinate_area.assert_called_once_with(
+        fake_uuid,
+        SERVICE_ONE_ID,
+        float(post_data["first_coordinate"]),
+        float(post_data["second_coordinate"]),
+        float(post_data["radius"]),
+        "easting_northing",
+        "broadcast",
     )
-    assert (
-        mock_update_broadcast_message._mock_call_args[1]["data"]["areas"]["ids"]
-        == update_broadcast_data["areas"]["ids"]
-    )
-    assert (
-        mock_update_broadcast_message._mock_call_args[1]["data"]["areas"]["aggregate_names"]
-        == update_broadcast_data["areas"]["aggregate_names"]
-    )
-
-    actual_polygons = mock_update_broadcast_message._mock_call_args[1]["data"]["areas"]["simple_polygons"]
-    expected_polygons = update_broadcast_data["areas"]["simple_polygons"]
-
-    for coords1, coords2 in zip(actual_polygons, expected_polygons):
-        for coord1, coord2 in zip(coords1, coords2):
-            assert all(abs(a - b) < math.exp(1e-12) for a, b in zip(coord1, coord2))
-    assert mock_get_broadcast_message.call_count == 2
-
-
-@pytest.mark.parametrize(
-    "post_data, expected_error",
-    (
-        (
-            {"first_coordinate": "419763.0000000", "second_coordinate": "456038", "radius": "5"},
-            ["Enter a value with 6 decimal places"],
-        ),
-        (
-            {"first_coordinate": "419763", "second_coordinate": "456038", "radius": "5.555"},
-            ["Enter a value with 2 decimal places"],
-        ),
-        (
-            {
-                "first_coordinate": "419763.0000000",
-                "second_coordinate": "456038",
-                "radius": "5.555",
-            },
-            ["Enter a value with 6 decimal places", "Enter a value with 2 decimal places"],
-        ),
-        (
-            {"first_coordinate": "", "second_coordinate": "", "radius": "", "radius_btn": True},
-            ["The easting and northing must be within the UK", "Enter a radius between 0.1km and 38.0km"],
-        ),
-        (
-            {"first_coordinate": "", "second_coordinate": "", "radius": "", "search_btn": True},
-            [
-                "The easting and northing must be within the UK",
-            ],
-        ),
-    ),
-)
-def test_easting_northing_coordinate_area_form_errors(
-    client_request,
-    service_one,
-    fake_uuid,
-    mocker,
-    active_user_create_broadcasts_permission,
-    post_data,
-    expected_error,
-):
-    service_one["permissions"] += ["broadcast"]
-    mock_get_broadcast_message = mocker.patch(
-        "app.broadcast_message_api_client.get_broadcast_message",
-        return_value=broadcast_message_json(
-            id_=fake_uuid,
-            template_id=fake_uuid,
-            created_by_id=fake_uuid,
-            service_id=SERVICE_ONE_ID,
-            status="draft",
-            areas={
-                "ids": [],
-                "simple_polygons": [],
-                "names": [],
-            },
-        ),
-    )
-
-    client_request.login(active_user_create_broadcasts_permission)
-    page = client_request.post(
-        ".search_coordinates",
-        message_id=fake_uuid,
-        service_id=SERVICE_ONE_ID,
-        coordinate_type="easting_northing",
-        message_type="broadcast",
-        _data=post_data,
-        _follow_redirects=True,
-    )
-
-    form = page.select_one("form")
-    error_list = [
-        normalize_spaces([error])
-        for error in page.select(".govuk-error-summary__list a")
-        if normalize_spaces([error]) != ""
-    ]
-    assert error_list == expected_error
-    assert normalize_spaces(form.select_one("button").text) == "Search"
-    assert mock_get_broadcast_message.call_count == 1
-
-
-@pytest.mark.parametrize(
-    "post_data, expected_error",
-    (
-        (
-            {"first_coordinate": "54.0000000", "second_coordinate": "-2", "radius": "5"},
-            ["Enter a value with 6 decimal places"],
-        ),
-        (
-            {"first_coordinate": "54", "second_coordinate": "-2", "radius": "5.555"},
-            ["Enter a value with 2 decimal places"],
-        ),
-        (
-            {
-                "first_coordinate": "54.0000000",
-                "second_coordinate": "-2",
-                "radius": "5.555",
-            },
-            ["Enter a value with 6 decimal places", "Enter a value with 2 decimal places"],
-        ),
-        (
-            {"first_coordinate": "", "second_coordinate": "", "radius": "", "radius_btn": True},
-            ["The latitude and longitude must be within the UK", "Enter a radius between 0.1km and 38.0km"],
-        ),
-        (
-            {"first_coordinate": "", "second_coordinate": "", "radius": "", "search_btn": True},
-            ["The latitude and longitude must be within the UK"],
-        ),
-    ),
-)
-def test_latitude_longitude_coordinate_area_form_errors(
-    client_request,
-    service_one,
-    fake_uuid,
-    mocker,
-    active_user_create_broadcasts_permission,
-    post_data,
-    expected_error,
-    mock_get_count_of_phones,
-):
-    service_one["permissions"] += ["broadcast"]
-    mock_get_broadcast_message = mocker.patch(
-        "app.broadcast_message_api_client.get_broadcast_message",
-        return_value=broadcast_message_json(
-            id_=fake_uuid,
-            template_id=fake_uuid,
-            created_by_id=fake_uuid,
-            service_id=SERVICE_ONE_ID,
-            status="draft",
-            areas={
-                "ids": [],
-                "simple_polygons": [],
-                "names": [],
-            },
-        ),
-    )
-
-    client_request.login(active_user_create_broadcasts_permission)
-    page = client_request.post(
-        ".search_coordinates",
-        message_id=fake_uuid,
-        service_id=SERVICE_ONE_ID,
-        coordinate_type="latitude_longitude",
-        message_type="broadcast",
-        _data=post_data,
-        _follow_redirects=True,
-    )
-
-    form = page.select_one("form")
-    error_list = [
-        normalize_spaces([error])
-        for error in page.select(".govuk-error-summary__list a")
-        if normalize_spaces([error]) != ""
-    ]
-    assert error_list == expected_error
-    assert normalize_spaces(form.select_one("button").text) == "Search"
-    assert mock_get_broadcast_message.call_count == 1
-
-
-@pytest.mark.parametrize(
-    "post_data, coordinate_type, expected_error",
-    (
-        (
-            {"first_coordinate": "0", "second_coordinate": "", "radius": "0"},
-            "latitude_longitude",
-            ["The latitude and longitude must be within the UK", "Enter a radius between 0.1km and 38.0km"],
-        ),
-        (
-            {"first_coordinate": "0", "second_coordinate": "-10", "radius": "0"},
-            "latitude_longitude",
-            ["The latitude and longitude must be within the UK", "Enter a radius between 0.1km and 38.0km"],
-        ),
-        (
-            {"first_coordinate": "0", "second_coordinate": "-10", "radius": "/"},
-            "latitude_longitude",
-            ["The latitude and longitude must be within the UK", "Enter a radius between 0.1km and 38.0km"],
-        ),
-        (
-            {"first_coordinate": "0", "second_coordinate": "-10", "radius": "/"},
-            "easting_northing",
-            ["The easting and northing must be within the UK", "Enter a radius between 0.1km and 38.0km"],
-        ),
-    ),
-)
-def test_latitude_longitude_coordinate_area_form_error_with_invalid_coords(
-    client_request,
-    service_one,
-    fake_uuid,
-    mocker,
-    active_user_create_broadcasts_permission,
-    post_data,
-    coordinate_type,
-    expected_error,
-    mock_update_broadcast_message,
-):
-    service_one["permissions"] += ["broadcast"]
-    mock_get_broadcast_message = mocker.patch(
-        "app.broadcast_message_api_client.get_broadcast_message",
-        return_value=broadcast_message_json(
-            id_=fake_uuid,
-            template_id=fake_uuid,
-            created_by_id=fake_uuid,
-            service_id=SERVICE_ONE_ID,
-            status="draft",
-            areas={
-                "ids": [],
-                "simple_polygons": [],
-                "names": [],
-            },
-        ),
-    )
-
-    client_request.login(active_user_create_broadcasts_permission)
-
-    page = client_request.post(
-        ".search_coordinates",
-        message_id=fake_uuid,
-        service_id=SERVICE_ONE_ID,
-        coordinate_type=coordinate_type,
-        message_type="broadcast",
-        _data=post_data,
-        _follow_redirects=True,
-    )
-
-    form = page.select_one("form")
-    error_list = [
-        normalize_spaces([error])
-        for error in page.select(".govuk-error-summary__list a")
-        if normalize_spaces([error]) != ""
-    ]
-    assert error_list == expected_error
-    assert normalize_spaces(form.select_one("button").text) == "Search"
-    assert mock_get_broadcast_message.call_count == 1
-
-
-@pytest.mark.parametrize(
-    "post_data, coordinate_type, expected_error",
-    (
-        (
-            {"first_coordinate": "0", "second_coordinate": "0", "radius": "5"},
-            "latitude_longitude",
-            [
-                "The latitude and longitude must be within the UK",
-            ],
-        ),
-        (
-            {"first_coordinate": "50", "second_coordinate": "-2", "radius": "5"},
-            "latitude_longitude",
-            [
-                "The latitude and longitude must be within the UK",
-            ],
-        ),
-        (
-            {"first_coordinate": "50", "second_coordinate": "50", "radius": "5"},
-            "latitude_longitude",
-            [
-                "The latitude and longitude must be within the UK",
-            ],
-        ),
-        (
-            {"first_coordinate": "0", "second_coordinate": "0", "radius": "5"},
-            "easting_northing",
-            [
-                "The easting and northing must be within the UK",
-            ],
-        ),
-        (
-            {"first_coordinate": "170000", "second_coordinate": "170000", "radius": "5"},
-            "easting_northing",
-            [
-                "The easting and northing must be within the UK",
-            ],
-        ),
-    ),
-)
-def test_non_uk_coordinate_area_form_errors(
-    client_request,
-    service_one,
-    fake_uuid,
-    mocker,
-    active_user_create_broadcasts_permission,
-    post_data,
-    coordinate_type,
-    expected_error,
-    mock_update_broadcast_message,
-):
-    service_one["permissions"] += ["broadcast"]
-    mock_get_broadcast_message = mocker.patch(
-        "app.broadcast_message_api_client.get_broadcast_message",
-        return_value=broadcast_message_json(
-            id_=fake_uuid,
-            template_id=fake_uuid,
-            created_by_id=fake_uuid,
-            service_id=SERVICE_ONE_ID,
-            status="draft",
-            areas={
-                "ids": [],
-                "simple_polygons": [],
-                "names": [],
-            },
-        ),
-    )
-
-    client_request.login(active_user_create_broadcasts_permission)
-
-    page = client_request.post(
-        ".search_coordinates",
-        message_id=fake_uuid,
-        service_id=SERVICE_ONE_ID,
-        coordinate_type=coordinate_type,
-        message_type="broadcast",
-        _data=post_data,
-        _follow_redirects=True,
-    )
-    form = page.select_one("form")
-    error_list = [
-        normalize_spaces([error])
-        for error in page.select(".govuk-error-summary__list a")
-        if normalize_spaces([error]) != ""
-    ]
-    assert error_list == expected_error
-    assert normalize_spaces(form.select_one("button").text) == "Search"
-    assert mock_get_broadcast_message.call_count == 1
-
-
-@pytest.mark.parametrize(
-    "post_data, expected_errors",
-    (
-        (
-            {"postcode": "", "radius": "", "search_btn": True},
-            ["Enter a postcode within the UK"],
-        ),
-        (
-            {"postcode": "", "radius": "", "radius_btn": True},
-            ["Enter a postcode within the UK", "Enter a radius between 0.1km and 38.0km"],
-        ),
-        (
-            {"postcode": "TEST", "radius": "10"},
-            ["Enter a postcode within the UK"],
-        ),
-        (
-            {"postcode": "", "radius": "10"},
-            ["Enter a postcode within the UK"],
-        ),
-        (
-            {"postcode": "BD1 1EP", "radius": ""},
-            ["Enter a postcode within the UK"],
-        ),
-    ),
-)
-def test_incorrect_input_postcode_form_errors(
-    client_request,
-    service_one,
-    fake_uuid,
-    mocker,
-    active_user_create_broadcasts_permission,
-    post_data,
-    expected_errors,
-    mock_update_broadcast_message,
-):
-    service_one["permissions"] += ["broadcast"]
-    mock_get_broadcast_message = mocker.patch(
-        "app.broadcast_message_api_client.get_broadcast_message",
-        return_value=broadcast_message_json(
-            id_=fake_uuid,
-            template_id=fake_uuid,
-            created_by_id=fake_uuid,
-            service_id=SERVICE_ONE_ID,
-            status="draft",
-            areas={
-                "ids": [],
-                "simple_polygons": [],
-                "names": [],
-            },
-        ),
-    )
-
-    client_request.login(active_user_create_broadcasts_permission)
-
-    page = client_request.post(
-        ".search_postcodes",
-        service_id=SERVICE_ONE_ID,
-        message_id=fake_uuid,
-        message_type="broadcast",
-        library_slug="postcodes",
-        _data=post_data,
-        _follow_redirects=True,
-    )
-    form = page.select_one("form")
-    error_list = [
-        normalize_spaces([error])
-        for error in page.select(".govuk-error-summary__list a")
-        if normalize_spaces([error]) != ""
-    ]
-    assert error_list == expected_errors
-    assert normalize_spaces(form.select_one("button").text) == "Search for areas"
-    assert mock_get_broadcast_message.call_count == 1
 
 
 @pytest.mark.parametrize(
@@ -3929,24 +3973,16 @@ def test_valid_format_postcode_not_in_db_form_error(
 
 
 @pytest.mark.parametrize(
-    "post_data, expected_data",
+    "post_data, expected_area_ids",
     (
         (
-            {"select_all": "y", "areas": ["wd25-S13002845"]},
-            {
-                # wd25-S13002845 is ignored because the user chose ‘Select all…’
-                "ids": ["lad25-S12000033"],
-                "names": ["Aberdeen City"],
-                "aggregate_names": ["Aberdeen City"],
-            },
+            {"select_all": "y", "areas": ["S13002845"]},
+            # The selected district is ignored is ignored because the user chose ‘Select all…’
+            ["S12000033"],
         ),
         (
-            {"areas": ["wd25-S13002845", "wd25-S13002836"]},
-            {
-                "ids": ["wd25-S13002845", "wd25-S13002836"],
-                "names": ["Bridge of Don", "Airyhall/Broomhill/Garthdee"],
-                "aggregate_names": ["Aberdeen City"],
-            },
+            {"areas": ["S13002845", "S13002836"]},
+            ["S13002845", "S13002836"],
         ),
     ),
 )
@@ -3954,71 +3990,91 @@ def test_add_broadcast_sub_area_district_view(
     client_request,
     service_one,
     mock_get_draft_broadcast_message,
-    mock_update_broadcast_message,
+    mock_add_areas,
     fake_uuid,
     post_data,
-    expected_data,
-    mocker,
+    expected_area_ids,
     active_user_create_broadcasts_permission,
+    mock_get_area,
+    mock_check_grandparent,
+    mocker,
 ):
     service_one["permissions"] += ["broadcast"]
-    polygon_class = namedtuple("polygon_class", ["as_coordinate_pairs_lat_long"])
-    coordinates = [[50.1, 0.1], [50.2, 0.2], [50.3, 0.2]]
-    polygons = polygon_class(as_coordinate_pairs_lat_long=coordinates)
-    mock_get_polygons_from_areas = mocker.patch(
-        "app.models.base_broadcast.get_polygons_from_areas", return_value=polygons
-    )
-
     client_request.login(active_user_create_broadcasts_permission)
+    mocker.patch(
+        "app.areas_api_client.get_area",
+        return_value={
+            "id": "S12000033",
+            "name": "Aberdeen City",
+        },
+    )
+    mocker.patch(
+        "app.areas_api_client.get_areas_for_parent",
+        # child areas of Aberdeen City
+        return_value=[
+            {
+                "id": "S13002845",
+                "name": "Airyhall/Broomhill/Garthdee",
+            },
+            {
+                "id": "S13002836",
+                "name": "Bridge of Don",
+            },
+        ],
+    )
     client_request.post(
         ".choose_sub_area",
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
-        library_slug="wd25-lad25-ctyua25",
-        area_slug="lad25-S12000033",
+        library_slug="local_authorities",
+        area_slug="E10000016",
         message_type="broadcast",
         _data=post_data,
+        _expected_redirect=url_for(
+            ".preview_areas",
+            service_id=SERVICE_ONE_ID,
+            message_id=fake_uuid,
+            message_type="broadcast",
+        ),
     )
 
-    # These two areas are on the broadcast already
-    expected_data["ids"] = ["ctry19-E92000001", "ctry19-S92000003"] + expected_data["ids"]
-    expected_data["names"] = ["England", "Scotland"] + expected_data["names"]
-    expected_data["aggregate_names"] = sorted(["England", "Scotland"] + expected_data["aggregate_names"])
-
-    # Asserting that the polygons created are created from all of the areas
-    areas = BroadcastAreaLibraries().get_areas(expected_data["ids"])
-    mock_get_polygons_from_areas_kwargs = mock_get_polygons_from_areas.call_args
-    assert sorted(mock_get_polygons_from_areas_kwargs[0][0]) == sorted(areas)
-    assert mock_get_polygons_from_areas_kwargs[1] == {"area_attribute": "simple_polygons"}
-
-    mock_update_broadcast_message_kwargs = mock_update_broadcast_message.call_args.kwargs
-    assert mock_update_broadcast_message_kwargs["service_id"] == SERVICE_ONE_ID
-    assert mock_update_broadcast_message_kwargs["broadcast_message_id"] == fake_uuid
-
-    actual_areas = mock_update_broadcast_message_kwargs["data"]["areas"]
-
-    assert sorted(actual_areas["ids"]) == sorted(expected_data["ids"])
-    assert sorted(actual_areas["names"]) == sorted(expected_data["names"])
-    assert sorted(actual_areas["aggregate_names"]) == sorted(expected_data["aggregate_names"])
-    assert actual_areas["simple_polygons"] == coordinates
+    mock_add_areas.assert_called_once_with(
+        fake_uuid,
+        SERVICE_ONE_ID,
+        expected_area_ids,
+        "broadcast",
+        None,
+    )
 
 
 def test_add_broadcast_sub_area_county_view(
     client_request,
     service_one,
     mock_get_draft_broadcast_message,
-    mock_update_broadcast_message,
     fake_uuid,
-    mocker,
     active_user_create_broadcasts_permission,
+    mock_add_areas,
+    mock_get_areas_for_parent,
+    mock_check_grandparent,
+    mocker,
 ):
     service_one["permissions"] += ["broadcast"]
-    polygon_class = namedtuple("polygon_class", ["as_coordinate_pairs_lat_long"])
-    coordinates = [[50.1, 0.1], [50.2, 0.2], [50.3, 0.2]]
-    polygons = polygon_class(as_coordinate_pairs_lat_long=coordinates)
-    areas = BroadcastAreaLibraries().get_areas(["ctry19-E92000001", "ctry19-S92000003", "ctyua25-E10000016"])
-    mock_get_polygons_from_areas = mocker.patch(
-        "app.models.base_broadcast.get_polygons_from_areas", return_value=polygons
+    mocker.patch(
+        "app.areas_api_client.get_area",
+        return_value={"id": "E10000016", "name": "Kent"},
+    )
+    mock_add_areas.return_value = broadcast_message_json(
+        id_=fake_uuid,
+        template_id=fake_uuid,
+        created_by_id=fake_uuid,
+        service_id=SERVICE_ONE_ID,
+        status="draft",
+        areas={
+            "ids": ["E92000001", "S92000003"],
+            "names": ["England", "Scotland"],
+            "aggregate_names": ["England", "Scotland"],
+            "simple_polygons": [],
+        },
     )
 
     client_request.login(active_user_create_broadcasts_permission)
@@ -4026,51 +4082,38 @@ def test_add_broadcast_sub_area_county_view(
         ".choose_sub_area",
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
-        library_slug="wd25-lad25-ctyua25",
-        area_slug="ctyua25-E10000016",  # Kent
+        library_slug="local_authorities",
+        area_slug="E10000016",
         message_type="broadcast",
         _data={"select_all": "y"},
     )
-    mock_get_polygons_from_areas.assert_called_once_with(areas, area_attribute="simple_polygons")
-    mock_update_broadcast_message_kwargs = mock_update_broadcast_message.call_args.kwargs
-    assert mock_update_broadcast_message_kwargs["service_id"] == SERVICE_ONE_ID
-    assert mock_update_broadcast_message_kwargs["broadcast_message_id"] == fake_uuid
 
-    actual_areas = mock_update_broadcast_message_kwargs["data"]["areas"]
-    expected_areas = {
-        "simple_polygons": coordinates,
-        "ids": [
-            # These two areas are on the broadcast already
-            "ctry19-E92000001",
-            "ctry19-S92000003",
-        ]
-        + ["ctyua25-E10000016"],
-        "names": ["England", "Scotland", "Kent"],
-        "aggregate_names": ["England", "Kent", "Scotland"],
-    }
-
-    assert sorted(actual_areas["ids"]) == sorted(expected_areas["ids"])
-    assert sorted(actual_areas["names"]) == sorted(expected_areas["names"])
-    assert sorted(actual_areas["aggregate_names"]) == sorted(expected_areas["aggregate_names"])
-    assert actual_areas["simple_polygons"] == expected_areas["simple_polygons"]
+    mock_add_areas.assert_called_once_with(fake_uuid, SERVICE_ONE_ID, ["E10000016"], "broadcast", None)
 
 
 def test_remove_area_page(
     client_request,
     service_one,
     mock_get_draft_broadcast_message,
-    mock_update_broadcast_message,
     fake_uuid,
-    mocker,
     active_user_create_broadcasts_permission,
+    mock_remove_area,
+    mock_get_areas_by_ids,
 ):
     service_one["permissions"] += ["broadcast"]
-    polygon_class = namedtuple("polygon_class", ["as_coordinate_pairs_lat_long"])
-    coordinates = [[50.1, 0.1], [50.2, 0.2], [50.3, 0.2]]
-    polygons = polygon_class(as_coordinate_pairs_lat_long=coordinates)
-    areas = BroadcastAreaLibraries().get_areas(["ctry19-S92000003"])
-    mock_get_polygons_from_areas = mocker.patch(
-        "app.models.base_broadcast.get_polygons_from_areas", return_value=polygons
+
+    mock_remove_area.return_value = broadcast_message_json(
+        id_=fake_uuid,
+        template_id=fake_uuid,
+        created_by_id=fake_uuid,
+        service_id=SERVICE_ONE_ID,
+        status="draft",
+        areas={
+            "ids": ["E92000001"],
+            "names": ["England"],
+            "aggregate_names": ["England"],
+            "simple_polygons": [MULTIPLE_ENGLAND],
+        },
     )
 
     client_request.login(active_user_create_broadcasts_permission)
@@ -4078,24 +4121,21 @@ def test_remove_area_page(
         ".remove_area",
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
-        area_slug="ctry19-E92000001",
+        area_slug="E92000001",
         message_type="broadcast",
         _expected_redirect=url_for(
-            ".preview_areas", service_id=SERVICE_ONE_ID, message_id=fake_uuid, message_type="broadcast"
+            ".preview_areas",
+            service_id=SERVICE_ONE_ID,
+            message_id=fake_uuid,
+            message_type="broadcast",
         ),
     )
-    mock_get_polygons_from_areas.assert_called_once_with(areas, area_attribute="simple_polygons")
-    mock_update_broadcast_message.assert_called_once_with(
-        service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
-        data={
-            "areas": {
-                "simple_polygons": coordinates,
-                "names": ["Scotland"],
-                "aggregate_names": ["Scotland"],
-                "ids": ["ctry19-S92000003"],
-            },
-        },
+
+    mock_remove_area.assert_called_once_with(
+        fake_uuid,
+        SERVICE_ONE_ID,
+        "E92000001",
+        "broadcast",
     )
 
 
@@ -4107,6 +4147,7 @@ def test_remove_postcode_area(
     fake_uuid,
     mocker,
     active_user_create_broadcasts_permission,
+    mock_remove_area,
 ):
     service_one["permissions"] += ["broadcast"]
     mock_get_broadcast_message = mocker.patch(
@@ -4127,26 +4168,21 @@ def test_remove_postcode_area(
 
     client_request.login(active_user_create_broadcasts_permission)
     client_request.get(
-        ".remove_custom_area",
+        ".remove_area",
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
         message_type="broadcast",
+        area_slug="1km around the postcode BD1 1EE in Bradford",
         _expected_redirect=url_for(
             ".choose_library", service_id=SERVICE_ONE_ID, message_id=fake_uuid, message_type="broadcast"
         ),
     )
     mock_get_broadcast_message.assert_called_once_with(service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
-    mock_update_broadcast_message.assert_called_once_with(
-        service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
-        data={
-            "areas": {
-                "ids": [],
-                "names": [],
-                "aggregate_names": [],
-                "simple_polygons": [],
-            }
-        },
+    mock_remove_area.assert_called_once_with(
+        fake_uuid,
+        SERVICE_ONE_ID,
+        "1km around the postcode BD1 1EE in Bradford",
+        "broadcast",
     )
 
 
@@ -4158,6 +4194,7 @@ def test_remove_coordinate_area(
     fake_uuid,
     mocker,
     active_user_create_broadcasts_permission,
+    mock_remove_area,
 ):
     service_one["permissions"] += ["broadcast"]
     mock_get_broadcast_message = mocker.patch(
@@ -4179,131 +4216,21 @@ def test_remove_coordinate_area(
 
     client_request.login(active_user_create_broadcasts_permission)
     client_request.get(
-        ".remove_custom_area",
+        ".remove_area",
         service_id=SERVICE_ONE_ID,
         message_id=fake_uuid,
+        area_slug="5km around 54.0 latitude, -1.7 longitude, in Harrogate",
         message_type="broadcast",
         _expected_redirect=url_for(
             ".choose_library", service_id=SERVICE_ONE_ID, message_id=fake_uuid, message_type="broadcast"
         ),
     )
     mock_get_broadcast_message.assert_called_once_with(service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
-    mock_update_broadcast_message.assert_called_once_with(
-        service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
-        data={
-            "areas": {
-                "ids": [],
-                "names": [],
-                "aggregate_names": [],
-                "simple_polygons": [],
-            }
-        },
-    )
-
-
-def test_replace_custom_area(
-    client_request,
-    service_one,
-    mock_get_draft_broadcast_message,
-    mock_update_broadcast_message,
-    fake_uuid,
-    mocker,
-    active_user_create_broadcasts_permission,
-):
-    service_one["permissions"] += ["broadcast"]
-
-    mock_get_broadcast_message = mocker.patch(
-        "app.broadcast_message_api_client.get_broadcast_message",
-        return_value=broadcast_message_json(
-            id_=fake_uuid,
-            template_id=fake_uuid,
-            created_by_id=fake_uuid,
-            service_id=SERVICE_ONE_ID,
-            status="draft",
-            areas={
-                "ids": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
-                "names": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
-                "aggregate_names": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
-                "simple_polygons": [HG3_2RL],
-            },
-        ),
-    )
-
-    client_request.login(active_user_create_broadcasts_permission)
-    client_request.post(
-        ".choose_area",
-        service_id=SERVICE_ONE_ID,
-        message_id=fake_uuid,
-        message_type="broadcast",
-        library_slug="ctry19",
-        _data={"areas": ["ctry19-E92000001"]},
-    )
-    mock_get_broadcast_message.assert_called_once_with(service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
-    mock_update_broadcast_message.assert_called_once_with(
-        service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
-        data={
-            "areas": {
-                "ids": ["ctry19-E92000001"],
-                "names": ["England"],
-                "aggregate_names": ["England"],
-                "simple_polygons": MULTIPLE_ENGLAND,
-            }
-        },
-    )
-
-
-def test_replace_custom_area_with_sub_area(
-    client_request,
-    service_one,
-    mock_get_draft_broadcast_message,
-    mock_update_broadcast_message,
-    fake_uuid,
-    mocker,
-    active_user_create_broadcasts_permission,
-):
-    service_one["permissions"] += ["broadcast"]
-
-    mock_get_broadcast_message = mocker.patch(
-        "app.broadcast_message_api_client.get_broadcast_message",
-        return_value=broadcast_message_json(
-            id_=fake_uuid,
-            template_id=fake_uuid,
-            created_by_id=fake_uuid,
-            service_id=SERVICE_ONE_ID,
-            status="draft",
-            areas={
-                "ids": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
-                "names": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
-                "aggregate_names": ["5km around 54.0 latitude, -1.7 longitude, in Harrogate"],
-                "simple_polygons": [HG3_2RL],
-            },
-        ),
-    )
-
-    client_request.login(active_user_create_broadcasts_permission)
-    client_request.post(
-        ".choose_sub_area",
-        service_id=SERVICE_ONE_ID,
-        message_id=fake_uuid,
-        library_slug="wd25-lad25-ctyua25",
-        area_slug="lad25-S12000033",  # Aberdeen City
-        message_type="broadcast",
-        _data={"select_all": "y"},
-    )
-    mock_get_broadcast_message.assert_called_once_with(service_id=SERVICE_ONE_ID, broadcast_message_id=fake_uuid)
-    mock_update_broadcast_message.assert_called_once_with(
-        service_id=SERVICE_ONE_ID,
-        broadcast_message_id=fake_uuid,
-        data={
-            "areas": {
-                "ids": ["lad25-S12000033"],
-                "names": ["Aberdeen City"],
-                "aggregate_names": ["Aberdeen City"],
-                "simple_polygons": [ABERDEEN_CITY],
-            }
-        },
+    mock_remove_area.assert_called_once_with(
+        fake_uuid,
+        SERVICE_ONE_ID,
+        "5km around 54.0 latitude, -1.7 longitude, in Harrogate",
+        "broadcast",
     )
 
 
@@ -4363,6 +4290,19 @@ def test_preview_broadcast_message_page(
     mock_get_latest_edit_reason,
     mocker,
 ):
+    mocker.patch(
+        "app.areas_api_client.get_areas_by_ids",
+        return_value=[
+            {
+                "id": "england",
+                "name": "England",
+            },
+            {
+                "id": "scotland",
+                "name": "Scotland",
+            },
+        ],
+    )
     mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=46909327.34961163)
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
@@ -4416,6 +4356,7 @@ def test_start_broadcasting(
     fake_uuid,
     active_user_create_broadcasts_permission,
     mock_check_can_update_status,
+    mock_get_areas_by_ids,
 ):
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
@@ -4656,6 +4597,7 @@ def test_view_broadcast_message_page(
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
     operator_statuses_text,
+    mock_get_areas_by_ids,
 ):
     mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
     mocker.patch(
@@ -4729,6 +4671,7 @@ def test_view_rejected_broadcast_message_page(
     mock_get_broadcast_message_versions,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_areas_by_ids,
 ):
     mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
     mocker.patch(
@@ -4821,6 +4764,7 @@ def test_view_broadcast_message_shows_correct_highlighted_navigation(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
+    mock_get_areas_by_ids,
 ):
     mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
     mocker.patch(
@@ -4869,6 +4813,7 @@ def test_view_pending_broadcast(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     broadcast_creator = create_active_user_create_broadcasts_permissions(with_unique_id=True)
     mocker.patch(
@@ -4980,6 +4925,7 @@ def test_view_pending_broadcast_without_template(
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
     mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     broadcast_creator = create_active_user_create_broadcasts_permissions(with_unique_id=True)
     mocker.patch(
@@ -5027,6 +4973,7 @@ def test_view_pending_broadcast_from_api_call(
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
     mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5090,6 +5037,7 @@ def test_checkbox_to_confirm_non_training_broadcasts(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
+    mock_get_areas_by_ids,
 ):
     mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
     mocker.patch(
@@ -5141,6 +5089,7 @@ def test_confirm_approve_non_training_broadcasts_errors_if_not_ticked(
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
     mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     page = mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5187,6 +5136,7 @@ def test_can_approve_own_broadcast_in_training_mode(
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
     mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5250,6 +5200,7 @@ def test_can_approve_own_broadcast_if_service_is_live_and_user_didnt_submit_aler
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
     mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     service_one["restricted"] = False
     mocker.patch(
@@ -5303,6 +5254,7 @@ def test_cannot_approve_own_broadcast_if_service_is_live_and_user_submitted_aler
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
     mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     service_one["restricted"] = False
     mocker.patch(
@@ -5360,6 +5312,7 @@ def test_view_only_user_cant_approve_broadcast_created_by_someone_else(
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
     mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5403,6 +5356,7 @@ def test_view_only_user_cant_approve_broadcasts_they_created(
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
     mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5470,6 +5424,7 @@ def test_user_without_approve_permission_cant_approve_broadcast_created_by_someo
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
+    mock_get_areas_by_ids,
 ):
     mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
     current_user = create_active_user_create_broadcasts_permissions(with_unique_id=True)
@@ -5522,6 +5477,7 @@ def test_user_without_approve_permission_cant_approve_broadcast_they_created(
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
     mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5663,6 +5619,7 @@ def test_confirm_approve_broadcast(
     expected_finishes_at,
     mock_get_broadcast_message_versions,
     mock_check_can_update_status,
+    mock_get_areas_by_ids,
 ):
     mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
     mocker.patch(
@@ -5737,6 +5694,7 @@ def test_cannot_approve_broadcast_if_transition_not_allowed(
     mock_check_can_update_status_returns_http_error,
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
+    mock_get_areas_by_ids,
 ):
     mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
     mocker.patch(
@@ -5790,6 +5748,7 @@ def test_reject_broadcast_displays_error_when_no_reason_provided(
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
     mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5842,6 +5801,7 @@ def test_return_broadcast_for_edit_displays_error_when_no_reason_provided(
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
     mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5893,6 +5853,7 @@ def test_can_return_broadcast_for_edit(
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
     mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5938,6 +5899,7 @@ def test_discard_broadcast(
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
     mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -5989,6 +5951,7 @@ def test_cannot_reject_broadcast_if_transition_not_allowed(
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
     mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -6039,6 +6002,7 @@ def test_cannot_discard_broadcast_if_transition_not_allowed(
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
     mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -6187,6 +6151,7 @@ def test_submit_broadcast_changes_status(
     mock_get_broadcast_message_versions,
     mock_update_broadcast_message_status,
     mock_check_can_update_status,
+    mock_get_areas_by_ids,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -6233,6 +6198,7 @@ def test_cannot_submit_if_transition_not_allowed(
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
     mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -6321,6 +6287,7 @@ def test_can_view_current_page_for_draft(
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
     mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     service_one["permissions"] += ["broadcast"]
     client_request.get(
@@ -6376,6 +6343,7 @@ def test_cancel_broadcast(
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
     mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     """
     users with 'create/approve_broadcasts' permissions and platform admins should be able to cancel broadcasts.
@@ -6428,6 +6396,7 @@ def test_cannot_cancel_broadcast_if_transition_not_allowed(
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
     mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     service_one["permissions"] += ["broadcast"]
 
@@ -6711,6 +6680,7 @@ def test_edit_broadcast_overwrite_updates_message_content(
     mock_check_can_update_status,
     mock_update_broadcast_message,
     mock_get_broadcast_message_versions,
+    mock_get_areas_by_ids,
 ):
     """
     Checks that when "overwrite_content" is set to "y" in data posted to edit_broadcast, the data is updated.
@@ -6848,6 +6818,7 @@ def test_edit_broadcast_updates_message(
     mock_check_can_update_status,
     mock_update_broadcast_message,
     mock_get_broadcast_message_versions,
+    mock_get_areas_by_ids,
 ):
     """
     Checks that when data is posted to edit_broadcast and no changes have been made to broadcast_message
@@ -6904,6 +6875,7 @@ def test_add_extra_content_updates_message(
     mock_check_can_update_status,
     mock_update_broadcast_message,
     mock_get_broadcast_message_versions,
+    mock_get_areas_by_ids,
 ):
     """
     Checks that when data is posted to add_extra_content and no changes have been made to broadcast_message
@@ -7078,6 +7050,7 @@ def test_add_extra_content_overwrite_change_overwrites_extra_content(
     mock_check_can_update_status,
     mock_update_broadcast_message,
     mock_get_broadcast_message_versions,
+    mock_get_areas_by_ids,
 ):
     """
     Checks that when "overwrite_extra_content" is set to "y" in data posted to add_extra_content, the data is updated.
@@ -7141,6 +7114,23 @@ def test_view_draft_broadcast_message_page(
     mock_get_latest_edit_reason,
     mock_get_broadcast_message_provider_statuses,
 ):
+    mocker.patch(
+        "app.models.base_broadcast.Areas.get",
+        return_value=[
+            MockArea(
+                {
+                    "id": "E92000001",
+                    "name": "England",
+                }
+            ),
+            MockArea(
+                {
+                    "id": "E92000001",
+                    "name": "Scotland",
+                }
+            ),
+        ],
+    )
     mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -7156,6 +7146,12 @@ def test_view_draft_broadcast_message_page(
             extra_content="Test Extra Content",
             reference="Test Template Reference",
             duration=10_800,
+            areas={
+                "ids": ["E92000001", "S92000003"],
+                "names": ["England", "Scotland"],
+                "simple_polygons": MULTIPLE_ENGLAND,
+                "aggregate_names": [],
+            },
         ),
     )
     service_one["permissions"] += ["broadcast"]
@@ -7197,7 +7193,33 @@ def test_can_get_geojson_simple(
     active_user_view_permissions,
     fake_uuid,
     mock_get_broadcast_message_versions,
+    mock_get_areas_by_ids,
 ):
+    mock_area = MockArea(
+        {
+            "id": "E92000001",
+            "name": "Bristol Name",
+            "geometry_wkt": "".join(
+                ["POLYGON ((-0.1400 51.5150,-0.1400 51.4950,-0.1000", " 51.4950,-0.1000 51.5150,-0.1400 51.5150))"]
+            ),
+        }
+    )
+    mock_area.polygons = mocker.Mock(
+        as_wgs84_coordinates=[
+            [
+                [-2.6216, 51.4371],
+                [-2.575, 51.4371],
+                [-2.575, 51.4668],
+                [-2.6216, 51.4668],
+                [-2.6216, 51.4371],
+            ]
+        ]
+    )
+
+    mocker.patch(
+        "app.models.base_broadcast.Areas.get",
+        return_value=[mock_area],
+    )
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
         return_value=broadcast_message_json(
@@ -7373,6 +7395,7 @@ def test_can_get_unsigned_ibag_xml(
     active_user_view_permissions,
     fake_uuid,
     mock_get_broadcast_message_versions,
+    mock_get_areas_by_ids,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -7533,6 +7556,7 @@ def test_send_summary_email_section_not_visible_with_no_contacts(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -7573,6 +7597,7 @@ def test_send_summary_email_section_not_visible_with_no_perms(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_get_count_of_phones,
+    mock_get_areas_by_ids,
 ):
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -7603,7 +7628,9 @@ def test_send_summary_email_section_not_visible_with_no_perms(
     assert "Send summary email" not in keys
 
 
-def test_send_summary_email(mocker, client_request, service_one, active_user_create_broadcasts_permission, fake_uuid):
+def test_send_summary_email(
+    mocker, client_request, service_one, active_user_create_broadcasts_permission, fake_uuid, mock_get_areas_by_ids
+):
     mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",

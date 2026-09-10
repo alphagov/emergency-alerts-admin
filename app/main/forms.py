@@ -50,8 +50,6 @@ from app.formatters import (
     format_auth_type,
     guess_name_from_email_address,
     parse_seconds_as_hours_and_minutes,
-    split_text_by_comma_and_newline,
-    split_text_by_newline,
 )
 from app.main.validators import (
     BroadcastLength,
@@ -537,86 +535,28 @@ class GovukTextareaField(GovukFrontendWidgetMixin, TextAreaField):
 
 
 class GovukTextareaBulkField(GovukTextareaField):
-    def __init__(
-        self,
-        label,
-        *,
-        library_ids=None,
-        item,
-        area_id_parser,
-        maximum=25,
-        **kwargs,
-    ):
-        # area IDs from the library to check against
-        self.library_ids = set(library_ids or [])
+    param_extensions = {
+        "classes": "govuk-!-width-two-thirds govuk-!-margin-bottom-0",
+        "rows": 10,
+    }
 
-        # Function that translates area IDs from input into format that we store them as
-        self.area_id_parser = area_id_parser
-
+    def __init__(self, label, *, item, **kwargs):
         # How we refer to a singular area i.e. Local Authority
         self.item = item
-
-        # Maximum number of areas allowed in the list
-        self.max = maximum
-
-        validators = kwargs.pop("validators", [])
-
-        super().__init__(
-            label,
-            validators=validators,
-            param_extensions={
-                "classes": "govuk-!-width-two-thirds govuk-!-margin-bottom-0",
-                "rows": 10,
-                **kwargs.pop("param_extensions", {}),
-            },
-            **kwargs,
-        )
-
-    def _check_for_invalid_values(self, ids, area_ids):
-        if not self.library_ids:
-            return
-
-        # Comparing input areas with those in library
-        for id_, area_id in zip(ids, area_ids):
-            if area_id not in self.library_ids:
-                # error code specified determines form-level validation error message
-                self.error_code = "invalid"
-                self.errors.append(f"{self.item} '{id_}' not found")
-
-    def _check_ids_provided_are_unique(self, form, ids):
-        # Checks that area ID doesn't appear in the input more than once
-        checked_area_ids = set()
-        for id_ in ids:
-            if id_ in checked_area_ids:
-                # error code specified determines form-level validation error message
-                self.error_code = "duplicates"
-                self.errors.append(f"{self.item} '{id_}' currently appears in the list more than once")
-            checked_area_ids.add(id_)
-
-    def _check_number_of_ids_less_than_maximum(self, form, ids):
-        if len(ids) > self.max:
-            self.error_code = "exceeds_limit"
-            self.errors.append(f"Maximum of {self.max} areas in an emergency alert")
+        super().__init__(label, **kwargs)
 
     def validate(self, form, extra_validators=None):
         if not super().validate(form, extra_validators):
             return False
 
-        # Checking input isn't empty
-        if not self.data:
-            # error code specified determines form-level validation error message
-            self.error_code = "missing_data"
+        data = (self.data or "").strip()
+        if not data:
+            # If no areas entered, add errors to both form and field
+            message = f"Enter at least 1 {self.item}"
+            form.form_errors = [message]
             self.errors.append("This field is required")
-
-        # Translates area IDs from input into format that we store them as, for comparison
-        ids, area_ids = self.area_id_parser(self)
-
-        # Custom validation methods
-        self._check_for_invalid_values(ids, area_ids)
-        self._check_ids_provided_are_unique(form, ids)
-        self._check_number_of_ids_less_than_maximum(form, ids)
-
-        return not self.errors
+            return False
+        return True
 
 
 # based on work done by @richardjpope: https://github.com/richardjpope/recourse/blob/master/recourse/forms.py#L6
@@ -1806,7 +1746,7 @@ class BroadcastAreaForm(StripWhitespaceForm):
 
     @classmethod
     def from_library(cls, library):
-        return cls(choices=[(area.id, area.name) for area in sorted(library)])
+        return cls(choices=[(area.id, area.name) for area in sorted(library, key=lambda a: a.name)])
 
 
 class BroadcastAreaFormWithSelectAll(BroadcastAreaForm):
@@ -2008,73 +1948,11 @@ class FloodWarningForm(StripWhitespaceForm):
 
 class FloodWarningBulkAreasForm(StripWhitespaceForm):
 
-    def __init__(self, library_ids, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.areas.library_ids = set(library_ids)
-        self.areas.area_id_parser = self._parse_ids
-        if not hasattr(self, "form_errors"):
-            self.form_errors = []
-
-    def _parse_ids(self, field):
-        # Translates area IDs from input into format that Flood Warning
-        # area IDs are stored in db as i.e. "Flood_Warning_Target_Areas-area_id"
-        ids = split_text_by_comma_and_newline(field.data or "")
-        area_ids = [f"Flood_Warning_Target_Areas-{id_}" for id_ in ids]
-        return ids, area_ids
-
-    areas = GovukTextareaBulkField("", item="Flood Warning TA code", area_id_parser=_parse_ids)
-
-    def validate(self, extra_validators=None):
-        valid = super().validate(extra_validators)
-
-        if not valid:
-            # Form-level error message based on field's error code, returned if validation files
-            error_messages = {
-                "missing_data": "Enter at least 1 Flood Warning TA code",
-                "duplicates": "All Flood Warning TA codes must be unique",
-                "invalid": "Flood Warning TA code not found",
-                "exceeds_limit": "Maximum of 25 TA codes in an emergency alert",
-            }
-
-            if message := error_messages.get(self.areas.error_code):
-                self.form_errors = [message]
-
-        return not self.form_errors
+    areas = GovukTextareaBulkField("", item="Flood Warning TA code")
 
 
 class LocalAuthorityBulkAreasForm(StripWhitespaceForm):
-
-    def __init__(self, library_ids, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.areas.library_lookup_dict = library_ids
-        self.areas.library_ids = set(library_ids.values())
-        self.areas.area_id_parser = self._parse_ids
-        if not hasattr(self, "form_errors"):
-            self.form_errors = []
-
-    def _parse_ids(self, field):
-        ids = split_text_by_newline(field.data or "")
-        area_ids = [self.areas.library_lookup_dict.get(name.lower()) for name in ids]
-        return ids, area_ids
-
-    areas = GovukTextareaBulkField("", item="Local authority", area_id_parser=_parse_ids)
-
-    def validate(self, extra_validators=None):
-        valid = super().validate(extra_validators)
-
-        if not valid:
-            # Form-level error message based on field's error code, returned if validation files
-            error_messages = {
-                "missing_data": "Enter at least 1 local authority",
-                "duplicates": "All local authorities must be unique",
-                "invalid": "Local authority not found",
-                "exceeds_limit": "Maximum of 25 local authorities allowed as a list in one emergency alert",
-            }
-
-            if message := error_messages.get(self.areas.error_code):
-                self.form_errors = [message]
-
-        return not self.form_errors
+    areas = GovukTextareaBulkField("", item="Local authority")
 
 
 class RejectionReasonForm(StripWhitespaceForm):

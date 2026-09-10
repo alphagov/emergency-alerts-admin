@@ -35,6 +35,7 @@ from app.config import configs
 from app.extensions import zendesk_client
 from app.formatters import (
     convert_to_boolean,
+    format_area_name,
     format_auth_type,
     format_date,
     format_date_human,
@@ -81,6 +82,7 @@ from app.navigation import (
 from app.notify_client import InviteTokenError
 from app.notify_client.admin_actions_api_client import admin_actions_api_client
 from app.notify_client.api_key_api_client import api_key_api_client
+from app.notify_client.areas_api_client import areas_api_client
 from app.notify_client.broadcast_message_api_client import broadcast_message_api_client
 from app.notify_client.events_api_client import events_api_client
 from app.notify_client.feature_toggle_api_client import feature_toggle_api_client
@@ -143,6 +145,7 @@ def create_app(application):
         request_helper,
         # API clients
         admin_actions_api_client,
+        areas_api_client,
         api_key_api_client,
         broadcast_message_api_client,
         events_api_client,
@@ -496,6 +499,7 @@ def add_template_filters(application):
     for fn in [
         convert_to_boolean,
         format_auth_type,
+        format_area_name,
         format_date,
         format_date_human,
         format_date_normal,
