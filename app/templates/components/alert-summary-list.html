@@ -31,16 +31,24 @@
 
     {% set areas_html %}
         <ul class="area-list">
-        {% for area in broadcast_message.areas %}
-            <li class="area-list-item area-list-item--unremoveable">
-              {{ electoral_ward_descriptor(area) }}
-            </li>
-        {% endfor %}
-        </ul>
+        {% if broadcast_message.areas %}
+            {% for area in broadcast_message.areas %}
+                <li class="area-list-item area-list-item--unremoveable">
+                {{ electoral_ward_descriptor(area) }}
+                </li>
+            {% endfor %}
+            </ul>
+        {% elif broadcast_message.simple_polygons %}
+            {% for name in areas %}
+                <li class="area-list-item area-list-item--unremoveable">
+                {{name}}
+                </li>
+            {% endfor %}
+        {% endif %}
     {% endset %}
 
     {% set conditional_areas %}
-        {% if broadcast_message.areas %}
+        {% if broadcast_message.simple_polygons %}
             {{( areas_html | safe ~ " " ~ map_html ) | safe}}
             {{ govukButton({
                 "text": "View larger map",
@@ -72,7 +80,7 @@
         {% endif %}
     {% endset %}
 
-    {% if broadcast_message.status in ["draft", "returned"] and is_editable %}
+    {% if broadcast_message.status in ["draft", "returned"] and is_editable and broadcast_message.has_valid_area %}
         {% set display_action = True %}
         {% set conditional_action_text %}
             Change

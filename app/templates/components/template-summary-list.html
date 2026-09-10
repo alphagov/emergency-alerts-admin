@@ -27,7 +27,7 @@
         {% endset %}
     {% endif %}
 
-    {% if current_user.has_permissions('manage_templates') and is_editable and edit_mode %}
+    {% if current_user.has_permissions('manage_templates') and is_editable and edit_mode and template.has_valid_area %}
         {% set display_action = True %}
 
         {% if template.reference %}
