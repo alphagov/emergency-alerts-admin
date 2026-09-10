@@ -111,6 +111,8 @@ current_service_status = LocalProxy(lambda: g.service_status_text)
 
 content_nonce = LocalProxy(lambda: g.content_nonce)
 
+current_service_training_status = "This is a training service. You cannot send out alerts to the public from here."
+
 navigation = {
     "casework_navigation": CaseworkNavigation(),
     "main_navigation": MainNavigation(),
@@ -302,6 +304,9 @@ def load_service_status_before_request():
     service_is_not_live_flag = feature_toggle_api_client.get_feature_toggle("service_is_not_live")
     flag_enabled = service_is_not_live_flag.get("is_enabled", False)
     g.service_status_text = service_is_not_live_flag["display_html"] if flag_enabled else None
+
+    if not flag_enabled and getattr(current_service, "trial_mode", False):
+        g.service_status_text = current_service_training_status
 
 
 def generate_nonce_before_request():
