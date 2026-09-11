@@ -1,7 +1,7 @@
 {% from "components/form.html" import form_wrapper %}
 {% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
 
-{% macro banner(body, type=None, with_tick=False, delete_button=None, subhead=None, context=None, action=None, id=None, thing=None) %}
+{% macro banner(body, type=None, with_tick=False, delete_button=None, confirm_button=None, subhead=None, context=None, action=None, id=None, thing=None) %}
   <div
     class='banner{% if type %}-{{ type }}{% endif %}{% if with_tick %}-with-tick{% endif %}'
     {% if type == 'dangerous' %}
@@ -12,6 +12,7 @@
     id={{ id }}
     {% endif %}
   >
+
     {% if subhead -%}
       <h1 class="banner-title">{{ subhead }}</h1>
     {%- endif -%}
@@ -21,16 +22,20 @@
       {{ context }}
     </p>
     {% endif %}
-    {% if delete_button %}
+
+    {% if delete_button or confirm_button %}
+      {% set button_text = delete_button or confirm_button %}
+      {% set button_name = "delete" if delete_button else "confirm" %}
+
       {% set html %}
-        {{ delete_button }}<span class="govuk-visually-hidden"> ‘{{ thing }}’</span>
+        {{ button_text }}<span class="govuk-visually-hidden"> ‘{{ thing }}’</span>
       {% endset %}
       {% call form_wrapper(action=action) %}
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
         {{ govukButton({
-          "text": "" if thing else delete_button,
+          "text": "" if thing else button_text,
           "html": html if thing else "",
-          "name": "delete",
+          "name": button_name,
           "classes": "govuk-button--warning govuk-!-margin-top-2",
         }) }}
       {% endcall %}
@@ -38,6 +43,6 @@
   </div>
 {% endmacro %}
 
-{% macro banner_wrapper(type=None, with_tick=False, delete_button=None, subhead=None, action=None, id=None, thing=None) %}
-  {{ banner(caller()|safe, type=type, with_tick=with_tick, delete_button=delete_button, subhead=subhead, action=action, id=id, thing=thing) }}
+{% macro banner_wrapper(type=None, with_tick=False, delete_button=None, confirm_button=None, subhead=None, action=None, id=None, thing=None) %}
+  {{ banner(caller()|safe, type=type, with_tick=with_tick, delete_button=delete_button, confirm_button=confirm_button, subhead=subhead, action=action, id=id, thing=thing) }}
 {% endmacro %}
