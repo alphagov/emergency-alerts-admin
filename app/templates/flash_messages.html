@@ -12,6 +12,8 @@
         'stop broadcasting',
       ] %}
         {% set delete_button_text = "Yes, {}".format(category) %}
+      {% elif category == 'submit for approval' %}
+        {% set confirm_button_text = "Yes, {}".format(category) %}
       {% elif category == 'try again' %}
         {% set delete_button_text = category|capitalize %}
       {% else %}
@@ -22,6 +24,7 @@
           message if message is string else message[0],
           'default' if ((category == 'default') or (category == 'default_with_tick')) else 'dangerous',
           delete_button=delete_button_text,
+          confirm_button=confirm_button_text,
           with_tick=True if category == 'default_with_tick' else False,
           context=message[1] if message is not string,
           thing=message[2] if message is not string and message[2]
