@@ -16,7 +16,7 @@ from flask import (
 )
 from notifications_python_client.errors import HTTPError
 
-from app import current_service
+from app import current_service, current_service_status
 from app.broadcast_areas.models import CustomBroadcastAreas
 from app.config import Config
 from app.formatters import format_estimated_phone_count, format_seconds_duration_as_time
@@ -625,6 +625,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
         return render_preview_alert_page(broadcast_message, is_custom_broadcast, areas, errors)
 
     if request.method == "POST":
+
         try:
             broadcast_message.check_can_update_status("pending-approval")
         except HTTPError as e:
@@ -633,6 +634,28 @@ def preview_broadcast_message(service_id, broadcast_message_id):
 
         if errors := check_for_missing_fields(broadcast_message):
             return render_preview_alert_page(broadcast_message, is_custom_broadcast, areas, errors)
+
+        # If current_service_status isnt set, we are in production mode
+        if not current_service_status:
+            # Need to ensure user has ackowledged and confirmed they are ok to proceed.
+            if "confirm" not in request.form:
+                # User hasn't been presented with the additional confirmation yet, so
+                # re-render page with additional confirmation message/button.
+                flash(
+                    "This is a live service. Are you sure you want to submit this alert for approval?",
+                    "submit for approval",
+                )
+
+                return render_preview_alert_page(
+                    broadcast_message,
+                    is_custom_broadcast,
+                    areas,
+                    show_approval_button=False,
+                )
+
+        # Either:
+        # - we are in non-production/training mode
+        # - the user has already confirmed they are ok to proceed in production mode
         broadcast_message.request_approval()
         return redirect(
             url_for(
@@ -641,6 +664,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
                 broadcast_message_id=broadcast_message.id,
             )
         )
+
     return render_preview_alert_page(broadcast_message, is_custom_broadcast, areas)
 
 
@@ -666,6 +690,26 @@ def submit_broadcast_message(service_id, broadcast_message_id):
         errors = [{"text": INVALID_AREA_ERROR_TEXT}]
         return render_current_alert_page(broadcast_message, hide_stop_link=True, errors=errors)
 
+    # If current_service_status isn't set we are in production mode
+    if not current_service_status:
+        # Need to ensure user has ackowledged and confirmed they are ok to proceed.
+        if "confirm" not in request.form:
+            # User hasn't been presented with the additional confirmation yet, so
+            # re-render page with additional confirmation message/button.
+            flash(
+                "This is a live service. Are you sure you want to submit this alert for approval?",
+                "submit for approval",
+            )
+
+            return render_current_alert_page(
+                broadcast_message,
+                hide_stop_link=True,
+                show_approval_button=False,
+            )
+
+    # Either:
+    # - we are in non-production/training mode
+    # - the user has already confirmed they are ok to proceed in production mode
     broadcast_message.request_approval()
     return redirect(
         url_for(
