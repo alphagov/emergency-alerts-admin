@@ -85,7 +85,9 @@
   ) %}
   {% call form_wrapper() %}
     {% if can_submit_for_approval %}
-      {{ page_footer('Submit for approval') }}
+      {% if show_approval_button %}
+        {{ page_footer('Submit for approval') }}
+      {% endif %}
     {% endif %}
   {% endcall %}
 

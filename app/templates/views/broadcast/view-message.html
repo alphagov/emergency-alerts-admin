@@ -359,10 +359,12 @@
       broadcast_message_id=broadcast_message.id,
     )) %}
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-    {{ govukButton({
-      "text": "Submit for approval",
-      "classes": "govuk-button"
-    }) }}
+    {% if show_approval_button %}
+      {{ govukButton({
+        "text": "Submit for approval",
+        "classes": "govuk-button"
+      }) }}
+    {% endif %}
   {% endcall %}
 {% endif %}
 
