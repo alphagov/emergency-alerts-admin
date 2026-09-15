@@ -45,12 +45,6 @@ def support():
     return render_template("views/support/index.html", form=form)
 
 
-@main.route("/support/public")
-@hide_from_search_engines
-def support_public():
-    return render_template("views/support/public.html")
-
-
 @main.route("/support/thanks", methods=["GET", "POST"])
 @hide_from_search_engines
 def thanks():
