@@ -7682,3 +7682,160 @@ def test_send_summary_email_no_perms(
         broadcast_message_id=fake_uuid,
         _expected_status=403,
     )
+
+
+def test_submit_for_approval_prod_mode(
+    mocker,
+    client_request,
+    service_one,
+    fake_uuid,
+    mock_get_broadcast_message_versions,
+    mock_check_can_update_status,
+    mock_get_broadcast_returned_for_edit_reasons,
+    mock_get_latest_edit_reason,
+    mock_update_broadcast_message_status,
+):
+    mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1000000)
+
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            created_at="2020-02-23T22:22:22.000000",
+            finishes_at="2020-02-23T23:23:23.000000",
+            status="draft",
+        ),
+    )
+    service_one["permissions"] += ["broadcast"]
+    service_one["restricted"] = False
+
+    client_request.login(create_active_user_create_broadcasts_permissions())
+    response = client_request.post(
+        ".submit_broadcast_message",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        _expected_status=200,
+    )
+
+    assert "This is a live service. Are you sure you want to submit this alert for approval?" in response.get_text()
+    assert normalize_spaces(response.select_one('button[name="confirm"]').text) == "Yes, submit for approval"
+    button = response.select_one("button.govuk-button.page-footer__button")
+    assert button is None or "Submit for approval" not in button.text
+
+    client_request.post(
+        ".submit_broadcast_message",
+        service_id=SERVICE_ONE_ID,
+        _data={
+            "confirm": "value",
+        },
+        broadcast_message_id=fake_uuid,
+        _expected_redirect=url_for(
+            ".view_current_broadcast",
+            broadcast_message_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+        ),
+    )
+
+    mock_update_broadcast_message_status.assert_called_once_with(
+        "pending-approval",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+    )
+
+
+def test_submit_for_approval_non_prod_mode(
+    mocker,
+    client_request,
+    service_one,
+    fake_uuid,
+    mock_get_broadcast_message_versions,
+    mock_check_can_update_status,
+    mock_get_broadcast_returned_for_edit_reasons,
+    mock_get_latest_edit_reason,
+    mock_update_broadcast_message_status,
+):
+    mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1000000)
+
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            created_at="2020-02-23T22:22:22.000000",
+            finishes_at="2020-02-23T23:23:23.000000",
+            status="draft",
+        ),
+    )
+    service_one["permissions"] += ["broadcast"]
+    service_one["restricted"] = False
+    mocker.patch("app.main.views.broadcast.current_service_status", "Not in production mode")
+
+    client_request.login(create_active_user_create_broadcasts_permissions())
+    client_request.post(
+        ".submit_broadcast_message",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        _expected_redirect=url_for(
+            ".view_current_broadcast",
+            broadcast_message_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+        ),
+    )
+
+    mock_update_broadcast_message_status.assert_called_once_with(
+        "pending-approval",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+    )
+
+
+def test_submit_for_approval_train_mode(
+    mocker,
+    client_request,
+    service_one,
+    fake_uuid,
+    mock_get_broadcast_message_versions,
+    mock_check_can_update_status,
+    mock_get_broadcast_returned_for_edit_reasons,
+    mock_get_latest_edit_reason,
+    mock_update_broadcast_message_status,
+):
+    mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1000000)
+
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            created_at="2020-02-23T22:22:22.000000",
+            finishes_at="2020-02-23T23:23:23.000000",
+            status="draft",
+        ),
+    )
+    service_one["permissions"] += ["broadcast"]
+    service_one["restricted"] = True
+
+    client_request.login(create_active_user_create_broadcasts_permissions())
+    client_request.post(
+        ".submit_broadcast_message",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        _expected_redirect=url_for(
+            ".view_current_broadcast",
+            broadcast_message_id=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+        ),
+    )
+
+    mock_update_broadcast_message_status.assert_called_once_with(
+        "pending-approval",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+    )
