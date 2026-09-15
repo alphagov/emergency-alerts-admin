@@ -40,12 +40,7 @@ def support():
         )
         zendesk_client.send_ticket_to_zendesk(ticket)
 
-        return redirect(
-            url_for(
-                ".thanks",
-                email_address_provided=(current_user.is_authenticated or bool(form.email_address.data)),
-            )
-        )
+        return redirect(url_for(".thanks"))
 
     return render_template("views/support/index.html", form=form)
 
