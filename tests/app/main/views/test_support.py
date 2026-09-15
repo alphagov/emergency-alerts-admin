@@ -15,7 +15,7 @@ def test_passed_non_logged_in_user_details_through_flow(client_request, mocker):
     client_request.logout()
     mock_create_ticket = mocker.spy(EASSupportTicket, "__init__")
     mock_send_ticket_to_zendesk = mocker.patch(
-        "app.main.views.feedback.zendesk_client.send_ticket_to_zendesk",
+        "app.main.views.support.zendesk_client.send_ticket_to_zendesk",
         autospec=True,
     )
 
@@ -55,7 +55,7 @@ def test_passes_logged_in_user_details_through_flow(
 ):
     mock_create_ticket = mocker.spy(EASSupportTicket, "__init__")
     mock_send_ticket_to_zendesk = mocker.patch(
-        "app.main.views.feedback.zendesk_client.send_ticket_to_zendesk",
+        "app.main.views.support.zendesk_client.send_ticket_to_zendesk",
         autospec=True,
     )
 
