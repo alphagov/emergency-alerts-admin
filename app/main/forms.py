@@ -72,7 +72,6 @@ from app.main.validators import (
     ValidEmail,
     ValidGovEmail,
 )
-from app.models.feedback import PROBLEM_TICKET_TYPE, QUESTION_TICKET_TYPE
 from app.models.organisation import Organisation
 from app.utils.govuk_frontend_field import (
     GovukFrontendWidgetMixin,
@@ -1414,41 +1413,10 @@ class CreateKeyForm(StripWhitespaceForm):
             raise ValidationError("A key with this name already exists")
 
 
-class SupportType(StripWhitespaceForm):
-    support_type = GovukRadiosField(
-        "How can we help you?",
-        choices=[
-            (PROBLEM_TICKET_TYPE, "Report a problem"),
-            (QUESTION_TICKET_TYPE, "Ask a question or give feedback"),
-        ],
-    )
-
-
-class SupportRedirect(StripWhitespaceForm):
-    who = GovukRadiosField(
-        "What do you need help with?",
-        choices=[
-            ("public-sector", "I work in the public sector and need support with the Emergency Alerts service"),
-            ("public", "I’m a member of the public with a question for the government"),
-        ],
-    )
-
-
 class FeedbackOrProblem(StripWhitespaceForm):
     name = GovukTextInputField("Name (optional)")
     email_address = email_address(label="Email address", gov_user=False, required=True)
     feedback = TextAreaField("Your message", validators=[DataRequired(message="Cannot be empty")])
-
-
-class Triage(StripWhitespaceForm):
-    severe = GovukRadiosField(
-        "Is it an emergency?",
-        choices=[
-            ("yes", "Yes"),
-            ("no", "No"),
-        ],
-        thing="yes or no",
-    )
 
 
 class AdminNotesForm(StripWhitespaceForm):
