@@ -10,23 +10,22 @@
 {% block maincolumn_content %}
 
   <h1 class="heading-large">Support</h1>
-  <p class="govuk-body">GOV.UK Emergency Alerts provides 24-hour online support.</p>
+  <p class="govuk-body">You can get online support for the Emergency Alerts Service 24 hours a day.</p>
 
+  <h2 class="heading-medium">Reporting an emergency</h2>
+  <p class="govuk-body">An issue is an emergency if:</p>
   <ul class="govuk-list govuk-list--bullet">
-    <li>If it's an emergency, see the guidance below and raise with the on-call support team if necessary</li>
-    <li>If it's not an emergency, use the at the bottom of this page and we'll aim to reply in the next working day</li>
+    <li>you are the only person on call and cannot sign in</li>
+    <li>no one on your team who is on call can sign in</li>
+    <li>you see a 'technical difficulties' error message</li>
+    <li>you see a '500 response code' error message</li>
   </ul>
+  <p class="govuk-body">If you have an emergency, do not use the support form. You must follow your 'standard operating procedures' to raise a PagerDuty alert with the on-call support team.</p>
 
-  <h2 class="heading-medium">What counts as an emergency?</h2>
-  <p class="govuk-body">A problem is only classed as an emergency if:</p>
-  <ul class="govuk-list govuk-list--bullet">
-    <li>nobody on your team can sign in</li>
-    <li>a ‘technical difficulties’ error appears</li>
-    <li>a 500 response code appears</li>
-  </ul>
-  <p class="govuk-body">If your problem is an emergency, refer to your Standard Operating Procedures and raise a PagerDuty instead of using this form.</p>
+  <h2 class="heading-medium">For all other issues</h2>
+  <p class="govuk-body">If your problem is not an emergency, complete the support form.</p>
+  <p class="govuk-body">We aim to reply by the end of the next working day.</p>
 
-  <h2 class="heading-medium">Report a problem or feedback</h2>
   {% call form_wrapper() %}
     {% if not current_user.is_authenticated %}
       {{ form.name(param_extensions={"classes": "govuk-!-width-full"}) }}
