@@ -1,7 +1,7 @@
 {% from "components/form.html" import form_wrapper %}
 {% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
 
-{% macro banner(body, type=None, with_tick=False, delete_button=None, confirm_button=None, subhead=None, context=None, action=None, id=None, thing=None) %}
+{% macro banner(body, type=None, with_tick=False, button_text=None, button_action='delete', subhead=None, context=None, action=None, id=None, thing=None) %}
   <div
     class='banner{% if type %}-{{ type }}{% endif %}{% if with_tick %}-with-tick{% endif %}'
     {% if type == 'dangerous' %}
@@ -23,9 +23,7 @@
     </p>
     {% endif %}
 
-    {% if delete_button or confirm_button %}
-      {% set button_text = delete_button or confirm_button %}
-      {% set button_name = "delete" if delete_button else "confirm" %}
+   {% if button_text %}
 
       {% set html %}
         {{ button_text }}<span class="govuk-visually-hidden"> ‘{{ thing }}’</span>
@@ -35,7 +33,7 @@
         {{ govukButton({
           "text": "" if thing else button_text,
           "html": html if thing else "",
-          "name": button_name,
+          "name": button_action,
           "classes": "govuk-button--warning govuk-!-margin-top-2",
         }) }}
       {% endcall %}
@@ -43,6 +41,6 @@
   </div>
 {% endmacro %}
 
-{% macro banner_wrapper(type=None, with_tick=False, delete_button=None, confirm_button=None, subhead=None, action=None, id=None, thing=None) %}
-  {{ banner(caller()|safe, type=type, with_tick=with_tick, delete_button=delete_button, confirm_button=confirm_button, subhead=subhead, action=action, id=id, thing=thing) }}
+{% macro banner_wrapper(type=None, with_tick=False, button_text=None, button_action='delete', subhead=None, action=None, id=None, thing=None) %}
+  {{ banner(caller()|safe, type=type, with_tick=with_tick, button_text=button_text, button_action=button_action, subhead=subhead, action=action, id=id, thing=thing) }}
 {% endmacro %}
