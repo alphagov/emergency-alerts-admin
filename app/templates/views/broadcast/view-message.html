@@ -361,7 +361,7 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
     {% if show_approval_button %}
       {{ govukButton({
-        "text": "Submit for approval",
+        "text": labels.broadcast.submit_for_approval_button,
         "classes": "govuk-button"
       }) }}
     {% endif %}

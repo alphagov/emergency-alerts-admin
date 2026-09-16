@@ -57,6 +57,7 @@ from app.utils.broadcast import (
     render_preview_alert_page,
     update_broadcast_message_using_changed_data,
 )
+from app.utils.labels import LABELS
 from app.utils.user import user_has_any_permissions, user_has_permissions
 
 FILTER_TEXT = {
@@ -642,9 +643,8 @@ def preview_broadcast_message(service_id, broadcast_message_id):
                 # User hasn't been presented with the additional confirmation yet, so
                 # re-render page with additional confirmation message/button.
                 flash(
-                    "This is a live service where alerts can be sent to the public. "
-                    "Are you sure you want to submit this alert for approval?",
-                    "submit for approval",
+                    LABELS.broadcast.submit_for_approval_confirmation,
+                    LABELS.broadcast.submit_for_approval_confirmation_button,
                 )
                 return render_preview_alert_page(
                     broadcast_message,
@@ -697,9 +697,8 @@ def submit_broadcast_message(service_id, broadcast_message_id):
             # User hasn't been presented with the additional confirmation yet, so
             # re-render page with additional confirmation message/button.
             flash(
-                "This is a live service where alerts can be sent to the public. "
-                "Are you sure you want to submit this alert for approval?",
-                "submit for approval",
+                LABELS.broadcast.submit_for_approval_confirmation,
+                LABELS.broadcast.submit_for_approval_confirmation_button,
             )
             return render_current_alert_page(
                 broadcast_message,

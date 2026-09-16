@@ -12,10 +12,10 @@
         'remove',
         'revoke this API key',
         'stop broadcasting',
-        'submit for approval'
+        labels.broadcast.submit_for_approval_confirmation_button
       ] %}
         {% set button_text = "Yes, {}".format(category) %}
-        {% set button_action = "confirm" if category == 'submit for approval' else "delete" %}
+        {% set button_action = "confirm" if category == labels.broadcast.submit_for_approval_confirmation_button else "delete" %}
       {% elif category == 'try again' %}
         {% set button_text = category|capitalize %}
       {% else %}

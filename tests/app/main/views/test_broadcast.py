@@ -9,6 +9,7 @@ from flask import url_for
 from freezegun import freeze_time
 
 from app.broadcast_areas.models import BroadcastAreaLibraries
+from app.utils.labels import LABELS
 from tests import (
     NotifyBeautifulSoup,
     broadcast_message_json,
@@ -7720,13 +7721,10 @@ def test_submit_for_approval_prod_mode(
         _expected_status=200,
     )
 
-    assert (
-        "This is a live service where alerts can be sent to the public. "
-        "Are you sure you want to submit this alert for approval?" in response.get_text()
-    )
+    assert LABELS.broadcast.submit_for_approval_confirmation
     assert normalize_spaces(response.select_one('button[name="confirm"]').text) == "Yes, submit for approval"
     button = response.select_one("button.govuk-button.page-footer__button")
-    assert button is None or "Submit for approval" not in button.text
+    assert button is None or LABELS.broadcast.submit_for_approval_button not in button.text
 
     client_request.post(
         ".submit_broadcast_message",

@@ -1,5 +1,7 @@
 from unittest.mock import patch
 
+from app.utils.labels import LABELS
+
 
 @patch("app.feature_toggle_api_client.get_feature_toggle")
 def test_service_not_live_banner_displayed(
@@ -34,7 +36,6 @@ def test_service_not_live_banner_not_displayed(
 
 
 @patch("app.feature_toggle_api_client.get_feature_toggle")
-@patch("app.current_service_training_status", "TEST TRAINING MESSAGE")
 def test_training_banner_not_displayed(
     mock_get_feature_toggle,
     client_request,
@@ -53,11 +54,10 @@ def test_training_banner_not_displayed(
     page = client_request.get(".support")
 
     assert "Service not production" not in page.text
-    assert "TEST TRAINING MESSAGE" not in page.text
+    assert LABELS.service.training_service_status not in page.text
 
 
 @patch("app.feature_toggle_api_client.get_feature_toggle")
-@patch("app.current_service_training_status", "TEST TRAINING MESSAGE")
 def test_training_banner_displayed(
     mock_get_feature_toggle,
     client_request,
@@ -76,4 +76,4 @@ def test_training_banner_displayed(
     page = client_request.get(".support")
 
     assert "Service not production" not in page.text
-    assert "TEST TRAINING MESSAGE" in page.text
+    assert LABELS.service.training_service_status in page.text
