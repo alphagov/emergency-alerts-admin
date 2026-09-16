@@ -642,10 +642,10 @@ def preview_broadcast_message(service_id, broadcast_message_id):
                 # User hasn't been presented with the additional confirmation yet, so
                 # re-render page with additional confirmation message/button.
                 flash(
-                    "This is a live service. Are you sure you want to submit this alert for approval?",
+                    "This is a live service where alerts can be sent to the public. "
+                    "Are you sure you want to submit this alert for approval?",
                     "submit for approval",
                 )
-
                 return render_preview_alert_page(
                     broadcast_message,
                     is_custom_broadcast,
@@ -697,10 +697,10 @@ def submit_broadcast_message(service_id, broadcast_message_id):
             # User hasn't been presented with the additional confirmation yet, so
             # re-render page with additional confirmation message/button.
             flash(
-                "This is a live service. Are you sure you want to submit this alert for approval?",
+                "This is a live service where alerts can be sent to the public. "
+                "Are you sure you want to submit this alert for approval?",
                 "submit for approval",
             )
-
             return render_current_alert_page(
                 broadcast_message,
                 hide_stop_link=True,

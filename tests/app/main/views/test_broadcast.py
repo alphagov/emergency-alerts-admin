@@ -7720,7 +7720,10 @@ def test_submit_for_approval_prod_mode(
         _expected_status=200,
     )
 
-    assert "This is a live service. Are you sure you want to submit this alert for approval?" in response.get_text()
+    assert (
+        "This is a live service where alerts can be sent to the public. "
+        "Are you sure you want to submit this alert for approval?" in response.get_text()
+    )
     assert normalize_spaces(response.select_one('button[name="confirm"]').text) == "Yes, submit for approval"
     button = response.select_one("button.govuk-button.page-footer__button")
     assert button is None or "Submit for approval" not in button.text
