@@ -1,4 +1,4 @@
-from dataclasses import fields, is_dataclass
+from dataclasses import FrozenInstanceError, fields, is_dataclass
 
 import pytest
 
@@ -7,16 +7,17 @@ from app.utils.labels import LABELS, Labels
 
 def test_labels_immutability():
     """Ensure the root and child dataclasses remain frozen/read-only."""
-    with pytest.raises(Exception):
+    # Catching the exact FrozenInstanceError with a string match pattern
+    with pytest.raises(FrozenInstanceError, match="cannot assign to field"):
         LABELS.broadcast = None
 
-    with pytest.raises(Exception):
+    with pytest.raises(FrozenInstanceError, match="cannot assign to field"):
         LABELS.broadcast.submit_for_approval_confirmation_button = "Mutated"
 
-    with pytest.raises(Exception):
+    with pytest.raises(FrozenInstanceError, match="cannot assign to field"):
         LABELS.service = None
 
-    with pytest.raises(Exception):
+    with pytest.raises(FrozenInstanceError, match="cannot assign to field"):
         LABELS.service.training_service_status = "Mutated"
 
 
