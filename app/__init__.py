@@ -307,7 +307,7 @@ def load_service_status_before_request():
         return
 
     # Check for HTTP header passed from functional tests.
-    hide_service_status = request.headers.get("X-Hide-Service-Status")
+    hide_service_status = request.headers.get("X-EAS-HideStatus")
     if hide_service_status == "true":
         return
 
