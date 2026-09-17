@@ -2,6 +2,8 @@
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
     {% for category, message in messages %}
+      {% set body_text = message if message is string else message[0] %}
+
       {% if category in [
         'cancel',
         'delete',
@@ -10,18 +12,22 @@
         'remove',
         'revoke this API key',
         'stop broadcasting',
+        labels.broadcast.submit_for_approval_confirmation_button
       ] %}
-        {% set delete_button_text = "Yes, {}".format(category) %}
+        {% set button_text = "Yes, {}".format(category) %}
+        {% set button_action = "confirm" if category == labels.broadcast.submit_for_approval_confirmation_button else "delete" %}
       {% elif category == 'try again' %}
-        {% set delete_button_text = category|capitalize %}
+        {% set button_text = category|capitalize %}
       {% else %}
-        {% set delete_button_text = None %}
+        {% set button_text = None %}
       {% endif %}
+
       <div class="bottom-gutter">
         {{ banner(
-          message if message is string else message[0],
-          'default' if ((category == 'default') or (category == 'default_with_tick')) else 'dangerous',
-          delete_button=delete_button_text,
+          body=body_text,
+          type='default' if ((category == 'default') or (category == 'default_with_tick')) else 'dangerous',
+          button_text=button_text,
+          button_action=button_action,
           with_tick=True if category == 'default_with_tick' else False,
           context=message[1] if message is not string,
           thing=message[2] if message is not string and message[2]

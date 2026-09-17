@@ -94,6 +94,7 @@ from app.notify_client.template_api_client import template_api_client
 from app.notify_client.template_folder_api_client import template_folder_api_client
 from app.notify_client.user_api_client import user_api_client
 from app.url_converters import SimpleDateTypeConverter, TemplateTypeConverter
+from app.utils.labels import LABELS
 
 login_manager = LoginManager()
 csrf = CSRFProtect()
@@ -231,6 +232,12 @@ def init_app(application: Flask):
             "font_paths": font_paths,
         }
 
+    @application.context_processor
+    def inject_labels():
+        return {
+            "labels": LABELS,
+        }
+
     application.url_map.converters["uuid"].to_python = lambda self, value: value
     application.url_map.converters["template_type"] = TemplateTypeConverter
     application.url_map.converters["simple_date"] = SimpleDateTypeConverter
@@ -297,6 +304,9 @@ def load_service_status_before_request():
     service_is_not_live_flag = feature_toggle_api_client.get_feature_toggle("service_is_not_live")
     flag_enabled = service_is_not_live_flag.get("is_enabled", False)
     g.service_status_text = service_is_not_live_flag["display_html"] if flag_enabled else None
+
+    if not flag_enabled and getattr(current_service, "trial_mode", False):
+        g.service_status_text = LABELS.service.training_service_status
 
 
 def generate_nonce_before_request():

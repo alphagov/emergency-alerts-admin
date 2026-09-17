@@ -395,6 +395,7 @@ def render_current_alert_page(
     confirm_broadcast_form=None,
     back_link_url=".broadcast_dashboard",
     hide_stop_link=False,
+    show_approval_button=True,
     errors=None,
 ):
     if type(broadcast_message.areas) is CustomBroadcastAreas and not broadcast_message.areas.is_valid_area():
@@ -444,6 +445,7 @@ def render_current_alert_page(
             service_id=current_service.id,
         ),
         hide_stop_link=hide_stop_link,
+        show_approval_button=show_approval_button,
         broadcast_message_version_count=broadcast_message.get_count_of_versions(),
         last_updated_time=(
             broadcast_message.get_latest_version().get("created_at") if broadcast_message.get_latest_version() else None
@@ -466,7 +468,7 @@ def render_edit_alert_page(broadcast_message, form):
     )
 
 
-def render_preview_alert_page(broadcast_message, is_custom_broadcast, areas, errors=None):
+def render_preview_alert_page(broadcast_message, is_custom_broadcast, areas, errors=None, show_approval_button=True):
     return render_template(
         "views/broadcast/preview-message.html",
         broadcast_message=broadcast_message,
@@ -482,6 +484,7 @@ def render_preview_alert_page(broadcast_message, is_custom_broadcast, areas, err
         ),
         returned_for_edit_by=broadcast_message.get_latest_returned_for_edit_reason().get("created_by_id"),
         errors=errors,
+        show_approval_button=show_approval_button,
     )
 
 
