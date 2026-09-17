@@ -93,11 +93,7 @@ from app.notify_client.status_api_client import status_api_client
 from app.notify_client.template_api_client import template_api_client
 from app.notify_client.template_folder_api_client import template_folder_api_client
 from app.notify_client.user_api_client import user_api_client
-from app.url_converters import (
-    SimpleDateTypeConverter,
-    TemplateTypeConverter,
-    TicketTypeConverter,
-)
+from app.url_converters import SimpleDateTypeConverter, TemplateTypeConverter
 from app.utils.labels import LABELS
 
 login_manager = LoginManager()
@@ -244,7 +240,6 @@ def init_app(application: Flask):
 
     application.url_map.converters["uuid"].to_python = lambda self, value: value
     application.url_map.converters["template_type"] = TemplateTypeConverter
-    application.url_map.converters["ticket_type"] = TicketTypeConverter
     application.url_map.converters["simple_date"] = SimpleDateTypeConverter
 
 

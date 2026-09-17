@@ -1,4 +1,5 @@
 {% extends "withoutnav_template.html" %}
+{% from "components/textbox.html" import textbox %}
 {% from "components/page-footer.html" import page_footer %}
 {% from "components/form.html" import form_wrapper %}
 
@@ -9,33 +10,31 @@
 {% block maincolumn_content %}
 
   <h1 class="heading-large">Support</h1>
-  <p class="govuk-body">GOV.UK Emergency Alerts provides 24-hour online support.</p>
+  <p class="govuk-body">You can get online support for the Emergency Alerts Service 24 hours a day.</p>
 
+  <h2 class="heading-medium">Reporting an emergency</h2>
+  <p class="govuk-body">An issue is an emergency if:</p>
   <ul class="govuk-list govuk-list--bullet">
-    <li>If it’s an emergency, we'll reply within 30 minutes</li>
-    <li>If it’s not an emergency, we'll reply within 1 working day</li>
-    <li>If it’s a question or feedback, we'll reply within 3 working days</li>
+    <li>you are the only person on call and cannot sign in</li>
+    <li>no one on your team who is on call can sign in</li>
+    <li>you see a 'technical difficulties' error message</li>
+    <li>you see a '500 response code' error message</li>
   </ul>
+  <p class="govuk-body">If you have an emergency, do not use the support form. You must follow your 'standard operating procedures' to raise a PagerDuty alert with the on-call support team.</p>
+
+  <h2 class="heading-medium">For all other issues</h2>
+  <p class="govuk-body">If your problem is not an emergency, complete the support form.</p>
+  <p class="govuk-body">We aim to reply by the end of the next working day.</p>
 
   {% call form_wrapper() %}
-    {% if current_user.is_authenticated %}
-      {{ form.support_type }}
+    {% if not current_user.is_authenticated %}
+      {{ form.name(param_extensions={"classes": "govuk-!-width-full"}) }}
+      {{ form.email_address(param_extensions={"classes": "govuk-!-width-full"}) }}
     {% else %}
-      {{ form.who }}
+      <p class="govuk-body">We'll reply to {{ current_user.email_address }}</p>
     {% endif %}
-    {{ page_footer('Continue', button_name='continue') }}
+    {{ textbox(form.feedback, width='1-1', hint='', rows=10, autosize=True) }}
+    {{ page_footer('Send') }}
   {% endcall %}
-
-<div class="govuk-grid-row">
-  <div class="govuk-grid-column-two-thirds">
-    <h2 class="heading-medium">What counts as an emergency?</h2>
-    <p class="govuk-body">A problem is only classed as an emergency if:</p>
-    <ul class="govuk-list govuk-list--bullet">
-      <li>nobody on your team can sign in</li>
-      <li>a ‘technical difficulties’ error appears</li>
-      <li>a 500 response code appears</li>
-    </ul>
-  </div>
-</div>
 
 {% endblock %}

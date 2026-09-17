@@ -103,8 +103,6 @@ googleapis-common-protos==1.72.0
     # via
     #   opentelemetry-exporter-otlp-proto-grpc
     #   opentelemetry-exporter-otlp-proto-http
-govuk-bank-holidays==0.19
-    # via -r requirements.in
 govuk-frontend-jinja==3.3.0
     # via -r requirements.in
 grpcio==1.76.0
@@ -541,7 +539,6 @@ pyyaml==6.0.2
 requests==2.33.0
     # via
     #   emergency-alerts-utils
-    #   govuk-bank-holidays
     #   moto
     #   notifications-python-client
     #   opentelemetry-exporter-otlp-proto-http

@@ -34,12 +34,8 @@ class Navigation:
 class HeaderNavigation(Navigation):
     mapping = {
         "support": {
-            "bat_phone",
-            "feedback",
             "support",
-            "support_public",
             "thanks",
-            "triage",
         },
         "features": {
             "security",
