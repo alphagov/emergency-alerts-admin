@@ -7542,13 +7542,9 @@ def test_send_summary_email_section_not_visible_with_no_contacts(
             service_id=SERVICE_ONE_ID,
             template_id=fake_uuid,
             created_by_id=fake_uuid,
-            approved_by_id=fake_uuid,
-            starts_at="2020-02-20T20:20:20.000000",
-            created_at="2020-02-20T20:20:20.000000",
-            content="Hello",
-            extra_content="Test Extra Content",
-            reference="Test Template Reference",
-            duration=10_800,
+            created_at="2020-02-23T22:22:22.000000",
+            finishes_at="2020-02-23T23:23:23.000000",
+            status="draft",
         ),
     )
 
@@ -7582,11 +7578,9 @@ def test_send_summary_email_section_not_visible_with_no_perms(
             service_id=SERVICE_ONE_ID,
             template_id=fake_uuid,
             created_by_id=fake_uuid,
-            created_at="2020-02-20T20:20:20.000000",
-            content="Hello",
-            extra_content="Test Extra Content",
-            reference="Test Template Reference",
-            duration=10_800,
+            created_at="2020-02-23T22:22:22.000000",
+            finishes_at="2020-02-23T23:23:23.000000",
+            status="draft",
         ),
     )
 
@@ -7604,7 +7598,72 @@ def test_send_summary_email_section_not_visible_with_no_perms(
     assert "Send summary email" not in keys
 
 
-def test_send_summary_email(mocker, client_request, service_one, active_user_create_broadcasts_permission, fake_uuid):
+@pytest.mark.parametrize(
+    "status, should_be_present, expected_response",
+    [
+        ("draft", True, 200),
+        ("returned", True, 200),
+        ("pending-approval", True, 200),
+        ("rejected", False, 302),
+        ("approved", False, 200),
+        ("broadcasting", False, 302),
+        ("cancelled", False, 302),
+    ],
+)
+def test_send_summary_email_section_hidden_when_alert_state(
+    mocker,
+    client_request,
+    service_one,
+    active_user_create_broadcasts_permission,
+    fake_uuid,
+    mock_get_broadcast_message_versions,
+    mock_get_broadcast_returned_for_edit_reasons,
+    mock_get_latest_edit_reason,
+    mock_get_count_of_phones,
+    status,
+    should_be_present,
+    expected_response,
+):
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            created_at="2020-02-23T22:22:22.000000",
+            starts_at="2020-02-23T22:22:23.000000",
+            finishes_at="2020-02-23T22:22:25.000000",
+            rejected_at="2020-02-21T22:22:24.000000",
+            approved_at="2020-02-20T22:22:24.000000",
+            cancelled_at="2020-02-20T22:22:24.000000",
+            status=status,
+        ),
+    )
+
+    service_one["alert_notification_addresses"] += ["test@test1.com"]
+
+    client_request.login(active_user_create_broadcasts_permission)
+
+    page = client_request.get(
+        ".view_current_broadcast",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+        _test_page_title=False,
+        _expected_status=expected_response,
+    )
+
+    keys = [normalize_spaces(p.text) for p in page.select(".govuk-summary-list__key")]
+
+    if should_be_present:
+        assert "Send summary email" in keys
+    else:
+        assert "Send summary email" not in keys
+
+
+def test_send_summary_email_page(
+    mocker, client_request, service_one, active_user_create_broadcasts_permission, fake_uuid
+):
     mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
     mocker.patch(
         "app.broadcast_message_api_client.get_broadcast_message",
@@ -7613,13 +7672,12 @@ def test_send_summary_email(mocker, client_request, service_one, active_user_cre
             service_id=SERVICE_ONE_ID,
             template_id=fake_uuid,
             created_by_id=fake_uuid,
-            approved_by_id=fake_uuid,
-            starts_at="2020-02-20T20:20:20.000000",
             created_at="2020-02-20T20:20:20.000000",
             content="Hello",
             extra_content="Test Extra Content",
             reference="Test Template Reference",
             duration=10_800,
+            status="draft",
         ),
     )
 
@@ -7651,7 +7709,7 @@ def test_send_summary_email(mocker, client_request, service_one, active_user_cre
     assert normalize_spaces(page.select(".govuk-button")[5].text) == "Send Email"
 
 
-def test_send_summary_email_no_perms(
+def test_send_summary_email_page_no_perms(
     mocker,
     client_request,
     service_one,
@@ -7665,13 +7723,12 @@ def test_send_summary_email_no_perms(
             service_id=SERVICE_ONE_ID,
             template_id=fake_uuid,
             created_by_id=fake_uuid,
-            approved_by_id=fake_uuid,
-            starts_at="2020-02-20T20:20:20.000000",
             created_at="2020-02-20T20:20:20.000000",
             content="Hello",
             extra_content="Test Extra Content",
             reference="Test Template Reference",
             duration=10_800,
+            status="draft",
         ),
     )
 
