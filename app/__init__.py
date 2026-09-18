@@ -301,6 +301,11 @@ def load_service_status_before_request():
     if "/static/" in request.url or "_admin_status" in request.url:
         return
 
+    # Check for HTTP header passed from functional tests.
+    hide_service_status = request.headers.get("X-EAS-HideStatus")
+    if hide_service_status == "true":
+        return
+
     service_is_not_live_flag = feature_toggle_api_client.get_feature_toggle("service_is_not_live")
     flag_enabled = service_is_not_live_flag.get("is_enabled", False)
     g.service_status_text = service_is_not_live_flag["display_html"] if flag_enabled else None
