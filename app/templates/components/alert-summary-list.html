@@ -259,7 +259,11 @@
         }
     ] %}
 
-    {% if current_service.alert_notification_addresses and display_action %}
+    {% if
+        current_service.alert_notification_addresses
+        and broadcast_message.status in ["draft", "returned", "pending-approval"]
+        and is_editable
+    %}
         {% set alert_summary_email_section_html %}
             <p class="govuk-body">Email will be sent to predefined list of contacts for this service.</p>
         {% endset %}
