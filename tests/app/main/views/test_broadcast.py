@@ -7709,6 +7709,38 @@ def test_send_summary_email_page(
     assert normalize_spaces(page.select(".govuk-button")[5].text) == "Send Email"
 
 
+def test_send_summary_email_page_operator(
+    mocker, client_request, service_one, active_user_create_broadcasts_permission, fake_uuid
+):
+    mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1_000_000)
+    mocker.patch(
+        "app.broadcast_message_api_client.get_broadcast_message",
+        return_value=broadcast_message_json(
+            id_=fake_uuid,
+            service_id=SERVICE_ONE_ID,
+            template_id=fake_uuid,
+            created_by_id=fake_uuid,
+            created_at="2020-02-20T20:20:20.000000",
+            content="Hello",
+            extra_content="Test Extra Content",
+            reference="Test Template Reference",
+            duration=10_800,
+            status="draft",
+        ),
+    )
+
+    client_request.login(active_user_create_broadcasts_permission)
+    service_one["broadcast_channel"] = "operator"
+
+    page = client_request.get(
+        ".alert_summary_email",
+        service_id=SERVICE_ONE_ID,
+        broadcast_message_id=fake_uuid,
+    )
+
+    assert "Phone Estimate" not in page
+
+
 def test_send_summary_email_page_no_perms(
     mocker,
     client_request,

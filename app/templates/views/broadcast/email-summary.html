@@ -43,9 +43,11 @@
         <p class="govuk-body">
           <b>Alert Message</b><br>{{ broadcast_message.content }}
         </p>
-        <p class="govuk-body">
-          <b>Phone Estimate</b><br>{{ phone_estimate }}
-        </p>
+        {% if phone_estimate %}
+          <p class="govuk-body">
+            <b>Phone Estimate</b><br>{{ phone_estimate }}
+          </p>
+        {% endif %}
         <p class="govuk-body">
             <b>Additional Info</b><br>{{ broadcast_message.extra_content }}
         </p>
