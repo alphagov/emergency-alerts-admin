@@ -1153,7 +1153,10 @@ def alert_summary_email(service_id, broadcast_message_id):
         else:
             duration_display = format_seconds_duration_as_time(Config.DEFAULT_DURATION_PERIODS.get("live"))
 
-    phone_estimate = format_estimated_phone_count(broadcast_message.count_of_phones)
+    if current_service.broadcast_channel == "operator":
+        phone_estimate = None
+    else:
+        phone_estimate = format_estimated_phone_count(broadcast_message.count_of_phones)
 
     form = EmailSummaryForm()
     form.alert_summary.data = (
