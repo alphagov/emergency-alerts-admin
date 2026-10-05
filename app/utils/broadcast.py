@@ -293,7 +293,7 @@ def render_current_alert_page(
             if confirm_broadcast_form is None
             else confirm_broadcast_form
         ),
-        areas=format_areas_list(broadcast_message.areas),
+        areas=format_areas_list(broadcast_message.area_names),
         back_link=url_for(
             back_link_url,
             service_id=current_service.id,

@@ -1126,7 +1126,7 @@ def alert_summary_email(service_id, broadcast_message_id):
             phone_estimate=phone_estimate,
             duration=duration_display,
             wkt=broadcast_message.simple_polygons.as_wkt,
-            areas=format_areas_list_with_parent(broadcast_message.areas),
+            areas=format_areas_list_with_parent(broadcast_message.area_names),
         )
 
         return render_current_alert_page(broadcast_message)
