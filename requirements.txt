@@ -498,7 +498,7 @@ pyflakes==3.4.0
     # via flake8
 pygments==2.19.2
     # via pytest
-pyjwt==2.15.1
+pyjwt==2.13.0
     # via notifications-python-client
 pyproj==3.7.2
     # via
@@ -571,7 +571,7 @@ typing-extensions==4.15.0
     #   opentelemetry-sdk
 tzdata==2026.2
     # via pendulum
-urllib3==2.8.0
+urllib3==2.7.0
     # via
     #   -r requirements.in
     #   botocore
