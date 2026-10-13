@@ -34,6 +34,11 @@ def test_loads_libraries():
             True,
         ),
         (
+            "pfa24",
+            "Police forces in England and Wales",
+            False,
+        ),
+        (
             "postcodes",
             "Postcode areas",
             False,
@@ -152,11 +157,12 @@ def test_repository_has_all_libraries():
     repo = BroadcastAreasRepository()
     libraries = repo.get_libraries()
 
-    assert len(libraries) == 6
+    assert len(libraries) == 7
     assert [
         ("Flood Warning Target Areas", "Flood Warning Target Area"),
         ("REPPIR DEPZ sites", "REPPIR DEPZ site"),
         ("Countries", "country"),
+        ("Police forces in England and Wales", "police force"),
         ("Postcode areas", "postcode area"),
         ("Test areas", "test area"),
         ("Local authorities", "local authority"),

@@ -1346,6 +1346,34 @@ def test_broadcast_page(
         ),
         (
             [
+                "pfa24-E23000035",
+            ],
+            [
+                "Devon & Cornwall Remove Devon & Cornwall",
+            ],
+            1_386_440,
+            [
+                "An area of 4,000 square miles Will get the alert",
+                "An extra area of 800 square miles is Likely to get the alert",
+                "More than 1 million phones estimated",
+            ],
+        ),
+        (
+            [
+                "pfa24-LONDON",
+            ],
+            [
+                "London (Metropolitan & City of London) Remove London (Metropolitan & City of London)",
+            ],
+            6_000_000,
+            [
+                "An area of 600 square miles Will get the alert",
+                "An extra area of 70 square miles is Likely to get the alert",
+                "More than 1 million phones estimated",
+            ],
+        ),
+        (
+            [
                 "REPPIR_DEPZ_sites-loch_ewe",
             ],
             [
@@ -1748,6 +1776,7 @@ def test_preview_areas_page_with_custom_polygons(
             [
                 "Countries",
                 "Local authorities",
+                "Police forces in England and Wales",
                 "REPPIR DEPZ sites",
                 "Test areas",
             ],
@@ -1762,6 +1791,7 @@ def test_preview_areas_page_with_custom_polygons(
             [
                 "Countries",
                 "Local authorities",
+                "Police forces in England and Wales",
                 "REPPIR DEPZ sites",
                 "Test areas",
             ],
@@ -1780,6 +1810,7 @@ def test_preview_areas_page_with_custom_polygons(
                 # ---
                 "Countries",
                 "Local authorities",
+                "Police forces in England and Wales",
                 "REPPIR DEPZ sites",
                 "Test areas",
             ],
@@ -1836,6 +1867,7 @@ def test_choose_library_page(
                 "Countries",
                 "Flood Warning Target Areas (TA code)",
                 "Local authorities",
+                "Police forces in England and Wales",
                 "Postcode areas",
                 "REPPIR DEPZ sites",
                 "Test areas",
@@ -1848,6 +1880,7 @@ def test_choose_library_page(
                 "Countries",
                 "Flood Warning Target Areas (TA code)",
                 "Local authorities",
+                "Police forces in England and Wales",
                 "Postcode areas",
                 "REPPIR DEPZ sites",
                 "Test areas",
@@ -1860,6 +1893,7 @@ def test_choose_library_page(
                 "Countries",
                 "Flood Warning Target Areas (TA code)",
                 "Local authorities",
+                "Police forces in England and Wales",
                 "Postcode areas",
                 "REPPIR DEPZ sites",
                 "Test areas",

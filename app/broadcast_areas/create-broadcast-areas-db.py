@@ -174,6 +174,9 @@ lad25_filepath = source_files_path / "Local_Authority_Districts_(May_2025)_UK_BG
 # https://geoportal.statistics.gov.uk/datasets/ons::counties-and-unitary-authorities-december-2024-boundaries-uk-bgc-1
 ctyua24_filepath = source_files_path / "Counties_and_Unitary_Authorities_(December_2024)_UK_BGC.geojson"
 
+# https://geoportal.statistics.gov.uk/datasets/572a1db23c2b45c599f6d37fa638b105_0
+pfa24_filepath = source_files_path / "PFA_DEC_2024_EW_BGC.geojson"
+
 # https://geoportal.statistics.gov.uk/datasets/d1668e9ac81743ac9fc99244e6e56b99_0
 wd_lad_map_filepath = source_files_path / "WD25_LAD25_UK_LU.csv"
 
@@ -288,6 +291,70 @@ def add_countries():
                 estimate_number_of_smartphones_in_area(f_id),
             ]
         )
+
+    repo.insert_broadcast_areas(areas_to_add, keep_old_polygons)
+
+
+def add_police_force_areas():
+    dataset_id = "pfa24"
+    dataset_geojson = geojson.loads(pfa24_filepath.read_text())
+    repo.insert_broadcast_area_library(
+        dataset_id,
+        name="Police forces in England and Wales",
+        name_singular="police force",
+        is_group=False,
+    )
+
+    areas_to_add = []
+
+    london_geometry = {
+        "type": "MultiPolygon",
+        "coordinates": [],
+    }
+
+    for feature in dataset_geojson["features"]:
+        f_id = feature["properties"]["PFA24CD"]
+        f_name = feature["properties"]["PFA24NM"]
+
+        if f_id in ("E23000001", "E23000034"):
+            # Skip the Metropolitan Police and City of London for now
+            # because we are going to combine them into one later
+            london_geometry["coordinates"] += feature["geometry"]["coordinates"]
+            continue
+
+        print()
+        print(f_name)
+
+        feature, simple_feature, utm_crs = polygons_and_simplified_polygons(feature["geometry"])
+        id = f"{dataset_id}-{f_id}"
+        areas_to_add.append(
+            [
+                id,
+                f_name,
+                dataset_id,
+                None,
+                feature,
+                simple_feature,
+                utm_crs,
+                0,
+            ]
+        )
+
+    # Manually add the Metropolitan Police and City of London as one combined area
+    feature, simple_feature, utm_crs = polygons_and_simplified_polygons(london_geometry)
+
+    areas_to_add.append(
+        [
+            "pfa24-LONDON",
+            "London (Metropolitan & City of London)",
+            dataset_id,
+            None,
+            feature,
+            simple_feature,
+            utm_crs,
+            0,
+        ]
+    )
 
     repo.insert_broadcast_areas(areas_to_add, keep_old_polygons)
 
@@ -423,6 +490,7 @@ else:
 add_test_areas()
 add_countries()
 add_wards_local_authorities_and_counties()
+add_police_force_areas()
 
 most_detailed_polygons = formatted_list(
     sorted(point_counts, reverse=True)[:5],
