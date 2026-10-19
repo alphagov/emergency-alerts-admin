@@ -17,7 +17,6 @@ from flask import (
 from notifications_python_client.errors import HTTPError
 
 from app import current_service, current_service_status
-from app.broadcast_areas.models import CustomBroadcastAreas
 from app.config import Config
 from app.formatters import format_estimated_phone_count, format_seconds_duration_as_time
 from app.main import main
