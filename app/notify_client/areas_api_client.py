@@ -34,15 +34,11 @@ class AreasAPIClient(AdminAPIClient):
 
     def get_local_authorities_by_names(self, names):
         data = {"area_names": names}
-        return self.post(url="/areas/get-local-authorities-by-names", data=data)[
-            "data"
-        ]
+        return self.post(url="/areas/get-local-authorities-by-names", data=data)["data"]
 
     def get_flood_warning_areas_by_ta_codes(self, names):
         data = {"ta_codes": names}
-        return self.post(url="/areas/get-flood-warning-areas-by-geographic-ids", data=data)[
-            "data"
-        ]
+        return self.post(url="/areas/get-flood-warning-areas-by-geographic-ids", data=data)["data"]
 
     def get_area_dict(self, area_ids):
         data = {"area_ids": area_ids}

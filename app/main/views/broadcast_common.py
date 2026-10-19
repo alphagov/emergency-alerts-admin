@@ -224,7 +224,7 @@ def choose_area(
         template_folder_id=template_folder_id,
         render_checkboxes=any(child.is_selectable for child in areas),
         areas=areas,
-        geography_type=library.route
+        geography_type=library.route,
     )
 
 
@@ -284,7 +284,7 @@ def choose_sub_area(service_id, message_type, library_slug, area_slug, message_i
         render_checkboxes=any(child.is_selectable for child in sub_areas),
         areas=sub_areas,
         parent_area=area,
-        geography_type=area.geography_type
+        geography_type=area.geography_type,
     )
 
 
@@ -738,7 +738,9 @@ def search_local_authority_areas_as_a_list(service_id, message_type, message_id=
             )
 
         if message:
-            message.add_areas(message.id, message.service_id, [*area_ids], message_type, "local_authorities")  # because LAs is artificial geography type
+            message.add_areas(
+                message.id, message.service_id, [*area_ids], message_type, "local_authorities"
+            )  # because LAs is artificial geography type
         else:
             message = Message.create_from_area(
                 service_id=service_id, area_ids=[*area_ids], template_folder_id=template_folder_id
