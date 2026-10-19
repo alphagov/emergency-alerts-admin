@@ -72,7 +72,7 @@ class BaseBroadcast(JSONModel):
                 parent_ids.add(parent_id)
 
                 # Load the parent Area object using its geographic ID
-                parent = Area.from_geographic_id(parent_id)
+                parent = Area.from_id(parent_id)
 
                 ancestors.append(parent)
 
@@ -132,8 +132,8 @@ class BaseBroadcast(JSONModel):
         return all(Polygon(coordinates).is_valid for coordinates in raw_polygons)
 
     @classmethod
-    def add_areas(cls, id, service_id, new_area_ids, message_type="broadcast", type_name=None):
-        return cls(areas_api_client.add_areas(id, service_id, new_area_ids, message_type, type_name))
+    def add_areas(cls, id, service_id, new_area_ids, message_type="broadcast", version_id=None):
+        return cls(areas_api_client.add_areas(id, service_id, new_area_ids, message_type, version_id))
 
     @classmethod
     def add_postcode_area(cls, id, service_id, postcode, radius, message_type):
