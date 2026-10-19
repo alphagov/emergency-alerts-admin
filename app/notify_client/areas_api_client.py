@@ -9,20 +9,17 @@ class AreasAPIClient(AdminAPIClient):
     def get_library_example(self, type_name):
         return self.get(url=f"/areas/geography-types/{type_name}/examples")["data"]
 
-    def get_areas_for_library(self, type_name):
-        return self.get(url=f"/areas/geography-types/{type_name}/areas")["data"]
+    def get_areas_for_library(self, version_id):
+        return self.get(url=f"/areas/geography-types/{version_id}/areas")["data"]
 
-    def get_areas_for_parent(self, parent_id):
-        return self.get(url=f"/areas/{parent_id}/sub-areas")["data"]
-
-    def check_grandparent(self, parent_id):
-        return self.get(url=f"/areas/{parent_id}/is-grandparent")["data"]
+    def get_areas_for_parent(self, version_id, parent_id):
+        return self.get(url=f"/areas/geography-types/{version_id}/{parent_id}/areas")["data"]
 
     def get_all_areas(self):
         pass
 
-    def get_areas_by_ids(self, area_ids, area_names):
-        data = {"area_ids": area_ids, "area_names": area_names}
+    def get_areas_by_ids(self, area_ids):
+        data = {"area_ids": area_ids}
         return self.post(url="/areas/get-areas", data=data)["data"]
 
     def get_area(self, id):
@@ -35,18 +32,26 @@ class AreasAPIClient(AdminAPIClient):
         data = {"area_id": area_id}
         return self.post(url="/areas/polygons", data=data)["data"]
 
-    def get_areas_by_names(self, names, type_name):
+    def get_local_authorities_by_names(self, names):
         data = {"area_names": names}
-        return self.post(url=f"/areas/get-{type_name}-by-names", data=data)["data"]
+        return self.post(url="/areas/get-local-authorities-by-names", data=data)[
+            "data"
+        ]
+
+    def get_flood_warning_areas_by_ta_codes(self, names):
+        data = {"ta_codes": names}
+        return self.post(url="/areas/get-flood-warning-areas-by-geographic-ids", data=data)[
+            "data"
+        ]
 
     def get_area_dict(self, area_ids):
         data = {"area_ids": area_ids}
         return self.post(url="/areas/get-area-dict", data=data)
 
-    def add_areas(self, message_id, service_id, area_ids, message_type="broadcast", type_name=None):
+    def add_areas(self, message_id, service_id, area_ids, message_type="broadcast", version_id=None):
         data = {"area_ids": area_ids}
-        if type_name:
-            data["type_name"] = type_name
+        if version_id:
+            data["version_id"] = version_id
         return self.post(url=f"/areas/{service_id}/{message_id}/{message_type}/add-areas", data=data)
 
     def get_postcode_centroid(self, area_id):
