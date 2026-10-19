@@ -184,10 +184,11 @@ def choose_area(
             template_folder_id=template_folder_id,
         )
 
-    form = BroadcastAreaForm.from_library(library.get_areas())
+    areas = library.get_areas()
+    form = BroadcastAreaForm.from_library(areas)
     if form.validate_on_submit():
         if message:
-            message.add_areas(message.id, message.service_id, [*form.areas.data], message_type, library.route)
+            message.add_areas(message.id, message.service_id, [*form.areas.data], message_type, library.version_id)
         else:
             message = Message.create_from_area(
                 service_id=service_id, area_ids=[*form.areas.data], template_folder_id=template_folder_id
@@ -221,6 +222,9 @@ def choose_area(
         ),
         message_type=message_type,
         template_folder_id=template_folder_id,
+        render_checkboxes=any(child.is_selectable for child in areas),
+        areas=areas,
+        geography_type=library.route
     )
 
 
@@ -244,7 +248,6 @@ def choose_sub_area(service_id, message_type, library_slug, area_slug, message_i
     area = Area.from_id(area_slug)
     sub_areas = area.get_sub_areas()
     back_link = _get_broadcast_sub_area_back_link(service_id, message_id, library_slug, message_type)
-    is_county = area.is_grandparent()
 
     form = BroadcastAreaFormWithSelectAll.from_library(
         sub_areas,
@@ -252,7 +255,7 @@ def choose_sub_area(service_id, message_type, library_slug, area_slug, message_i
     )
     if form.validate_on_submit():
         if message:
-            message.add_areas(message.id, message.service_id, [*form.selected_areas], message_type)
+            message.add_areas(message.id, message.service_id, [*form.selected_areas], message_type, area.version_id)
         else:
             message = Message.create_from_area(
                 service_id=service_id, area_ids=[*form.selected_areas], template_folder_id=template_folder_id
@@ -266,30 +269,22 @@ def choose_sub_area(service_id, message_type, library_slug, area_slug, message_i
             )
         )
 
-    if is_county:
-        # area = county. sub_areas = districts. they have wards, so link to individual district pages
-        return render_template(
-            "views/broadcast/counties.html",
-            form=form,
-            search_form=SearchByNameForm(),
-            show_search_form=(len(sub_areas) > 7),
-            library_slug=library_slug,
-            page_title=f"Choose an area of {area.name}",
-            message=message,
-            county=area,
-            back_link=back_link,
-            message_type=message_type,
-        )
-
+    # area = county. sub_areas = districts. they have wards, so link to individual district pages
     return render_template(
-        "views/broadcast/sub-areas.html",
+        "views/broadcast/areas.html",
         form=form,
         search_form=SearchByNameForm(),
-        show_search_form=(len(form.areas.choices) > 7),
+        show_search_form=(len(sub_areas) > 7),
         library_slug=library_slug,
         page_title=f"Choose an area of {area.name}",
         message=message,
+        county=area,
         back_link=back_link,
+        message_type=message_type,
+        render_checkboxes=any(child.is_selectable for child in sub_areas),
+        areas=sub_areas,
+        parent_area=area,
+        geography_type=area.geography_type
     )
 
 
@@ -607,7 +602,8 @@ def search_flood_warning_areas(service_id, message_type, message_id=None):
         area_id = form.flood_warning_area.data
         if message:
             try:
-                message = message.add_areas(message.id, message.service_id, [area_id], message_type, library.route)
+                area_ids = areas_api_client.get_flood_warning_areas_by_ta_codes([area_id])
+                message = message.add_areas(message.id, message.service_id, area_ids, message_type, library.version_id)
             except Exception as e:
                 form.flood_warning_area.errors.append(e.message)
                 return render_search_flood_warning_areas_page()
@@ -645,7 +641,8 @@ def search_flood_warning_areas_as_a_list(service_id, message_type, message_id=No
         ids = split_text_by_comma_and_newline(form.areas.data)
         if message:
             try:
-                message.add_areas(message.id, message.service_id, [*ids], message_type, library.route)
+                area_ids = areas_api_client.get_flood_warning_areas_by_ta_codes(ids)
+                message.add_areas(message.id, message.service_id, [*area_ids], message_type, library.version_id)
             except Exception as e:
                 if "appears in the list more than once" in e.message:
                     form.form_errors = ["All Flood Warning TA codes must be unique"]
@@ -716,7 +713,7 @@ def search_local_authority_areas_as_a_list(service_id, message_type, message_id=
     if form.validate_on_submit():
         ids = split_text_by_newline(form.areas.data)
         try:
-            area_ids = areas_api_client.get_areas_by_names(ids, "local_authorities")
+            area_ids = areas_api_client.get_local_authorities_by_names(ids)
         except Exception as e:
             form.areas.errors.append(e.message)
             if "appears in the list more than once" in e.message:
@@ -741,7 +738,7 @@ def search_local_authority_areas_as_a_list(service_id, message_type, message_id=
             )
 
         if message:
-            message.add_areas(message.id, message.service_id, [*area_ids], message_type)
+            message.add_areas(message.id, message.service_id, [*area_ids], message_type, "local_authorities")  # because LAs is artificial geography type
         else:
             message = Message.create_from_area(
                 service_id=service_id, area_ids=[*area_ids], template_folder_id=template_folder_id
