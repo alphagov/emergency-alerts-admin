@@ -13,26 +13,9 @@
 
 {% block maincolumn_content %}
 
-    {{ page_header('Thanks for contacting us') }}
-    <p class="govuk-body">
-      {% if out_of_hours_emergency %}
-        We’ll reply in the next 30 minutes.
-      {% else %}
-        {% if email_address_provided %}
-          {% if out_of_hours %}
-            We’ll reply within one working day.
-          {% else %}
-            We’ll aim to read your message in the next 30 minutes and we’ll reply within one
-            working day.
-          {% endif %}
-        {% else %}
-          {% if out_of_hours %}
-            We’ll read your message when we’re back in the office.
-          {% else %}
-            We’ll aim to read your message in the next 30 minutes.
-          {% endif %}
-        {% endif %}
-      {% endif %}
-    </p>
+  {{ page_header('Thanks for contacting us') }}
+  <p class="govuk-body">
+      We'll aim to read and reply to your message in the next working day.
+  </p>
 
 {% endblock %}

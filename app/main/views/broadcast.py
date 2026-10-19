@@ -16,7 +16,8 @@ from flask import (
 )
 from notifications_python_client.errors import HTTPError
 
-from app import current_service
+from app import current_service, current_service_status
+from app.broadcast_areas.models import CustomBroadcastAreas
 from app.config import Config
 from app.formatters import format_estimated_phone_count, format_seconds_duration_as_time
 from app.main import main
@@ -55,6 +56,7 @@ from app.utils.broadcast import (
     render_preview_alert_page,
     update_broadcast_message_using_changed_data,
 )
+from app.utils.labels import LABELS
 from app.utils.user import user_has_any_permissions, user_has_permissions
 
 FILTER_TEXT = {
@@ -609,6 +611,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
         return render_preview_alert_page(broadcast_message, areas, errors)
 
     if request.method == "POST":
+
         try:
             broadcast_message.check_can_update_status("pending-approval")
         except HTTPError as e:
@@ -617,6 +620,26 @@ def preview_broadcast_message(service_id, broadcast_message_id):
 
         if errors := check_for_missing_fields(broadcast_message):
             return render_preview_alert_page(broadcast_message, areas, errors)
+
+        # If current_service_status isnt set, we are in production mode
+        if not current_service_status:
+            # Need to ensure user has ackowledged and confirmed they are ok to proceed.
+            if "confirm" not in request.form:
+                # User hasn't been presented with the additional confirmation yet, so
+                # re-render page with additional confirmation message/button.
+                flash(
+                    LABELS.broadcast.submit_for_approval_confirmation,
+                    LABELS.broadcast.submit_for_approval_confirmation_button,
+                )
+                return render_preview_alert_page(
+                    broadcast_message,
+                    areas,
+                    show_approval_button=False,
+                )
+
+        # Either:
+        # - we are in non-production/training mode
+        # - the user has already confirmed they are ok to proceed in production mode
         broadcast_message.request_approval()
         return redirect(
             url_for(
@@ -651,6 +674,25 @@ def submit_broadcast_message(service_id, broadcast_message_id):
     if errors := check_for_missing_fields(broadcast_message):
         return render_current_alert_page(broadcast_message, hide_stop_link=True, errors=errors)
 
+    # If current_service_status isn't set we are in production mode
+    if not current_service_status:
+        # Need to ensure user has ackowledged and confirmed they are ok to proceed.
+        if "confirm" not in request.form:
+            # User hasn't been presented with the additional confirmation yet, so
+            # re-render page with additional confirmation message/button.
+            flash(
+                LABELS.broadcast.submit_for_approval_confirmation,
+                LABELS.broadcast.submit_for_approval_confirmation_button,
+            )
+            return render_current_alert_page(
+                broadcast_message,
+                hide_stop_link=True,
+                show_approval_button=False,
+            )
+
+    # Either:
+    # - we are in non-production/training mode
+    # - the user has already confirmed they are ok to proceed in production mode
     broadcast_message.request_approval()
     return redirect(
         url_for(
@@ -1099,7 +1141,10 @@ def alert_summary_email(service_id, broadcast_message_id):
         else:
             duration_display = format_seconds_duration_as_time(Config.DEFAULT_DURATION_PERIODS.get("live"))
 
-    phone_estimate = format_estimated_phone_count(broadcast_message.count_of_phones)
+    if current_service.broadcast_channel == "operator":
+        phone_estimate = None
+    else:
+        phone_estimate = format_estimated_phone_count(broadcast_message.count_of_phones)
 
     form = EmailSummaryForm()
     form.alert_summary.data = (

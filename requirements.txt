@@ -103,8 +103,6 @@ googleapis-common-protos==1.72.0
     # via
     #   opentelemetry-exporter-otlp-proto-grpc
     #   opentelemetry-exporter-otlp-proto-http
-govuk-bank-holidays==0.19
-    # via -r requirements.in
 govuk-frontend-jinja==3.3.0
     # via -r requirements.in
 grpcio==1.76.0
@@ -500,7 +498,7 @@ pyflakes==3.4.0
     # via flake8
 pygments==2.19.2
     # via pytest
-pyjwt==2.13.0
+pyjwt==2.15.1
     # via notifications-python-client
 pyproj==3.7.2
     # via
@@ -541,7 +539,6 @@ pyyaml==6.0.2
 requests==2.33.0
     # via
     #   emergency-alerts-utils
-    #   govuk-bank-holidays
     #   moto
     #   notifications-python-client
     #   opentelemetry-exporter-otlp-proto-http
@@ -574,7 +571,7 @@ typing-extensions==4.15.0
     #   opentelemetry-sdk
 tzdata==2026.2
     # via pendulum
-urllib3==2.7.0
+urllib3==2.8.0
     # via
     #   -r requirements.in
     #   botocore

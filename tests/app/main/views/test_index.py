@@ -43,12 +43,6 @@ def test_robots(client_request):
     (
         ("sign_in", {}),
         ("support", {}),
-        ("support_public", {}),
-        ("triage", {}),
-        ("feedback", {"ticket_type": "ask-question-give-feedback"}),
-        ("feedback", {"ticket_type": "general"}),
-        ("feedback", {"ticket_type": "report-problem"}),
-        ("bat_phone", {}),
         ("thanks", {}),
         pytest.param("index", {}, marks=pytest.mark.xfail(raises=AssertionError)),
     ),
@@ -72,10 +66,12 @@ def test_hiding_pages_from_search_engines(
 @pytest.mark.parametrize(
     "view",
     [
+        "accessibility_statement",
         "cookies",
         "privacy",
         "terms",
         "security",
+        "training_mode",
     ],
 )
 def test_static_pages(
