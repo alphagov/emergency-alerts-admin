@@ -20,8 +20,8 @@ class Area:
         # `geographic_id` is the area's GSS Code / ONS ID
         self.geographic_id = data.get("geographic_id")
         self.name = data.get("name")
-        self.parent = data.get("parent")
-        self.geography_type = data.get("geography_type")
+        self.parent = data.get("parent_geography_id")
+        self.geography_type = data.get("geography_type_name")
         self.geometry_wkt = data.get("geometry_wkt")
 
         # Not returned from API but created with `from_wkt` method and used
@@ -30,6 +30,8 @@ class Area:
         self.estimated_area = data.get("estimated_area")
         self.estimated_area_with_bleed = data.get("estimated_area_with_bleed")
         self.bleed = data.get("bleed")
+        self.version_id = data.get("geography_version_id")
+        self.is_selectable = bool(data.get("is_selectable"))
 
     @cached_property
     def polygons(self):
@@ -112,13 +114,8 @@ class Area:
 
     def get_sub_areas(self):
         """Returns all sub areas for a parent"""
-        raw_areas = areas_api_client.get_areas_for_parent(self.geographic_id)
+        raw_areas = areas_api_client.get_areas_for_parent(self.version_id, self.id)
         return [Area(area_data) for area_data in raw_areas]
-
-    def is_grandparent(self):
-        """Returns whether or not an area is a grandparent,
-        i.e. it is the parent geography of an area that is also a parent geography"""
-        return areas_api_client.check_grandparent(self.id)
 
     @cached_property
     def is_electoral_ward(self):
@@ -126,7 +123,7 @@ class Area:
 
     @cached_property
     def parent_area(self):
-        return areas_api_client.get_area_by_geographic_id(self.parent)
+        return areas_api_client.get_area(self.parent)
 
 
 class Areas(ModelList):
@@ -137,7 +134,7 @@ class Areas(ModelList):
         """
         Return a list of Area objects for the given IDs/names.
         """
-        raw_areas = areas_api_client.get_areas_by_ids(area_ids, area_names)
+        raw_areas = areas_api_client.get_areas_by_ids(area_ids)
         return [Area(area_data) for area_data in raw_areas]
 
 
@@ -152,6 +149,7 @@ class BroadcastAreaLibrary(SerialisedModelCollection):
         self.name_singular = data.get("name_singular")
         # `examples` stores the hint text displayed for each library
         self.route = data.get("route")
+        self.version_id = data.get("version_id")
 
         super().__init__([])
 
@@ -159,7 +157,7 @@ class BroadcastAreaLibrary(SerialisedModelCollection):
     def is_group(self):
         """Returns whether or not the library has areas that are parents,
         i.e. their ID is the parent_geography_id of another area"""
-        return self.route in ["local_authorities"]
+        return self.route in ["local_authorities", "fire_region_nations"]
 
     @cached_property
     def examples(self):
@@ -169,7 +167,7 @@ class BroadcastAreaLibrary(SerialisedModelCollection):
         """
         Returns list of Area objects for library's areas
         """
-        raw_areas = areas_api_client.get_areas_for_library(self.route)
+        raw_areas = areas_api_client.get_areas_for_library(self.version_id)
         return [Area(area_data) for area_data in raw_areas]
 
 
@@ -178,18 +176,6 @@ class BroadcastAreaLibraries(ModelList):
 
     def client_method(self):
         libraries = areas_api_client.get_libraries()
-
-        # Hard-coded additional library element for coordinates as this isn't stored in DB
-        libraries.append(
-            {
-                "id": "coordinates",
-                "name": "Coordinates",
-                "name_singular": "Coordinates",
-                "examples": [],
-                "route": "coordinates",
-                "areas": [],
-            }
-        )
 
         return libraries
 
