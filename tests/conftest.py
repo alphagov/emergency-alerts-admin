@@ -23,6 +23,7 @@ with patch.object(AreasAPIClient, "get_libraries", return_value=[]):
     from tests.app.utils.test_broadcast import MockArea
 
 from . import (
+    MockBroadcastAreaLibrary,
     NotifyBeautifulSoup,
     TestClient,
     api_key_json,
@@ -2653,11 +2654,13 @@ def mock_get_count_of_phones(mocker):
 
 @pytest.fixture(scope="function")
 def mock_get_flood_warning_area_library(mocker):
-    library = mocker.Mock()
-    library.route = "flood_warning_areas"
-
+    library = MockBroadcastAreaLibrary(
+        id="flood_warning_areas",
+        name="Flood Warning Areas",
+        route="flood_warning_areas",
+    )
     return mocker.patch(
-        "app.main.views.broadcast_common.BroadcastAreaLibraries.get",
+        "app.models.areas.BroadcastAreaLibraries.get",
         return_value=library,
     )
 
@@ -2679,12 +2682,22 @@ def mock_get_libraries(mocker):
         "app.areas_api_client.get_libraries",
         return_value=[
             {
+                "id": "coordinates",
+                "name": "Coordinates",
+                "name_singular": "Coordinate area",
+                "examples": [],
+                "route": "coordinates",
+                "areas": [MockArea({"id": "coordinate-area-id", "name": "England", "parent": None})],
+                "version_id": "coordinates",
+            },
+            {
                 "id": "ctry19",
                 "name": "Countries",
                 "name_singular": "Country",
                 "examples": [],
                 "route": "countries",
                 "areas": [MockArea({"id": "E92000001", "name": "England", "parent": None})],
+                "version_id": "countries",
             },
             {
                 "id": "flood_warning_areas",
@@ -2693,6 +2706,7 @@ def mock_get_libraries(mocker):
                 "examples": [],
                 "route": "flood_warning_areas",
                 "areas": [],
+                "version_id": "flood_warning_areas",
             },
             {
                 "id": "wd25-lad25-ctyua25",
@@ -2701,6 +2715,16 @@ def mock_get_libraries(mocker):
                 "examples": [],
                 "route": "local_authorities",
                 "areas": [],
+                "version_id": "local_authorities",
+            },
+            {
+                "id": "police_force_areas",
+                "name": "Police forces in England and Wales",
+                "name_singular": "Police force in England and Wales",
+                "examples": [],
+                "route": "police_force_areas",
+                "areas": [],
+                "version_id": "police_force_areas",
             },
             {
                 "id": "postcodes",
@@ -2709,6 +2733,7 @@ def mock_get_libraries(mocker):
                 "examples": [],
                 "route": "postcodes",
                 "areas": [],
+                "version_id": "postcodes",
             },
             {
                 "id": "REPPIR_DEPZ_sites",
@@ -2717,6 +2742,7 @@ def mock_get_libraries(mocker):
                 "examples": [],
                 "route": "reppir_sites",
                 "areas": [],
+                "version_id": "reppir_sites",
             },
             {
                 "id": "test",
@@ -2725,6 +2751,7 @@ def mock_get_libraries(mocker):
                 "examples": [],
                 "route": "test",
                 "areas": [],
+                "version_id": "test",
             },
         ],
     )
@@ -2816,7 +2843,7 @@ def mock_get_area_by_geographic_id(mocker):
 
 @pytest.fixture(scope="function")
 def mock_get_areas_by_names(mocker):
-    return mocker.patch("app.areas_api_client.get_areas_by_names", return_value=[])
+    return mocker.patch("app.areas_api_client.get_local_authorities_by_names", return_value=[])
 
 
 @pytest.fixture(scope="function")
@@ -2885,18 +2912,13 @@ def mock_remove_area(mocker):
 
 
 @pytest.fixture(scope="function")
-def mock_check_grandparent(mocker):
-    return mocker.patch("app.areas_api_client.check_grandparent", return_value=True)
-
-
-@pytest.fixture(scope="function")
 def mock_add_areas_returns_error_for_invalid_input(mocker):
     return mocker.patch("app.areas_api_client.add_areas")
 
 
 @pytest.fixture(scope="function")
 def mock_get_areas_by_names_returns_error_for_invalid_input(mocker):
-    return mocker.patch("app.areas_api_client.get_areas_by_names")
+    return mocker.patch("app.areas_api_client.get_local_authorities_by_names")
 
 
 @pytest.fixture(scope="function")
