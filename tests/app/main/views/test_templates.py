@@ -1339,13 +1339,7 @@ def test_add_area_to_template(
         _follow_redirects=True,
     )
 
-    mock_add_areas.assert_called_once_with(
-        fake_uuid,
-        SERVICE_ONE_ID,
-        ["E92000001"],
-        "templates",
-        "countries",
-    )
+    mock_add_areas.assert_called_once_with(fake_uuid, SERVICE_ONE_ID, ["E92000001"], "templates", "countries")
 
 
 def test_remove_template_area(

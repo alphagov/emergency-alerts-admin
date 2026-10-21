@@ -1433,7 +1433,7 @@ def test_search_flood_warning_areas_page(
                 "id": "011FWCN2M",
                 "geographic_id": "011FWCN2M",
                 "name": "Cumbria coast at Maryport harbour",
-                "geography_type": "flood_warning_areas",
+                "geography_type_name": "flood_warning_areas",
             }
         ],
     )
@@ -1818,9 +1818,9 @@ def test_choose_library_page(
         return_value=mock_areas,
     )
     mocker.patch(
-        "app.models.areas.Area.from_geographic_id",
+        "app.models.areas.Area.from_id",
         side_effect=parent_areas.__getitem__,
-    )  # get parent area using geographic ID
+    )  # get parent area using ID
 
     area_ids = [area.id for area in mock_areas]
 
@@ -1955,7 +1955,7 @@ def test_suggested_area_has_correct_link(
     mock_get_library_example,
 ):
     mocker.patch(
-        "app.models.areas.Area.from_geographic_id",
+        "app.models.areas.Area.from_id",
         return_value=MockArea(
             {
                 "id": "E07000078",
@@ -2099,24 +2099,28 @@ def test_choose_area_page(
                 "geographic_id": "E92000001",
                 "name": "England",
                 "geography_type": "countries",
+                "is_selectable": True,
             },
             {
                 "id": "N92000002",
                 "geographic_id": "N92000002",
                 "name": "Northern Ireland",
                 "geography_type": "countries",
+                "is_selectable": True,
             },
             {
                 "id": "S92000003",
                 "geographic_id": "S92000003",
                 "name": "Scotland",
                 "geography_type": "countries",
+                "is_selectable": True,
             },
             {
                 "id": "W92000004",
                 "geographic_id": "W92000004",
                 "name": "Wales",
                 "geography_type": "countries",
+                "is_selectable": True,
             },
         ],
     )
@@ -2224,14 +2228,13 @@ def test_choose_sub_area_page_for_district_shows_checkboxes_for_wards(
     active_user_create_broadcasts_permission,
     mocker,
 ):
-    mocker.patch("app.areas_api_client.check_grandparent", return_value=False)
     mocker.patch(
         "app.areas_api_client.get_area",
         return_value={
             "id": "S12000033",
             "geographic_id": "S12000033",
             "name": "Aberdeen City",
-            "geography_type": "local_authorities",
+            "geography_type_name": "local_authorities",
         },
     )
     mocker.patch(
@@ -2243,6 +2246,7 @@ def test_choose_sub_area_page_for_district_shows_checkboxes_for_wards(
                 "name": "Airyhall/Broomhill/Garthdee",
                 "parent": "S12000033",
                 "geography_type": "local_authorities",
+                "is_selectable": True,
             },
             {
                 "id": "S13002836",
@@ -2250,6 +2254,7 @@ def test_choose_sub_area_page_for_district_shows_checkboxes_for_wards(
                 "name": "Bridge of Don",
                 "parent": "S12000033",
                 "geography_type": "local_authorities",
+                "is_selectable": True,
             },
             {
                 "id": "S13002835",
@@ -2257,6 +2262,7 @@ def test_choose_sub_area_page_for_district_shows_checkboxes_for_wards(
                 "name": "Dyce/Bucksburn/Danestone",
                 "parent": "S12000033",
                 "geography_type": "local_authorities",
+                "is_selectable": True,
             },
             {
                 "id": "S13002837",
@@ -2264,6 +2270,7 @@ def test_choose_sub_area_page_for_district_shows_checkboxes_for_wards(
                 "name": "George Street/Harbour",
                 "parent": "S12000033",
                 "geography_type": "local_authorities",
+                "is_selectable": True,
             },
             {
                 "id": "S13002838",
@@ -2271,6 +2278,7 @@ def test_choose_sub_area_page_for_district_shows_checkboxes_for_wards(
                 "name": "Hazlehead/Queens Cross",
                 "parent": "S12000033",
                 "geography_type": "local_authorities",
+                "is_selectable": True,
             },
             {
                 "id": "S13002839",
@@ -2278,6 +2286,7 @@ def test_choose_sub_area_page_for_district_shows_checkboxes_for_wards(
                 "name": "Kincorth/Nigg/Cove",
                 "parent": "S12000033",
                 "geography_type": "local_authorities",
+                "is_selectable": True,
             },
             {
                 "id": "S13002840",
@@ -2285,6 +2294,7 @@ def test_choose_sub_area_page_for_district_shows_checkboxes_for_wards(
                 "name": "Kingswells/Sheddocksley/Summerhill",
                 "parent": "S12000033",
                 "geography_type": "local_authorities",
+                "is_selectable": True,
             },
             {
                 "id": "S13002841",
@@ -2292,6 +2302,7 @@ def test_choose_sub_area_page_for_district_shows_checkboxes_for_wards(
                 "name": "Lower Deeside",
                 "parent": "S12000033",
                 "geography_type": "local_authorities",
+                "is_selectable": True,
             },
             {
                 "id": "S13002842",
@@ -2299,6 +2310,7 @@ def test_choose_sub_area_page_for_district_shows_checkboxes_for_wards(
                 "name": "Northfield/Mastrick North",
                 "parent": "S12000033",
                 "geography_type": "local_authorities",
+                "is_selectable": True,
             },
             {
                 "id": "S13002843",
@@ -2306,6 +2318,7 @@ def test_choose_sub_area_page_for_district_shows_checkboxes_for_wards(
                 "name": "Tillydrone/Seaton/Old Aberdeen",
                 "parent": "S12000033",
                 "geography_type": "local_authorities",
+                "is_selectable": True,
             },
             {
                 "id": "S13002846",
@@ -2313,6 +2326,7 @@ def test_choose_sub_area_page_for_district_shows_checkboxes_for_wards(
                 "name": "Torry/Ferryhill",
                 "parent": "S12000033",
                 "geography_type": "local_authorities",
+                "is_selectable": True,
             },
         ],
     )
@@ -2380,7 +2394,6 @@ def test_choose_sub_area_page_for_district_has_back_link(
     expected_back_link_extra_kwargs,
     mocker,
     mock_get_areas_for_parent,
-    mock_check_grandparent,
 ):
     service_one["permissions"] += ["broadcast"]
     client_request.login(active_user_create_broadcasts_permission)
@@ -2566,7 +2579,6 @@ def test_choose_sub_area_page_for_county_shows_links_for_districts(
     mock_get_draft_broadcast_message,
     fake_uuid,
     active_user_create_broadcasts_permission,
-    mock_check_grandparent,
     mock_get_libraries,
     mocker,
 ):
@@ -2589,6 +2601,7 @@ def test_choose_sub_area_page_for_county_shows_links_for_districts(
                 "name": "Ashford",
                 "parent": "E10000016",
                 "geography_type": "local_authorities",
+                "is_selectable": False,
             },
             {
                 "id": "E07000106",
@@ -2596,6 +2609,7 @@ def test_choose_sub_area_page_for_county_shows_links_for_districts(
                 "name": "Canterbury",
                 "parent": "E10000016",
                 "geography_type": "local_authorities",
+                "is_selectable": False,
             },
             {
                 "id": "E07000107",
@@ -2603,6 +2617,7 @@ def test_choose_sub_area_page_for_county_shows_links_for_districts(
                 "name": "Dartford",
                 "parent": "E10000016",
                 "geography_type": "local_authorities",
+                "is_selectable": False,
             },
             {
                 "id": "E07000108",
@@ -2610,6 +2625,7 @@ def test_choose_sub_area_page_for_county_shows_links_for_districts(
                 "name": "Dover",
                 "parent": "E10000016",
                 "geography_type": "local_authorities",
+                "is_selectable": False,
             },
             {
                 "id": "E07000109",
@@ -2617,6 +2633,7 @@ def test_choose_sub_area_page_for_county_shows_links_for_districts(
                 "name": "Gravesham",
                 "parent": "E10000016",
                 "geography_type": "local_authorities",
+                "is_selectable": False,
             },
             {
                 "id": "E07000110",
@@ -2624,6 +2641,7 @@ def test_choose_sub_area_page_for_county_shows_links_for_districts(
                 "name": "Maidstone",
                 "parent": "E10000016",
                 "geography_type": "local_authorities",
+                "is_selectable": False,
             },
             {
                 "id": "E07000111",
@@ -2631,6 +2649,7 @@ def test_choose_sub_area_page_for_county_shows_links_for_districts(
                 "name": "Sevenoaks",
                 "parent": "E10000016",
                 "geography_type": "local_authorities",
+                "is_selectable": False,
             },
             {
                 "id": "E07000112",
@@ -2638,6 +2657,7 @@ def test_choose_sub_area_page_for_county_shows_links_for_districts(
                 "name": "Folkestone and Hythe",
                 "parent": "E10000016",
                 "geography_type": "local_authorities",
+                "is_selectable": False,
             },
             {
                 "id": "E07000113",
@@ -2645,6 +2665,7 @@ def test_choose_sub_area_page_for_county_shows_links_for_districts(
                 "name": "Swale",
                 "parent": "E10000016",
                 "geography_type": "local_authorities",
+                "is_selectable": False,
             },
             {
                 "id": "E07000114",
@@ -2652,6 +2673,7 @@ def test_choose_sub_area_page_for_county_shows_links_for_districts(
                 "name": "Thanet",
                 "parent": "E10000016",
                 "geography_type": "local_authorities",
+                "is_selectable": False,
             },
             {
                 "id": "E07000115",
@@ -2659,6 +2681,7 @@ def test_choose_sub_area_page_for_county_shows_links_for_districts(
                 "name": "Tonbridge and Malling",
                 "parent": "E10000016",
                 "geography_type": "local_authorities",
+                "is_selectable": False,
             },
             {
                 "id": "E07000116",
@@ -2666,6 +2689,7 @@ def test_choose_sub_area_page_for_county_shows_links_for_districts(
                 "name": "Tunbridge Wells",
                 "parent": "E10000016",
                 "geography_type": "local_authorities",
+                "is_selectable": False,
             },
         ],
     )
@@ -2793,13 +2817,13 @@ def test_add_flood_warning_area(
         {
             "id": "011FWCN2M",
             "name": "Cumbria coast at Maryport harbour",
-            "geography_type": "flood_warning_areas",
+            "geography_type_name": "flood_warning_areas",
             "geographic_id": "011FWCN2M",
         }
     ]
     mocker.patch(
-        "app.areas_api_client.get_areas_by_names",
-        return_value=areas,
+        "app.areas_api_client.get_flood_warning_areas_by_ta_codes",
+        return_value=["011FWCN2M"],
     )
     mocker.patch(
         "app.areas_api_client.get_areas_by_ids",
@@ -2872,13 +2896,7 @@ def test_add_flood_warning_area(
     ]
 
     assert mock_get_broadcast_message.call_count == 2
-    mock_add_areas.assert_called_once_with(
-        fake_uuid,
-        SERVICE_ONE_ID,
-        ["011FWCN2M"],
-        "broadcast",
-        "flood_warning_areas",
-    )
+    mock_add_areas.assert_called_once_with(fake_uuid, SERVICE_ONE_ID, ["011FWCN2M"], "broadcast", "flood_warning_areas")
 
 
 @pytest.mark.parametrize(
@@ -2906,7 +2924,7 @@ def test_add_flood_warning_areas_in_bulk_with_delimiters(
         {
             "id": "011FWBWH",
             "name": "Whitehaven Sea Lock failure, town centre and North Shore Rd",
-            "geography_type": "flood_warning_areas",
+            "geography_type_name": "flood_warning_areas",
             "geographic_id": "011FWBWH",
         },
         {
@@ -2914,20 +2932,20 @@ def test_add_flood_warning_areas_in_bulk_with_delimiters(
             "name": (
                 "Cumbrian coastline from Gretna to Silloth including Port Carlisle, " "Skinburness and Rockcliffe"
             ),
-            "geography_type": "flood_warning_areas",
+            "geography_type_name": "flood_warning_areas",
             "geographic_id": "011FWCN1A",
         },
         {
             "id": "011FWCN1B",
             "name": ("Cumbrian coastline from Gretna to Silloth, between Longtown and " "Skinburness"),
-            "geography_type": "flood_warning_areas",
+            "geography_type_name": "flood_warning_areas",
             "geographic_id": "011FWCN1B",
         },
     ]
 
     mocker.patch(
-        "app.areas_api_client.get_areas_by_names",
-        return_value=areas,
+        "app.areas_api_client.get_flood_warning_areas_by_ta_codes",
+        return_value=["011FWBWH", "011FWCN1A", "011FWCN1B"],
     )
     mocker.patch(
         "app.areas_api_client.get_areas_by_ids",
@@ -3036,7 +3054,7 @@ def test_add_local_authority_areas_in_bulk_with_newline_delimiter(
     ]
 
     mocker.patch(
-        "app.areas_api_client.get_areas_by_names",
+        "app.areas_api_client.get_local_authorities_by_names",
         return_value=areas,
     )
     mocker.patch(
@@ -3107,7 +3125,7 @@ def test_add_local_authority_areas_in_bulk_with_newline_delimiter(
     ]
 
     assert mock_get_broadcast_message.call_count == 3
-    mock_add_areas.assert_called_once_with(fake_uuid, SERVICE_ONE_ID, areas, "broadcast", None)
+    mock_add_areas.assert_called_once_with(fake_uuid, SERVICE_ONE_ID, areas, "broadcast", "local_authorities")
 
 
 def test_remove_flood_warning_area(
@@ -3124,9 +3142,13 @@ def test_remove_flood_warning_area(
     area = {
         "id": "011FWCN2M",
         "name": "Cumbria coast at Maryport harbour",
-        "geography_type": "flood_warning_areas",
+        "geography_type_name": "flood_warning_areas",
         "geographic_id": "011FWCN2M",
     }
+    mocker.patch(
+        "app.areas_api_client.get_flood_warning_areas_by_ta_codes",
+        return_value=[area],
+    )
 
     mocker.patch(
         "app.areas_api_client.get_areas_by_ids",
@@ -3249,6 +3271,18 @@ def test_error_if_flood_warning_code_bulk_input_invalid(
     mock_add_areas_returns_error_for_invalid_input,
     mock_get_libraries,
 ):
+    mocker.patch(
+        "app.areas_api_client.get_flood_warning_areas_by_ta_codes",
+        return_value=[
+            {
+                "id": "area-id",
+                "geographic_id": "geographic-id",
+                "name": "Area name",
+                "parent": None,
+                "geography_type": "flood_warning_areas",
+            }
+        ],
+    )
     mock_add_areas_returns_error_for_invalid_input.side_effect = type(
         "MockAreaError",
         (Exception,),
@@ -4003,7 +4037,6 @@ def test_add_broadcast_sub_area_district_view(
     expected_area_ids,
     active_user_create_broadcasts_permission,
     mock_get_area,
-    mock_check_grandparent,
     mocker,
 ):
     service_one["permissions"] += ["broadcast"]
@@ -4062,7 +4095,6 @@ def test_add_broadcast_sub_area_county_view(
     active_user_create_broadcasts_permission,
     mock_add_areas,
     mock_get_areas_for_parent,
-    mock_check_grandparent,
     mocker,
 ):
     service_one["permissions"] += ["broadcast"]
@@ -7815,6 +7847,7 @@ def test_submit_for_approval_prod_mode(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_update_broadcast_message_status,
+    mock_get_broadcast_areas,
 ):
     mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1000000)
 
@@ -7877,6 +7910,7 @@ def test_submit_for_approval_non_prod_mode(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_update_broadcast_message_status,
+    mock_get_broadcast_areas,
 ):
     mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1000000)
 
@@ -7925,6 +7959,7 @@ def test_submit_for_approval_train_mode(
     mock_get_broadcast_returned_for_edit_reasons,
     mock_get_latest_edit_reason,
     mock_update_broadcast_message_status,
+    mock_get_broadcast_areas,
 ):
     mocker.patch("app.broadcast_message_api_client.get_count_of_phones", return_value=1000000)
 
