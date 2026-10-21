@@ -30,13 +30,13 @@
 
     &--training {
       background: govuk-shade(govuk-colour('black', $variant: 'tint-95'), 7%);
-      color: govuk-colour('black', $variant: 'tint-15');
+      color: govuk-colour('black', $variant: 'tint-25');
       box-shadow: 0 -3px 0 0 govuk-shade(govuk-colour('black', $variant: 'tint-95'), 7%);
     }
 
     &--suspended {
       background: govuk-shade(govuk-colour('black', $variant: 'tint-95'), 7%);
-      color: govuk-colour('black', $variant: 'tint-15');
+      color: govuk-colour('black', $variant: 'tint-25');
       box-shadow: 0 -3px 0 0 govuk-shade(govuk-colour('black', $variant: 'tint-95'), 7%);
     }
 
