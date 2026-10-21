@@ -28,8 +28,10 @@
 // </nav>
 //
 
+@use "sass:math";
+
 .breadcrumbs {
-  @include govuk-font(16, $line-height: (25 / 16));
+  @include govuk-font(16, $line-height: math.div(25, 16));
 
   padding: govuk-spacing(2) 0;
   list-style: none;
@@ -48,7 +50,7 @@
     display: inline-block;
 
     margin: 0;
-    padding: 0 (govuk-spacing(6) / 4) 0 (11px + govuk-spacing(6) / 4);
+    padding: 0 (govuk-spacing(6) * 0.25) 0 (11px + govuk-spacing(6) * 0.25);
 
     background-image: file-url('separator.png');
     background-repeat: no-repeat;

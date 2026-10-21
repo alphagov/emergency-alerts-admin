@@ -31,7 +31,7 @@ $govuk-checkboxes-size: 40px;
 
     $circle-diameter: 39px;
     $border-thickness: 4px;
-    $border-indent: ($circle-diameter / 2) - ($border-thickness / 2);
+    $border-indent: ($circle-diameter * 0.5) - ($border-thickness * 0.5);
     $govuk-border-colour: $govuk-border-colour;
 
     float: none;
@@ -71,13 +71,13 @@ $govuk-checkboxes-size: 40px;
 .govuk-form-group--nested {
 
   $border-thickness: $govuk-touch-target-size - $govuk-checkboxes-size;
-  $border-indent: $govuk-touch-target-size / 2;
+  $border-indent: $govuk-touch-target-size * 0.5;
 
   position: relative;
 
   // To equalise the spacing between the line and the top/bottom of
   // the radio
-  margin-top: govuk-spacing(1) + ($border-thickness / 2);
+  margin-top: govuk-spacing(1) + ($border-thickness * 0.5);
   margin-bottom: govuk-spacing(1) * -1;
   padding-left: govuk-spacing(2) + 2;
 

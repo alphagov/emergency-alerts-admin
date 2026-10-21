@@ -59,7 +59,7 @@
 
     $circle-diameter: 39px;
     $border-thickness: 4px;
-    $border-indent: ($circle-diameter / 2) - ($border-thickness / 2);
+    $border-indent: ($circle-diameter * 0.5) - ($border-thickness * 0.5);
     $govuk-border-colour: $govuk-border-colour;
 
     float: none;
