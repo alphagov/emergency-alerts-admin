@@ -584,6 +584,7 @@ class MockBroadcastAreaLibrary:
         self.examples = examples if examples is not None else ["Example area"]
         self.route = route
         self.areas = areas if areas is not None else [MockArea({"id": "area-id", "name": "Example area"})]
+        self.version_id = id
 
     @property
     def is_group(self):
