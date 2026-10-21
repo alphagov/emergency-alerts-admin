@@ -168,7 +168,7 @@ def choose_area(
         url = ".search_postcodes"
         return redirect_for_library_page(url, service_id, message_type, message_id, template_folder_id)
 
-    if library_slug == "Flood_Warning_Target_Areas":
+    if library_slug == "flood_warning_areas":
         url = ".search_flood_warning_areas"
         return redirect_for_library_page(url, service_id, message_type, message_id, template_folder_id)
 
