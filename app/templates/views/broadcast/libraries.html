@@ -24,7 +24,7 @@
 
   {% if message %}
     {% for area in message.ancestor_areas %}
-      <a class="govuk-heading-m govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_sub_area', service_id=current_service.id, message_id=message.id, library_slug=area.geography_type, area_slug=area.id or None, message_type=message_type, template_folder_id=template_folder_id or None) }}">{{ area.name }}</a>
+      <a class="govuk-heading-m govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_sub_area', service_id=current_service.id, message_id=message.id, library_slug=area.geography_type, area_slug=area.id, message_type=message_type, template_folder_id=template_folder_id or None) }}">{{ area.name }}</a>
       {% if loop.last %}
         <div class="keyline-block"></div>
       {% endif %}
