@@ -73,7 +73,7 @@ td {
 
   th,
   .table-field-index {
-    background: govuk-colour("light-grey");
+    background: govuk-colour('black', $variant: 'tint-95');
     font-weight: bold;
     text-align: center;
   }
@@ -101,7 +101,7 @@ td {
     z-index: 1000;
 
     .table-field-heading-first {
-      background: govuk-colour("light-grey");
+      background: govuk-colour('black', $variant: 'tint-95');
     }
   }
 }

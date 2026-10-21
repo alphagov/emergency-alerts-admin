@@ -1,7 +1,7 @@
 // Overrides for certain GOV.UK Frontend styles to make its components match this application's design
 
-$notify-secondary-button-colour: govuk-shade(govuk-colour("light-grey"), 7%);
-$notify-secondary-button-hover-colour: govuk-shade(govuk-colour("light-grey"), 18%);
+$notify-secondary-button-colour: govuk-shade(govuk-colour('black', $variant: 'tint-95'), 7%);
+$notify-secondary-button-hover-colour: govuk-shade(govuk-colour('black', $variant: 'tint-95'), 18%);
 
 // Additional padding-bottom override, following the GOV.UK Frontend spacing scale:
 // https://design-system.service.gov.uk/styles/spacing/#the-responsive-spacing-scale

@@ -73,7 +73,7 @@
 .banner-tour {
 
   @extend %banner;
-  background: govuk-colour("light-grey");
+  background: govuk-colour('black', $variant: 'tint-95');
   color: govuk-colour("black");
   margin-top: 10px;
   margin-bottom: 0;
