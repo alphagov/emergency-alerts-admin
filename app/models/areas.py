@@ -33,34 +33,9 @@ class Area:
         self.version_id = data.get("geography_version_id")
         self.is_selectable = bool(data.get("is_selectable"))
 
-    @cached_property
-    def polygons(self):
-        if self.geography_type in ["coordinates", "postcodes"]:
-            # No geometry_wkt returned as not predefined
-            polygon_wkt = areas_api_client.get_polygons(self.id)
-        else:
-            polygon_wkt = self.geometry_wkt
-
-        if not polygon_wkt:
-            return None
-
-        geom = wkt.loads(polygon_wkt)
-        geometries = geom.geoms if geom.geom_type == "MultiPolygon" else [geom]
-
-        return Polygons(
-            polygons=[
-                [[coordinate[0], coordinate[1]] for coordinate in polygon.exterior.coords] for polygon in geometries
-            ]
-        )
-
     @classmethod
     def from_id(cls, id):
         return cls(areas_api_client.get_area(id))
-
-    @classmethod
-    def from_geographic_id(cls, geographic_id):
-        """Returns an Area object, from geographic_id"""
-        return cls(areas_api_client.get_area_by_geographic_id(geographic_id))
 
     @classmethod
     def from_wkt(cls, polygon_wkt, name=None):
