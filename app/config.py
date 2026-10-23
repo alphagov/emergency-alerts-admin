@@ -38,8 +38,6 @@ class Config(object):
     ADMIN_EXTERNAL_URL = os.environ.get("ADMIN_EXTERNAL_URL", "http://localhost:6012")
     ZENDESK_API_KEY = os.environ.get("ZENDESK_API_KEY")
 
-    GEOJSON_BUCKET = os.environ.get("POSTCODE_BUCKET_NAME")
-
     TEMPLATE_PREVIEW_API_HOST = os.environ.get("TEMPLATE_PREVIEW_API_HOST", "http://localhost:6013")
     TEMPLATE_PREVIEW_API_KEY = os.environ.get("TEMPLATE_PREVIEW_API_KEY", "my-secret-key")
 

@@ -17,7 +17,6 @@ from flask import (
 from notifications_python_client.errors import HTTPError
 
 from app import current_service, current_service_status
-from app.broadcast_areas.models import CustomBroadcastAreas
 from app.config import Config
 from app.formatters import format_estimated_phone_count, format_seconds_duration_as_time
 from app.main import main
@@ -43,7 +42,6 @@ from app.utils.broadcast import (
     format_areas_list_with_parent,
     generate_geojson,
     generate_unsigned_xml,
-    generate_wkt,
     get_alert_redirect_url,
     get_changed_alert_form_data,
     get_changed_extra_content_form_data,
@@ -525,22 +523,12 @@ def broadcast(service_id, template_id):
         if template.areas:
             # As Template area already exists, created broadcast_message using this
             # and reference and content if they have been set also
-            broadcast_message = (
-                BroadcastMessage.create_from_custom_area(
-                    service_id=service_id,
-                    template_id=template_id,
-                    areas=template.areas,
-                    content=template.content,
-                    reference=template.reference,
-                )
-                if type(template.areas) is CustomBroadcastAreas
-                else BroadcastMessage.create_from_area(
-                    service_id=service_id,
-                    template_id=template_id,
-                    area_ids=template.area_ids,
-                    content=template.content,
-                    reference=template.reference,
-                )
+            broadcast_message = BroadcastMessage.create_from_area(
+                service_id=service_id,
+                template_id=template_id,
+                area_ids=template.area_ids,
+                content=template.content,
+                reference=template.reference,
             )
         else:
             # Only reference and content have been set for Template,
@@ -582,7 +570,6 @@ def choose_broadcast_duration(service_id, broadcast_message_id):
         broadcast_message_id,
         service_id=current_service.id,
     )
-    is_custom_broadcast = type(broadcast_message.areas) is CustomBroadcastAreas
     form = ChooseDurationForm(channel=current_service.broadcast_channel, duration=broadcast_message.broadcast_duration)
 
     if form.validate_on_submit():
@@ -602,7 +589,6 @@ def choose_broadcast_duration(service_id, broadcast_message_id):
         form=form,
         broadcast_message=broadcast_message,
         back_link=request.referrer,
-        custom_broadcast=is_custom_broadcast,
     )
 
 
@@ -617,13 +603,11 @@ def preview_broadcast_message(service_id, broadcast_message_id):
         broadcast_message_id,
         service_id=current_service.id,
     )
-    is_custom_broadcast = type(broadcast_message.areas) is CustomBroadcastAreas
-    areas = format_areas_list(broadcast_message.areas)
+    areas = format_areas_list(broadcast_message.area_names)
 
-    if is_custom_broadcast and not broadcast_message.areas.is_valid_area():
-        # We only validate areas for CustomBroadcastAreas; pre-defined areas are assumed valid
+    if not broadcast_message.has_valid_area:
         errors = [{"text": INVALID_AREA_ERROR_TEXT}]
-        return render_preview_alert_page(broadcast_message, is_custom_broadcast, areas, errors)
+        return render_preview_alert_page(broadcast_message, areas, errors)
 
     if request.method == "POST":
 
@@ -631,10 +615,10 @@ def preview_broadcast_message(service_id, broadcast_message_id):
             broadcast_message.check_can_update_status("pending-approval")
         except HTTPError as e:
             flash(e.message)
-            return render_preview_alert_page(broadcast_message, is_custom_broadcast, areas)
+            return render_preview_alert_page(broadcast_message, areas)
 
         if errors := check_for_missing_fields(broadcast_message):
-            return render_preview_alert_page(broadcast_message, is_custom_broadcast, areas, errors)
+            return render_preview_alert_page(broadcast_message, areas, errors)
 
         # If current_service_status isnt set, we are in production mode
         if not current_service_status:
@@ -648,7 +632,6 @@ def preview_broadcast_message(service_id, broadcast_message_id):
                 )
                 return render_preview_alert_page(
                     broadcast_message,
-                    is_custom_broadcast,
                     areas,
                     show_approval_button=False,
                 )
@@ -664,8 +647,7 @@ def preview_broadcast_message(service_id, broadcast_message_id):
                 broadcast_message_id=broadcast_message.id,
             )
         )
-
-    return render_preview_alert_page(broadcast_message, is_custom_broadcast, areas)
+    return render_preview_alert_page(broadcast_message, areas)
 
 
 @main.route("/services/<uuid:service_id>/broadcast/<uuid:broadcast_message_id>/submit", methods=["POST"])
@@ -676,6 +658,12 @@ def submit_broadcast_message(service_id, broadcast_message_id):
         broadcast_message_id,
         service_id=current_service.id,
     )
+
+    broadcast_message.areas
+    if not broadcast_message.has_valid_area:
+        errors = [{"text": INVALID_AREA_ERROR_TEXT}]
+        return render_current_alert_page(broadcast_message, hide_stop_link=True, errors=errors)
+
     try:
         broadcast_message.check_can_update_status("pending-approval")
     except HTTPError as e:
@@ -683,11 +671,6 @@ def submit_broadcast_message(service_id, broadcast_message_id):
         return render_current_alert_page(broadcast_message, hide_stop_link=True)
 
     if errors := check_for_missing_fields(broadcast_message):
-        return render_current_alert_page(broadcast_message, hide_stop_link=True, errors=errors)
-
-    if type(broadcast_message.areas) is CustomBroadcastAreas and not broadcast_message.areas.is_valid_area():
-        # We only validate areas for CustomBroadcastAreas; pre-defined areas are assumed valid
-        errors = [{"text": INVALID_AREA_ERROR_TEXT}]
         return render_current_alert_page(broadcast_message, hide_stop_link=True, errors=errors)
 
     # If current_service_status isn't set we are in production mode
@@ -753,6 +736,11 @@ def view_broadcast(service_id, broadcast_message_id):
                 )
             )
 
+    broadcast_message.areas
+    if not broadcast_message.has_valid_area:
+        errors = [{"text": INVALID_AREA_ERROR_TEXT}]
+        return render_current_alert_page(broadcast_message, hide_stop_link=True, errors=errors)
+
     return render_current_alert_page(broadcast_message, back_link_url=_get_back_link_from_view_broadcast_endpoint())
 
 
@@ -771,14 +759,13 @@ def approve_broadcast_message(service_id, broadcast_message_id):
         max_phones=broadcast_message.count_of_phones,
     )
 
-    is_custom_broadcast = type(broadcast_message.areas) is CustomBroadcastAreas
-    areas = format_areas_list(broadcast_message.areas)
+    areas = format_areas_list(broadcast_message.area_names)
 
     try:
         broadcast_message.check_can_update_status("broadcasting")
     except HTTPError as e:
         flash(e.message)
-        return render_preview_alert_page(broadcast_message, is_custom_broadcast, areas)
+        return render_preview_alert_page(broadcast_message, areas)
 
     if broadcast_message.status != "pending-approval":
         return redirect(
@@ -1182,8 +1169,8 @@ def alert_summary_email(service_id, broadcast_message_id):
             alert_summary=form.alert_summary.data,
             phone_estimate=phone_estimate,
             duration=duration_display,
-            wkt=generate_wkt(broadcast_message),
-            areas=format_areas_list_with_parent(broadcast_message.areas),
+            wkt=broadcast_message.simple_polygons.as_wkt,
+            areas=format_areas_list_with_parent(broadcast_message.area_names),
         )
 
         return render_current_alert_page(broadcast_message)

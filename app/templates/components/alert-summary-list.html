@@ -4,13 +4,13 @@
 {% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
 {% from "components/electoral-ward-descriptor.html" import electoral_ward_descriptor %}
 
-{% macro alertSummaryList(is_editable, current_service, broadcast_message, areas, bleed_estimated_area, count_of_phones, is_custom_broadcast) %}
+{% macro alertSummaryList(is_editable, current_service, broadcast_message, areas, bleed_estimated_area, count_of_phones) %}
 
     <dialog id="enlarged-map-dialog" tabindex="-1" aria-modal="true" class="enlarged-map-dialog"
         role="dialog" aria-labelledby="enlarged-map-dialog-message">
         <div class="enlarged-map-dialog-content">
             <h2 id="enlarged-map-dialog-message" class="govuk-visually-hidden screenreader-content" aria-live="assertive">Larger version of the map.</h2>
-            {{enlarged_map(estimated_area, bleed_estimated_area, count_of_phones, is_custom_broadcast, label)}}
+            {{enlarged_map(estimated_area, bleed_estimated_area, count_of_phones, label)}}
             {{ govukButton({
                 "text": "Close enlarged map",
                 "classes": "govuk-button",
@@ -27,20 +27,28 @@
         {% endif %}
     {% endif %}
 
-    {% set map_html = map(estimated_area, bleed_estimated_area, count_of_phones, is_custom_broadcast, label)%}
+    {% set map_html = map(estimated_area, bleed_estimated_area, count_of_phones, label)%}
 
     {% set areas_html %}
         <ul class="area-list">
-        {% for area in broadcast_message.areas %}
-            <li class="area-list-item area-list-item--unremoveable">
-              {{ electoral_ward_descriptor(area) }}
-            </li>
-        {% endfor %}
-        </ul>
+        {% if broadcast_message.areas %}
+            {% for area in broadcast_message.areas %}
+                <li class="area-list-item area-list-item--unremoveable">
+                {{ electoral_ward_descriptor(area) }}
+                </li>
+            {% endfor %}
+            </ul>
+        {% elif broadcast_message.simple_polygons %}
+            {% for name in areas %}
+                <li class="area-list-item area-list-item--unremoveable">
+                {{name}}
+                </li>
+            {% endfor %}
+        {% endif %}
     {% endset %}
 
     {% set conditional_areas %}
-        {% if broadcast_message.areas %}
+        {% if broadcast_message.simple_polygons %}
             {{( areas_html | safe ~ " " ~ map_html ) | safe}}
             {{ govukButton({
                 "text": "View larger map",
@@ -72,7 +80,7 @@
         {% endif %}
     {% endset %}
 
-    {% if broadcast_message.status in ["draft", "returned"] and is_editable %}
+    {% if broadcast_message.status in ["draft", "returned"] and is_editable and broadcast_message.has_valid_area %}
         {% set display_action = True %}
         {% set conditional_action_text %}
             Change
@@ -101,11 +109,7 @@
 
     {% set conditional_area_action_link %}
         {% if broadcast_message.areas %}
-            {% if broadcast_message.has_flood_warning_target_areas %}
-                {{url_for('.search_flood_warning_areas', service_id=current_service.id, message_id=broadcast_message.id, message_type="broadcast")}}
-            {% else %}
-                {{url_for('.preview_areas', service_id=current_service.id, message_id=broadcast_message.id, message_type="broadcast")}}
-            {% endif %}
+            {{url_for('.preview_areas', service_id=current_service.id, message_id=broadcast_message.id, message_type="broadcast")}}
         {% else %}
             {{url_for(
                 ".choose_library",
