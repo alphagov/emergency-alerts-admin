@@ -1,8 +1,9 @@
 // sass-lint:disable no-important
-// set asset URL root to match that of application
-$govuk-assets-path: "/static/";
 
-@import "govuk-frontend/dist/govuk/settings/index";
+@use "govuk-frontend/dist/govuk/settings/index" as * with (
+  // set asset URL root to match that of application
+  $govuk-assets-path: "/static/"
+);
 @import "govuk-frontend/dist/govuk/tools/index";
 @import "govuk-frontend/dist/govuk/helpers/index";
 
