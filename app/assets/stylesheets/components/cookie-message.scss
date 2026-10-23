@@ -3,7 +3,7 @@
 
 // component uses .govuk-body and .govuk-button classes from govuk-frontend
 @import 'govuk-frontend/dist/govuk/core/typography';
-@import 'govuk-frontend/dist/govuk/components/button/_button';
+@import 'govuk-frontend/dist/govuk/components/button';
 
 .notify-cookie-banner__wrapper {
   @include govuk-responsive-padding(4, "top");
