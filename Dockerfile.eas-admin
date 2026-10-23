@@ -11,6 +11,7 @@ ARG BASE_IMAGE=${ECS_ACCOUNT_NUMBER}.dkr.ecr.${AWS_REGION}.amazonaws.com/${RESOU
 FROM ${BASE_IMAGE} AS build
 
 ARG APP_VERSION=unknown
+ARG PIP_VERSION=26.2.2
 
 ENV HTTPS_PROXY=${HTTPS_PROXY}
 ENV NO_PROXY=${NO_PROXY}
@@ -28,6 +29,7 @@ COPY --chown=easuser:easuser . $DIR_ADMIN
 
 # Bootstrap venv and emergency-alerts-admin
 RUN python$PYTHON_VERSION -m venv $VENV_ADMIN
+RUN $VENV_ADMIN/bin/python -m pip install --upgrade pip==${PIP_VERSION}
 RUN cd $DIR_ADMIN && \
     . $VENV_ADMIN/bin/activate && \
     APP_VERSION=${APP_VERSION} make bootstrap
