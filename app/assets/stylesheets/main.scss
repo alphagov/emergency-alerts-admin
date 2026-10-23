@@ -1,18 +1,16 @@
-// Path to assets for use with file-url()
-$path: "/static/images/";
 
 // Dependencies from GOVU.UK Frontend Toolkit, rewritten for this application
-@import "./url-helpers";
+@use "./url-helpers" as * with(
+    // Path to assets for use with file-url()
+    $path: "/static/images/"
+);
 
 // Specific to this application, needs to go at the top of the cascade
-@import "./reset";
-@import "./globals";
+@use "./reset" as *;
+@use "./globals" as *;
 
 // Dependencies from GOV.UK Frontend, packaged to be specific to this application
-$govuk-new-link-styles: true;
-$govuk-new-organisation-colours: true;
-$govuk-new-typography-scale: true;
-@import "./govuk-frontend/all";
+@use "./govuk-frontend/all" as *;
 
 // Dependencies from GOV.UK Elements, moved here until all components are migrated
 // to GOVUK Frontend, and so no longer need these styles
