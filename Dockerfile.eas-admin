@@ -11,6 +11,7 @@ ARG BASE_IMAGE=${ECS_ACCOUNT_NUMBER}.dkr.ecr.${AWS_REGION}.amazonaws.com/${RESOU
 FROM ${BASE_IMAGE} AS build
 
 ARG APP_VERSION=unknown
+ARG NODE_VERSION=22.23.4
 ARG PIP_VERSION=26.2.2
 ARG PIP_SHA256=fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70
 
@@ -23,7 +24,7 @@ ENV BASH_ENV /home/easuser/.bash_env
 RUN touch "${BASH_ENV}"
 RUN echo '. "${BASH_ENV}"' >> ~/.bashrc
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | PROFILE="${BASH_ENV}" bash
-RUN nvm install v22.21.1 && nvm use v22.21.1
+RUN nvm install "v${NODE_VERSION}" && nvm use "v${NODE_VERSION}"
 
 # Create root directory and copy repo
 COPY --chown=easuser:easuser . $DIR_ADMIN
