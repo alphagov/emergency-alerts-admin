@@ -3,11 +3,11 @@
 
 @mixin destructive-link-style-default {
   &:link {
-    color: $govuk-error-colour;
+    color: govuk-functional-colour("error");
   }
 
   &:visited {
-    color: $govuk-link-visited-colour;
+    color: govuk-functional-colour("link-visited");
   }
 
   &:hover {
@@ -15,23 +15,23 @@
   }
 
   &:active {
-    color: $govuk-link-active-colour;
+    color: govuk-functional-colour("link-active");
   }
 
   // When focussed, the text colour needs to be darker to ensure that colour
   // contrast is still acceptable
   &:focus {
-    color: $govuk-focus-text-colour;
+    color: govuk-functional-colour("focus-text");
   }
 }
 
 @mixin destructive-link-style-no-visited-state {
   &:link {
-    color: $govuk-error-colour;
+    color: govuk-functional-colour("error");
   }
 
   &:visited {
-    color: $govuk-error-colour;
+    color: govuk-functional-colour("error");
   }
 
   &:hover {
@@ -39,13 +39,13 @@
   }
 
   &:active {
-    color: $govuk-link-active-colour;
+    color: govuk-functional-colour("link-active");
   }
 
   // When focussed, the text colour needs to be darker to ensure that colour
   // contrast is still acceptable
   &:focus {
-    color: $govuk-focus-text-colour;
+    color: govuk-functional-colour("focus-text");
   }
 }
 

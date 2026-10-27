@@ -97,7 +97,7 @@
 
 .notify-cookie-banner__hide-button {
   @include govuk-font($size: 19);
-  color: $govuk-link-colour;
+  color: govuk-functional-colour("link");
   outline: 0;
   border: 0;
   background: none;
