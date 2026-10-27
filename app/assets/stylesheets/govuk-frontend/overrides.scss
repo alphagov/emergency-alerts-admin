@@ -101,3 +101,7 @@ $notify-secondary-button-hover-colour: govuk-shade(govuk-colour('black', $varian
 .govuk-summary-list__actions, .govuk-summary-list__key {
   vertical-align: top;
 }
+
+.govuk-service-navigation__item.sign-out-link {
+  margin-left: auto;
+}
