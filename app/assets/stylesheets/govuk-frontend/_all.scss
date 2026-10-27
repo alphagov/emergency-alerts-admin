@@ -2,39 +2,39 @@
 // Included to allow us to only include the components we need
 // All imports come from node_modules/govuk-frontend
 
-// set asset URL root to match that of application
-$govuk-assets-path: "/static/";
-
-@import "govuk-frontend/dist/govuk/base";
-@import "govuk-frontend/dist/govuk/core";
-@import "govuk-frontend/dist/govuk/objects";
+@use "govuk-frontend/dist/govuk/base" as * with (
+    // set asset URL root to match that of application
+    $govuk-assets-path: "/static/"
+);
+@use "govuk-frontend/dist/govuk/core" as *;
+@use "govuk-frontend/dist/govuk/objects" as *;
 
 // section replacing @import "components/all", specifying which components to include
-@import "govuk-frontend/dist/govuk/components/skip-link/index";
-@import "govuk-frontend/dist/govuk/components/header/index";
-@import "govuk-frontend/dist/govuk/components/notification-banner/index";
-@import "govuk-frontend/dist/govuk/components/footer/index";
-@import "govuk-frontend/dist/govuk/components/back-link/index";
-@import "govuk-frontend/dist/govuk/components/button/index";
-@import "govuk-frontend/dist/govuk/components/details/index";
-@import "govuk-frontend/dist/govuk/components/error-summary/index";
-@import "govuk-frontend/dist/govuk/components/radios/index";
-@import "govuk-frontend/dist/govuk/components/checkboxes/index";
-@import "govuk-frontend/dist/govuk/components/input/index";
-@import "govuk-frontend/dist/govuk/components/inset-text/index";
-@import "govuk-frontend/dist/govuk/components/tabs/index";
-@import "govuk-frontend/dist/govuk/components/textarea/index";
-@import "govuk-frontend/dist/govuk/components/summary-list/index";
-@import "govuk-frontend/dist/govuk/components/tag/index";
-@import "govuk-frontend/dist/govuk/components/breadcrumbs/index";
-@import "govuk-frontend/dist/govuk/components/select/index";
-@import "govuk-frontend/dist/govuk/components/service-navigation/index";
+@use "govuk-frontend/dist/govuk/components/skip-link/index" as *;
+@use "govuk-frontend/dist/govuk/components/header/index" as *;
+@use "govuk-frontend/dist/govuk/components/notification-banner/index" as *;
+@use "govuk-frontend/dist/govuk/components/footer/index" as *;
+@use "govuk-frontend/dist/govuk/components/back-link/index" as *;
+@use "govuk-frontend/dist/govuk/components/button/index" as *;
+@use "govuk-frontend/dist/govuk/components/details/index" as *;
+@use "govuk-frontend/dist/govuk/components/error-summary/index" as *;
+@use "govuk-frontend/dist/govuk/components/radios/index" as *;
+@use "govuk-frontend/dist/govuk/components/checkboxes/index" as *;
+@use "govuk-frontend/dist/govuk/components/input/index" as *;
+@use "govuk-frontend/dist/govuk/components/inset-text/index" as *;
+@use "govuk-frontend/dist/govuk/components/tabs/index" as *;
+@use "govuk-frontend/dist/govuk/components/textarea/index" as *;
+@use "govuk-frontend/dist/govuk/components/summary-list/index" as *;
+@use "govuk-frontend/dist/govuk/components/tag/index" as *;
+@use "govuk-frontend/dist/govuk/components/breadcrumbs/index" as *;
+@use "govuk-frontend/dist/govuk/components/select/index" as *;
+@use "govuk-frontend/dist/govuk/components/service-navigation/index" as *;
 
-@import "govuk-frontend/dist/govuk/utilities/index";
-@import "govuk-frontend/dist/govuk/overrides/index";
+@use "govuk-frontend/dist/govuk/utilities/index" as *;
+@use "govuk-frontend/dist/govuk/overrides/index" as *;
 
 // Styles extending those from GOV.UK Frontend
-@import "./extensions";
+@use "./extensions" as *;
 
 // Styles for GOV.UK Frontend components specific to this application
-@import "./overrides";
+@use "./overrides" as *;

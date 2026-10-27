@@ -1,7 +1,7 @@
 // Radio buttons & checkboxes
 
 @use "sass:math";
-@use "../../govuk-frontend/all" as * ;
+@use "node_modules/govuk-frontend/dist/govuk" as *;
 
 $govuk-radios-size: 40px;
 // When the default focus width is used on a curved edge it looks visually smaller.
