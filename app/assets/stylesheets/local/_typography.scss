@@ -1,5 +1,5 @@
-@import 'govuk-frontend/dist/govuk/settings/index';
-@import 'govuk-frontend/dist/govuk/helpers/index';
+@use 'govuk-frontend/dist/govuk/settings/index' as *;
+@use 'govuk-frontend/dist/govuk/helpers/index' as *;
 
 @mixin destructive-link-style-default {
   &:link {
