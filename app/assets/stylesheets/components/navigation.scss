@@ -1,3 +1,5 @@
+@use "node_modules/govuk-frontend/dist/govuk" as *;
+
 .navigation {
 
   @include govuk-font($size: 19);

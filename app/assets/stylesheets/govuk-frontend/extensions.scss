@@ -1,12 +1,15 @@
 @use "sass:map";
+@use "node_modules/govuk-frontend/dist/govuk/helpers" as *;
+@use "node_modules/govuk-frontend/dist/govuk/settings" as *;
+
 
 // Custom colours for our destructive link
 // Based on the error colour in:
 // https://github.com/alphagov/govuk-frontend/blob/v4.2.0/src/govuk/settings/_colours-applied.scss
 // with :hover and :active variants based on those for links
-$govuk-destructive-link-colour: $govuk-error-colour;
+$govuk-destructive-link-colour: govuk-functional-colour("error");
 $govuk-destructive-link-hover-colour: #990a00;
-$govuk-destructive-link-active-colour: $govuk-text-colour;
+$govuk-destructive-link-active-colour: govuk-functional-colour("text");;
 
 // Gives access to the Sass variables used in the GOVUK Frontend typographic styles
 // See: https://frontend.design-system.service.gov.uk/sass-api-reference/#govuk-typography-scale

@@ -1,3 +1,5 @@
+@use "node_modules/govuk-frontend/dist/govuk" as *;
+
 $border-thickness: 4px;
 $top-spacing: govuk-spacing(5);
 

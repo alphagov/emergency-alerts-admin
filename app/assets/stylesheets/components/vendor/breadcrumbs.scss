@@ -29,6 +29,7 @@
 //
 
 @use "sass:math";
+@use "node_modules/govuk-frontend/dist/govuk" as *;
 
 .breadcrumbs {
   @include govuk-font(16, $line-height: math.div(25, 16));

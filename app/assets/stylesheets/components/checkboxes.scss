@@ -1,3 +1,5 @@
+@use "node_modules/govuk-frontend/dist/govuk" as *;
+
 // Taken from https://github.com/alphagov/govuk-frontend/blob/v2.13.0/src/components/checkboxes/_checkboxes.scss
 $govuk-touch-target-size: 70px;
 $govuk-checkboxes-size: 40px;
