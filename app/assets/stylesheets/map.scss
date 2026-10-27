@@ -5,7 +5,7 @@
 @import "govuk-frontend/dist/govuk/helpers/index";
 
 $zoom-button-colour: govuk-colour("white");
-$zoom-button-hover-colour: govuk-shade($zoom-button-colour, 10%);
+$zoom-button-hover-colour: govuk-colour("black", $variant: "tint-95");
 
 // The map focus style is a 2-colour outline, made to match the GOVUK text input focus style, using
 // box-shadow. When colours are overridden, for example when users have Windows high contrast mode

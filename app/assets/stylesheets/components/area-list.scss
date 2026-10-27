@@ -103,7 +103,7 @@
     &--unremoveable {
       padding-right: govuk-spacing(2);
       background: govuk-colour('blue', $variant: 'tint-80');
-      color: govuk-shade($govuk-brand-colour, 60%);
+      color: govuk-colour('blue', $variant: 'shade-50');
       border-color: govuk-colour('blue', $variant: 'tint-80');
       margin: 0 govuk-spacing(1) govuk-spacing(2) 0;
       font-weight: bold;
