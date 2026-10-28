@@ -5,6 +5,7 @@
 // Using the govuk-font(19) mixin from the design system
 
 @use "node_modules/govuk-frontend/dist/govuk" as *;
+@use "helpers" as *;
 
 main {
     @include govuk-font(19);
