@@ -1,5 +1,7 @@
 // Tables
 // ==========================================================================
+@use "node_modules/govuk-frontend/dist/govuk" as *;
+@use "helpers" as *;
 
 table {
     border-collapse: collapse;

@@ -1,3 +1,5 @@
+@use "node_modules/govuk-frontend/dist/govuk" as *;
+
 %tick-cross {
   @include govuk-font(19);
   display: inline-block;

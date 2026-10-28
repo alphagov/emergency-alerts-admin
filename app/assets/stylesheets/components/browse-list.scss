@@ -1,3 +1,5 @@
+@use "node_modules/govuk-frontend/dist/govuk" as *;
+
 .browse-list {
   margin-bottom: govuk-spacing(3);
 

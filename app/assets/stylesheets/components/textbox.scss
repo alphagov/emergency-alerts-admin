@@ -1,3 +1,5 @@
+@use "node_modules/govuk-frontend/dist/govuk" as *;
+
 .textbox-highlight {
   &-wrapper {
     position: relative;

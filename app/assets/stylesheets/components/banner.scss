@@ -1,3 +1,5 @@
+@use "node_modules/govuk-frontend/dist/govuk" as *;
+
 %banner,
 .banner,
 .banner-default {
@@ -73,7 +75,7 @@
 .banner-tour {
 
   @extend %banner;
-  background: govuk-colour("light-grey");
+  background: govuk-colour('black', $variant: 'tint-95');
   color: govuk-colour("black");
   margin-top: 10px;
   margin-bottom: 0;
@@ -91,7 +93,11 @@
   &-with-service-name {
     margin-top: -10px;
     padding-top: 0;
-    box-shadow: 0 -1px 0 0 darken($govuk-brand-colour, 10%);
+    box-shadow: 0 -1px 0 0 color-mix(
+      in srgb,
+      govuk-functional-colour(brand) 90%,
+      govuk-colour("black")
+    );
   }
 
   .heading-medium {

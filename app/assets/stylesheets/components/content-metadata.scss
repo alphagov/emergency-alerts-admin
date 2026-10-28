@@ -1,3 +1,5 @@
+@use "node_modules/govuk-frontend/dist/govuk" as *;
+
 .content-metadata {
   @include govuk-font(16);
   @include govuk-clearfix;

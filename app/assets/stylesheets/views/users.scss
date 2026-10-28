@@ -1,3 +1,5 @@
+@use "node_modules/govuk-frontend/dist/govuk" as *;
+
 $item-top-padding: govuk-spacing(3);
 
 .user-list {

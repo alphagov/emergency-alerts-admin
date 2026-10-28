@@ -1,5 +1,8 @@
 // Radio buttons & checkboxes
 
+@use "sass:math";
+@use "node_modules/govuk-frontend/dist/govuk" as *;
+
 $govuk-radios-size: 40px;
 // When the default focus width is used on a curved edge it looks visually smaller.
 // So for the circular radios we bump the default to make it look visually consistent.
@@ -14,7 +17,7 @@ $govuk-radios-focus-width: $govuk-focus-width + 1px;
   position: relative;
 
   padding: 0 0 0 38px;
-  margin-bottom: $govuk-gutter / 3;
+  margin-bottom: math.div($govuk-gutter, 3);
 
   @include govuk-media-query($from: tablet) {
     float: left;
@@ -35,7 +38,7 @@ $govuk-radios-focus-width: $govuk-focus-width + 1px;
 
   label {
     cursor: pointer;
-    padding: 8px ($govuk-gutter / 3) 9px 12px;
+    padding: 8px math.div($govuk-gutter, 3) 9px 12px;
     display: block;
 
     // remove 300ms pause on mobile

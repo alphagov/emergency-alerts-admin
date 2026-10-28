@@ -1,3 +1,5 @@
+@use "node_modules/govuk-frontend/dist/govuk" as *;
+
 .navigation {
 
   @include govuk-font($size: 19);
@@ -29,15 +31,15 @@
     letter-spacing: 0.05em;
 
     &--training {
-      background: govuk-shade(govuk-colour("light-grey"), 7%);
-      color: mix(govuk-colour("dark-grey"), $govuk-text-colour);
-      box-shadow: 0 -3px 0 0 govuk-shade(govuk-colour("light-grey"), 7%);
+      background: govuk-colour('black', $variant: 'tint-80');
+      color: govuk-colour('black', $variant: 'tint-25');
+      box-shadow: 0 -3px 0 0 govuk-colour('black', $variant: 'tint-80');
     }
 
     &--suspended {
-      background: govuk-shade(govuk-colour("light-grey"), 7%);
-      color: mix(govuk-colour("dark-grey"), $govuk-text-colour);
-      box-shadow: 0 -3px 0 0 govuk-shade(govuk-colour("light-grey"), 7%);
+      background: govuk-colour('black', $variant: 'tint-80');
+      color: govuk-colour('black', $variant: 'tint-25');
+      box-shadow: 0 -3px 0 0 govuk-colour('black', $variant: 'tint-80');
     }
 
     &--live, &--test, &--operator {
@@ -173,14 +175,14 @@
     ol,
     ul {
       margin-top: govuk-spacing(2);
-      border-top: 1px govuk-shade(govuk-colour("light-grey"), 7%) solid;
+      border-top: 1px govuk-colour('black', $variant: 'tint-80') solid;
     }
   }
 
   &__item {
     @include govuk-font(16);
 
-    border-bottom: 1px govuk-shade(govuk-colour("light-grey"), 7%) solid;
+    border-bottom: 1px govuk-colour('black', $variant: 'tint-80') solid;
     display: block;
     padding: govuk-spacing(2) 0;
 

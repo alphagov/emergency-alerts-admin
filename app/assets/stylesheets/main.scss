@@ -1,72 +1,70 @@
-// Path to assets for use with file-url()
-$path: "/static/images/";
 
 // Dependencies from GOVU.UK Frontend Toolkit, rewritten for this application
-@import "./url-helpers";
+@use "./url-helpers" as * with(
+    // Path to assets for use with file-url()
+    $path: "/static/images/"
+);
 
 // Specific to this application, needs to go at the top of the cascade
-@import "./reset";
-@import "./globals";
+@use "./reset" as *;
+@use "./globals" as *;
 
 // Dependencies from GOV.UK Frontend, packaged to be specific to this application
-$govuk-new-link-styles: true;
-$govuk-new-organisation-colours: true;
-$govuk-new-typography-scale: true;
-@import "./govuk-frontend/all";
+@use "./govuk-frontend/all" as *;
 
 // Dependencies from GOV.UK Elements, moved here until all components are migrated
 // to GOVUK Frontend, and so no longer need these styles
 // https://github.com/alphagov/govuk_elements
-@import "./govuk-elements/helpers";
-@import "./govuk-elements/elements-typography";
-@import "./govuk-elements/forms";
-@import "./govuk-elements/forms/form-multiple-choice";
-@import "./govuk-elements/forms/form-validation";
-@import "./govuk-elements/tables";
+@use "./govuk-elements/helpers" as *;
+@use "./govuk-elements/elements-typography" as *;
+@use "./govuk-elements/forms" as *;
+@use "./govuk-elements/forms/form-multiple-choice" as *;
+@use "./govuk-elements/forms/form-validation" as *;
+@use "./govuk-elements/tables" as *;
 
 // Specific to this application
-@import "./local/typography";
-@import "./grids";
-@import "./components/cookie-message";
-@import "./components/placeholder";
-@import "./components/page-footer";
-@import "./components/table";
-@import "./components/navigation";
-@import "./components/big-number";
-@import "./components/banner";
-@import "./components/textbox";
-@import "./components/browse-list";
-@import "./components/copy-to-clipboard";
-@import "./components/vendor/previous-next-navigation";
-@import "./components/radios";
-@import "./components/radios-with-images";
-@import "./components/checkboxes";
-@import "./components/pill";
-@import "./components/show-more";
-@import "./components/message";
-@import "./components/tick-cross";
-@import "./components/list-entry";
-@import "./components/live-search";
-@import "./components/stick-at-top-when-scrolling";
-@import "./components/fullscreen-table";
-@import "./components/conditional-radios";
-@import "./components/vendor/breadcrumbs";
-@import "./components/vendor/responsive-embed";
-@import "./components/loading-indicator";
-@import "./components/area-list";
-@import "./components/broadcast-message";
-@import "./components/content-metadata";
-@import "./components/timeout";
-@import "./components/duration-container";
+@use "./local/typography" as *;
+@use "./grids" as *;
+@use "./components/cookie-message" as *;
+@use "./components/placeholder" as *;
+@use "./components/page-footer" as *;
+@use "./components/table" as *;
+@use "./components/navigation" as *;
+@use "./components/big-number" as *;
+@use "./components/banner" as *;
+@use "./components/textbox" as *;
+@use "./components/browse-list" as *;
+@use "./components/copy-to-clipboard" as *;
+@use "./components/vendor/previous-next-navigation" as *;
+@use "./components/radios" as *;
+@use "./components/radios-with-images" as *;
+@use "./components/checkboxes" as *;
+@use "./components/pill" as *;
+@use "./components/show-more" as *;
+@use "./components/message" as *;
+@use "./components/tick-cross" as *;
+@use "./components/list-entry" as *;
+@use "./components/live-search" as *;
+@use "./components/stick-at-top-when-scrolling" as *;
+@use "./components/fullscreen-table" as *;
+@use "./components/conditional-radios" as *;
+@use "./components/vendor/breadcrumbs" as *;
+@use "./components/vendor/responsive-embed" as *;
+@use "./components/loading-indicator" as *;
+@use "./components/area-list" as *;
+@use "./components/broadcast-message" as *;
+@use "./components/content-metadata" as *;
+@use "./components/timeout" as *;
+@use "./components/duration-container" as *;
 
-@import "./views/dashboard";
-@import "./views/users";
-@import "./views/api";
-@import "./views/template";
-@import "./views/get_started";
-@import "./views/history";
-@import "./views/cookies";
-@import "./views/webauthn";
+@use "./views/dashboard" as *;
+@use "./views/users" as *;
+@use "./views/api" as *;
+@use "./views/template" as *;
+@use "./views/get_started" as *;
+@use "./views/history" as *;
+@use "./views/cookies" as *;
+@use "./views/webauthn" as *;
 
 // TODO: break this up
-@import "./app";
+@use "./app" as *;

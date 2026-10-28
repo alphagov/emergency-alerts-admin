@@ -1,3 +1,6 @@
+@use "node_modules/govuk-frontend/dist/govuk" as *;
+@use "../govuk-frontend/extensions" as *;
+
 $app-body-text-line-height-default: get-govuk-typography-style($size: 19, $breakpoint: null, $property: "line-height");;
 
 @mixin separator {
@@ -27,6 +30,7 @@ $app-body-text-line-height-default: get-govuk-typography-style($size: 19, $break
 }
 
 $govuk-checkboxes-size: 40px;
+$govuk-touch-target-size: 44px;
 $govuk-checkboxes-label-padding-left-right: govuk-spacing(9);
 $message-type-bottom-spacing: govuk-spacing(4);
 

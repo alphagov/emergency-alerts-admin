@@ -1,6 +1,8 @@
 // Form validation
 // ==========================================================================
 
+@use "node_modules/govuk-frontend/dist/govuk" as *;
+
 // Use .form-group-error to add a red border to the left of a .form-group
 .form-group-error {
   margin-right: 15px;

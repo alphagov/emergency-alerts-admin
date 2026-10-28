@@ -1,3 +1,5 @@
+@use "node_modules/govuk-frontend/dist/govuk" as *;
+
 .pill {
 
   display: flex;
@@ -66,7 +68,7 @@
     }
 
     &:hover {
-      color: govuk-tint($govuk-text-colour, 25%);
+      color: govuk-functional-colour("secondary-text");
     }
 
     // give :active links the :focus style

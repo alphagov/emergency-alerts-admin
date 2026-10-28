@@ -6,6 +6,9 @@
 //
 // Rewritten to be mobile-up
 
+@use "sass:math";
+@use "node_modules/govuk-frontend/dist/govuk" as *;
+
 .govuk-previous-and-next-navigation {
   display: block;
   margin-top: govuk-spacing(6);
@@ -20,7 +23,7 @@
   }
 
   li {
-    @include govuk-font(16, $line-height: (25 / 16));
+    @include govuk-font(16, $line-height: math.div(25, 16));
     float: left;
     list-style: none;
     text-align: right;
@@ -34,7 +37,7 @@
       text-decoration: none;
 
       &:hover {
-        background-color: govuk-colour("light-grey");
+        background-color: govuk-colour('black', $variant: 'tint-95');
       }
 
       &:focus {
@@ -42,7 +45,7 @@
       }
 
       .pagination-part-title {
-        @include govuk-font(27, $line-height: (33.75 / 27));
+        @include govuk-font(27, $line-height: math.div(33.75, 27));
         display: block;
       }
     }
