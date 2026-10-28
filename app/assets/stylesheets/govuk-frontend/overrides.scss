@@ -107,3 +107,7 @@ $notify-secondary-button-hover-colour: govuk-colour('black', $variant: 'tint-50'
 .govuk-service-navigation__item.sign-out-link {
   margin-left: auto;
 }
+
+.govuk-password-input__toggle {
+  white-space: nowrap;
+}
