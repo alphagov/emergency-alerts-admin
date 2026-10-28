@@ -1,5 +1,7 @@
 @use "node_modules/govuk-frontend/dist/govuk" as *;
 @use "../govuk-frontend/extensions" as *;
+@use "../url-helpers" as *;
+
 
 $app-body-text-line-height-default: get-govuk-typography-style($size: 19, $breakpoint: null, $property: "line-height");;
 
