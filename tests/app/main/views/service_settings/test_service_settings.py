@@ -37,7 +37,6 @@ FAKE_TEMPLATE_ID = uuid4()
                 "Label Value Action",
                 "Notes None Change the notes for the service",
                 "Email authentication Off Change your settings for Email authentication",
-                "Emergency alerts Off Change your settings for emergency alerts",
                 "Email notifications for alerts None Change notification email addresses for this service",
             ],
         ),
@@ -98,7 +97,6 @@ def test_platform_admin_sees_only_relevant_settings_for_broadcast_service(
         "Label Value Action",
         "Notes None Change the notes for the service",
         "Email authentication Off Change your settings for Email authentication",
-        "Emergency alerts Off Change your settings for emergency alerts",
         "Email notifications for alerts None Change notification email addresses for this service",
     ]
 
@@ -106,51 +104,6 @@ def test_platform_admin_sees_only_relevant_settings_for_broadcast_service(
     for index, row in enumerate(expected_rows):
         assert row == " ".join(rows[index].text.split())
     app.service_api_client.get_service.assert_called_with(SERVICE_ONE_ID)
-
-
-@pytest.mark.parametrize(
-    "has_broadcast_permission,service_mode,broadcast_channel,allowed_broadcast_provider,expected_text",
-    [
-        (False, "training", None, ["ee", "o2", "three", "vodafone"], "Off"),
-        (False, "live", None, ["ee", "o2", "three", "vodafone"], "Off"),
-        (True, "training", "test", ["ee", "o2", "three", "vodafone"], "Training"),
-        (True, "live", "test", ["ee"], "Test (EE)"),
-        (True, "live", "test", ["three"], "Test (Three)"),
-        (True, "live", "test", ["ee", "o2", "three", "vodafone"], "Test"),
-        (True, "live", "severe", ["ee", "o2", "three", "vodafone"], "Live"),
-        (True, "live", "severe", ["three"], "Live (Three)"),
-        (True, "live", "government", ["ee", "o2", "three", "vodafone"], "Government"),
-        (True, "live", "government", ["three"], "Government (Three)"),
-    ],
-)
-def test_platform_admin_sees_correct_description_of_broadcast_service_setting(
-    client_request,
-    mocker,
-    api_user_active,
-    has_broadcast_permission,
-    service_mode,
-    broadcast_channel,
-    allowed_broadcast_provider,
-    expected_text,
-):
-    service_one = service_json(
-        SERVICE_ONE_ID,
-        users=[api_user_active["id"]],
-        permissions=["broadcast"] if has_broadcast_permission else ["email"],
-        organisation_id=ORGANISATION_ID,
-        restricted=True if service_mode == "training" else False,
-        broadcast_channel=broadcast_channel,
-        allowed_broadcast_provider=allowed_broadcast_provider,
-    )
-    mocker.patch("app.service_api_client.get_service", return_value={"data": service_one})
-
-    client_request.login(create_platform_admin_user(), service_one)
-    page = client_request.get("main.service_settings", service_id=SERVICE_ONE_ID)
-
-    broadcast_setting_row = next(row for row in page.select("tr.table-row") if "Emergency alerts" in row.get_text())
-    assert normalize_spaces(broadcast_setting_row.select("td")[0].text) == "Emergency alerts"
-    broadcast_setting_description = broadcast_setting_row.select("td")[1].text
-    assert normalize_spaces(broadcast_setting_description) == expected_text
 
 
 @pytest.mark.parametrize(
