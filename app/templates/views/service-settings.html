@@ -88,23 +88,6 @@
         {% endfor %}
 
         {% call row() %}
-          {{ text_field('Emergency alerts')}}
-          {% call field(wrap=True) %}
-            {% if not current_service.broadcast_channel %}
-            Off
-            {% else %}
-            {{ broadcast_service_name_tag(current_service.trial_mode, current_service.broadcast_channel, current_service.allowed_broadcast_provider, left_margin=False) }}
-            {% endif %}
-          {% endcall %}
-          {{ edit_field(
-              'Change',
-              url_for('.service_set_broadcast_channel', service_id=current_service.id),
-              suffix='your settings for emergency alerts'
-            )
-          }}
-        {% endcall %}
-
-        {% call row() %}
           {{ text_field('Email notifications for alerts')}}
           {% set emails = current_service.alert_notification_addresses | map(attribute='email_address') | sort %}
           {{ optional_text_field(emails or None, default="None") }}
