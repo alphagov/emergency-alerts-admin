@@ -495,11 +495,12 @@ def setup_blueprints(application):
 
 
 def setup_event_handlers():
-    from flask_login import user_logged_in
+    from flask_login import session_protected, user_logged_in
 
-    from app.event_handlers import on_user_logged_in
+    from app.event_handlers import on_session_protected, on_user_logged_in
 
     user_logged_in.connect(on_user_logged_in)
+    session_protected.connect(on_session_protected)
 
 
 def add_template_filters(application):

@@ -1,4 +1,4 @@
-from flask import request
+from flask import current_app, request, session
 
 from app.notify_client.events_api_client import events_api_client
 
@@ -23,6 +23,23 @@ EVENT_SCHEMAS = {
 
 def on_user_logged_in(_sender, user):
     _send_event("sucessful_login", user_id=user.id)
+
+
+def on_session_protected(_sender):
+    # Flask-Login only enforces SESSION_PROTECTION = "strong" on non-permanent sessions - for permanent ones (which
+    # ours always are, see make_session_permanent) it just marks the session as not fresh. So sign the user out here.
+    if current_app.config.get("SESSION_PROTECTION") != "strong":
+        return
+
+    # Sessions without a logged in user have no identifier to match, so this signal is sent for them too
+    if "_user_id" not in session:
+        return
+
+    current_app.logger.warning(
+        "session_protection.identifier_mismatch: Signing user out, user_id: {user_id}",
+        extra={"user_id": session["_user_id"]},
+    )
+    session.clear()
 
 
 def create_email_change_event(**kwargs):
