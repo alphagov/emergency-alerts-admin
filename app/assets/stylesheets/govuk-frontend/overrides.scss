@@ -15,19 +15,6 @@ $notify-secondary-button-hover-colour: govuk-colour('black', $variant: 'tint-50'
   }
 }
 
-.govuk-header {
-  &__logo {
-    width: auto;
-    padding-right: 5px;
-  }
-
-  &__content {
-    width: auto;
-    float: right;
-  }
-
-}
-
 .govuk-notification-banner {
   margin-top: 15px;
   margin-bottom: 15px;
@@ -110,4 +97,12 @@ $notify-secondary-button-hover-colour: govuk-colour('black', $variant: 'tint-50'
 
 .govuk-password-input__toggle {
   white-space: nowrap;
+}
+
+.govuk-header {
+  background: govuk-colour("black");
+}
+
+.govuk-footer {
+  border-top-width: 1px;
 }
