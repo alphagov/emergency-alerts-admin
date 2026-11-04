@@ -95,6 +95,7 @@ from app.notify_client.template_folder_api_client import template_folder_api_cli
 from app.notify_client.user_api_client import user_api_client
 from app.url_converters import SimpleDateTypeConverter, TemplateTypeConverter
 from app.utils.labels import LABELS
+from app.utils.login import create_session_identifier
 
 login_manager = LoginManager()
 csrf = CSRFProtect()
@@ -164,6 +165,8 @@ def create_app(application):
     login_manager.login_view = "main.sign_in"
     login_manager.login_message_category = "default"
     login_manager.session_protection = None
+    # Flask-Login has no public setting for this
+    login_manager._session_identifier_generator = create_session_identifier
     login_manager.anonymous_user = AnonymousUser
 
     setup_blueprints(application)
@@ -495,11 +498,12 @@ def setup_blueprints(application):
 
 
 def setup_event_handlers():
-    from flask_login import user_logged_in
+    from flask_login import session_protected, user_logged_in
 
-    from app.event_handlers import on_user_logged_in
+    from app.event_handlers import on_session_protected, on_user_logged_in
 
     user_logged_in.connect(on_user_logged_in)
+    session_protected.connect(on_session_protected)
 
 
 def add_template_filters(application):
