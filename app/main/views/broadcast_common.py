@@ -84,6 +84,7 @@ def choose_library(service_id, message_type, message_id=None):
     libraries = BroadcastAreaLibraries()
     template_folder_id = request.args.get("template_folder_id")
     Message = get_message_type(message_type)
+
     if message_id:
         message = Message.from_id_or_403(message_id, service_id=service_id)
     else:
@@ -119,6 +120,9 @@ def choose_area(
 ):
     if not has_permission_for_message_type(service_id=service_id, message_type=message_type):
         return abort(403)
+
+    if library_slug in ["local_authority_districts", "counties_and_unitary_authorities"]:
+        library_slug = "local_authorities"
 
     template_folder_id = request.args.get("template_folder_id")
     Message = get_message_type(message_type)
@@ -225,6 +229,7 @@ def choose_area(
         render_checkboxes=any(child.is_selectable for child in areas),
         areas=areas,
         geography_type=library.route,
+        library_slug=library_slug,
     )
 
 
