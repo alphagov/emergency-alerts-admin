@@ -26,9 +26,9 @@
     label='Search and filter by name')
   }}
 
-  {% for area in library|sort %}
+  {% for area in library.get_areas()|sort(attribute="name") %}
     <div class="file-list-item">
-      <a class="file-list-filename-large file-list-filename-large-no-hint govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_sub_area', service_id=current_service.id, message_id=message.id, message_type=message_type, library_slug=library.id, area_slug=area.id or None, template_folder_id=template_folder_id or None) }}">{{ area.name }}</a>
+      <a class="file-list-filename-large file-list-filename-large-no-hint govuk-link govuk-link--no-visited-state" href="{{ url_for('.choose_sub_area', service_id=current_service.id, message_id=message.id, message_type=message_type, library_slug=library.route, area_slug=area.id or None, template_folder_id=template_folder_id or None) }}">{{ area.name }}</a>
     </div>
   {% endfor %}
 

@@ -65,8 +65,8 @@ export function latLngToEastingsNorthings(proj4, lat, lng) {
 // Function to create Leaflet circle for the alert area
 export function createAreaCircle(L, coordinates, radius) {
     return L.circle(coordinates, radius, {
-      color: '#0201FE',
-      fillColor: 'none',
+      color: '#0B0B0C',
+      fillColor: '#5694ca',
       fillOpacity: 0.3,
       weight: 3,
     });
@@ -75,7 +75,7 @@ export function createAreaCircle(L, coordinates, radius) {
 // Function to create Leaflet circle for the estimated bleed area
 export function createBleedCircle(L, coordinates, bleed_radius) {
     return L.circle(coordinates, bleed_radius, {
-      color: '#0201FE',
+      color: '#1d70b8',
       fillColor: 'none',
       fillOpacity: 0.3,
       dashArray: '4,7.5,5,7.5,8,8,5,8,7.5,8,5,8,7,8,5,8,4',
