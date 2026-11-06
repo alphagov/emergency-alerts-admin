@@ -262,9 +262,10 @@ def choose_sub_area(service_id, message_type, library_slug, area_slug, message_i
         if message:
             message.add_areas(message.id, message.service_id, [*form.selected_areas], message_type, area.version_id)
         else:
-            message = Message.create_from_area(
-                service_id=service_id, area_ids=[*form.selected_areas], template_folder_id=template_folder_id
+            message = Message.create(
+                service_id=service_id, template_folder_id=template_folder_id, reference="", content=""
             )
+            message.add_areas(message.id, message.service_id, [*form.selected_areas], message_type, area.version_id)
         return redirect(
             url_for(
                 ".preview_areas",
