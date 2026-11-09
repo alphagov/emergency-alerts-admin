@@ -1,6 +1,3 @@
-@use "govuk-frontend/dist/govuk" as *;
-@use "../url-helpers" as *;
-
 %tick-cross {
   @include govuk-font(19);
   display: inline-block;

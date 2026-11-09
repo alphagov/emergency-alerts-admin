@@ -1,4 +1,3 @@
-@use "govuk-frontend/dist/govuk" as *;
 
 .govuk-grid-column-one-sixth {
   @include govuk-grid-column(one-sixth);
@@ -76,7 +75,7 @@
 
 .bottom-gutter-3-2 {
   @extend %bottom-gutter;
-  margin-bottom: govuk-spacing(6) * 3 * 0.5;
+  margin-bottom: govuk-spacing(6) * 3 / 2;
 }
 
 .bottom-gutter-2 {

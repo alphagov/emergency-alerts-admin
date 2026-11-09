@@ -1,5 +1,3 @@
-@use "govuk-frontend/dist/govuk" as *;
-
 .webauthn__no-js {
   .js-enabled & {
     display: none;

@@ -3,8 +3,6 @@
 
 // Return ems from a pixel value
 // This assumes a base of 19px
-@use "sass:math";
-
 @function em($px, $base: 19) {
-  @return math.div($px, $base) + em;
+  @return ($px / $base) + em;
 }
