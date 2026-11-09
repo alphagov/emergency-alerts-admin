@@ -70,14 +70,9 @@
     {% if current_user.platform_admin_capable %}
       {% set navigation = [
         {
-          "href": url_for('main.support'),
-          "text": "Support",
-          "active": header_navigation.is_selected('support')
-        },
-        {
-          "href": url_for('main.user_profile'),
-          "text": "Profile",
-          "active": header_navigation.is_selected('user-profile')
+          "href": url_for('main.choose_account'),
+          "text": "Switch service",
+          "active": header_navigation.is_selected('accounts')
         },
         {
           "href": url_for('main.platform_admin_search'),
@@ -88,16 +83,22 @@
           "active": header_navigation.is_selected('platform-admin')
         },
         {
-          "href": url_for('main.choose_account'),
-          "text": "Switch service",
+          "href": url_for('main.user_profile'),
+          "text": "Profile",
+          "active": header_navigation.is_selected('user-profile')
+        },
+        {
+          "href": url_for('main.support'),
+          "text": "Support",
+          "active": header_navigation.is_selected('support')
         }
       ] %}
     {% else %}
       {% set navigation = [
         {
-          "href": url_for('main.support'),
-          "text": "Support",
-          "active": header_navigation.is_selected('support')
+          "href": url_for('main.choose_account'),
+          "text": "Switch service",
+          "active": header_navigation.is_selected('account')
         },
         {
           "href": url_for('main.user_profile'),
@@ -105,8 +106,9 @@
           "active": header_navigation.is_selected('user-profile')
         },
         {
-          "href": url_for('main.choose_account'),
-          "text": "Switch service",
+          "href": url_for('main.support'),
+          "text": "Support",
+          "active": header_navigation.is_selected('support')
         }
       ] %}
     {% endif %}
