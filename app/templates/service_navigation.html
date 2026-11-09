@@ -33,5 +33,6 @@
 {% macro service_navigation(user, service) %}
 <div class="navigation-service">
   {{ navigation_service_name(service) }}
+  <a href="{{ url_for('main.choose_account') }}" class="govuk-link govuk-link--no-visited-state govuk-link--no-underline navigation-service-switch">Switch service</a>
 </div>
 {% endmacro %}

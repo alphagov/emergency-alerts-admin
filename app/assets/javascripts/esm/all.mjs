@@ -8,7 +8,7 @@
 // For example, `export { Frontend }` will assign `Frontend` to `window.Frontend`
 
 // GOVUK Frontend modules
-import { createAll, PasswordInput, Button, Radios, ErrorSummary, SkipLink, Tabs } from 'govuk-frontend';
+import { createAll, Header, PasswordInput, Button, Radios, ErrorSummary, SkipLink, Tabs } from 'govuk-frontend';
 
 // Modules from 3rd party vendors
 import morphdom from 'morphdom';
@@ -28,6 +28,12 @@ function initAll (options) {
   createAll(Button);
 
   createAll(PasswordInput);
+
+  // Find first header module to enhance.
+  const $toggleButton = scope.querySelectorAll('[data-module="govuk-header"]');
+  $toggleButton.forEach(($toggleButton) => {
+    new Header($toggleButton);
+  });
 
   const $radios = scope.querySelectorAll('[data-module="govuk-radios"]');
   $radios.forEach(($radios) => {
@@ -53,6 +59,7 @@ function initAll (options) {
 
 // Create separate namespace for GOVUK Frontend.
 var Frontend = {
+  "Header": Header,
   "Button": Button,
   "Radios": Radios,
   "ErrorSummary": ErrorSummary,

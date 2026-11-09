@@ -14,8 +14,6 @@
 // 1. Helpers
 // ==========================================================================
 
-@use "govuk-frontend/dist/govuk" as *;
-
 // Fieldset is used to group more than one .form-group
 fieldset {
   @include govuk-clearfix;

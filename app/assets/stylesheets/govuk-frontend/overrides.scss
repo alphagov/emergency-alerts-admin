@@ -1,9 +1,7 @@
-@use "govuk-frontend/dist/govuk" as *;
-
 // Overrides for certain GOV.UK Frontend styles to make its components match this application's design
 
-$notify-secondary-button-colour: govuk-colour('black', $variant: 'tint-80');
-$notify-secondary-button-hover-colour: govuk-colour('black', $variant: 'tint-50');
+$notify-secondary-button-colour: govuk-shade(govuk-colour("light-grey"), 7%);
+$notify-secondary-button-hover-colour: govuk-shade(govuk-colour("light-grey"), 18%);
 
 // Additional padding-bottom override, following the GOV.UK Frontend spacing scale:
 // https://design-system.service.gov.uk/styles/spacing/#the-responsive-spacing-scale
@@ -13,6 +11,19 @@ $notify-secondary-button-hover-colour: govuk-colour('black', $variant: 'tint-50'
   @include govuk-media-query($from: tablet) {
     padding-bottom: 90px;
   }
+}
+
+.govuk-header {
+  &__logo {
+    width: auto;
+    padding-right: 5px;
+  }
+
+  &__content {
+    width: auto;
+    float: right;
+  }
+
 }
 
 .govuk-notification-banner {
@@ -89,20 +100,4 @@ $notify-secondary-button-hover-colour: govuk-colour('black', $variant: 'tint-50'
 
 .govuk-summary-list__actions, .govuk-summary-list__key {
   vertical-align: top;
-}
-
-.govuk-service-navigation__item.sign-out-link {
-  margin-left: auto;
-}
-
-.govuk-password-input__toggle {
-  white-space: nowrap;
-}
-
-.govuk-header {
-  background: govuk-colour("black");
-}
-
-.govuk-footer {
-  border-top-width: 1px;
 }
