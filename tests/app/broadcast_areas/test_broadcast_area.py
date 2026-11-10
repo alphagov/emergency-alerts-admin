@@ -317,7 +317,7 @@ def test_phone_density(area, expected_phones_per_square_mile, count_of_phones, m
             # No population data available
             "Flood_Warning_Target_Areas-011FWBWH",
             94.55460828006048,
-            1_632,
+            1_946,
         ),
     ),
 )

@@ -1417,13 +1417,11 @@ def test_broadcast_page(
                 "Flood_Warning_Target_Areas-011FWCN3A",
             ],
             [
-                "Cumbrian coastline from St Bees Head to Haverigg, along the coast from North Head "
-                "to Haverigg Remove Cumbrian coastline from St Bees Head to Haverigg, along "
-                "the coast from North Head to Haverigg",
+                "Coast St Bees Head, North Head to Haverigg " "Remove Coast St Bees Head, North Head to Haverigg",
             ],
             126,
             [
-                "An area of 10 square miles Will get the alert",
+                "An area of 20 square miles Will get the alert",
                 "An extra area of 200 square miles is Likely to get the alert",
                 "Less than 1 million phones estimated",
             ],
@@ -1434,15 +1432,14 @@ def test_broadcast_page(
                 "Flood_Warning_Target_Areas-011FWCN1A",
             ],
             [
-                "Cumbrian coastline from Gretna to Silloth including Port Carlisle, Skinburness and Rockcliffe "
-                "Remove Cumbrian coastline from Gretna to Silloth including Port Carlisle, Skinburness and Rockcliffe",
-                "Cumbrian coastline at Duddon estuary, at Haverigg to Duddon "
-                "Bridge, Foxfield, Dunnerholme Remove Cumbrian "
-                "coastline at Duddon estuary, at Haverigg to Duddon Bridge, Foxfield, Dunnerholme",
+                "Coast Gretna, Silloth, Port Carlisle, Skinburness "
+                "Remove Coast Gretna, Silloth, Port Carlisle, Skinburness",
+                "Duddon Estuary, Haverigg to Duddon Bridge,Foxfield "
+                "Remove Duddon Estuary, Haverigg to Duddon Bridge,Foxfield",
             ],
             2_400,
             [
-                "An area of 60 square miles Will get the alert",
+                "An area of 70 square miles Will get the alert",
                 "An extra area of 200 square miles is Likely to get the alert",
                 "Less than 1 million phones estimated",
             ],
@@ -2613,15 +2610,11 @@ def test_add_flood_warning_areas_in_bulk_with_delimiters(
 
     assert normalize_spaces(page.select_one("h1").text) == "Choose Flood Warning Target Areas (TA)"
     assert [normalize_spaces(item.text) for item in page.select("ul.area-list li.area-list-item")] == [
-        "011FWBWH: Whitehaven Sea Lock failure, town centre and North Shore Rd Remove Whitehaven "
-        "Sea Lock failure, town centre and North Shore Rd",
-        "011FWCN1A: Cumbrian coastline from Gretna to Silloth including Port Carlisle, Skinburness "
-        "and Rockcliffe Remove Cumbrian coastline from Gretna to Silloth including Port Carlisle, "
-        "Skinburness and Rockcliffe",
-        (
-            "011FWCN1B: Cumbrian coastline from Gretna to Silloth, between Longtown and Skinburness Remove "
-            "Cumbrian coastline from Gretna to Silloth, between Longtown and Skinburness"
-        ),
+        "011FWBWH: Whitehaven Remove Whitehaven",
+        "011FWCN1A: Coast Gretna, Silloth, Port Carlisle, Skinburness "
+        "Remove Coast Gretna, Silloth, Port Carlisle, Skinburness",
+        "011FWCN1B: Coast Gretna to Silloth, Longtown to Skinburness "
+        "Remove Coast Gretna to Silloth, Longtown to Skinburness",
     ]
 
     assert mock_get_broadcast_message.call_count == 3
@@ -2631,6 +2624,7 @@ def test_add_flood_warning_areas_in_bulk_with_delimiters(
     assert mock_update_broadcast_message_kwargs["broadcast_message_id"] == fake_uuid
 
     actual_areas = mock_update_broadcast_message_kwargs["data"]["areas"]
+
     expected_areas = {
         "ids": [
             "Flood_Warning_Target_Areas-011FWBWH",
@@ -2638,14 +2632,14 @@ def test_add_flood_warning_areas_in_bulk_with_delimiters(
             "Flood_Warning_Target_Areas-011FWCN1B",
         ],
         "names": [
-            "Whitehaven Sea Lock failure, town centre and North Shore Rd",
-            "Cumbrian coastline from Gretna to Silloth including Port Carlisle, Skinburness and Rockcliffe",
-            "Cumbrian coastline from Gretna to Silloth, between Longtown and Skinburness",
+            "Whitehaven",
+            "Coast Gretna, Silloth, Port Carlisle, Skinburness",
+            "Coast Gretna to Silloth, Longtown to Skinburness",
         ],
         "aggregate_names": [
-            "Whitehaven Sea Lock failure, town centre and North Shore Rd",
-            "Cumbrian coastline from Gretna to Silloth including Port Carlisle, Skinburness and Rockcliffe",
-            "Cumbrian coastline from Gretna to Silloth, between Longtown and Skinburness",
+            "Whitehaven",
+            "Coast Gretna, Silloth, Port Carlisle, Skinburness",
+            "Coast Gretna to Silloth, Longtown to Skinburness",
         ],
         "simple_polygons": MULTIPLE_FLOOD_WARNING_AREAS,
     }
