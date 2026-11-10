@@ -103,7 +103,7 @@ googleapis-common-protos==1.72.0
     # via
     #   opentelemetry-exporter-otlp-proto-grpc
     #   opentelemetry-exporter-otlp-proto-http
-govuk-frontend-jinja==3.3.0
+govuk-frontend-jinja==4.1.0
     # via -r requirements.in
 grpcio==1.76.0
     # via opentelemetry-exporter-otlp-proto-grpc
