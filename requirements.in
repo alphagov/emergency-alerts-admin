@@ -32,7 +32,7 @@ debugpy==1.8.21
 
 # Packages for testing
 beautifulsoup4==4.14.3
-black==26.3.1
+black==26.10.1
 flake8-bugbear==25.11.29
 flake8-print==5.0.0
 flake8==7.3.0
