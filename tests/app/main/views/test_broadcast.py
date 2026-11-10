@@ -601,7 +601,7 @@ def test_some_broadcast_tour_pages_show_service_name(
             None,
             ["ee", "o2", "three", "vodafone"],
             ".navigation-service-type.navigation-service-type--training",
-            "service one Training Switch service",
+            "service one Training",
             "Training",
         ),
         (
@@ -609,7 +609,7 @@ def test_some_broadcast_tour_pages_show_service_name(
             "test",
             ["ee", "o2", "three", "vodafone"],
             ".navigation-service-type.navigation-service-type--training",
-            "service one Training Switch service",
+            "service one Training",
             "Training",
         ),
         (
@@ -617,7 +617,7 @@ def test_some_broadcast_tour_pages_show_service_name(
             "severe",
             ["ee", "o2", "three", "vodafone"],
             ".navigation-service-type.navigation-service-type--live",
-            "service one Live Switch service",
+            "service one Live",
             "Live",
         ),
         (
@@ -625,7 +625,7 @@ def test_some_broadcast_tour_pages_show_service_name(
             "operator",
             ["ee", "o2", "three", "vodafone"],
             ".navigation-service-type.navigation-service-type--operator",
-            "service one Operator Switch service",
+            "service one Operator",
             "Operator",
         ),
         (
@@ -633,7 +633,7 @@ def test_some_broadcast_tour_pages_show_service_name(
             "operator",
             ["vodafone"],
             ".navigation-service-type.navigation-service-type--operator",
-            "service one Operator (Vodafone) Switch service",
+            "service one Operator (Vodafone)",
             "Operator (Vodafone)",
         ),
         (
@@ -641,7 +641,7 @@ def test_some_broadcast_tour_pages_show_service_name(
             "test",
             ["ee", "o2", "three", "vodafone"],
             ".navigation-service-type.navigation-service-type--test",
-            "service one Test Switch service",
+            "service one Test",
             "Test",
         ),
         (
@@ -649,7 +649,7 @@ def test_some_broadcast_tour_pages_show_service_name(
             "test",
             ["vodafone"],
             ".navigation-service-type.navigation-service-type--test",
-            "service one Test (Vodafone) Switch service",
+            "service one Test (Vodafone)",
             "Test (Vodafone)",
         ),
         (
@@ -657,7 +657,7 @@ def test_some_broadcast_tour_pages_show_service_name(
             "government",
             ["ee", "o2", "three", "vodafone"],
             ".navigation-service-type.navigation-service-type--government",
-            "service one Government Switch service",
+            "service one Government",
             "Government",
         ),
         (
@@ -665,7 +665,7 @@ def test_some_broadcast_tour_pages_show_service_name(
             "government",
             ["vodafone"],
             ".navigation-service-type.navigation-service-type--government",
-            "service one Government (Vodafone) Switch service",
+            "service one Government (Vodafone)",
             "Government (Vodafone)",
         ),
         (
@@ -673,7 +673,7 @@ def test_some_broadcast_tour_pages_show_service_name(
             "severe",
             ["vodafone"],
             ".navigation-service-type.navigation-service-type--live",
-            "service one Live (Vodafone) Switch service",
+            "service one Live (Vodafone)",
             "Live (Vodafone)",
         ),
     ),
