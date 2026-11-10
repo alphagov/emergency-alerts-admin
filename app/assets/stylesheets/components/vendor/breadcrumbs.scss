@@ -28,13 +28,8 @@
 // </nav>
 //
 
-@use "sass:math";
-@use "govuk-frontend/dist/govuk" as *;
-@use "../../url-helpers" as *;
-
-
 .breadcrumbs {
-  @include govuk-font(16, $line-height: math.div(25, 16));
+  @include govuk-font(16, $line-height: (25 / 16));
 
   padding: govuk-spacing(2) 0;
   list-style: none;
@@ -53,7 +48,7 @@
     display: inline-block;
 
     margin: 0;
-    padding: 0 (govuk-spacing(6) * 0.25) 0 (11px + govuk-spacing(6) * 0.25);
+    padding: 0 (govuk-spacing(6) / 4) 0 (11px + govuk-spacing(6) / 4);
 
     background-image: file-url('separator.png');
     background-repeat: no-repeat;
