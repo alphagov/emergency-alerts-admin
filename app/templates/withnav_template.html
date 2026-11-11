@@ -4,10 +4,11 @@
 
 {% set mainClasses = "govuk-!-padding-top-0 govuk-!-padding-bottom-0" %}
 
+{% block beforeContent %}{% endblock %}
+
 {% block per_page_title %}
   {% block service_page_title %}{% endblock %} – {{ current_service.name }}
 {% endblock %}
-
 {% block main %}
   <div class="govuk-width-container">
     {{ service_navigation(current_user, current_service) }}
@@ -24,7 +25,7 @@
       {% else %}
         <div class="govuk-grid-column-three-quarters">
       {% endif %}
-        {% block beforeContent %}
+        {% block serviceBeforeContent %}
           {% block backLink %}{% endblock %}
           {% block additionalBeforeContent %}{% endblock %}
         {% endblock %}

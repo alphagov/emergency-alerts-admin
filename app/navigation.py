@@ -78,6 +78,10 @@ class HeaderNavigation(Navigation):
             "verify",
             "verify_email",
         },
+        "accounts": {
+            "choose_account",
+            "add_service",
+        },
     }
 
     # header HTML now comes from GOVUK Frontend so requires a boolean, not an attribute

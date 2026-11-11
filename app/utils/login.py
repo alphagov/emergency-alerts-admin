@@ -1,3 +1,4 @@
+import hashlib
 import re
 from datetime import datetime, timezone
 from functools import wraps
@@ -53,6 +54,14 @@ def redirect_when_logged_in(platform_admin_elevation_pending):
 
 def email_needs_revalidating(user):
     return not is_less_than_days_ago(user.email_access_validated_at, 90)
+
+
+def create_session_identifier():
+    # Used by Flask-Login to tie a session to the IP address and browser it was signed in from (see SESSION_PROTECTION).
+    # Flask-Login's default takes the IP address from the first X-Forwarded-For entry, which the client can set to
+    # anything, so use request.remote_addr instead - ProxyFix sets this from the entry our reverse proxy appended.
+    identifier = f"{request.remote_addr}|{request.user_agent.string}"
+    return hashlib.sha512(identifier.encode("utf-8")).hexdigest()
 
 
 # Werkzeug denies newlines in headers, but otherwise does no other filtering - so match that logic

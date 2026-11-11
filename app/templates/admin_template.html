@@ -9,6 +9,8 @@
 {%- from "partials/notifications/sessionExpiryDialog.html" import sessionExpiryDialog -%}
 {% from "components/cookie-banner.html" import cookie_banner %}
 {% from "components/page-title-prefix.html" import page_title_prefix %}
+{% from "service_navigation.html" import service_navigation_name %}
+
 
 {% block headIcons %}
   <link rel="shortcut icon" sizes="16x16 32x32 48x48" href="{{ asset_url('images/favicon.ico') }}" type="image/x-icon" />
@@ -24,7 +26,7 @@
   {% block extra_stylesheets %}
   {% endblock %}
   <style nonce="{{ cspNonce }}">
-      .govuk-header__container { border-color: {{header_colour}} }
+      .govuk-header { border-bottom: 9px solid {{header_colour}} }
   </style>
   {% if g.hide_from_search_engines %}
     <meta name="robots" content="noindex" />
@@ -55,17 +57,22 @@
     {{ inactivityLogoutDialog() }}
     {{ inactivityWarningDialog() }}
     {{ sessionExpiryDialog(request.path) }}
+
+    {% set sign_out %}
+      <li class="govuk-service-navigation__item sign-out-link">
+        <a class="govuk-service-navigation__link"
+           href="{{ url_for('main.sign_out') }}">
+           Sign out
+        </a>
+      </li>
+    {% endset %}
+
     {% if current_user.platform_admin_capable %}
       {% set navigation = [
         {
-          "href": url_for('main.support'),
-          "text": "Support",
-          "active": header_navigation.is_selected('support')
-        },
-        {
-          "href": url_for('main.user_profile'),
-          "text": "Profile",
-          "active": header_navigation.is_selected('user-profile')
+          "href": url_for('main.choose_account'),
+          "text": "Switch service",
+          "active": header_navigation.is_selected('accounts')
         },
         {
           "href": url_for('main.platform_admin_search'),
@@ -76,16 +83,22 @@
           "active": header_navigation.is_selected('platform-admin')
         },
         {
-          "href": url_for('main.sign_out'),
-          "text": "Sign out"
+          "href": url_for('main.user_profile'),
+          "text": "Profile",
+          "active": header_navigation.is_selected('user-profile')
+        },
+        {
+          "href": url_for('main.support'),
+          "text": "Support",
+          "active": header_navigation.is_selected('support')
         }
       ] %}
     {% else %}
       {% set navigation = [
         {
-          "href": url_for('main.support'),
-          "text": "Support",
-          "active": header_navigation.is_selected('support')
+          "href": url_for('main.choose_account'),
+          "text": "Switch service",
+          "active": header_navigation.is_selected('accounts')
         },
         {
           "href": url_for('main.user_profile'),
@@ -93,8 +106,9 @@
           "active": header_navigation.is_selected('user-profile')
         },
         {
-          "href": url_for('main.sign_out'),
-          "text": "Sign out"
+          "href": url_for('main.support'),
+          "text": "Support",
+          "active": header_navigation.is_selected('support')
         }
       ] %}
     {% endif %}
@@ -116,10 +130,15 @@
   {{ govukHeader({
     "homepageUrl": url_for('main.show_accounts_or_dashboard'),
     "productName": "Emergency Alerts",
-    "navigation": navigation,
-    "navigationClasses": "govuk-header__navigation--end",
-    "assetsPath": asset_path + "images"
   }) }}
+
+  {{ govukServiceNavigation({
+    "navigation": navigation,
+    "slots": {
+      "navigationEnd": sign_out
+    }
+  }) }}
+
   {% if live_service_notice %}
     <div class="govuk-width-container">
       {{ govukNotificationBanner({

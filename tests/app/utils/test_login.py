@@ -1,9 +1,11 @@
 import pytest
-from flask import url_for
+from flask import session, url_for
+from flask_login import login_user
 from freezegun import freeze_time
 
 from app.models.user import User
 from app.utils.login import (
+    create_session_identifier,
     email_needs_revalidating,
     is_less_than_days_ago,
     redirect_when_logged_in,
@@ -57,3 +59,30 @@ def test_redirect_when_logged_in(notify_admin, next, allow_redirect):
 
         response = redirect_when_logged_in(False)
         assert response.headers["Location"] == next if allow_redirect else fallback_redirect_url
+
+
+@pytest.mark.parametrize(
+    "remote_addr, headers, expected_same_identifier",
+    [
+        ("1.2.3.4", {"User-Agent": "Firefox"}, True),
+        ("1.2.3.4", {"User-Agent": "Firefox", "X-Forwarded-For": "5.6.7.8"}, True),
+        ("5.6.7.8", {"User-Agent": "Firefox"}, False),
+        ("1.2.3.4", {"User-Agent": "Chrome"}, False),
+    ],
+)
+def test_create_session_identifier(notify_admin, remote_addr, headers, expected_same_identifier):
+    with notify_admin.test_request_context(environ_base={"REMOTE_ADDR": "1.2.3.4"}, headers={"User-Agent": "Firefox"}):
+        identifier_at_sign_in = create_session_identifier()
+
+    with notify_admin.test_request_context(environ_base={"REMOTE_ADDR": remote_addr}, headers=headers):
+        assert (create_session_identifier() == identifier_at_sign_in) is expected_same_identifier
+
+
+def test_flask_login_uses_create_session_identifier(notify_admin, api_user_active, mock_events):
+    # Flask-Login's own identifier would use the X-Forwarded-For IP address rather than the remote address
+    with notify_admin.test_request_context(
+        environ_base={"REMOTE_ADDR": "1.2.3.4"}, headers={"X-Forwarded-For": "5.6.7.8"}
+    ):
+        login_user(User(api_user_active))
+
+        assert session["_id"] == create_session_identifier()
