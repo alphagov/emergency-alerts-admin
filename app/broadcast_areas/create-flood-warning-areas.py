@@ -21,7 +21,7 @@ rtree_index = RTree()
 # care about optimising how quickly we can process and display polygons
 # so we aim for something lower, i.e. enough to give us a good amount of
 # precision relative to the accuracy of a cell broadcast
-MAX_NUMBER_OF_POINTS_PER_POLYGON = 250
+MAX_NUMBER_OF_POINTS_PER_POLYGON = 350
 
 
 def simplify_geometry(feature):
@@ -37,6 +37,9 @@ def clean_up_invalid_polygons(polygons, indent="    "):
     """
     This function expects a list of lists of coordinates defined in degrees
     """
+    if isinstance(polygons, MultiPolygon):
+        polygons = polygons.geoms
+
     for index, polygon in enumerate(polygons):
         shapely_polygon = Polygon(polygon)
 
@@ -104,9 +107,8 @@ def polygons_and_simplified_polygons(feature):
     clean_raw_polygons = [
         [[x, y] for x, y in polygon.exterior.coords] for polygon in clean_up_invalid_polygons(raw_polygons)
     ]
-    polygons = Polygons(clean_raw_polygons)
+    full_resolution = Polygons(clean_raw_polygons)
 
-    full_resolution = polygons.remove_too_small
     smoothed = full_resolution.smooth
     simplified = smoothed.simplify
 
@@ -159,6 +161,7 @@ def add_test_areas():
         f_id = feature["properties"]["TA_CODE"]
         f_name = feature["properties"]["shortname"].replace("_", " ")
 
+        print(f"Processing TA_CODE {f_id}")
         feature, simple_feature, utm_crs = polygons_and_simplified_polygons(feature["geometry"])
         areas_to_add.append(
             [
