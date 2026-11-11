@@ -443,3 +443,12 @@ def format_estimated_phone_count(count_of_phones):
         return "Just under 1 million phones estimated"
     else:
         return "More than 1 million phones estimated"
+
+
+def format_area_name(area_name):
+    if area_name.endswith(", City of"):
+        return f"City of {area_name[:-9]}"
+    elif area_name.endswith(", County of"):
+        return f"County of {area_name[:-11]}"
+    else:
+        return area_name
