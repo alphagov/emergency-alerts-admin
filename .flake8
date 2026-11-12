@@ -8,6 +8,7 @@ exclude =
     app/broadcast_areas/create-postcode-areas-db.py,
     app/broadcast_areas/create-broadcast-areas-db.py,
     app/broadcast_areas/create-reppir-areas-db.py,
+    app/broadcast_areas/create-flood-warning-areas.py,
 max-complexity = 14
 max-line-length = 120
 
