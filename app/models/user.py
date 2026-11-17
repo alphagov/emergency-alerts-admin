@@ -44,6 +44,7 @@ class User(BaseUser, UserMixin):
         "id",
         "name",
         "email_address",
+        "email_address_changed_at",
         "auth_type",
         "current_session_id",
         "failed_login_count",
@@ -131,6 +132,13 @@ class User(BaseUser, UserMixin):
         if not self.password_changed_at:
             return False
         return utc_string_to_aware_gmt_datetime(self.password_changed_at) > utc_string_to_aware_gmt_datetime(
+            datetime_string
+        )
+
+    def email_address_changed_more_recently_than(self, datetime_string):
+        if not self.email_address_changed_at:
+            return False
+        return utc_string_to_aware_gmt_datetime(self.email_address_changed_at) > utc_string_to_aware_gmt_datetime(
             datetime_string
         )
 
