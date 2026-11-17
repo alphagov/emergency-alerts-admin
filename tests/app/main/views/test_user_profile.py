@@ -189,7 +189,7 @@ def test_should_403_when_user_confirms_email_link_with_wrong_user(
     )
 
 
-def test_should_redirect_when_user_confirms_email_link_with_old_link(
+def test_should_redirect_with_error_when_user_confirms_email_link_with_old_link(
     notify_admin, client_request, api_user_active, mocker
 ):
     api_user_active["email_address_changed_at"] = str(datetime.now(timezone.utc) + timedelta(minutes=1))
@@ -219,12 +219,24 @@ def test_should_redirect_when_user_confirms_email_link_with_old_link(
     assert flashes[0][1] == "The link in the email has already been used"
 
 
-def test_should_redirect_to_user_profile_when_user_confirms_email_link(
+@pytest.mark.parametrize(
+    "email_address_changed_at",
+    # None or in the past
+    [None, datetime(2025, 1, 1)],
+)
+def test_should_update_and_redirect_to_user_profile_when_user_confirms_email_link(
     notify_admin,
     client_request,
     api_user_active,
     mock_update_user_attribute,
+    mocker,
+    email_address_changed_at,
 ):
+    if email_address_changed_at is not None:
+        api_user_active["email_address_changed_at"] = str(email_address_changed_at)
+
+    mocker.patch("app.user_api_client.get_user", return_value=api_user_active)
+
     token = generate_token(
         payload=json.dumps(
             {
