@@ -1,9 +1,10 @@
 import json
 import uuid
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from emergency_alerts_utils.url_safe_token import generate_token
-from flask import Response, url_for
+from flask import Response, session, url_for
 from freezegun import freeze_time
 from notifications_python_client.errors import HTTPError
 
@@ -188,6 +189,36 @@ def test_should_403_when_user_confirms_email_link_with_wrong_user(
     )
 
 
+def test_should_redirect_when_user_confirms_email_link_with_old_link(
+    notify_admin, client_request, api_user_active, mocker
+):
+    api_user_active["email_address_changed_at"] = str(datetime.now(timezone.utc) + timedelta(minutes=1))
+    mocker.patch("app.user_api_client.get_user", return_value=api_user_active)
+
+    token = generate_token(
+        payload=json.dumps(
+            {
+                "user_id": api_user_active["id"],
+                "email": "new_email@gov.uk",
+                "created_at": str(datetime.now(timezone.utc)),
+            }
+        ),
+        secret=notify_admin.config["SECRET_KEY"],
+        salt=notify_admin.config["DANGEROUS_SALT"],
+    )
+    client_request.get_url(
+        url_for_endpoint_with_token(
+            "main.user_profile_email_confirm",
+            token=token,
+        ),
+        _expected_redirect=url_for("main.index"),
+    )
+
+    flashes = session.get("_flashes")
+    assert len(flashes) == 1
+    assert flashes[0][1] == "The link in the email has already been used"
+
+
 def test_should_redirect_to_user_profile_when_user_confirms_email_link(
     notify_admin,
     client_request,
@@ -195,7 +226,13 @@ def test_should_redirect_to_user_profile_when_user_confirms_email_link(
     mock_update_user_attribute,
 ):
     token = generate_token(
-        payload=json.dumps({"user_id": api_user_active["id"], "email": "new_email@gov.uk"}),
+        payload=json.dumps(
+            {
+                "user_id": api_user_active["id"],
+                "email": "new_email@gov.uk",
+                "created_at": str(datetime.now(timezone.utc)),
+            }
+        ),
         secret=notify_admin.config["SECRET_KEY"],
         salt=notify_admin.config["DANGEROUS_SALT"],
     )
