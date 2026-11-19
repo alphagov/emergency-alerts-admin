@@ -1,0 +1,32 @@
+{% extends "withoutnav_template.html" %}
+{% from "components/page-header.html" import page_header %}
+{% from "govuk_frontend_jinja/components/button/macro.html" import govukButton %}
+
+{#
+  This page must not write the session, so don't use page_footer or a form here: csrf_token() writes the session.
+  See user_profile_email_confirm.
+#}
+
+{% block per_page_title %}
+  Confirm your new email address
+{% endblock %}
+
+{% block maincolumn_content %}
+
+<div class="js-hidden">
+
+  {{ page_header('Confirm your new email address') }}
+
+  {{ govukButton({
+    "text": "Continue",
+    "href": continue_url,
+    "attributes": {"id": "continue-email-confirm"},
+  }) }}
+
+</div>
+
+<script nonce="{{ cspNonce }}" type="text/javascript">
+  window.location.replace(document.getElementById("continue-email-confirm").href);
+</script>
+
+{% endblock %}

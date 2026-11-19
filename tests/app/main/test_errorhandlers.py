@@ -27,7 +27,11 @@ def test_load_service_before_request_handles_404(client_request, mocker):
 
 @pytest.mark.parametrize(
     "url",
-    ["/new-password/MALFORMED_TOKEN", "/user-profile/email/confirm/MALFORMED_TOKEN", "/verify-email/MALFORMED_TOKEN"],
+    [
+        "/new-password/MALFORMED_TOKEN",
+        "/user-profile/email/confirm/MALFORMED_TOKEN/continue",
+        "/verify-email/MALFORMED_TOKEN",
+    ],
 )
 def test_malformed_token_returns_page_not_found(client_request, url):
     page = client_request.get_url(url, _expected_status=404)

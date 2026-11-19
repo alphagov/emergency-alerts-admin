@@ -168,6 +168,7 @@ EXCLUDED_ENDPOINTS = tuple(
             "user_profile_disable_platform_admin_view",
             "user_profile_email",
             "user_profile_email_confirm",
+            "user_profile_email_confirm_continue",
             "user_profile_manage_security_key",
             "user_profile_mobile_number",
             "user_profile_mobile_number_confirm",
