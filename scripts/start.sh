@@ -14,7 +14,8 @@ fi
 
 function run_admin(){
     cd $DIR_ADMIN;
-    . $VENV_ADMIN/bin/activate && exec opentelemetry-instrument $PYTHON_COMMAND gunicorn application:application --bind 0.0.0.0:6012
+    echo "Provided GUNICORN_OPTS: $GUNICORN_OPTS"
+    . $VENV_ADMIN/bin/activate && exec opentelemetry-instrument $PYTHON_COMMAND gunicorn application:application ${GUNICORN_OPTS:-} --bind 0.0.0.0:6012
 }
 
 if [[ ! -z $DEBUG ]]; then
