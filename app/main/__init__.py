@@ -2,8 +2,15 @@ from flask import Blueprint, request, session
 
 main = Blueprint("main", __name__)
 
+# Endpoints that must not write the session. The browser leaves out our SameSite=Strict session cookie when another
+# site starts the navigation (e.g. a link clicked in webmail). A cookie set in reply would replace the user's real one
+# and sign them out.
+SESSION_WRITE_EXEMPT_ENDPOINTS = {"main.user_profile_email_confirm"}
+
 
 def make_session_permanent():
+    if request.endpoint in SESSION_WRITE_EXEMPT_ENDPOINTS:
+        return
     session.permanent = True
 
 
