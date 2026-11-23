@@ -12,7 +12,7 @@ aws-opentelemetry-distro==0.14.2
     # via -r requirements.in
 beautifulsoup4==4.14.3
     # via -r requirements.in
-black==26.3.1
+black==26.10.1
     # via -r requirements.in
 blinker==1.9.0
     # via
@@ -107,6 +107,8 @@ govuk-frontend-jinja==4.1.0
     # via -r requirements.in
 grpcio==1.76.0
     # via opentelemetry-exporter-otlp-proto-grpc
+gunicorn==27.0.0
+    # via -r requirements.in
 humanize==4.15.0
     # via -r requirements.in
 idna==3.15
@@ -562,7 +564,7 @@ six==1.17.0
     # via python-dateutil
 smartypants==2.0.2
     # via emergency-alerts-utils
-soupsieve==2.9
+soupsieve==4.0
     # via beautifulsoup4
 typing-extensions==4.15.0
     # via

@@ -102,8 +102,21 @@ def user_profile_email():
 
 
 @main.route("/user-profile/email/confirm/<token>", methods=["GET"])
-@user_is_logged_in
 def user_profile_email_confirm(token):
+    # This is the link in the confirmation email. When it's clicked in webmail, another site starts the navigation,
+    # so the browser leaves out our SameSite=Strict session cookie and the request looks signed out. If this response
+    # wrote the session (a login redirect, a flash message, a CSRF token), the new cookie would replace the user's
+    # real one and sign them out. So this page writes nothing (see SESSION_WRITE_EXEMPT_ENDPOINTS) and moves on to the
+    # continue URL with a navigation that starts on our own site, which the browser sends the cookie with.
+    return render_template(
+        "views/user-profile/email-confirm-interstitial.html",
+        continue_url=url_for(".user_profile_email_confirm_continue", token=token),
+    )
+
+
+@main.route("/user-profile/email/confirm/<token>/continue", methods=["GET"])
+@user_is_logged_in
+def user_profile_email_confirm_continue(token):
     token_data = check_token(
         token,
         current_app.config["SECRET_KEY"],
@@ -111,6 +124,7 @@ def user_profile_email_confirm(token):
         current_app.config["EMAIL_EXPIRY_SECONDS"],
     )
     token_data = json.loads(token_data)
+
     if current_user.id != token_data["user_id"]:
         current_app.logger.error(
             "Email change token was for user {} but user {} used it - rejecting", token_data["user_id"], current_user.id
@@ -118,6 +132,10 @@ def user_profile_email_confirm(token):
         abort(403)
 
     user = User.from_id(token_data["user_id"])
+    if user.email_address_changed_more_recently_than(token_data["created_at"]):
+        flash("The link in the email has already been used")
+        return redirect(url_for("main.index"))
+
     user.update(email_address=token_data["email"])
     session.pop(NEW_EMAIL, None)
 

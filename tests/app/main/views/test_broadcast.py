@@ -3018,15 +3018,11 @@ def test_add_flood_warning_areas_in_bulk_with_delimiters(
 
     assert normalize_spaces(page.select_one("h1").text) == "Choose Flood Warning Target Areas (TA)"
     assert [normalize_spaces(item.text) for item in page.select("ul.area-list li.area-list-item")] == [
-        "011FWBWH: Whitehaven Sea Lock failure, town centre and North Shore Rd Remove Whitehaven "
-        "Sea Lock failure, town centre and North Shore Rd",
-        "011FWCN1A: Cumbrian coastline from Gretna to Silloth including Port Carlisle, Skinburness "
-        "and Rockcliffe Remove Cumbrian coastline from Gretna to Silloth including Port Carlisle, "
-        "Skinburness and Rockcliffe",
-        (
-            "011FWCN1B: Cumbrian coastline from Gretna to Silloth, between Longtown and Skinburness Remove "
-            "Cumbrian coastline from Gretna to Silloth, between Longtown and Skinburness"
-        ),
+        "011FWBWH: Whitehaven Remove Whitehaven",
+        "011FWCN1A: Coast Gretna, Silloth, Port Carlisle, Skinburness "
+        "Remove Coast Gretna, Silloth, Port Carlisle, Skinburness",
+        "011FWCN1B: Coast Gretna to Silloth, Longtown to Skinburness "
+        "Remove Coast Gretna to Silloth, Longtown to Skinburness",
     ]
 
     assert mock_get_broadcast_message.call_count == 3

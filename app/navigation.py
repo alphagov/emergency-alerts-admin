@@ -47,6 +47,7 @@ class HeaderNavigation(Navigation):
             "user_profile_confirm_delete_mobile_number",
             "user_profile_email",
             "user_profile_email_confirm",
+            "user_profile_email_confirm_continue",
             "user_profile_mobile_number",
             "user_profile_mobile_number_confirm",
             "user_profile_mobile_number_delete",

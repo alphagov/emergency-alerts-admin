@@ -2051,6 +2051,7 @@ def create_user(**overrides):
         "name": "Test User",
         "password": "somepassword",
         "email_address": "test@user.gov.uk",
+        "email_address_changed_at": None,
         "mobile_number": "07700 900762",
         "state": "active",
         "failed_login_count": 0,

@@ -1,13 +1,15 @@
 import json
 import uuid
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from emergency_alerts_utils.url_safe_token import generate_token
-from flask import Response, url_for
+from flask import Response, session, url_for
 from freezegun import freeze_time
 from notifications_python_client.errors import HTTPError
 
 from app.models.webauthn_credential import WebAuthnCredential, WebAuthnCredentials
+from tests import NotifyBeautifulSoup
 from tests.conftest import (
     create_api_user_active,
     create_user,
@@ -169,6 +171,60 @@ def test_should_render_change_email_continue_after_authenticate_email(
     assert "test@digital.cabinet-office.gov.uk" in page.text
 
 
+def test_email_confirm_link_does_not_set_a_cookie_when_the_browser_sends_none(notify_admin, mocker, fake_uuid):
+    # Clicking the link in webmail is a navigation that another site starts, so the browser leaves out our
+    # SameSite=Strict session cookie. If this response set a cookie, it would replace the user's real one and
+    # sign them out.
+    mocker.patch("app.feature_toggle_api_client.get_feature_toggle", return_value={})
+    token = generate_token(
+        payload=json.dumps({"user_id": fake_uuid, "email": "new_email@gov.uk"}),
+        secret=notify_admin.config["SECRET_KEY"],
+        salt=notify_admin.config["DANGEROUS_SALT"],
+    )
+    with notify_admin.test_request_context():
+        confirm_url = url_for_endpoint_with_token("main.user_profile_email_confirm", token=token)
+        continue_url = url_for_endpoint_with_token("main.user_profile_email_confirm_continue", token=token)
+
+    # A new test client has no cookies, like the browser on that navigation.
+    response = notify_admin.test_client().get(confirm_url)
+
+    assert response.status_code == 200
+    assert "Set-Cookie" not in response.headers
+    page = NotifyBeautifulSoup(response.data.decode("utf-8"), "html.parser")
+    assert page.select_one("a#continue-email-confirm")["href"] == continue_url
+
+
+def test_email_confirm_link_shows_continue_page_when_signed_in(notify_admin, client_request, fake_uuid):
+    token = generate_token(
+        payload=json.dumps({"user_id": fake_uuid, "email": "new_email@gov.uk"}),
+        secret=notify_admin.config["SECRET_KEY"],
+        salt=notify_admin.config["DANGEROUS_SALT"],
+    )
+
+    confirm_url = url_for_endpoint_with_token("main.user_profile_email_confirm", token=token)
+
+    page = client_request.get_url(confirm_url)
+
+    assert normalize_spaces(page.select_one("h1").text) == "Confirm your new email address"
+    continue_url = url_for_endpoint_with_token("main.user_profile_email_confirm_continue", token=token)
+    assert page.select_one("a#continue-email-confirm")["href"] == continue_url
+    assert page.select_one("script[nonce]") is not None
+    # The signed-in user's cookie is left alone too.
+    assert "Set-Cookie" not in client_request.get_response_from_url(confirm_url).headers
+
+
+def test_email_confirm_continue_redirects_to_sign_in_when_signed_out(notify_admin, client_request, fake_uuid):
+    token = generate_token(
+        payload=json.dumps({"user_id": fake_uuid, "email": "new_email@gov.uk"}),
+        secret=notify_admin.config["SECRET_KEY"],
+        salt=notify_admin.config["DANGEROUS_SALT"],
+    )
+    continue_url = url_for_endpoint_with_token("main.user_profile_email_confirm_continue", token=token)
+    client_request.logout()
+
+    client_request.get_url(continue_url, _expected_redirect=url_for("main.sign_in", next=continue_url))
+
+
 def test_should_403_when_user_confirms_email_link_with_wrong_user(
     notify_admin,
     client_request,
@@ -181,27 +237,75 @@ def test_should_403_when_user_confirms_email_link_with_wrong_user(
     )
     client_request.get_url(
         url_for_endpoint_with_token(
-            "main.user_profile_email_confirm",
+            "main.user_profile_email_confirm_continue",
             token=token,
         ),
         _expected_status=403,
     )
 
 
-def test_should_redirect_to_user_profile_when_user_confirms_email_link(
-    notify_admin,
-    client_request,
-    api_user_active,
-    mock_update_user_attribute,
+def test_should_redirect_with_error_when_user_confirms_email_link_with_old_link(
+    notify_admin, client_request, api_user_active, mocker
 ):
+    api_user_active["email_address_changed_at"] = str(datetime.now(timezone.utc) + timedelta(minutes=1))
+    mocker.patch("app.user_api_client.get_user", return_value=api_user_active)
+
     token = generate_token(
-        payload=json.dumps({"user_id": api_user_active["id"], "email": "new_email@gov.uk"}),
+        payload=json.dumps(
+            {
+                "user_id": api_user_active["id"],
+                "email": "new_email@gov.uk",
+                "created_at": str(datetime.now(timezone.utc)),
+            }
+        ),
         secret=notify_admin.config["SECRET_KEY"],
         salt=notify_admin.config["DANGEROUS_SALT"],
     )
     client_request.get_url(
         url_for_endpoint_with_token(
-            "main.user_profile_email_confirm",
+            "main.user_profile_email_confirm_continue",
+            token=token,
+        ),
+        _expected_redirect=url_for("main.index"),
+    )
+
+    flashes = session.get("_flashes")
+    assert len(flashes) == 1
+    assert flashes[0][1] == "The link in the email has already been used"
+
+
+@pytest.mark.parametrize(
+    "email_address_changed_at",
+    # None or in the past
+    [None, datetime(2025, 1, 1)],
+)
+def test_should_update_and_redirect_to_user_profile_when_user_confirms_email_link(
+    notify_admin,
+    client_request,
+    api_user_active,
+    mock_update_user_attribute,
+    mocker,
+    email_address_changed_at,
+):
+    if email_address_changed_at is not None:
+        api_user_active["email_address_changed_at"] = str(email_address_changed_at)
+
+    mocker.patch("app.user_api_client.get_user", return_value=api_user_active)
+
+    token = generate_token(
+        payload=json.dumps(
+            {
+                "user_id": api_user_active["id"],
+                "email": "new_email@gov.uk",
+                "created_at": str(datetime.now(timezone.utc)),
+            }
+        ),
+        secret=notify_admin.config["SECRET_KEY"],
+        salt=notify_admin.config["DANGEROUS_SALT"],
+    )
+    client_request.get_url(
+        url_for_endpoint_with_token(
+            "main.user_profile_email_confirm_continue",
             token=token,
         ),
         _expected_redirect=url_for("main.user_profile"),
