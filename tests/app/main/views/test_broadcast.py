@@ -2923,21 +2923,19 @@ def test_add_flood_warning_areas_in_bulk_with_delimiters(
     areas = [
         {
             "id": "011FWBWH",
-            "name": "Whitehaven Sea Lock failure, town centre and North Shore Rd",
+            "name": "Whitehaven",
             "geography_type_name": "flood_warning_areas",
             "geographic_id": "011FWBWH",
         },
         {
             "id": "011FWCN1A",
-            "name": (
-                "Cumbrian coastline from Gretna to Silloth including Port Carlisle, " "Skinburness and Rockcliffe"
-            ),
+            "name": ("Coast Gretna, Silloth, Port Carlisle, Skinburness"),
             "geography_type_name": "flood_warning_areas",
             "geographic_id": "011FWCN1A",
         },
         {
             "id": "011FWCN1B",
-            "name": ("Cumbrian coastline from Gretna to Silloth, between Longtown and " "Skinburness"),
+            "name": ("Coast Gretna to Silloth, Longtown to Skinburness"),
             "geography_type_name": "flood_warning_areas",
             "geographic_id": "011FWCN1B",
         },
