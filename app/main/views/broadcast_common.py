@@ -31,7 +31,7 @@ from app.utils.broadcast import (
     coordinates_and_radius_entered,
     coordinates_entered_but_no_radius,
     create_area_from_wkt,
-    create_custom_area_polygon,
+    create_postcode_area_polygon,
     create_postcode_db_id,
     has_permission_for_message_type,
     parse_coordinate_form_data,
@@ -354,24 +354,23 @@ def search_postcodes(service_id, message_type, message_id=None):
         validate_form_based_on_fields_entered(request, form)
     elif postcode_entered(request, form):
         """
-        Clears any areas in broadcast message, then creates the ID to search for in SQLite database,
-        if query returns IndexError, the postcode isn't in the database and thus error is appended to
-        postcode field and displayed on the page.
+        Searches for the given postcode. Exception raised if postcode is invalid or not found, and
+        an error is appended to the postcode field.
         """
         postcode = create_postcode_db_id(form)
+        centroid, circle_wkt, id = create_postcode_area_polygon(form, postcode)
         form.pre_validate(form)
-        centroid, circle_wkt, id = create_custom_area_polygon(form, postcode)
     elif postcode_and_radius_entered(request, form):
         """
         If postcode and radius entered, that are validated successfully,
         custom polygon is created using radius and centroid.
         """
         postcode = create_postcode_db_id(form)
+        centroid, circle_wkt, id = create_postcode_area_polygon(form, postcode)
         form.pre_validate(form)
-        centroid, circle_wkt, id = create_custom_area_polygon(form, postcode)
         if form.validate_on_submit():
             """
-            If postcode is in database, i.e. creating the Polygon didn't return IndexError,
+            If postcode is in database, i.e. creating the Polygon didn't generate an exception,
             then a dummy CustomBroadcastArea is created and used for the attributes that
             are required for the Leaflet map, key, number of phones to display etc.
             """

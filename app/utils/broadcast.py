@@ -38,13 +38,14 @@ def create_postcode_db_id(form):
         return str(UKPostcode(form.data["postcode"]).postcode)
 
 
-def create_custom_area_polygon(form, postcode):
+def create_postcode_area_polygon(form, postcode):
     centroid, data = None, {}
     radius = float(form.data["radius"]) if form.data["radius"] else 0
+    library_type = "postcodes"
     try:
-        centroid = areas_api_client.get_postcode_centroid(postcode)
+        centroid = areas_api_client.get_custom_area_centroid(postcode, library_type)
         centroid = wkt.loads(centroid)
-        data = areas_api_client.create_postcode_area(postcode, radius)
+        data = areas_api_client.create_custom_area(postcode, library_type, radius)
     except Exception:
         form.postcode.process_errors.append("Enter a postcode within the UK")
     return centroid, data.get("circle"), data.get("id")

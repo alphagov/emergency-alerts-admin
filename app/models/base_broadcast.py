@@ -137,7 +137,8 @@ class BaseBroadcast(JSONModel):
 
     @classmethod
     def add_postcode_area(cls, id, service_id, postcode, radius, message_type):
-        return cls(areas_api_client.add_postcode_area(id, service_id, postcode, radius, message_type))
+        library_type = "postcodes"
+        return cls(areas_api_client.add_custom_area(id, service_id, postcode, radius, message_type, library_type))
 
     @classmethod
     def add_coordinate_area(

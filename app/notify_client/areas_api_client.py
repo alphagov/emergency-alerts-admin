@@ -43,17 +43,20 @@ class AreasAPIClient(AdminAPIClient):
             data["version_id"] = version_id
         return self.post(url=f"/areas/{service_id}/{message_id}/{message_type}/add-areas", data=data)
 
-    def get_postcode_centroid(self, area_id):
-        data = {"postcode": area_id}
-        return self.post(url="/areas/postcodes/get-centroid", data=data)["data"]
+    def get_custom_area_centroid(self, area_id, library_type):
+        data = {
+            "area_id": area_id,
+            "library_type": library_type,
+        }
+        return self.post(url="/areas/get-centroid", data=data)["data"]
 
-    def create_postcode_area(self, area_id, radius):
-        data = {"postcode": area_id, "radius": radius}
-        return self.post(url="/areas/postcode-area", data=data)
+    def create_custom_area(self, area_id, library_type, radius):
+        data = {"area_id": area_id, "library_type": library_type, "radius": radius}
+        return self.post(url="/areas/custom-area", data=data)
 
-    def add_postcode_area(self, message_id, service_id, postcode, radius, message_type):
-        data = {"type_name": "postcodes", "postcode": postcode, "radius": radius}
-        return self.post(url=f"/areas/{service_id}/{message_id}/{message_type}/add-postcodes-area", data=data)
+    def add_custom_area(self, message_id, service_id, area_id, radius, message_type, library_type):
+        data = {"library_type": library_type, "area_id": area_id, "radius": radius}
+        return self.post(url=f"/areas/{service_id}/{message_id}/{message_type}/add-custom-area", data=data)
 
     def get_coordinate_centroid(self, first_coordinate, second_coordinate, coordinate_type):
         data = {
