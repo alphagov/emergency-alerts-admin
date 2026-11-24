@@ -17,15 +17,49 @@
 
   {{ page_header(page_title)}}
 
-  {{ live_search(
-      target_selector='.govuk-checkboxes__item',
-      show=show_search_form,
-      form=search_form,
-      label='Search and filter by name')
-  }}
+  {% if geography_type in ['counties_and_unitary_authorities', 'local_authority_districts'] %}
+    {% if render_checkboxes %}
+      {% set label = 'Or filter by electoral ward' %}
+    {% else %}
+      {% set label = 'Or filter by district' %}
+    {% endif %}
+  {% else %}
+    {% set label = 'Search and filter by name' %}
+  {% endif %}
 
   {% call form_wrapper() %}
-    {{ form.areas }}
+    <div class="form-group govuk-!-margin-bottom-4">
+      {{ form.select_all }}
+    </div>
+
+  {% set target_selector = (
+    '#sub-areas .govuk-checkboxes__item'
+    if render_checkboxes
+    else '.file-list-item'
+  ) %}
+
+  {{ live_search(
+        target_selector=target_selector,
+        show=show_search_form,
+        form=search_form,
+        label=label)
+    }}
+
+    {% if render_checkboxes %}
+      <div id="sub-areas">
+        {{ form.areas }}
+      </div>
+    {% else %}
+      <div class="govuk-!-margin-bottom-6">
+        {% for area in areas|sort(attribute="name") %}
+          <div class="file-list-item">
+            {# These are sub areas within a parent area #}
+            <a class="file-list-filename-large file-list-filename-large-no-hint govuk-link govuk-link--no-visited-state"
+              href="{{ url_for('.choose_sub_area', service_id=current_service.id, message_id=message.id, message_type=message_type, library_slug=library_slug, area_slug=area.id, prev_area_slug=parent_area.id if parent_area else None) }}">{{ area.name }}</a>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
     {{ sticky_page_footer('Save and continue', button_name='continue') }}
   {% endcall %}
 

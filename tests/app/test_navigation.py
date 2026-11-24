@@ -121,7 +121,6 @@ EXCLUDED_ENDPOINTS = tuple(
             "remove_area",
             "remove_user_from_organisation",
             "remove_user_from_service",
-            "remove_custom_area",
             "reports",
             "resend_email_link",
             "resend_email_verification",

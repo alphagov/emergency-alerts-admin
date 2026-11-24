@@ -8,8 +8,6 @@ APP_VERSION ?= unknown
 GIT_BRANCH ?= $(shell git symbolic-ref --short HEAD 2> /dev/null || echo "detached")
 GIT_COMMIT ?= $(shell git rev-parse HEAD 2> /dev/null || echo "")
 
-BUCKET_NAME = ${BROADCAST_AREAS_BUCKET_NAME}
-
 VIRTUALENV_ROOT := $(shell [ -z $$VIRTUAL_ENV ] && echo $$(pwd)/venv || echo $$VIRTUAL_ENV)
 PYTHON_EXECUTABLE_PREFIX := $(shell test -d "$${VIRTUALENV_ROOT}" && echo "$${VIRTUALENV_ROOT}/bin/" || echo "")
 
@@ -23,7 +21,6 @@ bootstrap: generate-version-file
 	${PYTHON_EXECUTABLE_PREFIX}pip3 install -r requirements_local_utils.txt
 	npm ci --no-audit
 	npm run build
-	. environment.sh; ./scripts/get-broadcast-areas-db.sh ./app/broadcast_areas $(BUCKET_NAME)
 
 
 .PHONY: bootstrap-for-tests
