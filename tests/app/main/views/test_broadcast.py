@@ -3562,9 +3562,9 @@ def test_add_postcode_area_to_broadcast(
     post_data,
     update_broadcast_data,
     mock_get_broadcast_message_versions,
-    mock_create_postcode_area,
-    mock_add_postcode_area,
-    mock_get_postcode_centroid,
+    mock_create_custom_area,
+    mock_add_custom_area,
+    mock_get_custom_area_centroid,
     mock_get_areas_by_ids,
     mock_get_latest_edit_reason,
     mock_get_broadcast_returned_for_edit_reasons,
@@ -3599,13 +3599,14 @@ def test_add_postcode_area_to_broadcast(
         _follow_redirects=True,
     )
 
-    assert mock_create_postcode_area.called
-    mock_add_postcode_area.assert_called_once_with(
+    assert mock_create_custom_area.called
+    mock_add_custom_area.assert_called_once_with(
         fake_uuid,
         SERVICE_ONE_ID,
         post_data["postcode"],
         float(post_data["radius"]),
         "broadcast",
+        "postcodes",
     )
 
 

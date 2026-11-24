@@ -2858,17 +2858,17 @@ def mock_add_areas(mocker):
 
 
 @pytest.fixture(scope="function")
-def mock_get_postcode_centroid(mocker):
+def mock_get_custom_area_centroid(mocker):
     return mocker.patch(
-        "app.areas_api_client.get_postcode_centroid",
+        "app.areas_api_client.get_custom_area_centroid",
         return_value="POINT (-2 54)",
     )
 
 
 @pytest.fixture(scope="function")
-def mock_create_postcode_area(mocker):
+def mock_create_custom_area(mocker):
     return mocker.patch(
-        "app.areas_api_client.create_postcode_area",
+        "app.areas_api_client.create_custom_area",
         return_value={
             "circle": ("POLYGON ((-1.75 53.79, " "-1.74 53.79, " "-1.74 53.80, " "-1.75 53.80, " "-1.75 53.79))"),
             "id": "3km around the postcode BD1 1EE in Bradford",
@@ -2877,8 +2877,8 @@ def mock_create_postcode_area(mocker):
 
 
 @pytest.fixture(scope="function")
-def mock_add_postcode_area(mocker):
-    return mocker.patch("app.areas_api_client.add_postcode_area", return_value="")
+def mock_add_custom_area(mocker):
+    return mocker.patch("app.areas_api_client.add_custom_area", return_value="")
 
 
 @pytest.fixture(scope="function")

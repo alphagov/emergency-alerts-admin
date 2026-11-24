@@ -101,8 +101,8 @@ def test_get_template_from_id(mocker, fake_uuid, mock_get_template_from_id):
 def test_add_postcode_area_to_template(mocker, fake_uuid):
     template = Template(template_json(SERVICE_ONE_ID, fake_uuid, areas={}))
 
-    mock_add_postcode_area = mocker.patch(
-        "app.models.base_broadcast.areas_api_client.add_postcode_area",
+    mock_add_custom_area = mocker.patch(
+        "app.models.base_broadcast.areas_api_client.add_custom_area",
         return_value=template._dict,
     )
 
@@ -114,12 +114,13 @@ def test_add_postcode_area_to_template(mocker, fake_uuid):
         message_type="templates",
     )
 
-    mock_add_postcode_area.assert_called_once_with(
+    mock_add_custom_area.assert_called_once_with(
         fake_uuid,
         SERVICE_ONE_ID,
         "BD1 1EE",
         2.0,
         "templates",
+        "postcodes",
     )
 
 
