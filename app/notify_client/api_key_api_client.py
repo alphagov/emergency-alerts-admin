@@ -8,8 +8,8 @@ class ApiKeyApiClient(AdminAPIClient):
     def create_api_key(self, service_id, key_name, key_type):
         data = {"name": key_name, "key_type": key_type}
         data = _attach_current_user(data)
-        key = self.post(url="/service/{}/api-key".format(service_id), data=data)
-        return key["data"]
+        # {"data": <secret>, "scheduled_expiry_date": "YYYY-MM-DD"}
+        return self.post(url="/service/{}/api-key".format(service_id), data=data)
 
     def revoke_api_key(self, service_id, key_id):
         data = _attach_current_user({})
