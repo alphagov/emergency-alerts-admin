@@ -22,10 +22,6 @@
 
     <div class="bottom-gutter-2">
 
-      {#
-        The expiry goes in the name part, not at the end: clients take the service ID and secret
-        from the last 73 characters, so anything appended after the secret would break them.
-      #}
       {% set key_prefix = '{}_expires_{}'.format(key_name, scheduled_expiry_date) if scheduled_expiry_date else key_name %}
       {{ copy_to_clipboard(
         '{}-{}-{}'.format(key_prefix, service_id, secret),
