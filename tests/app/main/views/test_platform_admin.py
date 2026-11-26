@@ -546,7 +546,10 @@ class TestPlatformAdminActions:
 
         # Does the endpoint allow it through too?
         mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
-        mock_api_key_create = mocker.patch("app.api_key_api_client.create_api_key", return_value="test")
+        mock_api_key_create = mocker.patch(
+            "app.api_key_api_client.create_api_key",
+            return_value={"data": "test", "scheduled_expiry_date": "2027-11-26"},
+        )
         page = client_request.post(
             "main.review_admin_action", action_id=fake_uuid, new_status="approved", _follow_redirects=True
         )
@@ -590,6 +593,17 @@ class TestPlatformAdminActions:
         mock_admin_action_notification.assert_called_once()
         mock_review_admin_action.assert_called_once_with(action_id, "rejected")
 
+    @pytest.mark.parametrize(
+        "api_response, expected_key",
+        [
+            (
+                {"data": "key-secret", "scheduled_expiry_date": "2027-11-26"},
+                f"test_key_expires_2027-11-26-{SERVICE_ONE_ID}-key-secret",
+            ),
+            # An API that predates scheduled_expiry_date
+            ({"data": "key-secret"}, f"test_key-{SERVICE_ONE_ID}-key-secret"),
+        ],
+    )
     def test_approving_creates_api_key(
         self,
         client_request,
@@ -597,6 +611,8 @@ class TestPlatformAdminActions:
         mock_admin_action_notification,
         mocker,
         mock_get_service,
+        api_response,
+        expected_key,
     ):
         action_id = str(uuid.uuid4())  # Reused for both action and creator ID
         mocker.patch(
@@ -615,7 +631,7 @@ class TestPlatformAdminActions:
             },
         )
         mock_review_admin_action = mocker.patch("app.admin_actions_api_client.review_admin_action", return_value=None)
-        mock_api_key_create = mocker.patch("app.api_key_api_client.create_api_key", return_value="key-secret")
+        mock_api_key_create = mocker.patch("app.api_key_api_client.create_api_key", return_value=api_response)
 
         client_request.login(platform_admin_user)
         page = client_request.post(
@@ -634,7 +650,7 @@ class TestPlatformAdminActions:
         )
 
         clipboard = page.select_one(".copy-to-clipboard__value")
-        assert "key-secret" in clipboard.text
+        assert clipboard.text.strip() == expected_key
 
     @pytest.mark.parametrize("approver_is_platform_admin", [True, False])
     def test_approving_creates_user_invite(

@@ -73,7 +73,7 @@ def process_admin_action(action_obj):
         service = Service.from_id(service_id)
         if service.trial_mode and action_data["key_type"] == KEY_TYPE_NORMAL:
             abort(400)
-        secret = api_key_api_client.create_api_key(
+        api_key = api_key_api_client.create_api_key(
             service_id=service_id, key_name=action_data["key_name"], key_type=action_data["key_type"]
         )
         # The template uses a parent tamplate that uses has_permissions and requires the service
@@ -81,9 +81,11 @@ def process_admin_action(action_obj):
         request.view_args["service_id"] = service_id
         return render_template(
             "views/api/keys/show.html",
-            secret=secret,
+            secret=api_key["data"],
             service_id=service_id,
             key_name=email_safe(action_data["key_name"], whitespace="_"),
+            # .get() so admin still works if it's deployed before the API starts returning this
+            scheduled_expiry_date=api_key.get("scheduled_expiry_date"),
         )
     elif action_type == ADMIN_ELEVATE_USER:
         user_api_client.elevate_admin_next_login(action_obj["created_by"], current_user.id)
